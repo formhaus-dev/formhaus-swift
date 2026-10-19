@@ -44,6 +44,7 @@ private final class Stage {
     let controller: UIHostingController<StackHost>
 
     init(_ model: FormModel) {
+        enableAccessibilityAutomation()
         box = StackBox(model)
         let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
         window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow()
@@ -73,7 +74,7 @@ private func stepsModel(values: JSONObject = ["x": "1"], delay: Bool = false) th
     var options = FormEngineOptions()
     if delay {
         options.onStepValidate = { _, _ in
-            try await Task.sleep(for: .milliseconds(1200))
+            try await Task.sleep(for: .milliseconds(2500))
             return nil
         }
     }
@@ -92,24 +93,6 @@ private func eventually(_ condition: @MainActor () -> Bool) async -> Bool {
         try? await Task.sleep(for: .milliseconds(100))
     }
     return condition()
-}
-
-@MainActor
-private func spoken(_ view: UIView) -> [String] {
-    var labels: [String] = []
-    func walk(_ element: NSObject) {
-        if element.isAccessibilityElement, let label = element.accessibilityLabel, !label.isEmpty {
-            labels.append(label)
-            return
-        }
-        if let children = element.accessibilityElements as? [NSObject] {
-            children.forEach(walk)
-            return
-        }
-        (element as? UIView)?.subviews.forEach(walk)
-    }
-    walk(view)
-    return labels
 }
 
 @MainActor
@@ -136,12 +119,12 @@ struct SystemStackTests {
         for (index, page) in pages.enumerated().dropFirst() {
             page.view.frame = stage.window.bounds
             page.view.layoutIfNeeded()
-            let fields = spoken(page.view).filter { ["X", "Y", "Z"].contains($0) }
+            let fields = axLabels(page.view).filter { ["X", "Y", "Z"].contains($0) }
             #expect(fields == [["X"], ["Y"], ["Z"]][index], "level \(index): \(fields)")
         }
         stage.navigation?.popViewController(animated: false)
         await settle()
-        let middle = spoken(stage.window).filter { ["X", "Y", "Z"].contains($0) }
+        let middle = axLabels(stage.window).filter { ["X", "Y", "Z"].contains($0) }
         #expect(middle == ["Y"])
         #expect(model.structure.currentStep?.id == "b")
         stage.close()
@@ -196,9 +179,8 @@ struct SystemStackTests {
         await model.next()
         await settle()
         let pending = Task { await model.next() }
-        await settle(300)
-        #expect(model.stepValidating)
-        #expect(stage.navigation?.topViewController?.navigationItem.hidesBackButton == true)
+        #expect(await eventually { model.stepValidating })
+        #expect(await eventually { stage.navigation?.topViewController?.navigationItem.hidesBackButton == true })
         await pending.value
         await settle()
         #expect(stage.depth == 3)

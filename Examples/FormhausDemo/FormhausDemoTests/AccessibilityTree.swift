@@ -25,8 +25,20 @@ private let automation: Void = {
 }()
 
 @MainActor
-func axNodes(_ view: some View, size: CGSize = CGSize(width: 393, height: 2400)) async -> [AXNode] {
+func enableAccessibilityAutomation() {
     automation
+}
+
+@MainActor
+func axLabels(_ view: UIView) -> [String] {
+    var nodes: [AXNode] = []
+    walk(view, into: &nodes)
+    return nodes.map(\.label).filter { !$0.isEmpty }
+}
+
+@MainActor
+func axNodes(_ view: some View, size: CGSize = CGSize(width: 393, height: 2400)) async -> [AXNode] {
+    enableAccessibilityAutomation()
     ScriptKeyboard.hide()
     let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
     let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow()
