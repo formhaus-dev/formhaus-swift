@@ -92,10 +92,23 @@ struct RegexRegressionTests {
             let text = randomText(1600, ["a", "b"], seed: UInt64(offset + 1))
             #expect(compiled.test(text) == (Array(text.utf16)[1600 - width - 1] == UInt16(ascii: "a")))
             #expect(compiled.test(String(text.prefix(width + 1))) == text.hasPrefix("a"))
-            let bytes = try #require(compiled.automaton).inspect(\.bytes)
+            let bytes = try #require(compiled.automaton).bytes
             #expect(bytes <= AutomatonMemory.patternLimit)
             #expect(AutomatonMemory.reservedTotal <= AutomatonMemory.globalLimit)
         }
+    }
+
+    @Test("a full memory pool reclaims states from automatons that sat idle")
+    func reclaimIdleAutomatons() throws {
+        let patterns = try (0..<50).map { try CompiledPattern("[^]*a[^]{\(300 - $0)}$") }
+        for (index, pattern) in patterns.enumerated() {
+            _ = pattern.test(randomText(1300, ["a", "b"], seed: UInt64(index + 1)))
+            #expect(AutomatonMemory.reservedTotal <= AutomatonMemory.globalLimit)
+        }
+        #expect(try #require(patterns.last?.automaton).bytes > AutomatonMemory.patternLimit / 2)
+        let fresh = try CompiledPattern("^[a-z]+@[a-z]+\\.[a-z]{2,}$")
+        #expect(fresh.test("ada@example.com") == true)
+        #expect(try #require(fresh.automaton).bytes > 0)
     }
 
     @Test("threads share automatons without changing results")
