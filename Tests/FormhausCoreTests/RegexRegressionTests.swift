@@ -164,4 +164,12 @@ struct RegexRegressionTests {
         let pattern = try #require(JSRegex("^(\\w{1,200} ?){1,200}$"))
         #expect(pattern.test(String(repeating: "a", count: maxStringLength - 1) + "b") == true)
     }
+
+    @Test("nested empty repeats with backreferences fail closed on short values")
+    func nestedEmptyRepeatsFailClosed() throws {
+        let source = "(?:((\\1{0,1}\\1[\\s\\S]?){2}(?i:\\1[^a]{0,1}|\\uFEFF{1,}?|\\b\\1{1,3}?\\b){0})*(?i:(?:)K|))+[ab]"
+        let started = Date()
+        #expect(try #require(JSRegex(source)).test("a\u{212A}-_\u{FEFF}\u{E9}x1") == nil)
+        #expect(Date().timeIntervalSince(started) < 15)
+    }
 }

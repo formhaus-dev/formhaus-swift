@@ -38,6 +38,8 @@ struct RegexTests {
         ("(?i:b|[ab])", "A", true),
         ("(?i:x|[a-c])", "A", true),
         ("^(?i:\\u0178)$", "\u{FF}", true),
+        ("(?i:((3|([a]))))", "A", true),
+        ("(?i:(?=\\W{2}|(W))(A|(?<![a])))", "A\u{1F600}", false),
     ]
 
     @Test("pattern test results", arguments: 0..<matches.count)

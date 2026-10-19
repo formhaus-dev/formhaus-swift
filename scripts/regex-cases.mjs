@@ -185,7 +185,8 @@ function outcome(pattern, text) {
 }
 
 const nodeBugs = new Set(
-  [['(?i:b|[ab])', 'A'], ['(?i:x|[a-c])', 'A'], ['^(?i:\\u0178)$', '\u00ff']].map((item) => JSON.stringify(item)),
+  [['(?i:b|[ab])', 'A'], ['(?i:x|[a-c])', 'A'], ['^(?i:\\u0178)$', '\u00ff'], ['(?i:((3|([a]))))', 'A'],
+  ['(?i:(?=\\W{2}|(W))(A|(?<![a])))', 'A\ud83d\ude00']].map((item) => JSON.stringify(item)),
 )
 
 if (process.argv[2] === '--verify') {
