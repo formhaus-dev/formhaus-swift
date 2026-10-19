@@ -67,8 +67,9 @@ func render(_ value: JSONValue?) -> String {
     case .bool(let flag)?: return flag ? "true" : "false"
     case .number(let number)?: return number.rounded() == number && abs(number) < 1e15 ? String(Int(number)) : String(number)
     case .string(let text)?:
-        let data = (try? JSONSerialization.data(withJSONObject: [text], options: [.fragmentsAllowed])) ?? Data()
-        return String(decoding: data, as: UTF8.self).dropFirst().dropLast().description
+        let data = try? JSONSerialization.data(withJSONObject: [text], options: [.fragmentsAllowed])
+        let list = data.flatMap { String(bytes: $0, encoding: .utf8) } ?? ""
+        return String(list.dropFirst().dropLast())
     case .array(let items)?: return "[" + items.map(render).joined(separator: ",") + "]"
     case .object(let object)?: return "{" + object.map { "\(render(.string($0.key))):\(render($0.value))" }.joined(separator: ",") + "}"
     }

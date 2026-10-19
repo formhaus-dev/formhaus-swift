@@ -20,10 +20,10 @@ struct AwaitOrderTests {
         var calls = 0
     }
 
-    func deferOnce(_ engine: FormEngine, _ busy: @escaping @MainActor (FormEngine) -> Bool, _ action: @escaping @MainActor () -> Void) {
+    func deferOnce(_ engine: FormEngine, while busy: KeyPath<FormEngine, Bool>, _ action: @escaping @MainActor () -> Void) {
         var once = false
         _ = engine.subscribe {
-            guard busy(engine), !once else { return }
+            guard engine[keyPath: busy], !once else { return }
             once = true
             Task { @MainActor in action() }
         }
@@ -33,7 +33,7 @@ struct AwaitOrderTests {
     func beforeStepChange() async throws {
         let engine = try FormEngine(
             definition: Self.steps, values: ["a": "x"], options: FormEngineOptions(onBeforeStepChange: { _ in true }))
-        deferOnce(engine, { $0.stepValidating }) { engine.setValue("a", "y") }
+        deferOnce(engine, while: \.stepValidating) { engine.setValue("a", "y") }
         #expect(try await engine.next() == false)
         #expect(engine.currentStep?.id == "one")
         #expect(engine.values["a"] == "y")
@@ -43,7 +43,7 @@ struct AwaitOrderTests {
     @Test("a write queued while onStepValidate replies synchronously makes next stale")
     func stepValidate() async throws {
         let engine = try FormEngine(definition: Self.steps, values: ["a": "x"], options: FormEngineOptions(onStepValidate: { _, _ in nil }))
-        deferOnce(engine, { $0.stepValidating }) { engine.setValue("a", "y") }
+        deferOnce(engine, while: \.stepValidating) { engine.setValue("a", "y") }
         #expect(try await engine.next() == false)
         #expect(engine.currentStep?.id == "one")
         #expect(!engine.stepValidating)
@@ -52,7 +52,7 @@ struct AwaitOrderTests {
     @Test("a write queued while onBeforeSubmit replies synchronously stops the submission")
     func beforeSubmit() async throws {
         let engine = try FormEngine(definition: Self.flat, values: ["a": "x"], options: FormEngineOptions(onBeforeSubmit: { _ in true }))
-        deferOnce(engine, { $0.submitting }) { engine.setValue("a", "y") }
+        deferOnce(engine, while: \.submitting) { engine.setValue("a", "y") }
         var calls = 0
         #expect(
             try await engine.submit { _, _ in

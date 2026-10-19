@@ -22,6 +22,6 @@ struct ScenarioTests {
         }
         let failures = try await ScenarioRun(file, scenario).run()
         let report = failures.joined(separator: "\n")
-        #expect(report == "")
+        #expect(report.isEmpty, "\(report)")
     }
 }
