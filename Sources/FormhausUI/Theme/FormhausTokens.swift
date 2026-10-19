@@ -59,10 +59,10 @@ extension Controls {
     fileprivate func scaled(_ factor: CGFloat) -> Controls {
         var copy = self
         copy.height *= factor
-        copy.iconButton *= factor
         copy.star *= factor
         copy.indicator *= factor
         copy.textareaHeight *= factor
+        copy.matrixWidth *= factor
         copy.optionImageWidth *= factor
         return copy
     }

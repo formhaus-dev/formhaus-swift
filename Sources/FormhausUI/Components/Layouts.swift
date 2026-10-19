@@ -55,12 +55,15 @@ struct ColumnGrid: Layout {
     let minimumWidth: CGFloat
     let compactWidth: CGFloat
     let spacing: CGFloat
+    var fraction: CGFloat = 0.7
 
     func columnCount(_ width: CGFloat, _ count: Int) -> Int {
         let fitted = clampedInt((width + spacing) / max(1, minimumWidth + spacing), 1...12) ?? 1
         let chosen = columns ?? fitted
         let limited = width < compactWidth && columns != 1 ? min(chosen, 2) : chosen
-        return max(1, min(limited, max(1, count)))
+        var result = max(1, min(limited, max(1, count)))
+        while result > 1, cellWidth(width, result) < minimumWidth * fraction { result -= 1 }
+        return result
     }
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {

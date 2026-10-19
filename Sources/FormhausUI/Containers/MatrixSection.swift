@@ -10,7 +10,8 @@ struct MatrixRows: View {
     var body: some View {
         let columns = fields.first?.field?.options ?? []
         ViewThatFits(in: .horizontal) {
-            rows(columns, wide: true).frame(minWidth: tokens.controls.matrixWidth)
+            rows(columns, wide: true).frame(
+                minWidth: max(tokens.controls.matrixWidth, CGFloat(columns.count + 2) * 96 * max(1, tokens.scale)))
             rows(columns, wide: false)
         }
     }

@@ -99,6 +99,7 @@ struct ChoiceList: View {
                 OptionRow(shape, label: option.label ?? value, selected: selected, invalid: context.isInvalid)
             }
             .padding(.top, tokens.spacing.s3 - tokens.spacing.s5)
+            .frame(maxHeight: .infinity, alignment: .topLeading)
         }
         .buttonStyle(OptionCardStyle(selected: selected, invalid: context.isInvalid))
         .accessibilityAddTraits(selected ? .isSelected : [])

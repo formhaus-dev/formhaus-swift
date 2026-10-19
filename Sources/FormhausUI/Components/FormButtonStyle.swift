@@ -46,7 +46,7 @@ private struct FormButtonBody: View {
             .opacity(busy ? 0 : 1)
             .overlay { if busy { ProgressView().controlSize(.small).tint(foreground) } }
             .padding(.horizontal, horizontalPadding)
-            .frame(minHeight: compact ? max(40, tokens.controls.hitTarget * 0.9) : tokens.controls.height)
+            .frame(minHeight: compact ? tokens.controls.hitTarget : tokens.controls.height)
             .background(shape.fill(fill))
             .overlay(shape.strokeBorder(border, lineWidth: 1))
             .contentShape(shape)
@@ -58,7 +58,8 @@ private struct FormButtonBody: View {
     }
 
     private var horizontalPadding: CGFloat {
-        variant == .text ? tokens.spacing.s4 : compact ? tokens.spacing.s7 : tokens.spacing.s9
+        if variant == .text || (variant == .danger && compact) { return tokens.spacing.s4 }
+        return compact ? tokens.spacing.s7 : tokens.spacing.s9
     }
 
     private var active: Bool { (hovered || configuration.isPressed) && enabled }

@@ -20,7 +20,11 @@ struct MatrixRow: View {
             } else {
                 VStack(alignment: .leading, spacing: tokens.spacing.s3) {
                     heading.padding(.top, tokens.spacing.s5)
-                    ColumnGrid(columns: max(1, columns.count), minimumWidth: 0, compactWidth: 0, spacing: tokens.spacing.s1) {
+                    ColumnGrid(
+                        columns: max(1, columns.count), minimumWidth: 60 * max(1, tokens.scale), compactWidth: 0,
+                        spacing: tokens.spacing.s1,
+                        fraction: 1
+                    ) {
                         ForEach(columns, id: \.self) { option in cell(option, caption: true) }
                     }
                 }
@@ -33,7 +37,7 @@ struct MatrixRow: View {
         .disabled(context.isLocked)
         .formhausFocus(context, $focused)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(context.label)
+        .accessibilityLabel(context.accessibilityName)
         .id(context.key)
     }
 

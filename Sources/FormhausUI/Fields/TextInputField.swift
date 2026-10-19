@@ -30,10 +30,10 @@ public struct TextInputField: View {
 
     @ViewBuilder private var input: some View {
         if kind == .password {
-            SecureField(text: binding, prompt: Text(verbatim: "")) { Text(context.label) }.placeholder(
+            SecureField(text: binding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }.placeholder(
                 prompt, visible: binding.wrappedValue.isEmpty)
         } else {
-            TextField(text: binding, prompt: Text(verbatim: "")) { Text(context.label) }.placeholder(
+            TextField(text: binding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }.placeholder(
                 prompt, visible: binding.wrappedValue.isEmpty)
         }
     }

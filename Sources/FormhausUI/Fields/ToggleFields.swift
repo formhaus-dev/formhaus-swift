@@ -14,6 +14,7 @@ public struct CheckboxField: View {
                 Text(context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
             .toggleStyle(CheckboxStyle(invalid: context.isInvalid))
+            .accessibilityLabel(context.accessibilityName)
             .accessibilityHint(context.helperText ?? "")
             .disabled(context.isLocked)
             .formhausFocus(context, $focused)
@@ -35,7 +36,6 @@ public struct CheckboxStyle: ToggleStyle {
 
 private struct CheckboxBody: View {
     @Environment(\.formhausTokens) private var tokens
-    @Environment(\.isEnabled) private var enabled
     let configuration: ToggleStyleConfiguration
     let invalid: Bool
 
@@ -53,7 +53,6 @@ private struct CheckboxBody: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .opacity(enabled ? 1 : 0.6)
         .accessibilityRepresentation { Toggle(isOn: configuration.$isOn) { configuration.label } }
     }
 }
@@ -72,6 +71,7 @@ public struct SwitchField: View {
                 Text(context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
             .toggleStyle(SwitchRowStyle())
+            .accessibilityLabel(context.accessibilityName)
             .accessibilityHint(context.helperText ?? "")
             .disabled(context.isLocked)
             .formhausFocus(context, $focused)

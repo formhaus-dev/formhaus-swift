@@ -26,14 +26,15 @@ public struct FormActionsBar: View {
     public var body: some View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: tokens.spacing.s3) {
-                secondary
+                secondary.padding(.leading, leadingInset)
                 Spacer(minLength: tokens.spacing.s3)
                 primary.fixedSize()
             }
             .frame(minWidth: tokens.controls.compactWidth)
             VStack(spacing: tokens.spacing.s3) {
                 if hasSecondary {
-                    HStack(spacing: tokens.spacing.s3) { secondary }.frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(spacing: tokens.spacing.s3) { secondary }.padding(.leading, leadingInset)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 primary.frame(maxWidth: .infinity)
             }
@@ -42,6 +43,20 @@ public struct FormActionsBar: View {
     }
 
     private var state: FormActionsState { context.state }
+
+    private var leadingInset: CGFloat {
+        let first: FormButtonVariant? =
+            if state.showBack {
+                FormButtonVariant(state.backAction, fallback: .secondary)
+            } else if let cancel = state.cancelAction {
+                FormButtonVariant(cancel, fallback: .text)
+            } else if state.showSkip {
+                FormButtonVariant(state.skipAction, fallback: .text)
+            } else {
+                nil
+            }
+        return first == .text ? -tokens.spacing.s4 : 0
+    }
 
     private var hasSecondary: Bool {
         state.showBack || state.cancelAction != nil || state.showSkip

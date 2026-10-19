@@ -12,7 +12,7 @@ public struct TextAreaField: View {
 
     public var body: some View {
         FieldShell(context) {
-            TextField(text: context.textBinding, prompt: Text(verbatim: ""), axis: .vertical) { Text(context.label) }
+            TextField(text: context.textBinding, prompt: Text(verbatim: ""), axis: .vertical) { Text(context.accessibilityName) }
                 .placeholder(context.field.placeholder, visible: context.text.isEmpty)
                 .textFieldStyle(.plain)
                 .lineLimit(rows...)

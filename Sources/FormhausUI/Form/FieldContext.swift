@@ -29,6 +29,10 @@ public struct FieldContext {
     public var isInvalid: Bool { error?.isEmpty == false }
     public var isLocked: Bool { disabled || loading }
     public var label: String { field.label ?? "" }
+    public var accessibilityName: String {
+        isRequired ? "\(label), \(label("required"))" : label
+    }
+
     public var helperText: String? { field.helperText.flatMap { $0.isEmpty ? nil : $0 } }
     public var isRequired: Bool { field.isRequired }
     public var advancesOnCommit: Bool { !isItem && field.advancesOnCommit }
