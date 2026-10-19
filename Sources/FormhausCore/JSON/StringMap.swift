@@ -48,7 +48,7 @@ public struct StringMap<Value>: Sequence, ExpressibleByDictionaryLiteral {
         var high = indexCount
         while low < high {
             let middle = (low + high) / 2
-            if arrayIndex(keys[middle])! < index { low = middle + 1 } else { high = middle }
+            if let current = arrayIndex(keys[middle]), current < index { low = middle + 1 } else { high = middle }
         }
         keys.insert(key, at: low)
         indexCount += 1
@@ -72,18 +72,13 @@ public struct StringMap<Value>: Sequence, ExpressibleByDictionaryLiteral {
     }
 
     public var values: [Value] {
-        keys.map { storage[JSKey($0)]! }
+        keys.compactMap { storage[JSKey($0)] }
     }
 
     public func makeIterator() -> AnyIterator<(key: String, value: Value)> {
-        var index = 0
-        let keys = keys
         let storage = storage
-        return AnyIterator {
-            guard index < keys.count else { return nil }
-            defer { index += 1 }
-            return (keys[index], storage[JSKey(keys[index])]!)
-        }
+        var pairs = keys.lazy.compactMap { key in storage[JSKey(key)].map { (key: key, value: $0) } }.makeIterator()
+        return AnyIterator { pairs.next() }
     }
 
     mutating func merge(_ other: StringMap) {

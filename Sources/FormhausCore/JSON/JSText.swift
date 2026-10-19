@@ -8,8 +8,8 @@ private let jsWhitespace: Set<UInt32> = [
 extension String {
     var jsTrimmed: String {
         let scalars = unicodeScalars
-        guard let start = scalars.firstIndex(where: { !jsWhitespace.contains($0.value) }) else { return "" }
-        let end = scalars.lastIndex(where: { !jsWhitespace.contains($0.value) })!
+        let content = { (scalar: Unicode.Scalar) in !jsWhitespace.contains(scalar.value) }
+        guard let start = scalars.firstIndex(where: content), let end = scalars.lastIndex(where: content) else { return "" }
         return String(scalars[start...end])
     }
 
@@ -48,7 +48,7 @@ private func shortestDigits(_ value: Double) -> (String, Int) {
     let text = "\(value)"
     let parts = text.split(separator: "e", maxSplits: 1)
     let mantissa = String(parts[0])
-    var exponent = parts.count > 1 ? Int(parts[1])! : 0
+    var exponent = parts.dropFirst().first.flatMap { Int($0) } ?? 0
     let pieces = mantissa.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
     let whole = String(pieces[0])
     var fraction = pieces.count > 1 ? String(pieces[1]) : ""
@@ -75,7 +75,7 @@ func jsNumber(fromString text: String) -> Double {
     for (prefix, radix) in [("0x", 16), ("0o", 8), ("0b", 2)] where lower.hasPrefix(prefix) {
         let body = trimmed.dropFirst(2)
         guard !body.isEmpty, body.allSatisfy({ $0.isASCII && $0.hexDigitValue.map { $0 < radix } == true }) else { return .nan }
-        return body.reduce(0.0) { $0 * Double(radix) + Double($1.hexDigitValue!) }
+        return body.compactMap(\.hexDigitValue).reduce(0.0) { $0 * Double(radix) + Double($1) }
     }
     guard isDecimalLiteral(trimmed), let number = Double(trimmed) else { return .nan }
     return number
