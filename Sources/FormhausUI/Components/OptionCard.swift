@@ -37,7 +37,6 @@ struct SelectableSurface: ViewModifier {
     let selected: Bool
     let invalid: Bool
     let solid: Bool
-    var rest: Color?
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
@@ -59,13 +58,13 @@ struct SelectableSurface: ViewModifier {
     private var border: Color {
         if selected { return tokens.colors.primary }
         if invalid { return tokens.colors.error }
-        return hovered && enabled ? tokens.colors.borderHover : rest ?? tokens.colors.border
+        return hovered && enabled ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
     }
 }
 
 extension View {
-    func selectableSurface(selected: Bool, invalid: Bool, solid: Bool, rest: Color? = nil) -> some View {
-        modifier(SelectableSurface(selected: selected, invalid: invalid, solid: solid, rest: rest))
+    func selectableSurface(selected: Bool, invalid: Bool, solid: Bool) -> some View {
+        modifier(SelectableSurface(selected: selected, invalid: invalid, solid: solid))
     }
 }
 

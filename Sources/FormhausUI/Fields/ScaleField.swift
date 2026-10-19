@@ -52,6 +52,6 @@ private struct ScaleBox: View {
             .fontWeight(.medium)
             .foregroundStyle(selected ? tokens.colors.onPrimary : tokens.colors.text)
             .frame(maxWidth: .infinity, minHeight: tokens.controls.height)
-            .selectableSurface(selected: selected, invalid: false, solid: true, rest: tokens.colors.inputBorder)
+            .selectableSurface(selected: selected, invalid: false, solid: true)
     }
 }
