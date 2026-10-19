@@ -19,12 +19,14 @@ extension FormhausTheme {
         var theme = FormhausTheme.standard
         theme.light = Palette(
             text: Color(kiln: 0x2B2118), textMuted: Color(kiln: 0x76665A), border: Color(kiln: 0xDDCFBF),
+            inputBorder: Color(kiln: 0x9A8878),
             borderHover: Color(kiln: 0xB9A693), control: Color(kiln: 0x7A6A5C), error: Color(kiln: 0xB42318),
             errorHover: Color(kiln: 0x912018), background: Color(kiln: 0xFBF6EF), backgroundDisabled: Color(kiln: 0xF1E8DC),
             backgroundHover: Color(kiln: 0xF5EDE2), primary: Color(kiln: 0xB8502A), onPrimary: Color(kiln: 0xFFF8F1),
             secondaryBorder: Color(kiln: 0x968270))
         theme.dark = Palette(
             text: Color(kiln: 0xF3EAE0), textMuted: Color(kiln: 0xB8A898), border: Color(kiln: 0x463B31),
+            inputBorder: Color(kiln: 0x746556),
             borderHover: Color(kiln: 0x66574A), control: Color(kiln: 0x9C8B7C), error: Color(kiln: 0xFF8A80),
             errorHover: Color(kiln: 0xFFADA6), background: Color(kiln: 0x1D1712), backgroundDisabled: Color(kiln: 0x2A221B),
             backgroundHover: Color(kiln: 0x271F18), primary: Color(kiln: 0xE8825A), onPrimary: Color(kiln: 0x1D1712),

@@ -16,6 +16,7 @@ func checkPalette(_ name: String, _ palette: Palette, increased: Bool) {
         ("error", ratio(palette.error, background), 4.5),
         ("primary", ratio(palette.primary, background), increased ? 4.5 : 3),
         ("onPrimary", ratio(palette.onPrimary, palette.primary), 4.5),
+        ("input border", ratio(palette.inputBorder, background), 3),
     ]
     for (check, value, minimum) in checks {
         #expect(value >= minimum, "\(name) \(check): \(value)")

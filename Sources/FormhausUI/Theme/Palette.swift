@@ -4,6 +4,7 @@ public struct Palette: Sendable {
     public var text: Color
     public var textMuted: Color
     public var border: Color
+    public var inputBorder: Color
     public var borderHover: Color
     public var control: Color
     public var error: Color
@@ -20,10 +21,12 @@ public struct Palette: Sendable {
     public var primaryHover: Color?
     public var primarySoft: Color?
     public var errorSoft: Color?
+    public var inputBorderHover: Color?
 
     public init(
         text: Color = Color(hex: 0x18181B), textMuted: Color = Color(hex: 0x5F5F68), border: Color = Color(hex: 0xD4D4D8),
-        borderHover: Color = Color(hex: 0xA1A1AA), control: Color = Color(hex: 0x71717A), error: Color = Color(hex: 0xC0352D),
+        inputBorder: Color = Color(hex: 0x8E8E93), borderHover: Color = Color(hex: 0xA1A1AA), control: Color = Color(hex: 0x71717A),
+        error: Color = Color(hex: 0xC0352D),
         errorHover: Color = Color(hex: 0x9E2A23), background: Color = .white, backgroundDisabled: Color = Color(hex: 0xF4F4F5),
         backgroundHover: Color = Color(hex: 0xF6F6F7), primary: Color = Color(hex: 0x5502FB), onPrimary: Color = .white,
         secondaryBorder: Color = Color(hex: 0xD4D4D8), scrim: Color = Color(hex: 0x141416, opacity: 0.32),
@@ -32,6 +35,7 @@ public struct Palette: Sendable {
         self.text = text
         self.textMuted = textMuted
         self.border = border
+        self.inputBorder = inputBorder
         self.borderHover = borderHover
         self.control = control
         self.error = error
@@ -49,7 +53,8 @@ public struct Palette: Sendable {
     public static let light = Palette()
 
     public static let dark = Palette(
-        text: Color(hex: 0xECECEE), textMuted: Color(hex: 0xA8A8B3), border: Color(hex: 0x3A3A41), borderHover: Color(hex: 0x5A5A63),
+        text: Color(hex: 0xECECEE), textMuted: Color(hex: 0xA8A8B3), border: Color(hex: 0x3A3A41), inputBorder: Color(hex: 0x6B6B75),
+        borderHover: Color(hex: 0x5A5A63),
         control: Color(hex: 0x80808B), error: Color(hex: 0xF2736A), errorHover: Color(hex: 0xF6958E), background: Color(hex: 0x18181C),
         backgroundDisabled: Color(hex: 0x232328), backgroundHover: Color(hex: 0x212126), primary: Color(hex: 0x7C4DFF),
         onPrimary: .white, secondaryBorder: Color(hex: 0x3A3A41), scrim: Color(hex: 0x000000, opacity: 0.55),
@@ -61,6 +66,8 @@ public struct ResolvedPalette: Sendable {
     public let text: Color
     public let textMuted: Color
     public let border: Color
+    public let inputBorder: Color
+    public let inputBorderHover: Color
     public let borderHover: Color
     public let control: Color
     public let error: Color
@@ -87,6 +94,9 @@ public struct ResolvedPalette: Sendable {
         text = palette.text
         textMuted = palette.textMuted
         border = palette.border
+        inputBorder = palette.inputBorder
+        inputBorderHover =
+            palette.inputBorderHover ?? Color(mix(palette.text.resolve(in: environment), palette.inputBorder.resolve(in: environment), 0.4))
         borderHover = palette.borderHover
         control = palette.control
         self.error = palette.error

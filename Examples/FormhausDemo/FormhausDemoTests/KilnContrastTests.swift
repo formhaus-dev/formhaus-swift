@@ -28,6 +28,7 @@ struct KilnContrastTests {
             ("error", ratio(palette.error, palette.background), 4.5),
             ("on primary", ratio(palette.onPrimary, palette.primary), 4.5),
             ("primary", ratio(palette.primary, palette.background), 3),
+            ("input border", ratio(palette.inputBorder, palette.background), 3),
             ("chip border", ratio(palette.secondaryBorder, palette.background), 3),
             ("chip border on chip", ratio(palette.secondaryBorder, palette.backgroundDisabled), 3),
         ]

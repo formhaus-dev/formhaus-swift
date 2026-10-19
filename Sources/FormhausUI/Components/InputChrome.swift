@@ -35,7 +35,7 @@ struct InputChrome: ViewModifier {
     private var borderColor: Color {
         if focused { return tokens.colors.focus }
         if invalid { return tokens.colors.error }
-        return hovered && !disabled ? tokens.colors.borderHover : tokens.colors.border
+        return hovered && !disabled ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
     }
 }
 

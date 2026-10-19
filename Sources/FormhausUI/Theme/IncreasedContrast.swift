@@ -30,6 +30,7 @@ extension Palette {
         raised.textMuted = raise(textMuted, to: 7)
         raised.control = raise(control, to: 4.5)
         raised.border = raise(border, to: 3)
+        raised.inputBorder = raise(inputBorder, to: 4.5)
         raised.borderHover = raise(borderHover, to: 4.5)
         raised.secondaryBorder = raise(secondaryBorder, to: 3)
         raised.error = raise(error, to: 4.5)
