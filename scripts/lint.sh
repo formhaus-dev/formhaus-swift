@@ -38,7 +38,7 @@ install() {
 }
 
 run_format() {
-  swift format lint --strict -r Sources Tests Package.swift
+  swift format lint --strict -r Sources Tests Examples Package.swift
 }
 
 run_swiftlint() {
