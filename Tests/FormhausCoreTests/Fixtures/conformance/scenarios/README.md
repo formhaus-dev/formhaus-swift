@@ -23,8 +23,9 @@ Each file holds a `definition` and a list of scenarios that drive `FormEngine` t
 2. If `throws` is set, the constructor must throw an error with that name. Such a scenario has no steps and no options.
 3. Run `steps` in order. An action step calls the engine method named in `do` and awaits it. `returns` is compared with the result. `throws` is compared with the `name` of the error the action throws or rejects with, and with its `phase` and `message` if the expectation lists them.
 4. With `"await": false`, the action starts, the runner waits one macrotask, and moves on. `settle` awaits every started action and checks its `returns` or `throws`. Outside JavaScript, waiting one macrotask means letting every started action run until it finishes or waits on an unresolved `defer` reply.
-5. An `expect` step reads only the properties it lists. All other state is not checked. `items` counts the items of each listed group, and `distinctItemIds` counts the different `id` values among them.
-6. At the end, the scenario fails if an action started with `"await": false` is still pending or a `defer` reply was never resolved. An awaited action or `settle` that waits on a reply no later step resolves fails too. Unused replies are not an error.
+5. An `expect` step reads only the properties it lists. All other state is not checked. `items` counts the items of each listed group, and `distinctItemIds` counts the different `id` values among them. `skipped` lists the skipped steps of the definition the engine holds at that moment.
+6. `replaceDefinition` passes the step's `definition` to `engine.replaceDefinition()`, with the file's `overlay` applied if set. It runs synchronously. With an invalid definition it throws `FormDefinitionError` and leaves the engine unchanged.
+7. At the end, the scenario fails if an action started with `"await": false` is still pending or a `defer` reply was never resolved. An awaited action or `settle` that waits on a reply no later step resolves fails too. Unused replies are not an error.
 
 ## Hooks and validators
 
