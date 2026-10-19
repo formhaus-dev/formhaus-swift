@@ -11,6 +11,8 @@ struct ThreadStep: Sendable {
     let scanning: Bool
     private var seen: [UInt32]
     private var generation: UInt32 = 0
+    private var stack: [Int32] = []
+    private var consumers: [Int32] = []
 
     init(_ program: RegexProgram, anchored: Bool, backward: Bool, scanning: Bool) {
         self.program = program
@@ -24,26 +26,26 @@ struct ThreadStep: Sendable {
         _ pcs: [Int32], _ previous: UnitContext, _ unit: UInt16?, at position: Int, _ context: MatchContext
     ) throws(BudgetExceeded) -> Advance {
         let current = unit.map(UnitContext.init) ?? .edge
-        let consumers = try closure(
-            pcs, before: backward ? current : previous, after: backward ? previous : current, at: position, context)
-        var result = consumers.advance
+        var result = try closure(pcs, before: backward ? current : previous, after: backward ? previous : current, at: position, context)
         guard !result.accepts || scanning, let unit else { return result }
-        for pc in consumers.pcs where program.consumes(Int(pc), unit) { result.next.append(pc + 1) }
+        result.next.reserveCapacity(consumers.count + 1)
+        for pc in consumers where program.consumes(Int(pc), unit) { result.next.append(pc + 1) }
         if !anchored { result.next.append(0) }
         return result
     }
 
     private mutating func closure(
         _ pcs: [Int32], before: UnitContext, after: UnitContext, at position: Int, _ context: MatchContext
-    ) throws(BudgetExceeded) -> (pcs: [Int32], advance: Advance) {
+    ) throws(BudgetExceeded) -> Advance {
         generation &+= 1
         if generation == 0 {
             seen = Array(repeating: 0, count: seen.count)
             generation = 1
         }
         var advance = Advance()
-        var consumers: [Int32] = []
-        var stack = Array(pcs.reversed())
+        consumers.removeAll(keepingCapacity: true)
+        stack.removeAll(keepingCapacity: true)
+        stack.append(contentsOf: pcs.reversed())
         var visited = 0
         while let pc = stack.popLast() {
             let index = Int(pc)
@@ -52,7 +54,9 @@ struct ThreadStep: Sendable {
             visited += 1
             switch program.instructions[index] {
             case .unit, .set: consumers.append(pc)
-            case .split(let first, let second): stack += [Int32(second), Int32(first)]
+            case .split(let first, let second):
+                stack.append(Int32(second))
+                stack.append(Int32(first))
             case .jump(let target): stack.append(Int32(target))
             case .assertion(let assertion): if assertion.holds(before: before, after: after) { stack.append(pc + 1) }
             case .look(let look):
@@ -60,12 +64,12 @@ struct ThreadStep: Sendable {
                 if try context.holds(look, at: position) != program.looks[look].look.negated { stack.append(pc + 1) }
             case .match, .succeed: advance.accepts = true
             case .groupStart, .groupEnd, .clear, .mark, .progress: stack.append(pc + 1)
-            case .repeatSet, .backreference, .counterStart, .counterLoop, .counterNext:
+            case .repeatSet, .backreference:
                 preconditionFailure("automaton programs have no stateful instructions")
             }
         }
         try context.spend(visited)
-        return (consumers, advance)
+        return advance
     }
 
     mutating func matches(_ start: LazyDFA.Key, _ text: [UInt16], from offset: Int, _ context: MatchContext) throws(BudgetExceeded)
