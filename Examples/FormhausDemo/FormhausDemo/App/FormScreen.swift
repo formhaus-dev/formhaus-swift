@@ -3,6 +3,7 @@ import SwiftUI
 
 struct FormScreen: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let session: DemoSession
 
@@ -15,7 +16,6 @@ struct FormScreen: View {
                     scroller
                 }
             }
-            .id(ObjectIdentifier(session.model))
             .onChange(of: session.scrollTarget) { _, target in
                 guard let target else { return }
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.45)) { proxy.scrollTo(target.key, anchor: .center) }
@@ -40,7 +40,7 @@ struct FormScreen: View {
                     }
                 }
                 .fixedSize(horizontal: false, vertical: true)
-                FormhausFormContent(model: session.model)
+                FormhausFormContent(model: session.model).id(ObjectIdentifier(session.model))
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -51,7 +51,7 @@ struct FormScreen: View {
         .scrollDismissesKeyboard(.interactively)
         .hardTopEdge()
         .alignsBar(toColumn: 640, padding: 16)
-        .background(session.style.background(scheme))
+        .background(session.style.palette(scheme, contrast).background)
     }
 }
 

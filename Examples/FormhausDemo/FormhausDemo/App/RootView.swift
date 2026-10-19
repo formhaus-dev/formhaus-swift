@@ -5,6 +5,7 @@ extension DemoSession: ScriptStage {}
 
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorSchemeContrast) private var contrast
     let session: DemoSession
 
     var body: some View {
@@ -16,8 +17,7 @@ struct RootView: View {
                 #endif
                 .toolbar { toolbar }
         }
-        .id(session.style)
-        .tint(session.style.tint(scheme))
+        .tint(session.style.palette(scheme, contrast).primary)
         .task { await playScript() }
     }
 
@@ -82,11 +82,7 @@ struct RootView: View {
 }
 
 enum Brand {
-    static func primary(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Palette.dark.primary : Palette.light.primary
-    }
-
-    static func background(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Palette.dark.background : Palette.light.background
+    static func palette(_ scheme: ColorScheme, _ contrast: ColorSchemeContrast) -> Palette {
+        FormhausTheme.standard.palette(for: scheme, contrast: contrast)
     }
 }

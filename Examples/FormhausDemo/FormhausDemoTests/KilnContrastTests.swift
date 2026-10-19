@@ -16,11 +16,10 @@ private func ratio(_ lhs: Color, _ rhs: Color) -> Double {
 struct KilnContrastTests {
     @Test(
         "Kiln text, errors and controls meet WCAG AA",
-        arguments: [
-            ("light", FormhausTheme.kiln.light, false), ("dark", FormhausTheme.kiln.dark, false),
-            ("light increased", FormhausTheme.kiln.lightIncreased, true), ("dark increased", FormhausTheme.kiln.darkIncreased, true),
-        ])
-    func palette(name: String, palette: Palette, increased: Bool) {
+        arguments: [(ColorScheme.light, false), (.dark, false), (.light, true), (.dark, true)])
+    func palette(scheme: ColorScheme, increased: Bool) {
+        let palette = FormhausTheme.kiln.palette(for: scheme, contrast: increased ? .increased : .standard)
+        let name = "\(scheme)\(increased ? " increased" : "")"
         let checks: [(String, Double, Double)] = [
             ("text", ratio(palette.text, palette.background), increased ? 7 : 4.5),
             ("muted", ratio(palette.textMuted, palette.background), 4.5),
@@ -29,6 +28,8 @@ struct KilnContrastTests {
             ("error", ratio(palette.error, palette.background), 4.5),
             ("on primary", ratio(palette.onPrimary, palette.primary), 4.5),
             ("primary", ratio(palette.primary, palette.background), 3),
+            ("chip border", ratio(palette.secondaryBorder, palette.background), 3),
+            ("chip border on chip", ratio(palette.secondaryBorder, palette.backgroundDisabled), 3),
         ]
         for (check, value, minimum) in checks {
             #expect(value >= minimum, "\(name) \(check): \(value)")

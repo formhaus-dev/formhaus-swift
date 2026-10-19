@@ -13,16 +13,10 @@ struct KilnFieldFrame<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(context.label).font(KilnType.label).foregroundStyle(tokens.colors.text)
                 if context.isRequired {
-                    Text(context.text(forLabel: "required").uppercased())
-                        .font(KilnType.eyebrow)
-                        .tracking(0.8)
-                        .foregroundStyle(tokens.colors.primary)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(tokens.colors.primarySoft))
+                    Text(context.text(forLabel: "required")).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
                 }
             }
             .accessibilityElement(children: .ignore)

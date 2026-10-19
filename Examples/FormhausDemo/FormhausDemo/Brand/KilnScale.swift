@@ -7,7 +7,8 @@ struct KilnScaleField: View {
     let context: FieldContext
 
     var body: some View {
-        let points = kilnPoints(context)
+        let scale = ScalePoints(context)
+        let points = scale.points
         KilnFieldFrame(context: context) {
             VStack(spacing: 8) {
                 HStack(spacing: 6) {
@@ -29,9 +30,9 @@ struct KilnScaleField: View {
                     }
                 }
                 HStack {
-                    Text(anchor(points.first))
+                    Text(scale.anchor(for: scale.low) ?? "")
                     Spacer()
-                    Text(anchor(points.last))
+                    Text(scale.anchor(for: scale.high) ?? "")
                 }
                 .font(KilnType.note)
                 .foregroundStyle(tokens.colors.textMuted)
@@ -43,11 +44,7 @@ struct KilnScaleField: View {
         }
     }
 
-    private var current: Int? { context.value?.numberValue.map { Int($0) } }
-
-    private func anchor(_ point: Int?) -> String {
-        context.options.first { $0.value == point.map(String.init) }?.label ?? ""
-    }
+    private var current: Int? { ScalePoints(context).selected(context.value) }
 }
 
 struct KilnRatingField: View {
@@ -56,8 +53,9 @@ struct KilnRatingField: View {
     let context: FieldContext
 
     var body: some View {
-        let points = kilnPoints(context)
-        let current = context.value?.numberValue.map { Int($0) } ?? 0
+        let scale = ScalePoints(context)
+        let points = scale.points
+        let current = scale.selected(context.value) ?? 0
         KilnFieldFrame(context: context) {
             HStack(spacing: 4) {
                 ForEach(points, id: \.self) { point in
@@ -79,17 +77,10 @@ struct KilnRatingField: View {
             .accessibilityValue(current > 0 ? String(current) : "")
             .accessibilityAdjustableAction { direction in
                 let next = current + (direction == .increment ? 1 : -1)
-                if points.contains(next) { context.setValue(.number(Double(next))) }
+                context.setValue(.number(Double(scale.clamped(next))))
             }
             .formhausFocus(context, $focused)
             .sensoryFeedback(.selection, trigger: current)
         }
     }
-}
-
-@MainActor
-private func kilnPoints(_ context: FieldContext) -> [Int] {
-    let range = context.field.scaleRange ?? (1, 5)
-    let low = Int(range.min)
-    return Array(low...max(low, min(low + 10, Int(range.max))))
 }

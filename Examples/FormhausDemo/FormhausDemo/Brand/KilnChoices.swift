@@ -17,16 +17,16 @@ struct KilnChoiceField: View {
                 }
             }
             .formhausFocus(context, $focused)
-            .sensoryFeedback(.selection, trigger: selected)
+            .sensoryFeedback(.selection, trigger: selection.values)
         }
     }
 
     private func options(pictures: Bool) -> some View {
         ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
             let value = option.value ?? ""
-            let isOn = selected.contains(value)
+            let isOn = selection.isSelected(value)
             Button {
-                choose(value)
+                selection.choose(value)
             } label: {
                 if pictures {
                     KilnPictureCard(option: option, selected: isOn)
@@ -40,21 +40,7 @@ struct KilnChoiceField: View {
         }
     }
 
-    private var multiple: Bool { context.field.type == "multiselect" }
-
-    private var selected: [String] {
-        if multiple { return context.value?.arrayValue?.compactMap(\.stringValue) ?? [] }
-        return context.text.isEmpty ? [] : [context.text]
-    }
-
-    private func choose(_ value: String) {
-        guard multiple else {
-            context.commit(.string(value))
-            return
-        }
-        let next = selected.contains(value) ? selected.filter { $0 != value } : selected + [value]
-        context.setValue(.array(next.map(JSONValue.string)))
-    }
+    private var selection: ChoiceSelection { ChoiceSelection(context: context) }
 }
 
 struct KilnChip: View {
@@ -72,9 +58,14 @@ struct KilnChip: View {
         .padding(.horizontal, 18)
         .frame(minHeight: 44)
         .background(Capsule().fill(selected ? tokens.colors.primary : tokens.colors.backgroundDisabled))
-        .overlay(Capsule().strokeBorder(invalid && !selected ? tokens.colors.error : .clear, lineWidth: 1.5))
+        .overlay(Capsule().strokeBorder(border, lineWidth: invalid && !selected ? 1.5 : 1))
         .contentShape(Capsule())
         .animation(tokens.quick, value: selected)
+    }
+
+    private var border: Color {
+        if selected { return .clear }
+        return invalid ? tokens.colors.error : tokens.colors.secondaryBorder
     }
 }
 
@@ -86,7 +77,9 @@ private struct KilnPictureCard: View {
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: 20, style: .continuous)
         VStack(alignment: .leading, spacing: 10) {
-            KilnImage(source: option.image ?? "")
+            Color.clear
+                .overlay { FormhausOptionImage(option: option) }
+                .background(tokens.colors.border)
                 .saturation(0)
                 .colorMultiply(Color(kiln: 0xF2D3BD))
                 .aspectRatio(4 / 3, contentMode: .fit)

@@ -41,13 +41,7 @@ enum DemoStyle: String, CaseIterable, Identifiable, Sendable {
         self == .brand ? .kiln : .standard
     }
 
-    func background(_ scheme: ColorScheme) -> Color {
-        let palette = scheme == .dark ? theme.dark : theme.light
-        return palette.background
-    }
-
-    func tint(_ scheme: ColorScheme) -> Color {
-        let palette = scheme == .dark ? theme.dark : theme.light
-        return palette.primary
+    func palette(_ scheme: ColorScheme, _ contrast: ColorSchemeContrast) -> Palette {
+        theme.palette(for: scheme, contrast: contrast)
     }
 }

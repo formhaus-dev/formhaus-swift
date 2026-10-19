@@ -14,9 +14,10 @@ struct AccessibilityAuditTests {
         for audit in auditCases {
             let all = await axNodes(auditView(try await audit.build(), style))
             let nodes = all.filter { $0.isInteractive && !$0.bar }
+            #expect(!all.isEmpty, "\(style) \(audit.name): no elements")
             for node in nodes {
                 let target = all.target(node)
-                if node.isSwitch, target.height >= 28 { continue }
+                if style == .system, node.isSwitch, target.height >= 28 { continue }
                 #expect(
                     target.width >= 43.5 && target.height >= 43.5, "\(style) \(audit.name): \(node.label) \(target) \(node.traits.rawValue)"
                 )
@@ -34,6 +35,7 @@ struct AccessibilityAuditTests {
         for audit in auditCases {
             let model = try await audit.build()
             let nodes = await axNodes(auditView(model, style))
+            #expect(!nodes.isEmpty, "\(style) \(audit.name): no elements")
             for node in nodes where node.isInteractive {
                 #expect(!node.label.trimmingCharacters(in: .whitespaces).isEmpty, "\(style) \(audit.name): unlabelled \(node.frame)")
             }
@@ -50,6 +52,7 @@ struct AccessibilityAuditTests {
             let model = try await audit.build()
             let title = model.structure.currentStep?.title
             let nodes = await axNodes(auditView(model, style, typeSize: .accessibility5), size: CGSize(width: width, height: 6000))
+            #expect(!nodes.isEmpty, "\(style) \(audit.name): no elements")
             for node in nodes where !node.label.isEmpty {
                 #expect(node.frame.minX >= -0.5 && node.frame.maxX <= width + 0.5, "\(style) \(audit.name): \(node.label) \(node.frame)")
             }
