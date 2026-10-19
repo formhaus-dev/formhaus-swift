@@ -44,3 +44,6 @@ jobs:
       - run: scripts/lint.sh swiftlint
       - run: scripts/lint.sh duplicates
       - run: scripts/lint.sh periphery
+      - run: swift test --sanitize=thread --scratch-path .build/tsan --filter "sharedAutomatons|concurrentUse"
+        env:
+          TSAN_OPTIONS: halt_on_error=1
