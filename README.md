@@ -1,6 +1,6 @@
 # Formhaus for Swift
 
-A native Swift port of the [formhaus](https://github.com/ignsm/formhaus) form engine.
+A native Swift port of the [formhaus](https://github.com/formhaus-dev/formhaus) form engine.
 
 ## Install
 
@@ -8,7 +8,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ignsm/formhaus-swift.git", branch: "main"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", branch: "main"),
 ],
 targets: [
     .target(name: "App", dependencies: [.product(name: "FormhausCore", package: "formhaus-swift")]),
