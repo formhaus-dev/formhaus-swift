@@ -79,14 +79,17 @@ public struct AutocompleteField: View {
     public var body: some View {
         FieldShell(context) {
             VStack(alignment: .leading, spacing: tokens.spacing.s1) {
-                TextField(text: context.textBinding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }
-                    .textFieldStyle(.plain)
-                    .autocorrectionDisabled()
-                    .placeholder(context.field.placeholder, visible: context.text.isEmpty)
-                    .onSubmit { context.performPrimaryAction() }
-                    .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
-                    .disabled(context.isLocked)
-                    .formhausFocus(context, $focused)
+                HStack(spacing: tokens.spacing.s3) {
+                    TextField(text: context.textBinding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }
+                        .textFieldStyle(.plain)
+                        .autocorrectionDisabled()
+                        .placeholder(context.field.placeholder, visible: context.text.isEmpty)
+                        .onSubmit { context.performPrimaryAction() }
+                    LoadingIndicator(visible: context.loading)
+                }
+                .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
+                .disabled(context.isLocked)
+                .formhausFocus(context, $focused)
                 if focused, !suggestions.isEmpty {
                     SuggestionList(options: suggestions) { context.setValue(.string($0)) }
                 }

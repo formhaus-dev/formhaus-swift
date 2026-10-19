@@ -70,7 +70,7 @@ public struct SwitchField: View {
             Toggle(isOn: context.boolBinding) {
                 Text(context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
-            .toggleStyle(SwitchRowStyle())
+            .toggleStyle(SwitchRowStyle(loading: context.loading))
             .accessibilityLabel(context.accessibilityName)
             .accessibilityHint(context.helperText ?? "")
             .disabled(context.isLocked)
@@ -80,14 +80,17 @@ public struct SwitchField: View {
 }
 
 private struct SwitchRowStyle: ToggleStyle {
+    let loading: Bool
+
     func makeBody(configuration: Configuration) -> some View {
-        SwitchRow(configuration: configuration)
+        SwitchRow(configuration: configuration, loading: loading)
     }
 }
 
 private struct SwitchRow: View {
     @Environment(\.formhausTokens) private var tokens
     let configuration: ToggleStyleConfiguration
+    let loading: Bool
 
     var body: some View {
         let offset = tokens.typography.body * 0.36
@@ -97,6 +100,7 @@ private struct SwitchRow: View {
                 .contentShape(Rectangle())
                 .onTapGesture { configuration.isOn.toggle() }
                 .accessibilityHidden(true)
+            LoadingIndicator(visible: loading)
             Toggle(isOn: configuration.$isOn) { configuration.label }
                 .labelsHidden()
                 .toggleStyle(.switch)

@@ -66,7 +66,7 @@ private struct FormButtonBody: View {
 
     private var foreground: Color {
         switch variant {
-        case .primary: enabled || busy ? tokens.colors.onPrimary : tokens.colors.primary
+        case .primary: enabled || busy ? tokens.colors.onPrimary : tokens.colors.primaryOnSoft
         case .secondary: tokens.colors.text
         case .text: active ? tokens.colors.text : tokens.colors.textMuted
         case .danger: active ? tokens.colors.errorHover : tokens.colors.error

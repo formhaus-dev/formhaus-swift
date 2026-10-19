@@ -35,7 +35,7 @@ public struct FieldShell<Content: View>: View {
             }
             HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
                 content.measured("\(context.key)/control")
-                if isInline { LoadingIndicator(visible: context.loading) }
+                if variant == .inline { LoadingIndicator(visible: context.loading) }
             }
             if isInline, let helper = context.helperText {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true).padding(.leading, inset)
