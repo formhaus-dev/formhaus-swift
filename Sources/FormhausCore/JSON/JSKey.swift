@@ -23,7 +23,7 @@ func hasTextPrefix(_ text: String, _ prefix: String) -> Bool {
     text.utf8.starts(with: prefix.utf8)
 }
 
-struct KeySet: Sendable {
+struct KeySet: Sendable, Sequence {
     private var storage = Set<JSKey>()
 
     init() {}
@@ -43,6 +43,10 @@ struct KeySet: Sendable {
 
     mutating func formUnion(_ items: some Sequence<String>) {
         for item in items { insert(item) }
+    }
+
+    func makeIterator() -> IndexingIterator<[String]> {
+        storage.map(\.text).makeIterator()
     }
 }
 

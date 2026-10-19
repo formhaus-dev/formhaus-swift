@@ -83,13 +83,42 @@ extension JSONValue: ExpressibleByStringLiteral, ExpressibleByBooleanLiteral, Ex
     }
 }
 
+extension JSONValue {
+    public static func == (lhs: JSONValue, rhs: JSONValue) -> Bool {
+        switch (lhs, rhs) {
+        case (.null, .null): true
+        case (.bool(let a), .bool(let b)): a == b
+        case (.number(let a), .number(let b)): sameNumber(a, b)
+        case (.string(let a), .string(let b)): sameText(a, b)
+        case (.array(let a), .array(let b)): a == b
+        case (.object(let a), .object(let b)): a == b
+        default: false
+        }
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case .null: hasher.combine(0 as UInt8)
+        case .bool(let value): hasher.combine(value)
+        case .number(let value): hasher.combine(value.isNaN ? Double.nan.bitPattern : value.bitPattern)
+        case .string(let value): hasher.combine(JSKey(value))
+        case .array(let items): hasher.combine(items)
+        case .object(let object): hasher.combine(object)
+        }
+    }
+}
+
+func sameNumber(_ lhs: Double, _ rhs: Double) -> Bool {
+    lhs.isNaN ? rhs.isNaN : lhs.bitPattern == rhs.bitPattern
+}
+
 func strictEquals(_ lhs: JSONValue?, _ rhs: JSONValue?) -> Bool {
     switch (lhs, rhs) {
     case (nil, nil): true
     case (.null?, .null?): true
     case (.bool(let a)?, .bool(let b)?): a == b
     case (.number(let a)?, .number(let b)?): a == b
-    case (.string(let a)?, .string(let b)?): a.utf16.elementsEqual(b.utf16)
+    case (.string(let a)?, .string(let b)?): sameText(a, b)
     default: false
     }
 }
