@@ -75,13 +75,13 @@ private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
     var firstOuter = StringMap<NodeEntry>()
     for entry in outer where firstOuter[entry.node.key] == nil { firstOuter[entry.node.key] = entry }
     var earlierOuter = StringMap<[NodeEntry]>()
-    var earlierInner: [ObjectIdentifier: StringMap<NodeEntry>] = [:]
+    var earlierInner: [Int: StringMap<NodeEntry>] = [:]
     var issues: [DefinitionIssue] = []
     for entry in context.nodes {
         let key = entry.node.key
         let clash: NodeEntry?
         if let group = entry.group {
-            let id = ObjectIdentifier(group)
+            let id = group.ordinal
             clash = earlierInner[id]?[key] ?? firstOuter[key]
             if earlierInner[id]?[key] == nil { earlierInner[id, default: [:]][key] = entry }
         } else {

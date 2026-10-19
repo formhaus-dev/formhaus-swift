@@ -21,7 +21,7 @@ private func validateItems(
     for (index, item) in itemsOf(values[group.key]).enumerated() {
         let own = itemScope(group, item, values)
         let shown = itemScope(group, item, scope)
-        for field in group.items where isVisible(field as Conditional, shown) {
+        for field in group.items where isVisible(field, shown) {
             if let error = validateFieldValue(field, own[field.key], own, validators: validators, messages: messages) {
                 errors[itemPath(group.key, index, field.key)] = error
             }

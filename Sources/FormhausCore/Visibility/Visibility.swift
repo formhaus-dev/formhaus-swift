@@ -43,7 +43,7 @@ public func evaluateCondition(_ condition: ShowCondition, _ values: JSONObject) 
     }
 }
 
-func isVisible(_ node: Conditional, _ values: JSONObject) -> Bool {
+public func isVisible(_ node: some Conditional, _ values: JSONObject) -> Bool {
     let matches = { (condition: ShowCondition) in evaluateCondition(condition, values) }
     let any = node.showAny ?? []
     return (node.show ?? []).allSatisfy(matches) && (any.isEmpty || any.contains(where: matches))
@@ -52,10 +52,6 @@ func isVisible(_ node: Conditional, _ values: JSONObject) -> Bool {
 public func isActionDisabled(_ action: FormAction?, _ values: JSONObject) -> Bool {
     guard let disabled = action?.disabled, !disabled.isEmpty else { return false }
     return disabled.allSatisfy { evaluateCondition($0, values) }
-}
-
-public func isVisible(_ field: FormField, _ values: JSONObject) -> Bool {
-    isVisible(field as Conditional, values)
 }
 
 func valueFields(_ nodes: [FormNode]) -> [FormField] {
@@ -69,10 +65,10 @@ func valueFields(_ nodes: [FormNode]) -> [FormField] {
 
 func shownFields(_ nodes: [FormNode], _ values: JSONObject) -> [FormField] {
     nodes.flatMap { node -> [FormField] in
-        guard isVisible(node.conditional, values) else { return [] }
+        guard isVisible(node, values) else { return [] }
         switch node {
         case .field(let field): return [field]
-        case .section(let section): return section.fields.compactMap(\.field).filter { isVisible($0 as Conditional, values) }
+        case .section(let section): return section.fields.compactMap(\.field).filter { isVisible($0, values) }
         }
     }
 }
@@ -95,7 +91,7 @@ func cleanItems(_ group: FormField, _ value: JSONValue?, _ values: JSONObject) -
             guard item.objectValue != nil else { return item }
             let scope = itemScope(group, item, values)
             var result = JSONObject()
-            for field in group.items where scope[field.key] != nil && isVisible(field as Conditional, scope) {
+            for field in group.items where scope[field.key] != nil && isVisible(field, scope) {
                 result[field.key] = scope[field.key]
             }
             return .object(result)

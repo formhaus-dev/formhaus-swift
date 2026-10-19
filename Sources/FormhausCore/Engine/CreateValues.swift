@@ -14,7 +14,7 @@ func createValues(
         }
     }
     let source = initialValues ?? JSONObject()
-    for field in fields where byKey[field.key]?.last === field { fill(field) }
+    for field in fields where byKey[field.key]?.last?.ordinal == field.ordinal { fill(field) }
     for (key, value) in source where !sameText(key, "__proto__") { values[key] = value }
     var expanded = KeySet()
     for field in fields {

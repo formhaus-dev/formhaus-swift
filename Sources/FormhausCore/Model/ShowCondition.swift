@@ -1,9 +1,9 @@
-public let conditionOperators = ["eq", "neq", "in", "notIn", "notEmpty", "gt", "gte", "lt", "lte"]
+let conditionOperators = ["eq", "neq", "in", "notIn", "notEmpty", "gt", "gte", "lt", "lte"]
 
 public struct ShowCondition: Sendable, Hashable {
-    public let json: JSONObject
+    let json: JSONObject
 
-    public init(json: JSONObject) {
+    init(json: JSONObject) {
         self.json = json
     }
 
@@ -16,7 +16,7 @@ public struct ShowCondition: Sendable, Hashable {
     public func operand(_ name: String) -> JSONValue? { json[name] }
 }
 
-protocol Conditional {
+public protocol Conditional {
     var show: [ShowCondition]? { get }
     var showAny: [ShowCondition]? { get }
 }
@@ -35,20 +35,21 @@ func conditions(_ value: JSONValue?) -> [ShowCondition]? {
 }
 
 public struct FormAction: Sendable, Hashable {
-    public let json: JSONObject
+    let json: JSONObject
 
-    public init(json: JSONObject) {
+    init(json: JSONObject) {
         self.json = json
     }
 
     public var label: String? { json["label"]?.stringValue }
+    public var variant: String? { json["variant"]?.stringValue }
     public var disabled: [ShowCondition]? { conditions(json["disabled"]) }
 }
 
 public struct StepRoute: Sendable, Hashable, Conditional {
-    public let json: JSONObject
+    let json: JSONObject
 
-    public init(json: JSONObject) {
+    init(json: JSONObject) {
         self.json = json
     }
 

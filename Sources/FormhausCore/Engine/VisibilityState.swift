@@ -31,7 +31,7 @@ final class VisibilityState {
     func visible(_ field: FormField, _ values: JSONObject) -> Bool {
         let active = scope(values)
         let section = index.section(of: field)
-        return (section.map { isVisible($0, active) } ?? true) && isVisible(field as Conditional, active)
+        return (section.map { isVisible($0, active) } ?? true) && isVisible(field, active)
     }
 
     func onPath(_ field: FormField, _ values: JSONObject) -> Bool {
@@ -55,7 +55,7 @@ final class VisibilityState {
 
     func itemFields(_ group: FormField, _ item: JSONValue, _ values: JSONObject) -> [FormField] {
         let scope = itemScope(group, item, scope(values))
-        return group.items.filter { isVisible($0 as Conditional, scope) }
+        return group.items.filter { isVisible($0, scope) }
     }
 
     func activeItem(_ key: String, _ values: JSONObject) -> ItemField? {
@@ -72,13 +72,13 @@ final class VisibilityState {
     }
 
     private func reconcileItems(_ values: inout JSONObject, _ errors: inout FieldErrors, _ cleared: inout KeySet) {
-        for group in groups where activeField(group.key, values) === group {
+        for group in groups where activeField(group.key, values)?.ordinal == group.ordinal {
             let source = itemsOf(values[group.key])
             let items = source.enumerated().map { position, item -> JSONValue in
                 guard var entry = item.objectValue else { return item }
                 for _ in 0...group.items.count {
                     let shown = itemFields(group, .object(entry), values)
-                    let hidden = group.items.filter { field in !shown.contains { $0 === field } && entry.has(field.key) }
+                    let hidden = group.items.filter { field in !shown.contains { $0.ordinal == field.ordinal } && entry.has(field.key) }
                     if hidden.isEmpty { break }
                     for field in hidden {
                         entry.removeValue(forKey: field.key)
@@ -126,7 +126,7 @@ final class VisibilityState {
             let key = field.key
             let shared = (index.fieldsByKey[key]?.count ?? 0) > 1
             let active = shared ? activeField(key, values) : nil
-            if let active, active !== field { return }
+            if let active, active.ordinal != field.ordinal { return }
             guard shown else {
                 if held(key) { clear(key) }
                 return

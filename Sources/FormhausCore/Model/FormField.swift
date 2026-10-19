@@ -1,12 +1,12 @@
 public struct FieldOption: Sendable, Hashable {
-    public let json: JSONObject
+    let json: JSONObject
 
     public var value: String? { json["value"]?.stringValue }
     public var label: String? { json["label"]?.stringValue }
 }
 
 public struct FieldValidation: Sendable, Hashable {
-    public let json: JSONObject
+    let json: JSONObject
 
     public var required: JSONValue? { json["required"] }
     public var minLength: Double? { json["minLength"]?.numberValue }
@@ -20,8 +20,9 @@ public struct FieldValidation: Sendable, Hashable {
     func message(_ name: String) -> String? { json[name]?.stringValue }
 }
 
-public final class FormField: Sendable, Conditional {
-    public let json: JSONObject
+public struct FormField: Sendable, Conditional, NodeIdentity {
+    let json: JSONObject
+    let ordinal: Int
     public let key: String
     public let type: String
     public let show: [ShowCondition]?
@@ -30,18 +31,31 @@ public final class FormField: Sendable, Conditional {
     public let options: [FieldOption]?
     public let fields: [FormNode]?
 
-    init(json: JSONObject) {
+    init(json: JSONObject, ordinals: inout Int) {
         self.json = json
+        ordinal = nextOrdinal(&ordinals)
         key = json["key"]?.stringValue ?? ""
         type = json["type"]?.stringValue ?? ""
         show = conditions(json["show"])
         showAny = conditions(json["showAny"])
         validation = json["validation"]?.objectValue.map(FieldValidation.init(json:))
         options = json["options"]?.arrayValue.map { $0.compactMap { $0.objectValue.map(FieldOption.init(json:)) } }
-        fields = type == "group" ? formNodes(json["fields"]) : nil
+        fields = type == "group" ? formNodes(json["fields"], &ordinals) : nil
     }
 
     public var label: String? { json["label"]?.stringValue }
+    public var placeholder: String? { json["placeholder"]?.stringValue }
+    public var helperText: String? { json["helperText"]?.stringValue }
+    public var itemLabel: String? { json["itemLabel"]?.stringValue }
+    public var addLabel: String? { json["addLabel"]?.stringValue }
+    public var removeLabel: String? { json["removeLabel"]?.stringValue }
+    public var layout: JSONValue? { json["layout"] }
+    public var accept: JSONValue? { json["accept"] }
+    public var rows: JSONValue? { json["rows"] }
+    public var mask: JSONValue? { json["mask"] }
+    public var inputMode: JSONValue? { json["inputMode"] }
+    public var autoAdvance: JSONValue? { json["autoAdvance"] }
+    public var props: JSONObject? { json["props"]?.objectValue }
     public var defaultValue: JSONValue? { json["defaultValue"] }
     public var source: JSONValue? { json["source"] }
     public var optionsFrom: JSONValue? { json["optionsFrom"] }
@@ -58,25 +72,28 @@ public final class FormField: Sendable, Conditional {
     }
 }
 
-public final class FormSection: Sendable, Conditional {
-    public let json: JSONObject
+public struct FormSection: Sendable, Conditional, NodeIdentity {
+    let json: JSONObject
+    let ordinal: Int
     public let key: String
     public let show: [ShowCondition]?
     public let showAny: [ShowCondition]?
     public let fields: [FormNode]
 
-    init(json: JSONObject) {
+    init(json: JSONObject, ordinals: inout Int) {
         self.json = json
+        ordinal = nextOrdinal(&ordinals)
         key = json["key"]?.stringValue ?? ""
         show = conditions(json["show"])
         showAny = conditions(json["showAny"])
-        fields = formNodes(json["fields"]) ?? []
+        fields = formNodes(json["fields"], &ordinals) ?? []
     }
 
     public var title: String? { json["title"]?.stringValue }
+    public var description: String? { json["description"]?.stringValue }
 }
 
-public enum FormNode: Sendable {
+public enum FormNode: Sendable, Conditional {
     case field(FormField)
     case section(FormSection)
 
@@ -94,7 +111,7 @@ public enum FormNode: Sendable {
         }
     }
 
-    public var json: JSONObject {
+    var json: JSONObject {
         switch self {
         case .field(let field): field.json
         case .section(let section): section.json
@@ -111,10 +128,17 @@ public enum FormNode: Sendable {
         return nil
     }
 
-    var conditional: Conditional {
+    public var show: [ShowCondition]? {
         switch self {
-        case .field(let field): field
-        case .section(let section): section
+        case .field(let field): field.show
+        case .section(let section): section.show
+        }
+    }
+
+    public var showAny: [ShowCondition]? {
+        switch self {
+        case .field(let field): field.showAny
+        case .section(let section): section.showAny
         }
     }
 
@@ -126,10 +150,20 @@ public enum FormNode: Sendable {
     }
 }
 
-func formNodes(_ value: JSONValue?) -> [FormNode]? {
+protocol NodeIdentity {
+    var ordinal: Int { get }
+}
+
+func nextOrdinal(_ ordinals: inout Int) -> Int {
+    defer { ordinals += 1 }
+    return ordinals
+}
+
+func formNodes(_ value: JSONValue?, _ ordinals: inout Int) -> [FormNode]? {
     guard let items = value?.arrayValue else { return nil }
     return items.compactMap { item in
         guard let object = item.objectValue else { return nil }
-        return object["type"]?.stringValue == "section" ? .section(FormSection(json: object)) : .field(FormField(json: object))
+        if object["type"]?.stringValue == "section" { return .section(FormSection(json: object, ordinals: &ordinals)) }
+        return .field(FormField(json: object, ordinals: &ordinals))
     }
 }

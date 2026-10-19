@@ -102,7 +102,7 @@ struct CheckContext {
         }
         func lists(_ source: Conditional) -> [String: [ShowCondition]?] { ["show": source.show, "showAny": source.showAny] }
         func disabled(_ action: FormAction?) -> [String: [ShowCondition]?] { ["disabled": action?.disabled] }
-        for entry in nodes { collect(lists(entry.node.conditional), entry.path, .field, entry.step, entry.node.key, entry.group?.key) }
+        for entry in nodes { collect(lists(entry.node), entry.path, .field, entry.step, entry.node.key, entry.group?.key) }
         for (index, step) in steps.enumerated() {
             collect(lists(step), "/steps/\(index)", .step, index)
             for (position, route) in (step.routes ?? []).enumerated() {

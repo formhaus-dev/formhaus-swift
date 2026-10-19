@@ -1,4 +1,4 @@
-struct OrderedIndex<Value: AnyObject> {
+struct OrderedIndex<Value: NodeIdentity> {
     private var storage = StringMap<[Value]>()
 
     var keys: [String] { storage.keys }
@@ -9,7 +9,7 @@ struct OrderedIndex<Value: AnyObject> {
 
     mutating func insert(_ value: Value, for key: String) {
         var list = storage[key] ?? []
-        guard !list.contains(where: { $0 === value }) else { return }
+        guard !list.contains(where: { $0.ordinal == value.ordinal }) else { return }
         list.append(value)
         storage[key] = list
     }
@@ -22,15 +22,15 @@ final class DefinitionIndex {
     private(set) var routeFields = KeySet()
     private(set) var fieldDependents = OrderedIndex<FormField>()
     private(set) var stepDependents = OrderedIndex<FormStep>()
-    private var stepOfField: [ObjectIdentifier: FormStep] = [:]
-    private var sectionOfField: [ObjectIdentifier: FormSection] = [:]
+    private var stepOfField: [Int: FormStep] = [:]
+    private var sectionOfField: [Int: FormSection] = [:]
 
     init(_ definition: FormDefinition) {
         self.definition = definition
         allFields = definition.allFields
         for node in definition.topNodes {
             guard let section = node.section else { continue }
-            for field in section.fields.compactMap(\.field) { sectionOfField[ObjectIdentifier(field)] = section }
+            for field in section.fields.compactMap(\.field) { sectionOfField[field.ordinal] = section }
         }
         for field in allFields {
             fieldsByKey.insert(field, for: field.key)
@@ -43,13 +43,13 @@ final class DefinitionIndex {
             }
         }
         for step in definition.steps ?? [] {
-            for field in valueFields(step.fields) { stepOfField[ObjectIdentifier(field)] = step }
+            for field in valueFields(step.fields) { stepOfField[field.ordinal] = step }
             for key in step.conditionFields { stepDependents.insert(step, for: key) }
             for route in step.routes ?? [] { routeFields.formUnion(route.conditionFields) }
         }
     }
 
-    func step(of field: FormField) -> FormStep? { stepOfField[ObjectIdentifier(field)] }
+    func step(of field: FormField) -> FormStep? { stepOfField[field.ordinal] }
 
-    func section(of field: FormField) -> FormSection? { sectionOfField[ObjectIdentifier(field)] }
+    func section(of field: FormField) -> FormSection? { sectionOfField[field.ordinal] }
 }

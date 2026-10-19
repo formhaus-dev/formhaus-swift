@@ -50,7 +50,7 @@ struct ActivePath {
     }
 
     func contains(_ step: FormStep) -> Bool {
-        steps.contains { $0 === step }
+        steps.contains { $0.ordinal == step.ordinal }
     }
 }
 

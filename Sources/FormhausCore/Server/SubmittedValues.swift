@@ -24,7 +24,7 @@ func activeValues(_ visibility: VisibilityState, _ fields: [FormField], _ source
         let settled = keys.allSatisfy { key in
             let next = active.first { sameText($0.key, key) }?.field
             let previous = result.field(key)
-            return next === previous
+            return next?.ordinal == previous?.ordinal
         }
         result = ActiveValues(values: values, active: active)
         if settled { break }
