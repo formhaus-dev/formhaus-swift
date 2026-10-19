@@ -116,7 +116,7 @@ private func findCycles(_ keys: [String], _ graph: StringMap<[String]>) -> [[Str
             let neighbor = neighbors[frame.1]
             if visiting[neighbor] == true {
                 let nodes = stack.map(\.0)
-                cycles.append(Array(nodes[nodes.firstIndex { sameText($0, neighbor) }!...]) + [neighbor])
+                if let entry = nodes.firstIndex(where: { sameText($0, neighbor) }) { cycles.append(Array(nodes[entry...]) + [neighbor]) }
             } else if visiting[neighbor] == nil {
                 visiting[neighbor] = true
                 stack.append((neighbor, 0))

@@ -22,7 +22,7 @@ func missingTarget(_ context: CheckContext, _ name: String, _ path: String, grou
         ]
     }
     let scoped = group.flatMap { context.scopes[$0]?.keys } ?? []
-    let candidates = (scoped + context.keyList).filter { key == nil || !sameText($0, key!) }
+    let candidates = (scoped + context.keyList).filter { candidate in key.map { !sameText(candidate, $0) } ?? true }
     return [error("unknown-field", path, "\"\(name)\" is not a field key", suggest(name, candidates))]
 }
 

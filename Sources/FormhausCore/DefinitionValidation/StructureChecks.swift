@@ -117,12 +117,12 @@ private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
 private func nestingIssues(_ context: CheckContext) -> [DefinitionIssue] {
     context.nodes.flatMap { entry -> [DefinitionIssue] in
         let section = entry.node.section != nil
-        guard (section && entry.parent != nil) || (entry.group != nil && ["group", "file", "hidden"].contains(entry.node.type)) else {
+        guard let parent = entry.parent, section || (entry.group != nil && ["group", "file", "hidden"].contains(entry.node.type)) else {
             return []
         }
         return [
             error(
-                "invalid-nesting", "\(entry.path)/type", "a \(entry.node.type) cannot be inside a \(entry.parent!.type)",
+                "invalid-nesting", "\(entry.path)/type", "a \(entry.node.type) cannot be inside a \(parent.type)",
                 "Move it to the fields of the step")
         ]
     }

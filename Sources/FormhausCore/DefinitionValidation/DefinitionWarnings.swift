@@ -28,7 +28,8 @@ private func valueIssue(_ target: FormField, _ name: String, _ operand: JSONValu
         return mismatch(
             "\"\(target.key)\" holds a list of values, so \"\(name)\" \(result) matches it", "Use notEmpty, or a select or radio field")
     }
-    let operands: [JSONValue?] = listOperators.contains(name) && operand?.arrayValue != nil ? operand!.arrayValue! : [operand]
+    let operands: [JSONValue?]
+    if listOperators.contains(name), let list = operand?.arrayValue { operands = list } else { operands = [operand] }
     let expected = expectedType(target)
     if let expected, let wrong = operands.first(where: { ($0?.typeName ?? "undefined") != expected }) {
         return mismatch(

@@ -1,6 +1,6 @@
 import Foundation
 
-private let versionPattern = JSRegex("^[1-9]\\d*(\\.\\d+)?$")!
+private let versionPattern = JSRegex(unchecked: "^[1-9]\\d*(\\.\\d+)?$")
 
 func nestable(_ path: String) -> Bool {
     path.components(separatedBy: "/fields/").count <= 3
@@ -48,8 +48,8 @@ func missing(_ path: String, _ key: String, _ hint: String? = nil, severity: Def
 private func list(_ value: JSONValue?, _ path: String, _ name: String, _ check: Check, required: Bool = false) -> [DefinitionIssue] {
     if !required && (value == nil || value?.isNull == true) { return [] }
     guard let value else {
-        let slash = path.range(of: "/", options: .backwards)!
-        return [missing(String(path[..<slash.lowerBound]), String(path[slash.upperBound...]))]
+        let key = path.split(separator: "/", omittingEmptySubsequences: false).last.map(String.init) ?? path
+        return [missing(String(path.dropLast(key.count + 1)), key)]
     }
     guard let items = value.arrayValue else {
         return [error("invalid-type", path, "must be an array", required ? "Use [] when there is nothing to list" : nil)]
@@ -148,14 +148,15 @@ private func step(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
 
 func formatIssues(_ input: JSONObject) -> [DefinitionIssue] {
     guard let version = input["formatVersion"] else { return [] }
-    let text = version.stringValue
-    let valid = text.map { versionPattern.test($0) == true } ?? false
-    if valid, Double(text!.prefix { $0 != "." })! <= Double(FormDefinition.supportedFormatVersion.prefix { $0 != "." })! { return [] }
-    return [
-        valid
-            ? error("unsupported-format-version", "/formatVersion", "format \(text!) is not supported", "Upgrade @formhaus/core")
-            : error("invalid-type", "/formatVersion", "must be a version string", "Use \"\(FormDefinition.supportedFormatVersion)\"")
-    ]
+    guard let text = version.stringValue, versionPattern.test(text) == true else {
+        return [error("invalid-type", "/formatVersion", "must be a version string", "Use \"\(FormDefinition.supportedFormatVersion)\"")]
+    }
+    if majorVersion(text) <= majorVersion(FormDefinition.supportedFormatVersion) { return [] }
+    return [error("unsupported-format-version", "/formatVersion", "format \(text) is not supported", "Upgrade @formhaus/core")]
+}
+
+private func majorVersion(_ version: String) -> Double {
+    Double(version.prefix { $0 != "." }) ?? 0
 }
 
 func shapeIssues(_ input: JSONValue) -> [DefinitionIssue] {
