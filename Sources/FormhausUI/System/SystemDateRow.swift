@@ -20,7 +20,6 @@ struct SystemDateRow: View {
                         .padding(.vertical, 6)
                         .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
-                .frame(minHeight: 44)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

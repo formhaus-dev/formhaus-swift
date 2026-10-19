@@ -18,7 +18,6 @@ struct SystemFileRow: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
-                .frame(minHeight: 44)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

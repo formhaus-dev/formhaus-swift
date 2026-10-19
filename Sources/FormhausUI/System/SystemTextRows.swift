@@ -94,7 +94,7 @@ struct SystemToggleRow: View {
     var body: some View {
         SystemRow(context: context) {
             Toggle(isOn: context.boolBinding) {
-                Text(context.label).frame(minHeight: 44)
+                Text(context.label)
             }
             .modifier(SystemToggleStyle(checkbox: context.field.type == "checkbox"))
             .accessibilityLabel(context.accessibilityName)

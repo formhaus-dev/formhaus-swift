@@ -103,7 +103,6 @@ private struct SystemValueRow: View {
                     .foregroundStyle(value != nil ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
             }
         }
-        .frame(minHeight: 44)
         .contentShape(Rectangle())
     }
 }

@@ -27,7 +27,15 @@ private struct SystemProminence: ViewModifier {
     let prominent: Bool
 
     func body(content: Content) -> some View {
-        if prominent { content.buttonStyle(.borderedProminent).controlSize(.large) } else { content }
+        if prominent {
+            content.buttonStyle(.borderedProminent).controlSize(.large)
+        } else {
+            #if os(iOS)
+                if #available(iOS 26, *) { content.buttonStyle(.glassProminent) } else { content }
+            #else
+                content
+            #endif
+        }
     }
 }
 
