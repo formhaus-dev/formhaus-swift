@@ -45,7 +45,7 @@ public struct TextInputField: View {
     }
 
     private var binding: Binding<String> {
-        context.field.type == "number" ? context.numberBinding($draft) : context.textBinding
+        context.field.type == "number" ? context.numberBinding(Binding(get: { draft }, set: { draft = $0 })) : context.textBinding
     }
 }
 

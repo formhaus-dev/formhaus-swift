@@ -154,6 +154,7 @@ struct SystemPage: View {
 }
 
 private struct SystemStepTitle: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var typeSize
     let model: FormModel
     let step: FormStep?
     let level: Int
@@ -161,7 +162,7 @@ private struct SystemStepTitle: ViewModifier {
     func body(content: Content) -> some View {
         if let step, model.structure.isMultiStep {
             let subtitle = model.text(forLabel: "stepTitle", ["index": .number(Double(level + 1))])
-            if #available(iOS 26, macOS 14, *) {
+            if #available(iOS 26, macOS 14, *), !typeSize.isAccessibilitySize {
                 content.navigationTitle(step.title ?? subtitle).navigationSubtitle(step.title == nil ? "" : subtitle)
             } else {
                 content.navigationTitle(step.title ?? subtitle)

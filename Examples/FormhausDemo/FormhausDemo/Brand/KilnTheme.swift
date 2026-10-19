@@ -19,7 +19,7 @@ extension FormhausTheme {
         var theme = FormhausTheme.standard
         theme.light = Palette(
             text: Color(kiln: 0x2B2118), textMuted: Color(kiln: 0x76665A), border: Color(kiln: 0xDDCFBF),
-            borderHover: Color(kiln: 0xB9A693), control: Color(kiln: 0x8C7A6B), error: Color(kiln: 0xB42318),
+            borderHover: Color(kiln: 0xB9A693), control: Color(kiln: 0x7A6A5C), error: Color(kiln: 0xB42318),
             errorHover: Color(kiln: 0x912018), background: Color(kiln: 0xFBF6EF), backgroundDisabled: Color(kiln: 0xF1E8DC),
             backgroundHover: Color(kiln: 0xF5EDE2), primary: Color(kiln: 0xB8502A), onPrimary: Color(kiln: 0xFFF8F1),
             secondaryBorder: Color(kiln: 0xDDCFBF))
@@ -29,6 +29,16 @@ extension FormhausTheme {
             errorHover: Color(kiln: 0xFFADA6), background: Color(kiln: 0x1D1712), backgroundDisabled: Color(kiln: 0x2A221B),
             backgroundHover: Color(kiln: 0x271F18), primary: Color(kiln: 0xE8825A), onPrimary: Color(kiln: 0x1D1712),
             secondaryBorder: Color(kiln: 0x463B31))
+        theme.lightIncreased = theme.light
+        theme.lightIncreased.textMuted = Color(kiln: 0x54463B)
+        theme.lightIncreased.border = Color(kiln: 0x8A7766)
+        theme.lightIncreased.control = Color(kiln: 0x5E4F43)
+        theme.lightIncreased.primary = Color(kiln: 0x8F3A18)
+        theme.darkIncreased = theme.dark
+        theme.darkIncreased.textMuted = Color(kiln: 0xD9CBBD)
+        theme.darkIncreased.border = Color(kiln: 0x8F7D6C)
+        theme.darkIncreased.control = Color(kiln: 0xC4B3A3)
+        theme.darkIncreased.primary = Color(kiln: 0xF4A07E)
         theme.radii.control = 22
         return theme
     }()

@@ -3,7 +3,9 @@ import SwiftUI
 
 struct SystemPickerRow: View {
     @Environment(\.locale) private var locale
-    @Environment(\.formhausTheme) private var theme
+    #if os(iOS)
+        @Environment(\.formhausTheme) private var theme
+    #endif
     @FocusState private var focused: Bool
     let context: FieldContext
     var matrix = false
@@ -27,16 +29,18 @@ struct SystemPickerRow: View {
 
     private var multiple: Bool { context.field.type == "multiselect" }
 
-    private var link: some View {
-        NavigationLink {
-            SystemOptionList(field: context.field, key: context.key, model: context.model)
-                .formhausTheme(theme)
-                .environment(\.locale, locale)
-                .resolveFormhausTokens()
-        } label: {
-            SystemValueRow(label: context.label, value: summary, prompt: context.prompt, tinted: false)
+    #if os(iOS)
+        private var link: some View {
+            NavigationLink {
+                SystemOptionList(field: context.field, key: context.key, model: context.model)
+                    .formhausTheme(theme)
+                    .environment(\.locale, locale)
+                    .resolveFormhausTokens()
+            } label: {
+                SystemValueRow(label: context.label, value: summary, prompt: context.prompt, tinted: false)
+            }
         }
-    }
+    #endif
 
     private var menu: some View {
         Menu {
@@ -104,42 +108,44 @@ private struct SystemValueRow: View {
     }
 }
 
-struct SystemOptionList: View {
-    @Environment(\.dismiss) private var dismiss
-    let field: FormField
-    let key: String
-    let model: FormModel
+#if os(iOS)
+    struct SystemOptionList: View {
+        @Environment(\.dismiss) private var dismiss
+        let field: FormField
+        let key: String
+        let model: FormModel
 
-    var body: some View {
-        let context = FieldContext(field: field, key: key, model: model)
-        let selection = ChoiceSelection(context: context)
-        let selected = Set(selection.values)
-        Form {
-            Section {
-                ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
-                    let value = option.value ?? ""
-                    Button {
-                        selection.choose(value)
-                        if !selection.multiple { dismiss() }
-                    } label: {
-                        HStack {
-                            Text(option.label ?? value).foregroundStyle(Color.primary)
-                            Spacer()
-                            Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(.tint)
-                                .opacity(selected.contains(value) ? 1 : 0)
+        var body: some View {
+            let context = FieldContext(field: field, key: key, model: model)
+            let selection = ChoiceSelection(context: context)
+            let selected = Set(selection.values)
+            Form {
+                Section {
+                    ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
+                        let value = option.value ?? ""
+                        Button {
+                            selection.choose(value)
+                            if !selection.multiple { dismiss() }
+                        } label: {
+                            HStack {
+                                Text(option.label ?? value).foregroundStyle(Color.primary)
+                                Spacer()
+                                Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(.tint)
+                                    .opacity(selected.contains(value) ? 1 : 0)
+                            }
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                         }
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
+                        .accessibilityAddTraits(selected.contains(value) ? .isSelected : [])
                     }
-                    .accessibilityAddTraits(selected.contains(value) ? .isSelected : [])
+                } footer: {
+                    VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context) }
                 }
-            } footer: {
-                VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context) }
             }
+            .formStyle(.grouped)
+            .navigationTitle(context.label)
+            .disabled(context.isLocked)
+            .sensoryFeedback(.selection, trigger: selected)
         }
-        .formStyle(.grouped)
-        .navigationTitle(context.label)
-        .disabled(context.isLocked)
-        .sensoryFeedback(.selection, trigger: selected)
     }
-}
+#endif
