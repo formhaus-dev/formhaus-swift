@@ -12,8 +12,11 @@ extension EngineCore {
         return steps.indices.contains(currentStepIndex + 1) ? steps[currentStepIndex + 1] : nil
     }
 
-    func skipCurrentStep() -> StartValues.Restore {
-        let step = currentStep!
+    func skipCurrentStep() -> StartValues.Restore? {
+        currentStep.map(skip)
+    }
+
+    func skip(_ step: FormStep) -> StartValues.Restore {
         let fieldKeys = valueFields(step.fields).map(\.key)
         baselineFields()
         replaceValues(resetStepValues())
@@ -34,7 +37,7 @@ extension EngineCore {
     }
 
     @discardableResult
-    func skipStep(at index: Int) -> StartValues.Restore {
+    func skipStep(at index: Int) -> StartValues.Restore? {
         currentStepIndex = index
         notify(structureChanged: true)
         return skipCurrentStep()

@@ -1,0 +1,82 @@
+included:
+  - Package.swift
+  - Sources
+  - Tests
+excluded:
+  - Tests/FormhausCoreTests/Fixtures
+  - .build
+
+disabled_rules:
+  - trailing_comma
+  - opening_brace
+
+opt_in_rules:
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - closure_spacing
+  - contains_over_first_not_nil
+  - empty_count
+  - empty_string
+  - first_where
+  - last_where
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unused_parameter
+  - yoda_condition
+
+line_length:
+  warning: 140
+  error: 140
+  ignores_urls: true
+
+file_length:
+  warning: 250
+  error: 250
+
+type_body_length:
+  warning: 200
+  error: 250
+
+function_body_length:
+  warning: 40
+  error: 60
+
+cyclomatic_complexity:
+  warning: 10
+  error: 15
+  ignores_case_statements: true
+
+nesting:
+  type_level: 2
+  function_level: 3
+
+large_tuple:
+  warning: 3
+  error: 4
+
+function_parameter_count:
+  warning: 5
+  error: 8
+
+identifier_name:
+  min_length: 1
+  max_length: 50
+
+type_name:
+  min_length: 2
+  max_length: 50
+
+custom_rules:
+  no_comments:
+    name: No Comments
+    regex: '(//|/\*)'
+    match_kinds:
+      - comment
+      - doccomment
+      - doccomment.field
+    included:
+      - Sources/
+      - Tests/
+    message: Code must not contain comments.
+    severity: error

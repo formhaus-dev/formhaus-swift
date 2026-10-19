@@ -1,4 +1,35 @@
+struct StepMove {
+    let step: FormStep
+    let target: FormStep
+    let index: Int
+    let forward: Bool
+    let skipping: Bool
+
+    var validating: Bool { forward && !skipping }
+}
+
 extension EngineCore {
+    func plannedMove(forward: Bool, reason: StepChangeReason) -> StepMove? {
+        let skipping = reason == .skip
+        guard isMultiStep, !stepValidating, !submitting else { return nil }
+        if !skipping && (forward ? isLastStep : isFirstStep) { return nil }
+        guard let step = currentStep else { return nil }
+        let validating = forward && !skipping
+        if validating { includeCurrentStep() }
+        if validating && hasStepErrors() { return nil }
+        let index = currentStepIndex + (forward ? 1 : -1)
+        let steps = visibleSteps
+        let target = skipping ? skipTarget() : steps.indices.contains(index) ? steps[index] : nil
+        guard let target else { return nil }
+        return StepMove(step: step, target: target, index: index, forward: forward, skipping: skipping)
+    }
+
+    func beginOperation() -> Int {
+        operationEpoch += 1
+        latestOperation = operationEpoch
+        return operationEpoch
+    }
+
     func activePathKey() -> [String] {
         visibleSteps.map(\.id)
     }
@@ -71,24 +102,12 @@ extension FormEngine {
 
     func changeStep(forward: Bool, reason: StepChangeReason) async throws -> Bool {
         let core = core
-        let skipping = reason == .skip
-        guard core.isMultiStep, !core.stepValidating, !core.submitting else { return false }
-        if !skipping && (forward ? core.isLastStep : core.isFirstStep) { return false }
-        guard let step = core.currentStep else { return false }
-        let validating = forward && !skipping
-        if validating { core.includeCurrentStep() }
-        if validating && core.hasStepErrors() { return false }
-        let lifecycle = options
+        guard let move = core.plannedMove(forward: forward, reason: reason) else { return false }
+        let step = move.step
         var committed = false
-        let toIndex = core.currentStepIndex + (forward ? 1 : -1)
-        let steps = core.visibleSteps
-        let target = skipping ? core.skipTarget() : steps.indices.contains(toIndex) ? steps[toIndex] : nil
-        guard let target else { return false }
-        let context = StepChangeContext(fromStepId: step.id, toStepId: target.id, reason: reason, values: core.getSubmitValues())
+        let context = StepChangeContext(fromStepId: step.id, toStepId: move.target.id, reason: reason, values: core.getSubmitValues())
         let epoch = core.validationEpoch
-        core.operationEpoch += 1
-        let operation = core.operationEpoch
-        core.latestOperation = operation
+        let operation = core.beginOperation()
         let inputsChanged = core.watchCheckedInputs(context.values)
         let stale = {
             epoch != core.validationEpoch || operation != core.operationEpoch
@@ -103,26 +122,10 @@ extension FormEngine {
             }
         }
         do {
-            if stale() { return false }
-            if validating, let validate = lifecycle.onStepValidate {
-                let result = try await suspended { try await validate(step.id, context.values) }
-                if stale() { return false }
-                if let result, !result.isEmpty {
-                    core.applyValidationErrors(result)
-                    return false
-                }
-            }
-            if let before = lifecycle.onBeforeStepChange {
-                let allowed = try await suspended { try await before(context) }
-                if stale() || allowed == false { return false }
-            }
-            if stale() { return false }
-            if validating && core.hasStepErrors() { return false }
+            guard try await approve(move, context, stale) else { return false }
             committed = true
-            if forward { core.emit(skipping ? .stepSkipped(stepId: step.id) : .stepCompleted(stepId: step.id)) }
-            if skipping { _ = core.skipCurrentStep() }
-            moveTo(toIndex)
-            try await suspended { try await afterCommit(.afterStepChange) { try await lifecycle.onAfterStepChange?(context) } }
+            commit(move)
+            try await suspended { try await afterCommit(.afterStepChange) { try await options.onAfterStepChange?(context) } }
             return true
         } catch is CancellationError {
             return committed
@@ -130,5 +133,29 @@ extension FormEngine {
             if !committed && stale() { return false }
             throw error
         }
+    }
+
+    private func approve(_ move: StepMove, _ context: StepChangeContext, _ stale: () -> Bool) async throws -> Bool {
+        if stale() { return false }
+        if move.validating, let validate = options.onStepValidate {
+            let result = try await suspended { try await validate(move.step.id, context.values) }
+            if stale() { return false }
+            if let result, !result.isEmpty {
+                core.applyValidationErrors(result)
+                return false
+            }
+        }
+        if let before = options.onBeforeStepChange {
+            let allowed = try await suspended { try await before(context) }
+            if stale() || allowed == false { return false }
+        }
+        if stale() { return false }
+        return !(move.validating && core.hasStepErrors())
+    }
+
+    private func commit(_ move: StepMove) {
+        if move.forward { core.emit(move.skipping ? .stepSkipped(stepId: move.step.id) : .stepCompleted(stepId: move.step.id)) }
+        if move.skipping { _ = core.skipCurrentStep() }
+        moveTo(move.index)
     }
 }

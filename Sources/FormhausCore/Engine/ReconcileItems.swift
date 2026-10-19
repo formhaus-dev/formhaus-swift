@@ -1,8 +1,9 @@
 extension VisibilityState {
-    private func reconcileItem(
-        _ group: FormField, _ item: JSONValue, _ id: Int?, _ position: Int, _ values: JSONObject, _ cleared: inout KeySet
-    ) -> JSONValue {
-        guard var entry = item.objectValue else { return item }
+    private func reconcileItem(_ group: FormField, _ item: JSONValue, _ id: Int?, _ values: JSONObject) -> (
+        item: JSONValue, cleared: [String]
+    ) {
+        guard var entry = item.objectValue else { return (item, []) }
+        var cleared: [String] = []
         for _ in 0...group.items.count {
             let shown = itemFields(group, .object(entry), values)
             let hidden = group.items.filter { field in !shown.contains { $0.ordinal == field.ordinal } && entry[field.key] != nil }
@@ -17,9 +18,9 @@ extension VisibilityState {
                 if let value = previous[field.key] { starts.rememberItem(id, field.key, value) }
                 entry.removeValue(forKey: field.key)
             }
-            for key in hidden.map(\.key) + restored.keys { cleared.insert(itemPath(group.key, position, key)) }
+            cleared += hidden.map(\.key) + restored.keys
         }
-        return .object(entry)
+        return (.object(entry), cleared)
     }
 
     func reconcileItems(_ values: inout Values, _ errors: inout FieldErrors, _ cleared: inout KeySet) {
@@ -29,7 +30,9 @@ extension VisibilityState {
             let ids = values.itemIds(group.key)
             let json = values.json
             let items = source.enumerated().map { position, item in
-                reconcileItem(group, item, ids.indices.contains(position) ? ids[position] : nil, position, json, &cleared)
+                let reconciled = reconcileItem(group, item, ids.indices.contains(position) ? ids[position] : nil, json)
+                for key in reconciled.cleared { cleared.insert(itemPath(group.key, position, key)) }
+                return reconciled.item
             }
             if items != source {
                 values.set(group.key, ValueSlot(.array(items), ref: Ref(token: freshToken(), items: ids)))

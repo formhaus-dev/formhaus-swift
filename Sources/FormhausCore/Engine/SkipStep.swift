@@ -1,3 +1,11 @@
+private struct SkippedStep {
+    let step: FormStep
+    let values: Values
+    let errors: FieldErrors
+    let serverErrors: FieldErrors
+    let restore: StartValues.Restore
+}
+
 extension FormEngine {
     @discardableResult
     public func skip(_ handler: SubmitHandler? = nil) async throws -> Bool {
@@ -13,7 +21,7 @@ extension FormEngine {
         let errors = core.errors
         let serverErrors = core.serverErrors
         let outcome = Box<Bool?>(nil)
-        let restore = core.skipCurrentStep()
+        let skipped = SkippedStep(step: step, values: values, errors: errors, serverErrors: serverErrors, restore: core.skip(step))
         let skippedGeneration = core.valuesGeneration
         let skippedValues = core.values
         let watch = core.visibility.starts.watchWrites()
@@ -23,7 +31,7 @@ extension FormEngine {
             if outcome.value != false && operationBox.value == core.latestOperation && core.valuesGeneration == skippedGeneration {
                 var kept = skippedValues.changedKeys(core.values)
                 kept.formUnion(writes)
-                restoreSkipped(step, (values, errors, serverErrors), outcome.value, kept, writes, restore)
+                restoreSkipped(skipped, outcome.value, kept, writes)
             }
         }
         return try await suspended {
@@ -37,10 +45,7 @@ extension FormEngine {
         }
     }
 
-    private func restoreSkipped(
-        _ step: FormStep, _ saved: (values: Values, errors: FieldErrors, serverErrors: FieldErrors), _ outcome: Bool?, _ kept: KeySet,
-        _ writes: KeySet, _ restore: StartValues.Restore
-    ) {
+    private func restoreSkipped(_ saved: SkippedStep, _ outcome: Bool?, _ kept: KeySet, _ writes: KeySet) {
         let core = core
         let visibility = core.visibility
         var errors = saved.errors
@@ -65,8 +70,8 @@ extension FormEngine {
         var fresh = core.errors
         for key in fresh.keys where reverted.contains(visibility.owner(key)) { fresh.removeValue(forKey: key) }
         core.replaceErrors((outcome == true ? FieldErrors() : errors).merging(fresh))
-        core.unmarkSkipped(step.id)
-        visibility.starts.restore(restore, kept: writes)
+        core.unmarkSkipped(saved.step.id)
+        visibility.starts.restore(saved.restore, kept: writes)
         visibility.unsettle()
         core.dropServerErrors(core.reconcileHidden())
         visibility.markChanged(true, true)

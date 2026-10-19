@@ -26,7 +26,10 @@ final class EngineCore {
     var emitEvent: ((FormEvent) -> Void)?
     var onChange: (() -> Void)?
 
-    init(definition: FormDefinition, values initialValues: JSONObject = JSONObject(), validators: Validators = [:], messages: MessageSource? = nil) {
+    init(
+        definition: FormDefinition, values initialValues: JSONObject = JSONObject(), validators: Validators = [:],
+        messages: MessageSource? = nil
+    ) {
         self.definition = definition
         self.validators = validators
         self.messages = messageResolver(messages, .catalog(definition.messages ?? .null))

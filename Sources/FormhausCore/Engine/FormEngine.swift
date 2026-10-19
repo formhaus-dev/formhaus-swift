@@ -51,7 +51,9 @@ public final class FormEngine {
     let options: FormEngineOptions
     private let listeners = Listeners()
 
-    public convenience init(definition: JSONValue, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) throws(FormDefinitionError) {
+    public convenience init(definition: JSONValue, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions())
+        throws(FormDefinitionError)
+    {
         self.init(definition: try FormDefinition(json: definition), values: values, options: options)
     }
 

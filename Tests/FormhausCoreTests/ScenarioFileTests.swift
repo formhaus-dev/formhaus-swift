@@ -1,5 +1,5 @@
-import Testing
 import FormhausCore
+import Testing
 
 @Suite("Conformance scenarios")
 struct ScenarioFileTests {

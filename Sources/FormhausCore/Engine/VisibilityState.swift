@@ -77,7 +77,8 @@ final class VisibilityState {
     func activeItem(_ key: String, _ values: JSONObject) -> ItemField? {
         guard let (groupKey, position, fieldKey) = parse(key), let group = activeField(groupKey, values), group.isGroup else { return nil }
         let items = itemsOf(values[groupKey])
-        guard position < items.count, let field = itemFields(group, items[position], values).first(where: { sameText($0.key, fieldKey) }) else {
+        guard position < items.count, let field = itemFields(group, items[position], values).first(where: { sameText($0.key, fieldKey) })
+        else {
             return nil
         }
         return ItemField(group: group, index: position, field: field)

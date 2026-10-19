@@ -23,7 +23,7 @@ func createValues(
     var expanded = KeySet()
     for field in fields {
         let key = field.key
-        let same = byKey[key]!
+        guard let same = byKey[key] else { continue }
         let shared = same.count > 1
         let chosen = (shared ? pick(key, values.json) : nil) ?? same[0]
         let items = values.slot(key)

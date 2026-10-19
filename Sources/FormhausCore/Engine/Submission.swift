@@ -26,16 +26,13 @@ extension FormEngine {
         let core = core
         guard !core.submitting, !core.stepValidating else { return false }
         if !keepSkipped { core.includeCurrentStep() }
-        let lifecycle = options
         var dispatched = false
         var succeeded = false
         let epoch = core.validationEpoch
-        core.operationEpoch += 1
-        let operation = core.operationEpoch
-        core.latestOperation = operation
+        let operation = core.beginOperation()
         operationBox?.value = operation
-        var values = core.getSubmitValues()
-        let inputsChanged = core.watchCheckedInputs(values)
+        let checked = core.getSubmitValues()
+        let inputsChanged = core.watchCheckedInputs(checked)
         let stale = { epoch != core.validationEpoch || operation != core.operationEpoch || inputsChanged() }
         core.submitting = true
         core.notify()
@@ -46,38 +43,17 @@ extension FormEngine {
             }
         }
         do {
-            if stale() { return false }
-            if !core.validate(navigate: true).isEmpty || stale() { return false }
-            if let before = lifecycle.onBeforeSubmit {
-                let allowed = try await suspended { try await before(values) }
-                if stale() || allowed == false { return false }
-                if !core.validate(navigate: true).isEmpty || stale() { return false }
-                values = core.getSubmitValues()
-            }
+            guard let values = try await approveSubmission(checked, stale) else { return false }
             dispatched = true
             let skippedSteps = core.skipped.map(\.id)
             let sent = core.values
             let serverErrors = core.serverErrorsGeneration
             if keepSkipped, let step = core.currentStep { core.emit(.stepSkipped(stepId: step.id)) }
-            core.emit(.formSubmitted(fieldCount: values.count))
-            let result: SubmitResult?
-            do {
-                result = try await suspended { try await submit(values, skippedSteps) }
-            } catch {
-                core.emit(.formSubmitFailed(reason: .error))
-                throw error
-            }
-            let rejected = result?.isRejection == true
-            core.emit(rejected ? .formSubmitFailed(reason: .rejected) : .formSubmitSucceeded)
-            if operation != core.operationEpoch { return !rejected }
-            if case .rejected(let errors, let formErrors)? = result {
-                applyRejection(errors, formErrors, sent)
-                return false
-            }
-            if core.serverErrorsGeneration == serverErrors { core.applyValidationErrors(FieldErrors(), server: true) }
-            let submitted = values
+            let result = try await send(submit, values, skippedSteps)
+            if operation != core.operationEpoch { return result?.isRejection != true }
+            guard accept(result, sent, serverErrors) else { return false }
             succeeded = true
-            try await suspended { try await afterCommit(.afterSubmit) { try await lifecycle.onAfterSubmit?(submitted, skippedSteps) } }
+            try await suspended { try await afterCommit(.afterSubmit) { try await options.onAfterSubmit?(values, skippedSteps) } }
             return true
         } catch is CancellationError {
             return succeeded
@@ -85,5 +61,37 @@ extension FormEngine {
             if !dispatched && stale() { return false }
             throw error
         }
+    }
+
+    private func accept(_ result: SubmitResult?, _ sent: Values, _ serverErrors: Int) -> Bool {
+        if case .rejected(let errors, let formErrors)? = result {
+            applyRejection(errors, formErrors, sent)
+            return false
+        }
+        if core.serverErrorsGeneration == serverErrors { core.applyValidationErrors(FieldErrors(), server: true) }
+        return true
+    }
+
+    private func approveSubmission(_ checked: JSONObject, _ stale: () -> Bool) async throws -> JSONObject? {
+        if stale() { return nil }
+        if !core.validate(navigate: true).isEmpty || stale() { return nil }
+        guard let before = options.onBeforeSubmit else { return checked }
+        let allowed = try await suspended { try await before(checked) }
+        if stale() || allowed == false { return nil }
+        if !core.validate(navigate: true).isEmpty || stale() { return nil }
+        return core.getSubmitValues()
+    }
+
+    private func send(_ submit: SubmitHandler, _ values: JSONObject, _ skippedSteps: [String]) async throws -> SubmitResult? {
+        core.emit(.formSubmitted(fieldCount: values.count))
+        let result: SubmitResult?
+        do {
+            result = try await suspended { try await submit(values, skippedSteps) }
+        } catch {
+            core.emit(.formSubmitFailed(reason: .error))
+            throw error
+        }
+        core.emit(result?.isRejection == true ? .formSubmitFailed(reason: .rejected) : .formSubmitSucceeded)
+        return result
     }
 }

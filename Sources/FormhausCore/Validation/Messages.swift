@@ -3,6 +3,8 @@ let defaultMessageKeys: [MessageKey] = [
     "number", "date", "datetime", "time", "option", "options", "boolean", "string", "file", "value", "hidden",
 ]
 
+private let invalidValueMessage = "Invalid value"
+
 let defaultMessages: [MessageKey: String] = [
     "required": "This field is required",
     "minLength": "Must be at least {min} characters",
@@ -23,7 +25,7 @@ let defaultMessages: [MessageKey: String] = [
     "boolean": "Must be true or false",
     "string": "Must be text",
     "file": "Must be a file reference",
-    "value": "Invalid value",
+    "value": invalidValueMessage,
     "hidden": "{label}: {message}",
 ]
 
@@ -95,7 +97,7 @@ func namedResolver(_ resolve: @escaping ResolveMessage) -> ResolveMessage {
 }
 
 public func getDefaultMessage(_ rule: MessageKey, _ params: JSONObject = JSONObject()) -> String {
-    let template = defaultMessages[rule] ?? defaultMessages[.value]!
+    let template = defaultMessages[rule] ?? invalidValueMessage
     let custom = params.has("unit") && (rule == .minLength || rule == .maxLength)
     return formatText(custom ? template.replacingOccurrences(of: "characters", with: "{unit}") : template, params)
 }

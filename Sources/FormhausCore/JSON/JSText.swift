@@ -8,8 +8,8 @@ private let jsWhitespace: Set<UInt32> = [
 extension String {
     var jsTrimmed: String {
         let scalars = unicodeScalars
-        guard let start = scalars.firstIndex(where: { !jsWhitespace.contains($0.value) }) else { return "" }
-        let end = scalars.lastIndex(where: { !jsWhitespace.contains($0.value) })!
+        let content = { (scalar: Unicode.Scalar) in !jsWhitespace.contains(scalar.value) }
+        guard let start = scalars.firstIndex(where: content), let end = scalars.lastIndex(where: content) else { return "" }
         return String(scalars[start...end])
     }
 
@@ -20,11 +20,6 @@ extension String {
 
 func codeUnitLess(_ lhs: String, _ rhs: String) -> Bool {
     lhs.utf16.lexicographicallyPrecedes(rhs.utf16)
-}
-
-func codeUnitCompare(_ lhs: String, _ rhs: String) -> Int {
-    if lhs.utf16.elementsEqual(rhs.utf16) { return 0 }
-    return codeUnitLess(lhs, rhs) ? -1 : 1
 }
 
 func jsNumberString(_ value: Double) -> String {
@@ -53,7 +48,7 @@ private func shortestDigits(_ value: Double) -> (String, Int) {
     let text = "\(value)"
     let parts = text.split(separator: "e", maxSplits: 1)
     let mantissa = String(parts[0])
-    var exponent = parts.count > 1 ? Int(parts[1])! : 0
+    var exponent = parts.dropFirst().first.flatMap { Int($0) } ?? 0
     let pieces = mantissa.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
     let whole = String(pieces[0])
     var fraction = pieces.count > 1 ? String(pieces[1]) : ""
@@ -80,7 +75,7 @@ func jsNumber(fromString text: String) -> Double {
     for (prefix, radix) in [("0x", 16), ("0o", 8), ("0b", 2)] where lower.hasPrefix(prefix) {
         let body = trimmed.dropFirst(2)
         guard !body.isEmpty, body.allSatisfy({ $0.isASCII && $0.hexDigitValue.map { $0 < radix } == true }) else { return .nan }
-        return body.reduce(0.0) { $0 * Double(radix) + Double($1.hexDigitValue!) }
+        return body.compactMap(\.hexDigitValue).reduce(0.0) { $0 * Double(radix) + Double($1) }
     }
     guard isDecimalLiteral(trimmed), let number = Double(trimmed) else { return .nan }
     return number
@@ -92,18 +87,27 @@ private func isDecimalLiteral(_ text: String) -> Bool {
     var index = 0
     let isDigit = { (byte: UInt8) in (0x30...0x39).contains(byte) }
     var whole = 0
-    while index < chars.count, isDigit(chars[index]) { index += 1; whole += 1 }
+    while index < chars.count, isDigit(chars[index]) {
+        index += 1
+        whole += 1
+    }
     var fraction = 0
     if index < chars.count, chars[index] == UInt8(ascii: ".") {
         index += 1
-        while index < chars.count, isDigit(chars[index]) { index += 1; fraction += 1 }
+        while index < chars.count, isDigit(chars[index]) {
+            index += 1
+            fraction += 1
+        }
     }
     guard whole + fraction > 0 else { return false }
     if index < chars.count, chars[index] == UInt8(ascii: "e") || chars[index] == UInt8(ascii: "E") {
         index += 1
         if index < chars.count, chars[index] == UInt8(ascii: "+") || chars[index] == UInt8(ascii: "-") { index += 1 }
         var power = 0
-        while index < chars.count, isDigit(chars[index]) { index += 1; power += 1 }
+        while index < chars.count, isDigit(chars[index]) {
+            index += 1
+            power += 1
+        }
         guard power > 0 else { return false }
     }
     return index == chars.count

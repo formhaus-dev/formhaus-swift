@@ -53,8 +53,7 @@ extension ScenarioRun {
         case "stepValidating": return .bool(engine.stepValidating)
         case "fieldLoading": return .object(JSONObject(engine.fieldLoading.map { ($0.key, .bool($0.value)) }))
         case "log":
-            defer { log = [] }
-            return .array(log)
+            return .array(log.drain())
         default:
             failures.append("unknown expectation \(name)")
             return nil
@@ -64,7 +63,7 @@ extension ScenarioRun {
     private func expect(_ index: Int, _ expectation: JSONObject) {
         let actual = expectation.map { ($0.key, read($0.key, $0.value)) }
         for (key, value) in actual { check("step \(index) expect.\(key)", value, expectation[key]) }
-        if !expectation.has("log") { log = [] }
+        if !expectation.has("log") { log.entries = [] }
     }
 
     private func start(_ label: String, _ step: JSONObject) -> Flag {

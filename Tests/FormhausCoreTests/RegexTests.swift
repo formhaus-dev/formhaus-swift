@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import FormhausCore
 
 @Suite("Patterns match like JavaScript RegExp")
@@ -55,16 +56,16 @@ struct RegexTests {
     }
 
     @Test("a pattern that cannot run rejects the value")
-    func failsClosed() {
+    func failsClosed() throws {
         #expect(JSRegex(unchecked: "(").test("a") == nil)
         #expect(rejects(JSRegex(unchecked: "("), "a"))
-        #expect(rejects(JSRegex("^a$")!, String(repeating: "a", count: maxStringLength + 1)))
-        #expect(!rejects(JSRegex("^a+$")!, String(repeating: "a", count: maxStringLength)))
+        #expect(rejects(try #require(JSRegex("^a$")), String(repeating: "a", count: maxStringLength + 1)))
+        #expect(!rejects(try #require(JSRegex("^a+$")), String(repeating: "a", count: maxStringLength)))
     }
 
     @Test("a slow match does not block other threads")
-    func slowMatchDoesNotBlock() async {
-        let slow = JSRegex("^(a+)+$")!
+    func slowMatchDoesNotBlock() async throws {
+        let slow = try #require(JSRegex("^(a+)+$"))
         let text = String(repeating: "a", count: 29) + "!"
         let blocked = Task.detached { slow.test(text) }
         try? await Task.sleep(nanoseconds: 100_000_000)

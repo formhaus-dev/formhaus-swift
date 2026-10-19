@@ -17,10 +17,12 @@ private func operatorIssues(_ condition: ShowCondition, _ path: String) -> [Defi
 func missingTarget(_ context: CheckContext, _ name: String, _ path: String, group: String? = nil, key: String? = nil) -> [DefinitionIssue] {
     if context.target(name, group: group) != nil { return [] }
     if let inner = context.scopeOrder.first(where: { context.scopes[$0]?[name] != nil }) {
-        return [error("group-scope", path, "\"\(name)\" is a field inside the group \"\(inner)\"", "Only fields of the same group can use it")]
+        return [
+            error("group-scope", path, "\"\(name)\" is a field inside the group \"\(inner)\"", "Only fields of the same group can use it")
+        ]
     }
     let scoped = group.flatMap { context.scopes[$0]?.keys } ?? []
-    let candidates = (scoped + context.keyList).filter { key == nil || !sameText($0, key!) }
+    let candidates = (scoped + context.keyList).filter { candidate in key.map { !sameText(candidate, $0) } ?? true }
     return [error("unknown-field", path, "\"\(name)\" is not a field key", suggest(name, candidates))]
 }
 
@@ -35,7 +37,9 @@ private func referenceIssues(_ context: CheckContext, _ entry: ConditionEntry, _
     let allowed = isStep ? "earlier steps" : "this or an earlier step"
     let owner = entry.owner == .route ? "Route" : isStep ? "Step" : "Field"
     return [
-        error("forward-reference", "\(entry.path)/field", "\"\(field)\" belongs to \(sameStep)", "\(owner) conditions can use fields of \(allowed)"),
+        error(
+            "forward-reference", "\(entry.path)/field", "\"\(field)\" belongs to \(sameStep)",
+            "\(owner) conditions can use fields of \(allowed)")
     ]
 }
 

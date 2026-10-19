@@ -10,13 +10,13 @@ private let maxEmailLength = 254
 private let maxItems = 1000
 let maxGroupItems = 100
 
-private let emailPattern = JSRegex("^[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+$")!
-private let decimal = JSRegex("^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$")!
+private let emailPattern = JSRegex(unchecked: "^[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+$")
+private let decimal = JSRegex(unchecked: "^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$")
 private let datePattern = "\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])"
 private let hours = "(?:[01]\\d|2[0-3]):[0-5]\\d"
-private let dateOnly = JSRegex("^\(datePattern)$")!
-private let dateTime = JSRegex("^\(datePattern)T\(hours)(?::[0-5]\\d(?:\\.\\d{1,3})?)?(?:Z|[+-]\(hours))?$")!
-private let timePattern = JSRegex("^\(hours)(?::[0-5]\\d)?$")!
+private let dateOnly = JSRegex(unchecked: "^\(datePattern)$")
+private let dateTime = JSRegex(unchecked: "^\(datePattern)T\(hours)(?::[0-5]\\d(?:\\.\\d{1,3})?)?(?:Z|[+-]\(hours))?$")
+private let timePattern = JSRegex(unchecked: "^\(hours)(?::[0-5]\\d)?$")
 private let textTypes: Set<String> = ["text", "phone", "password", "textarea", "autocomplete", "hidden"]
 private let untrimmedTypes: Set<String> = ["password", "number", "select", "radio", "file"]
 

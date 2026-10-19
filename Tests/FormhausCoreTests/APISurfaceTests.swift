@@ -1,5 +1,5 @@
-import Testing
 import FormhausCore
+import Testing
 
 @Suite("Public API surface")
 struct APISurfaceTests {
@@ -28,6 +28,25 @@ struct APISurfaceTests {
         let section = try #require(steps[1].fields.first)
         #expect(isVisible(section, ["a": "x"]))
         #expect(!isVisible(try #require(section.section), ["a": "y"]))
+    }
+
+    @Test("conditions, disabled actions and field validation are callable on their own")
+    func standaloneChecks() throws {
+        let form = try FormDefinition(json: [
+            "id": "f", "submit": ["label": "S", "disabled": [["field": "a", "eq": "lock"]]],
+            "fields": [["key": "a", "type": "text", "label": "A", "validation": ["required": true]]],
+        ])
+        let fields = try #require(form.fields)
+        let condition = try #require(form.submit.disabled?.first)
+        #expect(evaluateCondition(condition, ["a": "lock"]))
+        #expect(!evaluateCondition(condition, ["a": "open"]))
+        #expect(isActionDisabled(form.submit, ["a": "lock"]))
+        #expect(!isActionDisabled(form.cancel, ["a": "lock"]))
+        #expect(validateFields(fields, [:]) == ["a": "This field is required"])
+        let field = try #require(fields.first?.field)
+        #expect(validateFieldValue(field, "x", ["a": "x"]) == nil)
+        #expect(validateFieldValue(field, nil, [:]) == "This field is required")
+        #expect(validateSubmission(form, ["a": "lock"]).errors.isEmpty)
     }
 
     @Test("issue codes and message keys are open string sets")

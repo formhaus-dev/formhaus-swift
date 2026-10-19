@@ -74,7 +74,7 @@ extension JSONValue: ExpressibleByStringLiteral, ExpressibleByBooleanLiteral, Ex
     public init(booleanLiteral value: Bool) { self = .bool(value) }
     public init(floatLiteral value: Double) { self = .number(value) }
     public init(integerLiteral value: Int) { self = .number(Double(value)) }
-    public init(nilLiteral: ()) { self = .null }
+    public init(nilLiteral _: ()) { self = .null }
     public init(arrayLiteral elements: JSONValue...) { self = .array(elements) }
     public init(dictionaryLiteral elements: (String, JSONValue)...) {
         var object = JSONObject()

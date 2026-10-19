@@ -1,4 +1,5 @@
 import Testing
+
 @testable import FormhausCore
 
 @Suite("Conformance corpus: texts and cases")

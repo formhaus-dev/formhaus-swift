@@ -62,7 +62,9 @@ private func itemErrors(_ engine: EngineCore, _ invalid: KeySet, _ resolve: @esc
     return errors
 }
 
-private func dropUnchecked(_ engine: EngineCore, _ submitted: inout JSONObject, _ errors: inout FieldErrors, _ resolve: @escaping ResolveMessage) {
+private func dropUnchecked(
+    _ engine: EngineCore, _ submitted: inout JSONObject, _ errors: inout FieldErrors, _ resolve: @escaping ResolveMessage
+) {
     let visibility = engine.visibility
     for key in submitted.keys {
         guard let field = visibility.activeField(key, engine.values.json), errors[key] == nil else { continue }
@@ -142,11 +144,15 @@ private func withSkipped(_ source: JSONObject, _ prepared: Prepared) -> JSONObje
     return values
 }
 
-public func validateSubmission(_ definition: JSONValue, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions()) throws(FormDefinitionError) -> SubmissionResult {
+public func validateSubmission(_ definition: JSONValue, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions())
+    throws(FormDefinitionError) -> SubmissionResult
+{
     validateSubmission(try FormDefinition(json: definition), values, options: options)
 }
 
-public func validateSubmission(_ definition: FormDefinition, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions()) -> SubmissionResult {
+public func validateSubmission(_ definition: FormDefinition, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions())
+    -> SubmissionResult
+{
     let fields = definition.allFields
     let source = values.objectValue ?? JSONObject()
     var prepared = prepare(definition, fields, source, options)

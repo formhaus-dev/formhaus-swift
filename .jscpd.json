@@ -1,0 +1,11 @@
+{
+  "path": ["Sources", "Tests"],
+  "format": ["swift"],
+  "ignore": ["**/Fixtures/**", "**/.build/**"],
+  "minTokens": 65,
+  "minLines": 8,
+  "threshold": 0.3,
+  "reporters": ["console"],
+  "gitignore": true,
+  "silent": false
+}
