@@ -50,6 +50,16 @@ struct SystemRow<Content: View>: View {
     }
 }
 
+struct SystemRowLabel: View {
+    @Environment(\.formhausTokens) private var tokens
+    let context: FieldContext
+
+    var body: some View {
+        tokens.marked(context.label, required: context.isRequired).foregroundStyle(Color.primary)
+            .accessibilityLabel(context.accessibilityName)
+    }
+}
+
 struct SystemNotes: View {
     @Environment(\.formhausFooterErrors) private var footerErrors
     let context: FieldContext

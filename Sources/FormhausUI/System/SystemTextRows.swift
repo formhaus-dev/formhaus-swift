@@ -25,7 +25,7 @@ struct SystemTextRow: View {
                     if context.loading { ProgressView().controlSize(.small) }
                 }
             } label: {
-                Text(context.label).accessibilityHidden(true)
+                SystemRowLabel(context: context).accessibilityHidden(true)
             }
             if suggests, focused { suggestions }
         }
@@ -94,7 +94,7 @@ struct SystemToggleRow: View {
     var body: some View {
         SystemRow(context: context) {
             Toggle(isOn: context.boolBinding) {
-                Text(context.label)
+                SystemRowLabel(context: context)
             }
             .modifier(SystemToggleStyle(checkbox: context.field.type == "checkbox"))
             .accessibilityLabel(context.accessibilityName)

@@ -37,7 +37,7 @@ struct SystemPickerRow: View {
                     .environment(\.locale, locale)
                     .resolveFormhausTokens()
             } label: {
-                SystemValueRow(label: context.label, value: summary, prompt: context.choicePrompt)
+                SystemValueRow(context: context, value: summary)
             }
         }
     #endif
@@ -53,14 +53,14 @@ struct SystemPickerRow: View {
             }
             .pickerStyle(.inline)
         } label: {
-            SystemValueRow(label: context.label, value: summary, prompt: context.choicePrompt, chevrons: true)
+            SystemValueRow(context: context, value: summary, chevrons: true)
         }
         .buttonStyle(.plain)
     }
 
     #if os(macOS)
         private var checkboxes: some View {
-            LabeledContent(context.label) {
+            LabeledContent {
                 VStack(alignment: .leading, spacing: 6) {
                     let selected = Set(ChoiceSelection(context: context).values)
                     ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
@@ -69,6 +69,8 @@ struct SystemPickerRow: View {
                             .toggleStyle(.checkbox)
                     }
                 }
+            } label: {
+                SystemRowLabel(context: context)
             }
         }
     #endif
@@ -85,16 +87,15 @@ struct SystemPickerRow: View {
 }
 
 private struct SystemValueRow: View {
-    let label: String
+    let context: FieldContext
     let value: String?
-    let prompt: String
     var chevrons = false
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(label).foregroundStyle(Color.primary)
+            SystemRowLabel(context: context)
             Spacer(minLength: 12)
-            Text(value ?? prompt)
+            Text(value ?? context.choicePrompt)
                 .systemSecondaryText()
                 .multilineTextAlignment(.trailing)
             if chevrons {

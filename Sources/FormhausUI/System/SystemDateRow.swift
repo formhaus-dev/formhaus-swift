@@ -12,7 +12,7 @@ struct SystemDateRow: View {
                 expanded.toggle()
             } label: {
                 HStack {
-                    Text(context.label).foregroundStyle(Color.primary)
+                    SystemRowLabel(context: context)
                     Spacer(minLength: 12)
                     if let display {
                         Text(display)

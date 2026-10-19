@@ -57,7 +57,7 @@ private struct MatrixRowBody: View {
 
     private var heading: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.s1) {
-            (Text(context.label) + Text(context.isRequired ? " *" : "").foregroundStyle(tokens.colors.error))
+            tokens.marked(context.label, required: context.isRequired)
                 .formhausText(.option).fontWeight(.medium)
             if let helper = context.helperText { Text(helper).formhausText(.helper) }
             if let error = context.error, !error.isEmpty { FieldError(text: error) }

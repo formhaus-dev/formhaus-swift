@@ -11,7 +11,7 @@ struct SystemFileRow: View {
                 picking = true
             } label: {
                 HStack {
-                    Text(context.label).foregroundStyle(Color.primary)
+                    SystemRowLabel(context: context)
                     Spacer(minLength: 12)
                     Text(context.fileName ?? context.field.placeholder ?? context.text(forLabel: "chooseFile"))
                         .systemSecondaryText()
