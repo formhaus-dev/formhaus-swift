@@ -1,7 +1,7 @@
 struct StartValues {
     private var seeds = JSONObject()
     private var remembering = true
-    private var memory: [String: JSONValue?] = [:]
+    private var memory = StringMap<JSONValue?>()
 
     mutating func seed(_ values: JSONObject) {
         seeds.merge(values)

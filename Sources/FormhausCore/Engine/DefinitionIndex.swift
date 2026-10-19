@@ -1,17 +1,14 @@
 struct OrderedIndex<Value: AnyObject> {
-    private(set) var keys: [String] = []
-    private var storage: [String: [Value]] = [:]
+    private var storage = StringMap<[Value]>()
+
+    var keys: [String] { storage.keys }
 
     subscript(key: String) -> [Value]? { storage[key] }
 
-    func has(_ key: String) -> Bool { storage[key] != nil }
+    func has(_ key: String) -> Bool { storage.has(key) }
 
     mutating func insert(_ value: Value, for key: String) {
-        guard var list = storage[key] else {
-            keys.append(key)
-            storage[key] = [value]
-            return
-        }
+        var list = storage[key] ?? []
         guard !list.contains(where: { $0 === value }) else { return }
         list.append(value)
         storage[key] = list
@@ -22,7 +19,7 @@ final class DefinitionIndex {
     let definition: FormDefinition
     let allFields: [FormField]
     private(set) var fieldsByKey = OrderedIndex<FormField>()
-    private(set) var routeFields = Set<String>()
+    private(set) var routeFields = KeySet()
     private(set) var fieldDependents = OrderedIndex<FormField>()
     private(set) var stepDependents = OrderedIndex<FormStep>()
     private var stepOfField: [ObjectIdentifier: FormStep] = [:]

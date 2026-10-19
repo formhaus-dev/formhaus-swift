@@ -78,10 +78,10 @@ final class PathCache {
 
 func reconcileStepIndex(_ previous: [FormStep], _ next: [FormStep], _ index: Int) -> Int {
     let previousStep = previous.indices.contains(index) ? previous[index] : previous.last
-    if let previousStep, let preserved = next.firstIndex(where: { $0.id == previousStep.id }) { return preserved }
+    if let previousStep, let preserved = next.firstIndex(where: { sameText($0.id, previousStep.id) }) { return preserved }
     var before = min(index - 1, previous.count - 1)
     while before >= 0 {
-        if let predecessor = next.firstIndex(where: { $0.id == previous[before].id }) { return predecessor }
+        if let predecessor = next.firstIndex(where: { sameText($0.id, previous[before].id) }) { return predecessor }
         before -= 1
     }
     return 0

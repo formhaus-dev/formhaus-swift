@@ -1,7 +1,7 @@
 func createValues(
     _ fields: [FormField], _ initialValues: JSONObject? = nil, pick: (String, JSONObject) -> FormField? = { _, _ in nil }
 ) -> JSONObject {
-    var byKey: [String: [FormField]] = [:]
+    var byKey = StringMap<[FormField]>()
     for field in fields { byKey[field.key, default: []].append(field) }
     var values = JSONObject()
     func fill(_ field: FormField) {
@@ -15,8 +15,8 @@ func createValues(
     }
     let source = initialValues ?? JSONObject()
     for field in fields where byKey[field.key]?.last === field { fill(field) }
-    for (key, value) in source where key != "__proto__" { values[key] = value }
-    var expanded = Set<String>()
+    for (key, value) in source where !sameText(key, "__proto__") { values[key] = value }
+    var expanded = KeySet()
     for field in fields {
         let key = field.key
         let same = byKey[key]!
