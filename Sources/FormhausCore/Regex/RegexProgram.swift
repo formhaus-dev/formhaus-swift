@@ -90,19 +90,17 @@ extension RegexAssertion {
     }
 }
 
-struct MatchInput {
-    let text: [UInt16]
-
-    func unit(at position: Int, backward: Bool) -> UInt16? {
-        if backward { return position > 0 ? text[position - 1] : nil }
-        return position < text.count ? text[position] : nil
+extension [UInt16] {
+    func nextUnit(from position: Int, backward: Bool) -> UInt16? {
+        if backward { return position > 0 ? self[position - 1] : nil }
+        return position < count ? self[position] : nil
     }
 
     func holds(_ assertion: RegexAssertion, at position: Int) -> Bool {
         if assertion == .inputStart { return position == 0 }
-        if assertion == .inputEnd { return position == text.count }
-        let before = position > 0 ? UnitContext(text[position - 1]) : .edge
-        let after = position < text.count ? UnitContext(text[position]) : .edge
+        if assertion == .inputEnd { return position == count }
+        let before = position > 0 ? UnitContext(self[position - 1]) : .edge
+        let after = position < count ? UnitContext(self[position]) : .edge
         return assertion.holds(before: before, after: after)
     }
 }

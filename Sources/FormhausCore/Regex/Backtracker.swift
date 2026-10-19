@@ -24,7 +24,7 @@ struct Backtracker {
     static let memoLimit = 1 << 25
 
     let program: RegexProgram
-    let input: MatchInput
+    let text: [UInt16]
     var slots: [Int]
     var registers: [Int]
     var stack: [Frame] = []
@@ -35,9 +35,9 @@ struct Backtracker {
 
     init(_ program: RegexProgram, _ context: MatchContext) {
         self.program = program
-        input = MatchInput(text: context.text)
+        text = context.text
         self.context = context
-        width = input.text.count + 1
+        width = text.count + 1
         slots = Array(repeating: -1, count: 2 * (program.captureCount + 1))
         registers = Array(repeating: -1, count: program.registerCount)
         let region = program.mainEnd - program.memoFrom
@@ -45,7 +45,6 @@ struct Backtracker {
     }
 
     mutating func search(_ prefilter: Prefilter) throws(BudgetExceeded) -> Bool {
-        let text = input.text
         for start in 0...(text.count - prefilter.minimumLength) {
             if prefilter.anchored && start > 0 { return false }
             if let first = prefilter.first, start == text.count || !first.contains(text[start]) { continue }
@@ -98,10 +97,10 @@ struct Backtracker {
         if memoized(pc), memo?.insert((pc - program.memoFrom) * width + offset) == false { return .failure }
         switch program.instructions[pc] {
         case .unit(let expected, let backward):
-            guard input.unit(at: offset, backward: backward) == expected else { return .failure }
+            guard text.nextUnit(from: offset, backward: backward) == expected else { return .failure }
             offset += backward ? -1 : 1
         case .set(let index, let backward):
-            guard let unit = input.unit(at: offset, backward: backward), program.sets[index].contains(unit) else { return .failure }
+            guard let unit = text.nextUnit(from: offset, backward: backward), program.sets[index].contains(unit) else { return .failure }
             offset += backward ? -1 : 1
         case .split(let first, let second):
             stack.append(.resume(second, offset))
@@ -111,7 +110,7 @@ struct Backtracker {
             pc = target
             return .proceed
         case .assertion(let assertion):
-            guard input.holds(assertion, at: offset) else { return .failure }
+            guard text.holds(assertion, at: offset) else { return .failure }
         case .look(let index):
             guard try evaluateLook(index, offset) else { return .failure }
         case .backreference(let index):

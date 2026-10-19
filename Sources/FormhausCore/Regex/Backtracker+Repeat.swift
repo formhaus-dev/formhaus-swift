@@ -15,7 +15,7 @@ extension Backtracker {
                 stack.append(.scan(Scan(pc: pc + 1, position: position, stop: offset + step * repeated.min, step: -step)))
             }
         } else if repeated.max.map({ $0 > repeated.min }) ?? true {
-            let stop = repeated.max.map { offset + step * $0 } ?? (repeated.backward ? -1 : input.text.count + 1)
+            let stop = repeated.max.map { offset + step * $0 } ?? (repeated.backward ? -1 : text.count + 1)
             stack.append(.extend(Scan(pc: pc, position: position, stop: stop, step: step)))
         }
         return position
@@ -36,7 +36,22 @@ extension Backtracker {
     }
 
     private func consumes(_ repeated: RepeatSet, at position: Int) -> Bool {
-        guard let unit = input.unit(at: position, backward: repeated.backward) else { return false }
+        guard let unit = text.nextUnit(from: position, backward: repeated.backward) else { return false }
         return program.sets[repeated.set].contains(unit)
+    }
+}
+
+struct Bitset {
+    private var words: [UInt64]
+
+    init(count: Int) {
+        words = Array(repeating: 0, count: (count + 63) / 64)
+    }
+
+    mutating func insert(_ index: Int) -> Bool {
+        let bit: UInt64 = 1 << UInt64(index & 63)
+        let old = words[index >> 6]
+        words[index >> 6] = old | bit
+        return old & bit == 0
     }
 }

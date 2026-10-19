@@ -105,10 +105,3 @@ struct ThreadStep: Sendable {
         }
     }
 }
-
-extension [UInt16] {
-    func nextUnit(from position: Int, backward: Bool) -> UInt16? {
-        if backward { return position > 0 ? self[position - 1] : nil }
-        return position < count ? self[position] : nil
-    }
-}

@@ -39,8 +39,7 @@ extension Backtracker {
         let start = slots[2 * group]
         let length = slots[2 * group + 1] - start
         let from = reference.backward ? offset - length : offset
-        guard from >= 0, from + length <= input.text.count else { return nil }
-        let text = input.text
+        guard from >= 0, from + length <= text.count else { return nil }
         for index in 0..<length {
             let left = text[start + index]
             let right = text[from + index]

@@ -23,18 +23,3 @@ final class MatchContext {
         return table[position]
     }
 }
-
-struct Bitset {
-    private var words: [UInt64]
-
-    init(count: Int) {
-        words = Array(repeating: 0, count: (count + 63) / 64)
-    }
-
-    mutating func insert(_ index: Int) -> Bool {
-        let bit: UInt64 = 1 << UInt64(index & 63)
-        let old = words[index >> 6]
-        words[index >> 6] = old | bit
-        return old & bit == 0
-    }
-}
