@@ -1,9 +1,9 @@
-public let defaultMessageKeys = [
+let defaultMessageKeys: [MessageKey] = [
     "required", "minLength", "maxLength", "minItems", "maxItems", "min", "max", "pattern", "matchField", "email",
     "number", "date", "datetime", "time", "option", "options", "boolean", "string", "file", "value", "hidden",
 ]
 
-public let defaultMessages: [String: String] = [
+let defaultMessages: [MessageKey: String] = [
     "required": "This field is required",
     "minLength": "Must be at least {min} characters",
     "maxLength": "Must be at most {max} characters",
@@ -28,10 +28,10 @@ public let defaultMessages: [String: String] = [
 ]
 
 public typealias MessageParams = JSONObject
-public typealias MessageFn = (String, MessageParams, FormField) -> String?
-public typealias ResolveMessage = (String, MessageParams, FormField) -> String
+public typealias MessageFn = @Sendable (MessageKey, MessageParams, FormField) -> String?
+typealias ResolveMessage = @Sendable (MessageKey, MessageParams, FormField) -> String
 
-public enum MessageSource {
+public enum MessageSource: Sendable {
     case catalog(JSONValue)
     case function(MessageFn)
 }
@@ -66,14 +66,14 @@ func formatText(_ template: String, _ params: JSONObject) -> String {
 }
 
 func resolveText(
-    _ defaults: [String: String], _ key: String, _ params: JSONObject, _ sources: [MessageSource?], _ field: FormField?
+    _ defaults: [MessageKey: String], _ key: MessageKey, _ params: JSONObject, _ sources: [MessageSource?], _ field: FormField?
 ) -> String {
     for source in sources {
         switch source {
         case .function(let resolve)?:
             if let field, let text = resolve(key, params, field), !text.isEmpty { return text }
         case .catalog(let catalog)?:
-            if let text = catalog[key]?.stringValue, !text.isEmpty { return formatText(text, params) }
+            if let text = catalog[key.rawValue]?.stringValue, !text.isEmpty { return formatText(text, params) }
         case nil:
             continue
         }
@@ -94,8 +94,8 @@ func namedResolver(_ resolve: @escaping ResolveMessage) -> ResolveMessage {
     }
 }
 
-public func getDefaultMessage(_ rule: String, _ params: JSONObject = JSONObject()) -> String {
-    let template = defaultMessages[rule] ?? defaultMessages["value"]!
-    let custom = params.has("unit") && (rule == "minLength" || rule == "maxLength")
+public func getDefaultMessage(_ rule: MessageKey, _ params: JSONObject = JSONObject()) -> String {
+    let template = defaultMessages[rule] ?? defaultMessages[.value]!
+    let custom = params.has("unit") && (rule == .minLength || rule == .maxLength)
     return formatText(custom ? template.replacingOccurrences(of: "characters", with: "{unit}") : template, params)
 }

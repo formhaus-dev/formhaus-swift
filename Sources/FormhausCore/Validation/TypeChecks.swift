@@ -33,7 +33,7 @@ private enum Format {
         }
     }
 
-    var key: String {
+    var key: MessageKey {
         switch self {
         case .email: "email"
         case .date: "date"
@@ -100,7 +100,7 @@ private func isOption(_ field: FormField, _ value: JSONValue) -> Bool {
     return options.contains { strictEquals($0.json["value"], value) }
 }
 
-private typealias Fail = (String, JSONObject) -> String
+private typealias Fail = (MessageKey, JSONObject) -> String
 
 private func lengthError(_ field: FormField, _ value: String, _ fail: Fail) -> String? {
     let fallback = Double(field.type == "hidden" ? maxHiddenLength : maxStringLength)
@@ -119,7 +119,7 @@ private func multiselectError(_ field: FormField, _ value: JSONValue, _ fail: Fa
     return valid ? nil : fail("option", [:])
 }
 
-private func stringError(_ field: FormField, _ value: JSONValue, _ key: String, _ fail: Fail) -> String? {
+private func stringError(_ field: FormField, _ value: JSONValue, _ key: MessageKey, _ fail: Fail) -> String? {
     guard let text = value.stringValue else { return fail(key, [:]) }
     return lengthError(field, text, fail)
 }
@@ -163,7 +163,7 @@ func typeError(_ field: FormField, _ input: JSONValue?, _ resolve: @escaping Res
     return textTypes.contains(field.type) ? stringError(field, value, "string", fail) : primitiveError(field, value, fail)
 }
 
-func typeMessageKeys(_ field: FormField) -> [String] {
+func typeMessageKeys(_ field: FormField) -> [MessageKey] {
     if field.isGroup { return ["value"] }
     if booleanTypes.contains(field.type) { return ["boolean"] }
     if field.type == "number" { return ["number"] }

@@ -4,7 +4,7 @@ public struct DefinitionIssue: Sendable, Hashable {
         case warning
     }
 
-    public let code: String
+    public let code: IssueCode
     public let severity: Severity
     public let path: String
     public let message: String
@@ -12,7 +12,7 @@ public struct DefinitionIssue: Sendable, Hashable {
 
     public var isError: Bool { severity == .error }
 
-    init(_ severity: Severity, _ code: String, _ path: String, _ problem: String, _ hint: String? = nil) {
+    init(_ severity: Severity, _ code: IssueCode, _ path: String, _ problem: String, _ hint: String? = nil) {
         let sentence = hint.map { $0.hasSuffix("?") ? $0 : "\($0)." }
         self.code = code
         self.severity = severity
@@ -25,7 +25,7 @@ public struct DefinitionIssue: Sendable, Hashable {
         DefinitionIssue(severity: severity, code: code, path: path, message: message, hint: hint)
     }
 
-    private init(severity: Severity, code: String, path: String, message: String, hint: String?) {
+    private init(severity: Severity, code: IssueCode, path: String, message: String, hint: String?) {
         self.code = code
         self.severity = severity
         self.path = path
@@ -42,11 +42,11 @@ public struct FormDefinitionError: Error, Sendable, CustomStringConvertible {
     }
 }
 
-func error(_ code: String, _ path: String, _ problem: String, _ hint: String? = nil) -> DefinitionIssue {
+func error(_ code: IssueCode, _ path: String, _ problem: String, _ hint: String? = nil) -> DefinitionIssue {
     DefinitionIssue(.error, code, path, problem, hint)
 }
 
-func warning(_ code: String, _ path: String, _ problem: String, _ hint: String? = nil) -> DefinitionIssue {
+func warning(_ code: IssueCode, _ path: String, _ problem: String, _ hint: String? = nil) -> DefinitionIssue {
     DefinitionIssue(.warning, code, path, problem, hint)
 }
 
