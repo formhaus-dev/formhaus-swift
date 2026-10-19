@@ -21,6 +21,8 @@ enum DemoLanguage: String, CaseIterable, Identifiable, Sendable {
 
 struct DemoCopy: Sendable {
     let language: String
+    let style: String
+    let options: String
     let restart: String
     let emailTaken: String
     let thanks: String
@@ -31,12 +33,14 @@ struct DemoCopy: Sendable {
     let newInquiry: String
 
     static let english = DemoCopy(
-        language: "Language", restart: "Restart", emailTaken: "This email is already registered. Try another one.",
+        language: "Language", style: "Style", options: "Options", restart: "Restart",
+        emailTaken: "This email is already registered. Try another one.",
         thanks: "Thanks, {name}!", thanksAnonymous: "Thanks!", reply: "We got your inquiry and will reply within one business day.",
         project: "Project", replyTo: "Reply to", newInquiry: "Start a new inquiry")
 
     static let german = DemoCopy(
-        language: "Sprache", restart: "Neu starten", emailTaken: "Diese E-Mail ist bereits registriert. Versuchen Sie eine andere.",
+        language: "Sprache", style: "Stil", options: "Optionen", restart: "Neu starten",
+        emailTaken: "Diese E-Mail ist bereits registriert. Versuchen Sie eine andere.",
         thanks: "Danke, {name}!", thanksAnonymous: "Danke!",
         reply: "Wir haben Ihre Anfrage erhalten und antworten innerhalb eines Werktags.",
         project: "Projekt", replyTo: "Antwort an", newInquiry: "Neue Anfrage starten")

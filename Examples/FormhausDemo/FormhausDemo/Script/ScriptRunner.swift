@@ -6,6 +6,7 @@ protocol ScriptStage: AnyObject {
     var model: FormModel { get }
     func reveal(_ key: String)
     func setLanguage(_ language: DemoLanguage)
+    var style: DemoStyle { get set }
 }
 
 @MainActor
@@ -37,6 +38,7 @@ struct ScriptRunner {
         case .back: await model.back()
         case .submit: await model.submit()
         case .language(let language): stage.setLanguage(language)
+        case .style(let style): stage.style = style
         }
     }
 

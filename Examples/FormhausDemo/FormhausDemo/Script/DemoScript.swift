@@ -12,6 +12,7 @@ enum Beat: Sendable {
     case back
     case submit
     case language(DemoLanguage)
+    case style(DemoStyle)
 }
 
 struct DemoScript: Sendable {
@@ -22,7 +23,7 @@ struct DemoScript: Sendable {
         all.first { $0.name == name }
     }
 
-    static let all = [tour, languages]
+    static let all = [tour, languages, styles]
 
     static let tour = DemoScript(
         name: "tour",
@@ -54,5 +55,20 @@ struct DemoScript: Sendable {
             .language(.german), .mark("german"), .wait(.hold),
             .next, .mark("germanError"), .wait(.hold),
             .language(.english), .mark("english"), .wait(.hold),
+        ])
+
+    static let styles = DemoScript(
+        name: "styles",
+        beats: [
+            .mark("start"), .wait(.intro),
+            .pick("projectType", "redesign"), .wait(.beat),
+            .reveal("currentSite"), .type("currentSite", "https://northwind.studio"), .wait(.short),
+            .reveal("siteRating"), .pick("siteRating", 4), .wait(.beat),
+            .next, .wait(.beat),
+            .toggle("services", "design"), .wait(.short), .toggle("services", "development"), .wait(.short),
+            .pick("priorityLaunch", "high"), .mark("filled"), .wait(.hold),
+            .style(.system), .mark("system"), .wait(.style),
+            .style(.brand), .mark("brand"), .wait(.style),
+            .style(.formhaus), .mark("formhaus"), .wait(.style),
         ])
 }

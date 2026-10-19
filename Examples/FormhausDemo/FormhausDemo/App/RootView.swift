@@ -16,7 +16,7 @@ struct RootView: View {
                 #endif
                 .toolbar { toolbar }
         }
-        .tint(Brand.primary(scheme))
+        .tint(session.style.tint(scheme))
         .task { await playScript() }
     }
 
@@ -31,24 +31,45 @@ struct RootView: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        #if os(macOS)
+            ToolbarItem(placement: .principal) {
+                Picker(session.copy.style, selection: styleBinding) {
+                    ForEach(DemoStyle.allCases) { style in Text(style.name).tag(style) }
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+            }
+        #endif
         ToolbarItem(placement: .primaryAction) {
             Menu {
-                Picker(session.copy.language, selection: Binding(get: { session.language }, set: { session.setLanguage($0) })) {
-                    ForEach(DemoLanguage.allCases) { language in
-                        Text(language.name).tag(language)
+                #if os(iOS)
+                    Picker(selection: styleBinding) {
+                        ForEach(DemoStyle.allCases) { style in Label(style.name, systemImage: style.symbol).tag(style) }
+                    } label: {
+                        Label(session.copy.style, systemImage: "swatchpalette")
                     }
+                    .pickerStyle(.menu)
+                #endif
+                Picker(selection: Binding(get: { session.language }, set: { session.setLanguage($0) })) {
+                    ForEach(DemoLanguage.allCases) { language in Text(language.name).tag(language) }
+                } label: {
+                    Label(session.copy.language, systemImage: "globe")
+                }
+                .pickerStyle(.menu)
+                Divider()
+                Button {
+                    session.restart()
+                } label: {
+                    Label(session.copy.restart, systemImage: "arrow.counterclockwise")
                 }
             } label: {
-                Label(session.copy.language, systemImage: "globe")
+                Label(session.copy.options, systemImage: "ellipsis")
             }
         }
-        ToolbarItem(placement: .primaryAction) {
-            Button {
-                session.restart()
-            } label: {
-                Label(session.copy.restart, systemImage: "arrow.counterclockwise")
-            }
-        }
+    }
+
+    private var styleBinding: Binding<DemoStyle> {
+        Binding(get: { session.style }, set: { style in withAnimation(.snappy) { session.style = style } })
     }
 
     private func playScript() async {
