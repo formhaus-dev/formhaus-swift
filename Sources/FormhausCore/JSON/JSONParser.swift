@@ -8,6 +8,8 @@ public struct JSONParseError: Error, Sendable, CustomStringConvertible {
 }
 
 extension JSONValue {
+    public static let maxNestingDepth = 512
+
     public init(parsing text: String) throws(JSONParseError) {
         try self.init(parsing: Data(text.utf8))
     }
@@ -16,6 +18,11 @@ extension JSONValue {
         var parser = JSONParser(bytes: [UInt8](data))
         self = try parser.parseDocument()
     }
+}
+
+private enum Container {
+    case array([JSONValue])
+    case object(JSONObject, String)
 }
 
 private struct JSONParser {
@@ -27,10 +34,42 @@ private struct JSONParser {
     }
 
     mutating func parseDocument() throws(JSONParseError) -> JSONValue {
-        let value = try parseValue()
-        skipWhitespace()
-        guard index == bytes.count else { throw fail("unexpected trailing content") }
-        return value
+        var stack: [Container] = []
+        while true {
+            guard var value = try openValue(&stack) else { continue }
+            while true {
+                guard let top = stack.popLast() else {
+                    skipWhitespace()
+                    guard index == bytes.count else { throw fail("unexpected trailing content") }
+                    return value
+                }
+                skipWhitespace()
+                guard index < bytes.count else { throw fail("unexpected end of input") }
+                let byte = bytes[index]
+                index += 1
+                switch top {
+                case .array(var items):
+                    items.append(value)
+                    if byte == UInt8(ascii: ",") {
+                        stack.append(.array(items))
+                        break
+                    }
+                    guard byte == UInt8(ascii: "]") else { throw fail("expected ',' or ']'") }
+                    value = .array(items)
+                    continue
+                case .object(var object, let key):
+                    object[key] = value
+                    if byte == UInt8(ascii: ",") {
+                        stack.append(.object(object, try parseKey()))
+                        break
+                    }
+                    guard byte == UInt8(ascii: "}") else { throw fail("expected ',' or '}'") }
+                    value = .object(object)
+                    continue
+                }
+                break
+            }
+        }
     }
 
     func fail(_ reason: String) -> JSONParseError {
@@ -41,18 +80,46 @@ private struct JSONParser {
         while index < bytes.count, [0x20, 0x09, 0x0A, 0x0D].contains(bytes[index]) { index += 1 }
     }
 
-    mutating func parseValue() throws(JSONParseError) -> JSONValue {
+    mutating func openValue(_ stack: inout [Container]) throws(JSONParseError) -> JSONValue? {
         skipWhitespace()
         guard index < bytes.count else { throw fail("unexpected end of input") }
+        let opens = bytes[index] == UInt8(ascii: "[") || bytes[index] == UInt8(ascii: "{")
+        if opens && stack.count >= JSONValue.maxNestingDepth { throw fail("nesting deeper than \(JSONValue.maxNestingDepth) levels") }
         switch bytes[index] {
-        case UInt8(ascii: "{"): return .object(try parseObject())
-        case UInt8(ascii: "["): return .array(try parseArray())
+        case UInt8(ascii: "["):
+            index += 1
+            skipWhitespace()
+            if index < bytes.count, bytes[index] == UInt8(ascii: "]") {
+                index += 1
+                return .array([])
+            }
+            stack.append(.array([]))
+            return nil
+        case UInt8(ascii: "{"):
+            index += 1
+            skipWhitespace()
+            if index < bytes.count, bytes[index] == UInt8(ascii: "}") {
+                index += 1
+                return .object(JSONObject())
+            }
+            stack.append(.object(JSONObject(), try parseKey()))
+            return nil
         case UInt8(ascii: "\""): return .string(try parseString())
         case UInt8(ascii: "t"): return try literal("true", .bool(true))
         case UInt8(ascii: "f"): return try literal("false", .bool(false))
         case UInt8(ascii: "n"): return try literal("null", .null)
         default: return .number(try parseNumber())
         }
+    }
+
+    mutating func parseKey() throws(JSONParseError) -> String {
+        skipWhitespace()
+        guard index < bytes.count, bytes[index] == UInt8(ascii: "\"") else { throw fail("expected a property name") }
+        let key = try parseString()
+        skipWhitespace()
+        guard index < bytes.count, bytes[index] == UInt8(ascii: ":") else { throw fail("expected ':'") }
+        index += 1
+        return key
     }
 
     mutating func literal(_ word: String, _ value: JSONValue) throws(JSONParseError) -> JSONValue {
@@ -62,56 +129,6 @@ private struct JSONParser {
         }
         index += expected.count
         return value
-    }
-
-    mutating func parseObject() throws(JSONParseError) -> JSONObject {
-        index += 1
-        var object = JSONObject()
-        skipWhitespace()
-        if index < bytes.count, bytes[index] == UInt8(ascii: "}") {
-            index += 1
-            return object
-        }
-        while true {
-            skipWhitespace()
-            guard index < bytes.count, bytes[index] == UInt8(ascii: "\"") else { throw fail("expected a property name") }
-            let key = try parseString()
-            skipWhitespace()
-            guard index < bytes.count, bytes[index] == UInt8(ascii: ":") else { throw fail("expected ':'") }
-            index += 1
-            object[key] = try parseValue()
-            skipWhitespace()
-            guard index < bytes.count else { throw fail("unterminated object") }
-            if bytes[index] == UInt8(ascii: ",") {
-                index += 1
-                continue
-            }
-            guard bytes[index] == UInt8(ascii: "}") else { throw fail("expected ',' or '}'") }
-            index += 1
-            return object
-        }
-    }
-
-    mutating func parseArray() throws(JSONParseError) -> [JSONValue] {
-        index += 1
-        var items: [JSONValue] = []
-        skipWhitespace()
-        if index < bytes.count, bytes[index] == UInt8(ascii: "]") {
-            index += 1
-            return items
-        }
-        while true {
-            items.append(try parseValue())
-            skipWhitespace()
-            guard index < bytes.count else { throw fail("unterminated array") }
-            if bytes[index] == UInt8(ascii: ",") {
-                index += 1
-                continue
-            }
-            guard bytes[index] == UInt8(ascii: "]") else { throw fail("expected ',' or ']'") }
-            index += 1
-            return items
-        }
     }
 
     mutating func parseString() throws(JSONParseError) -> String {
@@ -126,7 +143,15 @@ private struct JSONParser {
             }
             if byte < 0x20 { throw fail("control character in string") }
             if byte == UInt8(ascii: "\\") {
-                units.append(contentsOf: try parseEscape())
+                let escaped = try parseEscape()
+                if UTF16.isTrailSurrogate(escaped) { throw fail("lone surrogate in string") }
+                units.append(escaped)
+                if UTF16.isLeadSurrogate(escaped) {
+                    guard index < bytes.count, bytes[index] == UInt8(ascii: "\\") else { throw fail("lone surrogate in string") }
+                    let trail = try parseEscape()
+                    guard UTF16.isTrailSurrogate(trail) else { throw fail("lone surrogate in string") }
+                    units.append(trail)
+                }
                 continue
             }
             let start = index
@@ -137,26 +162,26 @@ private struct JSONParser {
         }
     }
 
-    mutating func parseEscape() throws(JSONParseError) -> [UInt16] {
+    mutating func parseEscape() throws(JSONParseError) -> UInt16 {
         index += 1
         guard index < bytes.count else { throw fail("unterminated escape") }
         let byte = bytes[index]
         index += 1
         switch byte {
-        case UInt8(ascii: "\""): return [0x22]
-        case UInt8(ascii: "\\"): return [0x5C]
-        case UInt8(ascii: "/"): return [0x2F]
-        case UInt8(ascii: "b"): return [0x08]
-        case UInt8(ascii: "f"): return [0x0C]
-        case UInt8(ascii: "n"): return [0x0A]
-        case UInt8(ascii: "r"): return [0x0D]
-        case UInt8(ascii: "t"): return [0x09]
+        case UInt8(ascii: "\""): return 0x22
+        case UInt8(ascii: "\\"): return 0x5C
+        case UInt8(ascii: "/"): return 0x2F
+        case UInt8(ascii: "b"): return 0x08
+        case UInt8(ascii: "f"): return 0x0C
+        case UInt8(ascii: "n"): return 0x0A
+        case UInt8(ascii: "r"): return 0x0D
+        case UInt8(ascii: "t"): return 0x09
         case UInt8(ascii: "u"):
-            guard index + 4 <= bytes.count,
+            guard index + 4 <= bytes.count, bytes[index..<index + 4].allSatisfy({ Character(Unicode.Scalar($0)).isHexDigit }),
                 let unit = UInt16(String(decoding: bytes[index..<index + 4], as: UTF8.self), radix: 16)
             else { throw fail("invalid unicode escape") }
             index += 4
-            return [unit]
+            return unit
         default: throw fail("invalid escape")
         }
     }
