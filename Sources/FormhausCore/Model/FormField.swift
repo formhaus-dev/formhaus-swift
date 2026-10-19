@@ -3,6 +3,7 @@ public struct FieldOption: Sendable, Hashable {
 
     public var value: String? { json["value"]?.stringValue }
     public var label: String? { json["label"]?.stringValue }
+    public var image: String? { json["image"]?.stringValue }
 }
 
 public struct FieldValidation: Sendable, Hashable {
@@ -50,6 +51,7 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
     public var addLabel: String? { json["addLabel"]?.stringValue }
     public var removeLabel: String? { json["removeLabel"]?.stringValue }
     public var layout: JSONValue? { json["layout"] }
+    public var columns: Int? { json["columns"]?.numberValue.flatMap { Int(exactly: $0) } }
     public var accept: JSONValue? { json["accept"] }
     public var rows: JSONValue? { json["rows"] }
     public var mask: JSONValue? { json["mask"] }
@@ -62,6 +64,16 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
     public var hasOptionsFrom: Bool { optionsFrom?.isTruthy == true }
     public var defaultItems: Double? { json["defaultItems"]?.numberValue }
     public var isGroup: Bool { type == "group" }
+    public var isScale: Bool { scaleTypes.contains(type) }
+
+    var hasPictures: Bool {
+        ["radio", "multiselect"].contains(type) && (options ?? []).contains { $0.image?.isEmpty == false }
+    }
+
+    public var scaleRange: (min: Double, max: Double)? {
+        guard isScale else { return nil }
+        return (type == "rating" ? 1 : validation?.min ?? 1, validation?.max ?? 5)
+    }
 
     public var optionsDependsOn: [String]? {
         json["optionsDependsOn"]?.arrayValue?.compactMap(\.stringValue)
@@ -91,6 +103,8 @@ public struct FormSection: Sendable, Conditional, NodeIdentity {
 
     public var title: String? { json["title"]?.stringValue }
     public var description: String? { json["description"]?.stringValue }
+    public var layout: String? { json["layout"]?.stringValue }
+    public var isMatrix: Bool { layout == "matrix" }
 }
 
 public enum FormNode: Sendable, Conditional {

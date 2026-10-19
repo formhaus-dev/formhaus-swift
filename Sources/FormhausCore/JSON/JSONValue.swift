@@ -61,6 +61,10 @@ public enum JSONValue: Sendable, Hashable {
         }
     }
 
+    var isInteger: Bool {
+        numberValue?.isInteger == true
+    }
+
     var isFiniteNumber: Bool {
         if case .number(let value) = self { return value.isFinite }
         return false
@@ -125,4 +129,8 @@ func strictEquals(_ lhs: JSONValue?, _ rhs: JSONValue?) -> Bool {
 
 func sameValueZero(_ lhs: JSONValue?, _ rhs: JSONValue?) -> Bool {
     strictEquals(lhs, rhs)
+}
+
+extension Double {
+    var isInteger: Bool { isFinite && rounded(.towardZero) == self }
 }
