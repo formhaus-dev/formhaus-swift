@@ -54,7 +54,7 @@ let auditCases: [AuditCase] = [
     AuditCase(name: "contact-error") {
         let model = try demoModel(["projectType": "landing-page"])
         await model.next()
-        await model.submit()
+        model.engine.validate()
         return model
     },
     AuditCase(name: "rare-error") {

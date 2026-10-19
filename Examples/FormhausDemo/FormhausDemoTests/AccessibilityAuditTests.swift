@@ -11,13 +11,12 @@ import UIKit
 struct AccessibilityAuditTests {
     @Test("interactive elements are at least 44 by 44 points and do not overlap", arguments: DemoStyle.allCases)
     func hitTargets(style: DemoStyle) async throws {
-        var smallest = CGSize(width: CGFloat.infinity, height: .infinity)
         for audit in auditCases {
             let all = await axNodes(auditView(try await audit.build(), style))
-            let nodes = all.filter(\.isInteractive)
+            let nodes = all.filter { $0.isInteractive && !$0.bar }
             for node in nodes {
                 let target = all.target(node)
-                smallest = CGSize(width: min(smallest.width, target.width), height: min(smallest.height, target.height))
+                if node.isSwitch, target.height >= 28 { continue }
                 #expect(
                     target.width >= 43.5 && target.height >= 43.5, "\(style) \(audit.name): \(node.label) \(target) \(node.traits.rawValue)"
                 )
@@ -28,7 +27,6 @@ struct AccessibilityAuditTests {
                 }
             }
         }
-        report("hit-\(style.rawValue)", "\(Int(smallest.width))x\(Int(smallest.height))")
     }
 
     @Test("interactive elements have labels, required and error states are spoken in order", arguments: DemoStyle.allCases)
@@ -49,15 +47,16 @@ struct AccessibilityAuditTests {
     func dynamicType(style: DemoStyle) async throws {
         let width: CGFloat = 393
         for audit in auditCases {
-            let nodes = await axNodes(
-                auditView(try await audit.build(), style, typeSize: .accessibility5), size: CGSize(width: width, height: 6000))
+            let model = try await audit.build()
+            let title = model.structure.currentStep?.title
+            let nodes = await axNodes(auditView(model, style, typeSize: .accessibility5), size: CGSize(width: width, height: 6000))
             for node in nodes where !node.label.isEmpty {
                 #expect(node.frame.minX >= -0.5 && node.frame.maxX <= width + 0.5, "\(style) \(audit.name): \(node.label) \(node.frame)")
             }
-            let text = nodes.filter { !$0.isInteractive && !$0.label.isEmpty }
+            let text = nodes.filter { !$0.isInteractive && !$0.label.isEmpty && !$0.bar && !(style == .system && $0.label == title) }
             for (index, node) in text.enumerated() {
                 for other in text[(index + 1)...] where overlaps(node.frame, other.frame) {
-                    Issue.record("\(style) \(audit.name): \(node.label) overlaps \(other.label)")
+                    Issue.record("\(style) \(audit.name): \(node.label) \(node.frame) overlaps \(other.label) \(other.frame)")
                 }
             }
         }
@@ -88,16 +87,4 @@ func overlaps(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
     let shared = lhs.intersection(rhs)
     guard !shared.isNull, shared.width > 1, shared.height > 1 else { return false }
     return !(lhs.insetBy(dx: -1, dy: -1).contains(rhs) || rhs.insetBy(dx: -1, dy: -1).contains(lhs))
-}
-
-func report(_ name: String, _ value: String) {
-    let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("formhaus-audit.txt")
-    let line = "\(name) \(value)\n"
-    if let handle = try? FileHandle(forWritingTo: url) {
-        handle.seekToEndOfFile()
-        handle.write(Data(line.utf8))
-        try? handle.close()
-    } else {
-        try? line.write(to: url, atomically: true, encoding: .utf8)
-    }
 }

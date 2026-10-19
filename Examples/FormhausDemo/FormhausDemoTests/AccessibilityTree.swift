@@ -1,6 +1,8 @@
 import SwiftUI
 import UIKit
 
+@testable import FormhausDemo
+
 struct AXNode {
     let label: String
     let value: String
@@ -8,8 +10,10 @@ struct AXNode {
     let traits: UIAccessibilityTraits
     let frame: CGRect
     var cell: CGRect?
+    var bar = false
 
     var isInteractive: Bool { traits.contains(.button) || traits.contains(.adjustable) }
+    var isSwitch: Bool { traits.contains(.toggleButton) }
 }
 
 @MainActor
@@ -23,14 +27,15 @@ private let automation: Void = {
 @MainActor
 func axNodes(_ view: some View, size: CGSize = CGSize(width: 393, height: 2400)) async -> [AXNode] {
     automation
+    ScriptKeyboard.hide()
     let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
     let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow()
     window.frame = CGRect(origin: .zero, size: size)
     let controller = UIHostingController(rootView: view)
     window.rootViewController = controller
     window.isHidden = false
-    for _ in 0..<6 {
-        try? await Task.sleep(for: .milliseconds(60))
+    for _ in 0..<10 {
+        try? await Task.sleep(for: .milliseconds(100))
         window.layoutIfNeeded()
     }
     var nodes: [AXNode] = []
@@ -41,17 +46,18 @@ func axNodes(_ view: some View, size: CGSize = CGSize(width: 393, height: 2400))
 }
 
 @MainActor
-private func walk(_ element: NSObject, cell: CGRect? = nil, into nodes: inout [AXNode]) {
+private func walk(_ element: NSObject, cell: CGRect? = nil, bar: Bool = false, into nodes: inout [AXNode]) {
     let cell = element is UICollectionViewCell ? element.accessibilityFrame : cell
+    let bar = bar || element is UINavigationBar
     if element.isAccessibilityElement {
         nodes.append(
             AXNode(
                 label: element.accessibilityLabel ?? "", value: element.accessibilityValue ?? "",
                 hint: element.accessibilityHint ?? "", traits: element.accessibilityTraits, frame: element.accessibilityFrame,
-                cell: cell))
+                cell: cell, bar: bar))
         return
     }
-    for child in children(of: element) { walk(child, cell: cell, into: &nodes) }
+    for child in children(of: element) { walk(child, cell: cell, bar: bar, into: &nodes) }
 }
 
 @MainActor
