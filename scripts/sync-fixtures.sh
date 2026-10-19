@@ -19,6 +19,14 @@ if [ ! -d "$source_repo/.git" ] && ! git -C "$source_repo" rev-parse --git-dir >
 fi
 
 sha=$(git -C "$source_repo" rev-parse --verify "$ref^{commit}")
+full_name=$(git -C "$source_repo" rev-parse --symbolic-full-name "$ref" 2>/dev/null || true)
+case $ref in
+  HEAD | HEAD[~^@]* | @ | @[~^{]*) full_name= ;;
+esac
+case $full_name in
+  refs/heads/* | refs/tags/* | refs/remotes/*) recorded_ref=$ref ;;
+  *) recorded_ref=$sha ;;
+esac
 git -C "$source_repo" cat-file -e "$sha:$source_dir" 2>/dev/null || {
   echo "error: $source_dir does not exist at $ref ($sha)" >&2
   exit 1
@@ -33,6 +41,6 @@ rm -rf "$target"
 mkdir -p "$fixtures"
 mv "$staging/$source_dir" "$target"
 
-printf 'ref: %s\nsha: %s\n' "$ref" "$sha" > "$fixtures/VERSION"
+printf 'ref: %s\nsha: %s\n' "$recorded_ref" "$sha" > "$fixtures/VERSION"
 
-echo "synced $source_dir at $ref ($sha)"
+echo "synced $source_dir at $recorded_ref ($sha)"
