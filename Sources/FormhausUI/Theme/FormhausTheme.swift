@@ -29,7 +29,6 @@ public struct Spacing: Sendable {
     public var s10: CGFloat = 24
     public var gap: CGFloat = 28
     public var cardPadding: CGFloat = 24
-    public var compactCardPadding: CGFloat = 16
 
     public init() {}
 }
@@ -91,7 +90,11 @@ public struct FormhausTheme: Sendable {
 
     public static let pointer = FormhausTheme(typography: Typography(body: 15, small: 13), controls: Controls(star: 32))
 
-    public static let touch = FormhausTheme(typography: Typography(body: 17, small: 15), controls: Controls(star: 40))
+    public static let touch: FormhausTheme = {
+        var spacing = Spacing()
+        spacing.cardPadding = 16
+        return FormhausTheme(typography: Typography(body: 17, small: 15), spacing: spacing, controls: Controls(star: 40))
+    }()
 
     #if os(iOS)
         public static let standard = touch

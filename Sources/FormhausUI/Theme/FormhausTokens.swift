@@ -51,7 +51,6 @@ extension Spacing {
         copy.s10 *= factor
         copy.gap *= factor
         copy.cardPadding *= factor
-        copy.compactCardPadding *= factor
         return copy
     }
 }
