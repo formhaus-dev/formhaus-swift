@@ -57,7 +57,7 @@ private struct MatrixRowBody: View {
 
     private var heading: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.s1) {
-            (Text(context.label) + Text(context.isRequired ? " *" : "").foregroundStyle(tokens.colors.error))
+            tokens.marked(context.label, required: context.isRequired)
                 .formhausText(.option).fontWeight(.medium)
             if let helper = context.helperText { Text(helper).formhausText(.helper) }
             if let error = context.error, !error.isEmpty { FieldError(text: error) }
@@ -69,12 +69,11 @@ private struct MatrixRowBody: View {
     private func cell(_ option: FieldOption, caption: Bool) -> some View {
         let value = option.value ?? ""
         let selected = isSelected(value)
-        let invalid = context.isInvalid && !selected
         return Button {
             choose(value)
         } label: {
             VStack(spacing: tokens.spacing.s1) {
-                ChoiceIndicator(context.field.type == "radio" ? .radio : .checkbox, selected: selected, invalid: invalid)
+                ChoiceIndicator(context.field.type == "radio" ? .radio : .checkbox, selected: selected)
                 if caption {
                     Text(option.label ?? value).formhausText(.caption).multilineTextAlignment(.center)
                 }

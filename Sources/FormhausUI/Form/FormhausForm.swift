@@ -84,9 +84,18 @@ final class ModelHolder {
 
 private struct FormScroller: View {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.formhausComponents) private var components
     let model: FormModel
 
     var body: some View {
+        if components.system {
+            FormhausFormContent(model: model)
+        } else {
+            scroller
+        }
+    }
+
+    private var scroller: some View {
         ScrollView {
             FormhausFormContent(model: model)
                 .padding(tokens.spacing.s10)
@@ -100,6 +109,7 @@ private struct FormScroller: View {
 
 public struct FormhausFormContent: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.formhausComponents) private var components
     let model: FormModel
 
     public init(model: FormModel) {
@@ -107,11 +117,18 @@ public struct FormhausFormContent: View {
     }
 
     public var body: some View {
-        ScrollViewReader { proxy in
-            FormStack(model: model)
-                .background(alignment: .top) { Color.clear.frame(height: 1).id(topAnchor(model)) }
-                .onChange(of: model.focusRequest) { _, request in scroll(proxy, to: request) }
-                .onChange(of: model.structure.currentStep?.nodeID) { scrollToTop(proxy) }
+        Group {
+            if components.system {
+                SystemForm(model: model)
+            } else {
+                ScrollViewReader { proxy in
+                    FormStack(model: model)
+                        .background(alignment: .top) { Color.clear.frame(height: 1).id(topAnchor(model)) }
+                        .onChange(of: model.focusRequest) { _, request in scroll(proxy, to: request) }
+                        .onChange(of: model.structure.currentStep?.nodeID) { scrollToTop(proxy) }
+                        .sensoryFeedback(.error, trigger: model.invalidAttempts)
+                }
+            }
         }
         .formLocale(model.definition.lang)
         .onAppear { model.start() }
@@ -145,8 +162,8 @@ private struct FormStack: View {
         VStack(alignment: .leading, spacing: tokens.spacing.gap) {
             FormProgress(model: model)
             if behavior.errorSummary { FormErrorSummary(model: model) }
-            FormFields(model: model)
             FormTopLevelErrors(model: model)
+            FormFields(model: model)
             FormActionsSlot(model: model)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

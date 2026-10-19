@@ -58,7 +58,7 @@ struct SelectableSurface: ViewModifier {
     private var border: Color {
         if selected { return tokens.colors.primary }
         if invalid { return tokens.colors.error }
-        return hovered && enabled ? tokens.colors.borderHover : tokens.colors.border
+        return hovered && enabled ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
     }
 }
 

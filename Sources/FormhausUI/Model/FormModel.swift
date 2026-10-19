@@ -27,6 +27,8 @@ public final class FormModel {
         didSet { if oldValue != loading { refreshDisabled() } }
     }
     public private(set) var disabled = false
+    private(set) var alertVersion = 0
+    @ObservationIgnored private var seenErrors = -1
 
     @ObservationIgnored private var fieldStates: [String: FieldState] = [:]
     @ObservationIgnored private var groupStates: [String: GroupState] = [:]
@@ -141,6 +143,7 @@ public final class FormModel {
 
     func setActionError(_ message: String?) {
         if actionError != message { actionError = message }
+        if message != nil { alertVersion += 1 }
     }
 
     private func refresh() {
@@ -186,6 +189,10 @@ public final class FormModel {
         assign(\.stepValidating, engine.stepValidating)
         assign(\.submitting, engine.submitting)
         assign(\.topLevelErrors, engine.topLevelErrors)
+        if engine.errorsVersion != seenErrors {
+            seenErrors = engine.errorsVersion
+            if !topLevelErrors.isEmpty { alertVersion += 1 }
+        }
         assign(\.actions, engine.actionsState(options.labels))
         let errors = engine.errors
         if errors != lastErrors || errorEntries.isEmpty != errors.isEmpty || structureVersion != lastStructureVersion {

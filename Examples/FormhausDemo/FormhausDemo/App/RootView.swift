@@ -5,6 +5,7 @@ extension DemoSession: ScriptStage {}
 
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorSchemeContrast) private var contrast
     let session: DemoSession
 
     var body: some View {
@@ -16,7 +17,7 @@ struct RootView: View {
                 #endif
                 .toolbar { toolbar }
         }
-        .tint(Brand.primary(scheme))
+        .tint(session.style.palette(scheme, contrast).primary)
         .task { await playScript() }
     }
 
@@ -31,24 +32,45 @@ struct RootView: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        #if os(macOS)
+            ToolbarItem(placement: .principal) {
+                Picker(session.copy.style, selection: styleBinding) {
+                    ForEach(DemoStyle.allCases) { style in Text(style.name).tag(style) }
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+            }
+        #endif
         ToolbarItem(placement: .primaryAction) {
             Menu {
-                Picker(session.copy.language, selection: Binding(get: { session.language }, set: { session.setLanguage($0) })) {
-                    ForEach(DemoLanguage.allCases) { language in
-                        Text(language.name).tag(language)
+                #if os(iOS)
+                    Picker(selection: styleBinding) {
+                        ForEach(DemoStyle.allCases) { style in Label(style.name, systemImage: style.symbol).tag(style) }
+                    } label: {
+                        Label(session.copy.style, systemImage: "swatchpalette")
                     }
+                    .pickerStyle(.menu)
+                #endif
+                Picker(selection: Binding(get: { session.language }, set: { session.setLanguage($0) })) {
+                    ForEach(DemoLanguage.allCases) { language in Text(language.name).tag(language) }
+                } label: {
+                    Label(session.copy.language, systemImage: "globe")
+                }
+                .pickerStyle(.menu)
+                Divider()
+                Button {
+                    session.restart()
+                } label: {
+                    Label(session.copy.restart, systemImage: "arrow.counterclockwise")
                 }
             } label: {
-                Label(session.copy.language, systemImage: "globe")
+                Label(session.copy.options, systemImage: "ellipsis")
             }
         }
-        ToolbarItem(placement: .primaryAction) {
-            Button {
-                session.restart()
-            } label: {
-                Label(session.copy.restart, systemImage: "arrow.counterclockwise")
-            }
-        }
+    }
+
+    private var styleBinding: Binding<DemoStyle> {
+        Binding(get: { session.style }, set: { style in withAnimation(.snappy) { session.style = style } })
     }
 
     private func playScript() async {
@@ -60,11 +82,7 @@ struct RootView: View {
 }
 
 enum Brand {
-    static func primary(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Palette.dark.primary : Palette.light.primary
-    }
-
-    static func background(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Palette.dark.background : Palette.light.background
+    static func palette(_ scheme: ColorScheme, _ contrast: ColorSchemeContrast) -> Palette {
+        FormhausTheme.standard.palette(for: scheme, contrast: contrast)
     }
 }

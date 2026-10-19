@@ -4,6 +4,7 @@
   "beat": 0.9,
   "short": 0.45,
   "hold": 2.2,
+  "style": 2.8,
   "keystroke": 0.07,
   "wordPause": 0.12,
   "submitDelay": 1.3

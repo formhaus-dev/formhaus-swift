@@ -23,6 +23,7 @@ final class DemoSession {
     }
 
     private(set) var language: DemoLanguage
+    var style: DemoStyle
     private(set) var model: FormModel
     private(set) var phase = Phase.form
     private(set) var scrollTarget: ScrollTarget?
@@ -35,6 +36,7 @@ final class DemoSession {
     init(launch: LaunchOptions, bundle: Bundle = .main) {
         self.launch = launch
         language = launch.language
+        style = launch.style
         timings = ScriptTimings.load(from: bundle, speed: launch.speed)
         do {
             source = try FormSource(bundle: bundle)

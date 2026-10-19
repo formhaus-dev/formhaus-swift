@@ -6,9 +6,11 @@ public struct FormComponents: Sendable {
     var fields: [String: FieldViewBuilder] = [:]
     var slots = ContainerSlots()
     let builtIns: Bool
+    var system = false
 
     public static let standard = FormComponents(builtIns: true)
     public static let headless = FormComponents(builtIns: false)
+    public static let system = FormComponents(builtIns: true, system: true)
 
     public func field<Content: View>(
         _ type: String, @ViewBuilder _ content: @escaping @MainActor @Sendable (FieldContext) -> Content

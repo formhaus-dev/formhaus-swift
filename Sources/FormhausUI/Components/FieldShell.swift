@@ -75,7 +75,7 @@ public struct FieldLabel: View {
     }
 
     public var body: some View {
-        (Text(text) + Text(required ? " *" : "").foregroundStyle(tokens.colors.error))
+        tokens.marked(text, required: required)
             .formhausText(.label)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityLabel(required ? "\(text), \(requiredLabel)" : text)
@@ -101,4 +101,10 @@ public struct FieldError: View {
 @MainActor
 func announce(_ message: String) {
     AccessibilityNotification.Announcement(message).post()
+}
+
+extension FormhausTokens {
+    func marked(_ text: String, required: Bool) -> Text {
+        Text(text) + Text(required ? " *" : "").foregroundStyle(colors.error)
+    }
 }

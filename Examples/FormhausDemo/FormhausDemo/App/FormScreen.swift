@@ -3,53 +3,71 @@ import SwiftUI
 
 struct FormScreen: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let session: DemoSession
 
     var body: some View {
         ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        #if os(macOS)
-                            Text(session.title)
-                                .font(.largeTitle.weight(.bold))
-                                .accessibilityAddTraits(.isHeader)
-                        #endif
-                        if let description = session.definitionDescription {
-                            Text(description).font(.body).foregroundStyle(.secondary)
-                        }
-                    }
-                    .fixedSize(horizontal: false, vertical: true)
+            Group {
+                if session.style == .system {
                     FormhausFormContent(model: session.model)
-                        .id(ObjectIdentifier(session.model))
+                } else {
+                    scroller
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
-                .frame(maxWidth: 640, alignment: .leading)
-                .frame(maxWidth: .infinity)
             }
-            .scrollDismissesKeyboard(.interactively)
             .onChange(of: session.scrollTarget) { _, target in
                 guard let target else { return }
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.45)) { proxy.scrollTo(target.key, anchor: .center) }
             }
         }
-        .hardTopEdge()
-        .alignsBar(toColumn: 640, padding: 16)
-        .background(Brand.background(scheme))
+        .formhausComponents(session.style.components)
+        .formhausTheme(session.style.theme)
         .formhausBehavior(FormBehavior(errorSummary: true))
+    }
+
+    private var scroller: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 8) {
+                    #if os(macOS)
+                        Text(session.title)
+                            .font(.largeTitle.weight(.bold))
+                            .accessibilityAddTraits(.isHeader)
+                    #endif
+                    if let description = session.definitionDescription {
+                        Text(description).font(session.style == .brand ? KilnType.body : .body).foregroundStyle(.secondary)
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                FormhausFormContent(model: session.model).id(ObjectIdentifier(session.model))
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 24)
+            .frame(maxWidth: 640, alignment: .leading)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .hardTopEdge(session.style.palette(scheme, contrast).background)
+        .alignsBar(toColumn: 640, padding: 16)
+        .background(session.style.palette(scheme, contrast).background)
     }
 }
 
 extension View {
     @ViewBuilder
-    fileprivate func hardTopEdge() -> some View {
-        if #available(iOS 26, macOS 26, *) {
-            scrollEdgeEffectStyle(.hard, for: .top)
-        } else {
-            self
-        }
+    fileprivate func hardTopEdge(_ background: Color) -> some View {
+        #if os(iOS)
+            if #available(iOS 26, *) {
+                scrollEdgeEffectStyle(.hard, for: .top)
+                    .toolbarBackground(background, for: .navigationBar)
+                    .toolbarBackground(.visible, for: .navigationBar)
+            } else {
+                toolbarBackground(background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
+            }
+        #else
+            if #available(macOS 26, *) { scrollEdgeEffectStyle(.hard, for: .top) } else { self }
+        #endif
     }
 }

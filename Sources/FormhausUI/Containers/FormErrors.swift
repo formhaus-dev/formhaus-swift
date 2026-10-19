@@ -3,6 +3,7 @@ import SwiftUI
 
 public struct FormErrorSummary: View {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.displayScale) private var displayScale
     let model: FormModel
 
     public init(model: FormModel) {
@@ -14,14 +15,14 @@ public struct FormErrorSummary: View {
         if !entries.isEmpty {
             let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
             let title = model.text(forLabel: "errorSummary")
-            VStack(alignment: .leading, spacing: tokens.spacing.s1) {
-                Text(title).formhausText(.label).accessibilityAddTraits(.isHeader)
-                ForEach(entries) { entry in
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title).formhausText(.label).accessibilityAddTraits(.isHeader).padding(.bottom, tokens.spacing.s1)
+                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
+                    if index > 0 { tokens.colors.border.frame(height: 1 / displayScale).accessibilityHidden(true) }
                     Button {
                         model.focus(field: entry.key)
                     } label: {
                         HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
-                            Text(verbatim: "•").accessibilityHidden(true)
                             Text(verbatim: summaryLine(entry.label, entry.message)).fixedSize(horizontal: false, vertical: true)
                                 .multilineTextAlignment(.leading)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -31,6 +32,7 @@ public struct FormErrorSummary: View {
                         }
                         .formhausText(.body, colored: false)
                         .foregroundStyle(tokens.colors.error)
+                        .padding(.vertical, tokens.spacing.s3)
                         .frame(minHeight: tokens.controls.hitTarget, alignment: .leading)
                         .contentShape(Rectangle())
                     }

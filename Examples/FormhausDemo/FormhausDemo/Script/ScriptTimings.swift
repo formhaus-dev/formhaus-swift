@@ -6,6 +6,7 @@ struct ScriptTimings: Decodable, Sendable {
     var beat = 0.9
     var short = 0.45
     var hold = 2.2
+    var style = 2.8
     var keystroke = 0.07
     var wordPause = 0.12
     var submitDelay = 1.3
@@ -27,6 +28,7 @@ struct ScriptTimings: Decodable, Sendable {
             case .beat: beat
             case .short: short
             case .hold: hold
+            case .style: style
             }
         return seconds / speed
     }
@@ -42,4 +44,5 @@ enum Pace: Sendable {
     case beat
     case short
     case hold
+    case style
 }

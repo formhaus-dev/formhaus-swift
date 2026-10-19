@@ -24,6 +24,7 @@ public struct GroupItemContext: Identifiable {
     public let remove: @MainActor () -> Void
     let removeFocus: FieldState
     let model: FormModel
+    let fields: [FormField]
 }
 
 @MainActor

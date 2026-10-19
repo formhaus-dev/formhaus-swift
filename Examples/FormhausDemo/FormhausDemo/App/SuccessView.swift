@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SuccessView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.colorSchemeContrast) private var contrast
     let receipt: Receipt
     let copy: DemoCopy
     let restart: () -> Void
@@ -21,14 +22,14 @@ struct SuccessView: View {
                 }
                 summary
                 Button(copy.newInquiry, action: restart)
-                    .buttonStyle(BrandButtonStyle(color: Brand.primary(scheme)))
+                    .buttonStyle(BrandButtonStyle(color: Brand.palette(scheme, contrast).primary))
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 48)
             .frame(maxWidth: 480)
             .frame(maxWidth: .infinity)
         }
-        .background(Brand.background(scheme))
+        .background(Brand.palette(scheme, contrast).background)
     }
 
     private var title: String {
@@ -42,7 +43,7 @@ struct SuccessView: View {
             .foregroundStyle(.white)
             .frame(width: 26, height: 26)
             .background(Circle().fill(Color.green))
-            .overlay(Circle().strokeBorder(Brand.background(scheme), lineWidth: 3))
+            .overlay(Circle().strokeBorder(Brand.palette(scheme, contrast).background, lineWidth: 3))
             .offset(x: 8, y: 8)
     }
 

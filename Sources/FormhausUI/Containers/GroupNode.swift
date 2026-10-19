@@ -11,15 +11,20 @@ struct GroupNode: View {
     var body: some View {
         let state = model.group(group.key)
         let context = groupContext(state.items)
-        Group {
-            if let custom = components.slots.group {
-                custom(context)
-            } else {
-                DefaultGroup(context: context, state: model.field(group.key))
+        let confirmation = RemoveConfirmation(
+            isPresented: confirmationShown, context: confirmContext(state.items), custom: components.slots.confirm)
+        if components.system, components.slots.group == nil {
+            SystemGroup(context: context, state: model.field(group.key), confirmation: confirmation)
+        } else {
+            Group {
+                if let custom = components.slots.group {
+                    custom(context)
+                } else {
+                    DefaultGroup(context: context, state: model.field(group.key))
+                }
             }
+            .modifier(confirmation)
         }
-        .modifier(
-            RemoveConfirmation(isPresented: confirmationShown, context: confirmContext(state.items), custom: components.slots.confirm))
     }
 
     private var confirmationShown: Binding<Bool> {
@@ -58,7 +63,8 @@ struct GroupNode: View {
             id: item.id, index: index, title: title(index), canRemove: canRemove,
             hasContent: model.group(group.key).hasContent.indices.contains(index) && model.group(group.key).hasContent[index],
             removeLabel: removeLabel, removeName: removeName(index), disabled: model.disabled, content: content,
-            requestRemove: { ask(index) }, remove: { drop(index) }, removeFocus: model.field(removeKey(index)), model: model)
+            requestRemove: { ask(index) }, remove: { drop(index) }, removeFocus: model.field(removeKey(index)), model: model,
+            fields: item.fields)
         return wrapped
     }
 
@@ -112,7 +118,7 @@ private struct GroupItemFields: View {
     }
 }
 
-private struct RemoveConfirmation: ViewModifier {
+struct RemoveConfirmation: ViewModifier {
     @Binding var isPresented: Bool
     let context: ConfirmContext?
     let custom: SlotBuilder<ConfirmContext>?

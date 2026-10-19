@@ -14,7 +14,7 @@ public struct RatingField: View {
         let scale = ScalePoints(context)
         let current = scale.selected(context.value)
         let shown = hovered ?? current ?? 0
-        let width = tokens.controls.star + tokens.spacing.s1
+        let width = min(tokens.controls.star, tokens.controls.hitTarget * 1.4) + tokens.spacing.s1
         FieldShell(context, variant: .group) {
             VStack(alignment: .leading, spacing: tokens.spacing.s2) {
                 HStack(spacing: 0) {
@@ -23,7 +23,7 @@ public struct RatingField: View {
                             context.commit(.number(Double(point)))
                         } label: {
                             Image(systemName: point <= shown ? "star.fill" : "star")
-                                .font(.system(size: tokens.controls.star * 0.8, weight: .regular))
+                                .font(.system(size: (width - tokens.spacing.s1) * 0.8, weight: .regular))
                                 .foregroundStyle(color(point <= shown))
                                 .frame(width: width, height: max(tokens.controls.hitTarget, width))
                                 .contentShape(Rectangle())
@@ -43,7 +43,6 @@ public struct RatingField: View {
     }
 
     private func color(_ filled: Bool) -> Color {
-        if context.isInvalid, !filled { return tokens.colors.error }
         if filled { return hovered != nil ? tokens.colors.primaryHover : tokens.colors.primary }
         return tokens.colors.control
     }

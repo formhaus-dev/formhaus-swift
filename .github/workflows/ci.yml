@@ -26,7 +26,7 @@ jobs:
 
   demo:
     runs-on: macos-26
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: >-
@@ -37,6 +37,13 @@ jobs:
           xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
           -destination 'generic/platform=macOS' -derivedDataPath .build/demo -quiet
           CODE_SIGNING_ALLOWED=NO
+      - name: Accessibility audit on the iOS Simulator
+        run: |
+          device=$(xcrun simctl list devices available -j | python3 -c "import json, sys
+          devices = json.load(sys.stdin)['devices']
+          print(next(d['udid'] for runtime, items in sorted(devices.items(), reverse=True) if 'iOS' in runtime for d in items if d['name'].startswith('iPhone')))")
+          xcodebuild test -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo \
+            -destination "id=$device" -derivedDataPath .build/demo -quiet CODE_SIGNING_ALLOWED=NO
 
   lint:
     runs-on: macos-26
