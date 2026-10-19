@@ -62,7 +62,7 @@ struct CorpusFixture {
 }
 
 enum Corpus {
-    static let directory = Bundle.module.url(forResource: "Fixtures", withExtension: nil)!.appendingPathComponent("conformance")
+    static let directory = (Bundle.module.resourceURL ?? Bundle.module.bundleURL).appendingPathComponent("Fixtures/conformance")
 
     static func jsonFiles(in directory: URL) -> [String] {
         let files = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
