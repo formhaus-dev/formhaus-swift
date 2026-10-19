@@ -2,7 +2,7 @@
  "node": "v24.15.0",
  "seed": 20261019,
  "counts": {
-  "curated": 5252,
+  "curated": 5259,
   "fuzz": 5873
  },
  "cases": [
@@ -1834,6 +1834,48 @@
    "pattern": "(?<n>a)(?:b|(?<n>c))\\k<n>",
    "input": "aba",
    "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?<n>a)(?:b|(?<n>c))",
+   "input": "ac",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?<n>a)(?:b|(?<n>c))",
+   "input": "ab",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?<n>x)|(?:(?<n>y)(?:z|(?<n>w)))",
+   "input": "w",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?<n>x)|(?:(?<n>y)(?:z|(?<n>w)))",
+   "input": "yz",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?<n>x)|(?:(?<n>y)(?:z|(?<n>w)))",
+   "input": "x",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?<n>)(?:(x)|y)(?:z|(?<n>a))",
+   "input": "a",
+   "result": "SyntaxError",
+   "kind": "curated"
+  },
+  {
+   "pattern": "((?<n>a)|(?<n>b))(?:c|(?<n>d))",
+   "input": "ac",
+   "result": "SyntaxError",
    "kind": "curated"
   },
   {
