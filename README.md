@@ -113,6 +113,28 @@ Differences from the web renderer:
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - On a step change, VoiceOver moves to the step title. Keyboard focus moves only to an invalid field.
 
+## Demo
+
+`Examples/FormhausDemo` is a SwiftUI app for iPhone, iPad and Mac. It renders the project inquiry form in `FormhausDemo/Resources/project-inquiry.json`: three steps, a route that skips a step, conditional fields, picture options, a rating, a matrix, a scale, an error summary and a server error. The same file runs in the [playground](https://formhaus.dev/playground). The globe menu switches to the German overlay in `project-inquiry.de.json`.
+
+Open `Examples/FormhausDemo/FormhausDemo.xcodeproj` in Xcode and run the `FormhausDemo` scheme, or build it from the command line:
+
+```sh
+xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo -destination 'generic/platform=macOS'
+```
+
+The app uses the package from the repository by path. Packages that depend on `formhaus-swift` never build it.
+
+The fake server takes about a second and rejects `ada@lovelace.dev` as already registered.
+
+Script mode plays a fixed interaction through the public `FormModel` API, for screen recordings. Pass the launch arguments in the scheme or to `xcrun simctl launch`:
+
+- `-demoScript tour` types, picks options, triggers and fixes an error, takes the landing page branch and comes back, gets the server error and submits. `-demoScript languages` switches to German and back.
+- `-demoLanguage de` starts in German.
+- `-demoSpeed 2` plays twice as fast. `-demoStop <mark>` stops at a mark of the script, such as `error`, `branch`, `server` or `success`.
+
+In script mode the iOS keyboard stays hidden. The timings are in `FormhausDemo/Resources/demo-timings.json`. `scripts/render-assets.sh` renders the app icon from the formhaus logo and draws the option pictures into the definition.
+
 ## Status
 
 - Definition corpus: passing. `checkDefinition` errors and warnings, overlays, text slots and value cases for the server and the browser engine.
