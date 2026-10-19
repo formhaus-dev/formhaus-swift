@@ -105,7 +105,7 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 
 ## Performance
 
-Patterns without backreferences compile to a lazy DFA, so nested quantifiers such as `(a+)+$` cannot backtrack. A lookaround without backreferences runs as one automaton scan over the whole input, so its result for every position costs time linear in the input. Only patterns with backreferences or very large counted repeats use a backtracking matcher. It memoizes the part of the pattern after the last backreference, and it runs lookarounds that contain no backreferences as scans too.
+Patterns without backreferences compile to a lazy DFA, so nested quantifiers such as `(a+)+$` cannot backtrack. A lookaround without backreferences runs as one automaton scan over the whole input, so its result for every position costs time linear in the input. Only patterns with backreferences or very large counted repeats use a backtracking matcher. It memoizes the part of the pattern after the last backreference, and it runs lookarounds that contain no backreferences as scans too. The DFA states of one pattern may use 1 MB and the states of all patterns 32 MB. When a pattern reaches its limit, its states are cleared once per match. If the limit is reached again in the same match, the match continues on the NFA without caching, so the result stays the same.
 
 Median time of one `validateFieldValue` call with a `pattern` rule, on an Apple M5 Pro with macOS 26 and Swift 6.4. "Long" inputs have 10,000 code units. "Compile" uses a new pattern on every call, so it includes the first match.
 
