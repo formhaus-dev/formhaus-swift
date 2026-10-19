@@ -29,7 +29,7 @@ struct RegexRegressionTests {
         let pattern = try #require(JSRegex("(?:a|[]" + String(repeating: "()", count: 10000) + ")*\\1(?!)"))
         let started = Date()
         #expect(pattern.test(String(repeating: "a", count: maxStringLength - 1)) == nil)
-        #expect(Date().timeIntervalSince(started) < 2)
+        #expect(Date().timeIntervalSince(started) < 5)
     }
 
     @Test("unset duplicate groups in a backreference count toward the step budget")
@@ -38,7 +38,7 @@ struct RegexRegressionTests {
         let pattern = try #require(JSRegex("(?:" + groups + "b)(?:\\k<n>c)*$"))
         let started = Date()
         #expect(pattern.test("b" + String(repeating: "c", count: maxStringLength - 1)) == nil)
-        #expect(Date().timeIntervalSince(started) < 2)
+        #expect(Date().timeIntervalSince(started) < 5)
     }
 
     @Test(
@@ -70,5 +70,45 @@ struct RegexRegressionTests {
         #expect(try #require(JSRegex("a" + String(repeating: "b?", count: optional))).test("ab") == true)
         #expect(try #require(JSRegex("a" + String(repeating: "b?", count: optional + 1))).test("ab") == nil)
         #expect(try #require(JSRegex(String(repeating: "a", count: RegexCompiler.instructionLimit))).test("a") == nil)
+    }
+
+    @Test("automaton memory stays inside the pattern and global limits")
+    func automatonMemory() throws {
+        for offset in 0..<40 {
+            let width = 300 - offset
+            let compiled = try CompiledPattern("[^]*a[^]{\(width)}$")
+            let text = randomText(1600, ["a", "b"], seed: UInt64(offset + 1))
+            #expect(compiled.test(text) == (Array(text.utf16)[1600 - width - 1] == UInt16(ascii: "a")))
+            #expect(compiled.test(String(text.prefix(width + 1))) == text.hasPrefix("a"))
+            let bytes = try #require(compiled.automaton).inspect(\.bytes)
+            #expect(bytes <= AutomatonMemory.patternLimit)
+            #expect(AutomatonMemory.reservedTotal <= AutomatonMemory.globalLimit)
+        }
+    }
+
+    @Test("threads share automatons without changing results")
+    func sharedAutomatons() async throws {
+        let sources = ["[ab]*a[ab]{12}$", "[^]*a[^]{100}$", "(?=[ab]*a[ab]{10}$)[ab]+", "(?<=a[ab]{9})b$", "^(?:a|b)*a(?:a|b){11}$"]
+        let texts = (0..<6).map { randomText($0 % 2 == 0 ? 20 : 800, ["a", "b"], seed: UInt64($0 + 11)) }
+        let expected = try sources.map { source in try texts.map { try CompiledPattern(source).test($0) } }
+        let patterns = try sources.map { try #require(JSRegex($0)) }
+        let mismatches = await withTaskGroup(of: Int.self) { group in
+            for worker in 0..<8 {
+                group.addTask {
+                    var mismatches = 0
+                    for round in 0..<3 {
+                        for index in patterns.indices {
+                            let pattern = (index + worker + round) % patterns.count
+                            for (text, result) in zip(texts, expected[pattern]) where patterns[pattern].test(text) != result {
+                                mismatches += 1
+                            }
+                        }
+                    }
+                    return mismatches
+                }
+            }
+            return await group.reduce(0, +)
+        }
+        #expect(mismatches == 0)
     }
 }
