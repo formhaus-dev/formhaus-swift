@@ -13,12 +13,18 @@
 
 /* Begin PBXFileReference section */
 		F0A1000000000000000000A2 /* FormhausDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FormhausDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0A1000000000000000002A2 /* FormhausDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FormhausDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F0A1000000000000000000A3 /* FormhausDemo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = FormhausDemo;
+			sourceTree = "<group>";
+		};
+		F0A1000000000000000002A3 /* FormhausDemoTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FormhausDemoTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +39,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F0A1000000000000000002D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -40,6 +53,7 @@
 			isa = PBXGroup;
 			children = (
 				F0A1000000000000000000A3 /* FormhausDemo */,
+				F0A1000000000000000002A3 /* FormhausDemoTests */,
 				F0A1000000000000000000A1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,6 +62,7 @@
 			isa = PBXGroup;
 			children = (
 				F0A1000000000000000000A2 /* FormhausDemo.app */,
+				F0A1000000000000000002A2 /* FormhausDemoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,6 +94,26 @@
 			productReference = F0A1000000000000000000A2 /* FormhausDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F0A1000000000000000002E1 /* FormhausDemoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0A1000000000000000002F2 /* Build configuration list for PBXNativeTarget "FormhausDemoTests" */;
+			buildPhases = (
+				F0A1000000000000000002D2 /* Sources */,
+				F0A1000000000000000002D1 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F0A1000000000000000002E3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F0A1000000000000000002A3 /* FormhausDemoTests */,
+			);
+			name = FormhausDemoTests;
+			productName = FormhausDemoTests;
+			productReference = F0A1000000000000000002A2 /* FormhausDemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -91,6 +126,10 @@
 				TargetAttributes = {
 					F0A1000000000000000000E1 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					F0A1000000000000000002E1 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = F0A1000000000000000000E1;
 					};
 				};
 			};
@@ -113,9 +152,28 @@
 			projectRoot = "";
 			targets = (
 				F0A1000000000000000000E1 /* FormhausDemo */,
+				F0A1000000000000000002E1 /* FormhausDemoTests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXContainerItemProxy section */
+		F0A1000000000000000002E2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F0A1000000000000000000E0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F0A1000000000000000000E1;
+			remoteInfo = FormhausDemo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		F0A1000000000000000002E3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F0A1000000000000000000E1 /* FormhausDemo */;
+			targetProxy = F0A1000000000000000002E2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXResourcesBuildPhase section */
 		F0A1000000000000000000D3 /* Resources */ = {
@@ -129,6 +187,13 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		F0A1000000000000000000D2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F0A1000000000000000002D2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -239,6 +304,42 @@
 			};
 			name = Release;
 		};
+		F0A100000000000000000203 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.formhaus.demo.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FormhausDemo.app/FormhausDemo";
+			};
+			name = Debug;
+		};
+		F0A100000000000000000204 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.formhaus.demo.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FormhausDemo.app/FormhausDemo";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -256,6 +357,15 @@
 			buildConfigurations = (
 				F0A100000000000000000103 /* Debug */,
 				F0A100000000000000000104 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0A1000000000000000002F2 /* Build configuration list for PBXNativeTarget "FormhausDemoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0A100000000000000000203 /* Debug */,
+				F0A100000000000000000204 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
