@@ -37,7 +37,9 @@ func createValues(
         } else if chosen.isGroup, !expanded.contains(key), let list = items.value?.arrayValue {
             expanded.insert(key)
             let mapped = list.map { item in item.objectValue.map { JSONValue.object(createItem(chosen.items, $0)) } ?? item }
-            values.set(key, ValueSlot(.array(mapped), ref: Ref(token: freshToken(), items: list.map { _ in freshToken() })))
+            let ids = items.ref?.items ?? []
+            let itemIds = ids.count == list.count ? ids : list.map { _ in freshToken() }
+            values.set(key, ValueSlot(.array(mapped), ref: Ref(token: freshToken(), items: itemIds)))
         }
     }
     return values

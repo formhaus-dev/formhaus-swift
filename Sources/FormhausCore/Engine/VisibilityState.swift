@@ -44,10 +44,13 @@ final class VisibilityState {
 
     func conditionValues(_ values: JSONObject) -> JSONObject { paths.conditionValues(values) }
 
+    func limits(_ values: JSONObject) -> ListLimits { paths.path(values).limits }
+
     func visible(_ field: FormField, _ values: JSONObject) -> Bool {
         let active = scope(values)
         let section = index.section(of: field)
-        return (section.map { isVisible($0, active) } ?? true) && isVisible(field, active)
+        let limits = limits(values)
+        return (section.map { isVisible($0, active, limits: limits) } ?? true) && isVisible(field, active, limits: limits)
     }
 
     func onPath(_ field: FormField, _ values: JSONObject) -> Bool {
@@ -71,7 +74,7 @@ final class VisibilityState {
 
     func itemFields(_ group: FormField, _ item: JSONValue?, _ values: JSONObject) -> [FormField] {
         let scope = itemScope(group, item ?? .null, scope(values))
-        return group.items.filter { isVisible($0, scope) }
+        return group.items.filter { isVisible($0, scope, limits: limits(values)) }
     }
 
     func activeItem(_ key: String, _ values: JSONObject) -> ItemField? {
@@ -92,11 +95,12 @@ final class VisibilityState {
         let current = multi ? (steps.indices.contains(stepIndex) ? steps[stepIndex] : steps.last) : nil
         let source = multi ? current?.fields ?? [] : definition.fields ?? []
         let active = scope(values)
+        let limits = limits(values)
         view = VisibilityView(
-            visibleSteps: steps, currentStep: current, visibleFields: shownFields(source, active),
-            visibleNodes: source.filter { isVisible($0, active) }.map { node in
+            visibleSteps: steps, currentStep: current, visibleFields: shownFields(source, active, limits),
+            visibleNodes: source.filter { isVisible($0, active, limits: limits) }.map { node in
                 guard let section = node.section else { return node }
-                return .section(section.filtered { isVisible($0, active) })
+                return .section(section.filtered { isVisible($0, active, limits: limits) })
             }
         )
         return view
@@ -112,7 +116,11 @@ final class VisibilityState {
         guard canGoNextDirty else { return canGoNext }
         canGoNextDirty = false
         if let step, customSteps.contains(step.ordinal) { settled = false }
-        let errors = step.map { validateFields($0.fields, conditionValues(values), validators: validators) } ?? FieldErrors()
+        let scope = conditionValues(values)
+        let errors =
+            step.map {
+                validateShown($0.fields, scope, scope, ShownChecks(validators: validators, messages: nil, limits: limits(values)))
+            } ?? FieldErrors()
         canGoNext = definition.isMultiStep && errors.isEmpty
         return canGoNext
     }

@@ -124,7 +124,7 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
         for (key, value) in groups.rejected {
             guard let field = visibility.activeField(key, engine.values.json), !skipped.containsText(key) else { continue }
             setError(visibility, &errors, key, typeError(field, value, resolve) ?? resolve("value", [:], field))
-            submitted.removeValue(forKey: key)
+            submitted[key] = oversizedList(field, value) ? value : nil
         }
         for (key, error) in items where submitted.has(visibility.owner(key)) && visibility.activeItem(key, engine.values.json) != nil {
             errors[key] = error

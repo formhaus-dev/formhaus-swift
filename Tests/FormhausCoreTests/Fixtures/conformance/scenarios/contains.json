@@ -1,0 +1,278 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "contains",
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "contains",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About",
+        "fields": [
+          {
+            "key": "interests",
+            "type": "multiselect",
+            "label": "Interests",
+            "options": [
+              {
+                "value": "design",
+                "label": "Design"
+              },
+              {
+                "value": "other",
+                "label": "Other"
+              },
+              {
+                "value": "music",
+                "label": "Music"
+              }
+            ]
+          },
+          {
+            "key": "otherInterest",
+            "type": "text",
+            "label": "Other interest",
+            "show": [
+              {
+                "field": "interests",
+                "contains": "other"
+              }
+            ]
+          },
+          {
+            "key": "portfolio",
+            "type": "text",
+            "label": "Portfolio",
+            "showAny": [
+              {
+                "field": "interests",
+                "contains": "design"
+              },
+              {
+                "field": "interests",
+                "contains": "music"
+              }
+            ]
+          },
+          {
+            "key": "noMusic",
+            "type": "text",
+            "label": "No music",
+            "show": [
+              {
+                "field": "interests",
+                "notContains": "music"
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "to": "music",
+            "show": [
+              {
+                "field": "interests",
+                "contains": "music"
+              }
+            ]
+          },
+          {
+            "to": "review"
+          }
+        ]
+      },
+      {
+        "id": "music",
+        "title": "Music",
+        "fields": [
+          {
+            "key": "instrument",
+            "type": "text",
+            "label": "Instrument"
+          }
+        ],
+        "routes": [
+          {
+            "to": "review"
+          }
+        ]
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "fields": [
+          {
+            "key": "notes",
+            "type": "text",
+            "label": "Notes"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "show: contains matches when the list holds the operand",
+      "values": {
+        "interests": ["design", "other"]
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["interests", "otherInterest", "portfolio", "noMusic"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "interests",
+          "value": ["design"]
+        },
+        {
+          "expect": {
+            "fields": ["interests", "portfolio", "noMusic"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "show: contains never matches and notContains always matches a value that is not a list",
+      "values": {
+        "interests": "other"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["interests", "noMusic"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "interests",
+          "value": null
+        },
+        {
+          "expect": {
+            "fields": ["interests", "noMusic"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "interests",
+          "value": []
+        },
+        {
+          "expect": {
+            "fields": ["interests", "noMusic"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "show: contains compares items strictly",
+      "values": {
+        "interests": ["Other", "other "]
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["interests", "noMusic"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "show: a hidden contains field leaves the payload",
+      "values": {
+        "interests": ["design"],
+        "otherInterest": "Chess",
+        "portfolio": "example.com"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "interests": ["design"],
+              "portfolio": "example.com"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "showAny: matches when any contains condition matches",
+      "values": {
+        "interests": ["music"]
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["interests", "portfolio"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "interests",
+          "value": ["other"]
+        },
+        {
+          "expect": {
+            "fields": ["interests", "otherInterest", "noMusic"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "routes: contains picks the branch",
+      "values": {
+        "interests": ["design", "music"]
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["about", "music", "review"],
+            "progress": {
+              "current": 1,
+              "total": 3
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "music"
+          }
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "interests",
+          "value": ["design"]
+        },
+        {
+          "expect": {
+            "steps": ["about", "review"]
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "review"
+          }
+        }
+      ]
+    }
+  ]
+}

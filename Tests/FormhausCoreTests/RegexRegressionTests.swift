@@ -57,11 +57,19 @@ struct RegexRegressionTests {
 
     @Test("nested lookarounds run in linear time")
     func nestedLookaroundsAreLinear() throws {
-        let pattern = try #require(JSRegex("(?=(?!b)[^]*x)y(?:z|$)"))
-        let started = Date()
-        #expect(pattern.test(String(repeating: "y", count: maxStringLength - 1) + "x") == false)
-        #expect(try #require(JSRegex("^(?=(?!b)[^]*x)y+x$")).test(String(repeating: "y", count: maxStringLength - 1) + "x") == true)
-        #expect(Date().timeIntervalSince(started) < 0.5)
+        let unanchored = try #require(JSRegex("(?=(?!b)[^]*x)y(?:z|$)"))
+        let anchored = try #require(JSRegex("^(?=(?!b)[^]*x)y+x$"))
+        let long = String(repeating: "y", count: maxStringLength - 1) + "x"
+        let short = String(repeating: "y", count: maxStringLength / 8 - 1) + "x"
+        #expect(unanchored.test(long) == false)
+        #expect(anchored.test(long) == true)
+        let clock = ContinuousClock()
+        var fastest = (short: Duration.seconds(60), long: Duration.seconds(60))
+        for _ in 0..<7 {
+            fastest.short = min(fastest.short, clock.measure { _ = unanchored.test(short) == anchored.test(short) })
+            fastest.long = min(fastest.long, clock.measure { _ = unanchored.test(long) == anchored.test(long) })
+        }
+        #expect(fastest.long / fastest.short < 32)
     }
 
     @Test("a pattern past the size limit fails closed")

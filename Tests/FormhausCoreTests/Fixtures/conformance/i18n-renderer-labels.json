@@ -1,0 +1,44 @@
+{
+  "name": "i18n-renderer-labels",
+  "issues": [],
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "claim",
+    "title": "Claim",
+    "submit": {},
+    "steps": [
+      {
+        "id": "details",
+        "title": "",
+        "skip": {},
+        "fields": [
+          { "key": "day", "type": "date", "label": "Day", "validation": { "required": true } },
+          { "key": "receipt", "type": "file", "label": "Receipt" }
+        ]
+      },
+      { "id": "notes", "title": "Notes", "fields": [{ "key": "note", "type": "textarea", "label": "Note" }] }
+    ]
+  },
+  "overlay": {
+    "labels": {
+      "clear": "Очистить",
+      "done": "Готово",
+      "chooseFile": "Выбрать файл",
+      "required": "обязательно",
+      "skip": "Пропустить",
+      "submit": "Отправить",
+      "stepErrors": "Ошибки: {count}"
+    }
+  },
+  "texts": {
+    "labels.clear": "Очистить",
+    "labels.done": "Готово",
+    "labels.chooseFile": "Выбрать файл",
+    "labels.required": "обязательно",
+    "labels.skip": "Пропустить",
+    "labels.submit": "Отправить",
+    "labels.stepTitle": "Step {index}",
+    "labels.stepErrors": "Ошибки: {count}"
+  },
+  "cases": []
+}

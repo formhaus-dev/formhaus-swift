@@ -27,6 +27,7 @@ struct CorpusCase {
     let expectedValues: JSONValue
     let expectedErrors: JSONValue
     let canSubmit: Bool
+    let serverValues: JSONValue?
 
     init(_ json: JSONValue) {
         name = json["name"]?.stringValue ?? ""
@@ -35,6 +36,7 @@ struct CorpusCase {
         expectedValues = json["expected"]?["values"] ?? .object(JSONObject())
         expectedErrors = json["expected"]?["errors"] ?? .object(JSONObject())
         canSubmit = json["canSubmit"]?.boolValue ?? false
+        serverValues = json["serverValues"]
     }
 }
 

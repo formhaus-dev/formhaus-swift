@@ -30,16 +30,18 @@ struct CancellationTests {
         #expect(!cancelled.stepValidating)
     }
 
-    @Test("a cancelled caller task gets false from next instead of an error")
+    @Test("a cancelled caller task gets false from next instead of an error", .timeLimit(.minutes(1)))
     func cancelledTask() async throws {
+        let (started, signal) = AsyncStream<Void>.makeStream()
         let engine = try FormEngine(
             definition: Self.steps,
             options: FormEngineOptions(onStepValidate: { _, _ in
-                try await Task.sleep(nanoseconds: 10_000_000_000)
+                signal.yield()
+                try await Task.sleep(for: .seconds(3600))
                 return nil
             }))
         let task = Task { @MainActor in try await engine.next() }
-        await Task.yield()
+        for await _ in started { break }
         task.cancel()
         #expect(try await task.value == false)
         #expect(!engine.stepValidating)

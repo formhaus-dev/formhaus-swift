@@ -213,6 +213,9 @@
           "$ref": "#/$defs/do-reset"
         },
         {
+          "$ref": "#/$defs/do-replaceDefinition"
+        },
+        {
           "$ref": "#/$defs/do-resolve"
         },
         {
@@ -674,6 +677,22 @@
         },
         "values": {
           "$ref": "#/$defs/values"
+        }
+      }
+    },
+    "do-replaceDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["definition"],
+      "properties": {
+        "do": {
+          "const": "replaceDefinition"
+        },
+        "definition": {
+          "type": "object"
+        },
+        "throws": {
+          "$ref": "#/$defs/throws"
         }
       }
     },

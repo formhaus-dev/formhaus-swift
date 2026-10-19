@@ -1,4 +1,4 @@
-let conditionOperators = ["eq", "neq", "in", "notIn", "notEmpty", "gt", "gte", "lt", "lte"]
+let conditionOperators = ["eq", "neq", "in", "notIn", "contains", "notContains", "notEmpty", "gt", "gte", "lt", "lte"]
 
 public struct ShowCondition: Sendable, Hashable {
     let json: JSONObject

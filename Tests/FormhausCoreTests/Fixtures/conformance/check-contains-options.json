@@ -1,0 +1,105 @@
+{
+  "name": "check-contains-options",
+  "covers": ["warns about an operand that is not an option", "accepts contains and notContains on a multiselect option"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "contains-not-in-options",
+      "path": "/fields/1/show/0/contains"
+    },
+    {
+      "code": "contains-not-in-options",
+      "path": "/fields/2/showAny/1/notContains"
+    },
+    {
+      "code": "contains-not-in-options",
+      "path": "/submit/disabled/0/contains"
+    },
+    {
+      "code": "condition-value-mismatch",
+      "path": "/fields/4/show/0/eq"
+    }
+  ],
+  "texts": {
+    "fields.tags.options.RED": "Red"
+  },
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit",
+      "disabled": [
+        {
+          "field": "tags",
+          "contains": 1
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "tags",
+        "type": "multiselect",
+        "label": "Tags",
+        "options": [
+          {
+            "value": "RED",
+            "label": "Red"
+          },
+          {
+            "value": "BLUE",
+            "label": "Blue"
+          }
+        ]
+      },
+      {
+        "key": "a",
+        "type": "text",
+        "label": "A",
+        "show": [
+          {
+            "field": "tags",
+            "contains": "red"
+          }
+        ]
+      },
+      {
+        "key": "b",
+        "type": "text",
+        "label": "B",
+        "showAny": [
+          {
+            "field": "tags",
+            "contains": "RED"
+          },
+          {
+            "field": "tags",
+            "notContains": "GREEN"
+          }
+        ]
+      },
+      {
+        "key": "c",
+        "type": "text",
+        "label": "C",
+        "show": [
+          {
+            "field": "tags",
+            "notContains": "BLUE"
+          }
+        ]
+      },
+      {
+        "key": "d",
+        "type": "text",
+        "label": "D",
+        "show": [
+          {
+            "field": "tags",
+            "eq": "RED"
+          }
+        ]
+      }
+    ]
+  }
+}

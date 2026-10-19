@@ -1,0 +1,152 @@
+{
+  "name": "contains-disabled",
+  "covers": [],
+  "issues": [],
+  "warnings": [],
+  "texts": {
+    "steps.agree.fields.agreements.options.terms": "Terms"
+  },
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "contains-disabled",
+    "title": "Contains in disabled actions",
+    "submit": {
+      "label": "Send",
+      "disabled": [
+        {
+          "field": "agreements",
+          "notContains": "terms"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About",
+        "next": {
+          "label": "Continue",
+          "disabled": [
+            {
+              "field": "interests",
+              "contains": "music"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "key": "interests",
+            "type": "multiselect",
+            "label": "Interests",
+            "options": [
+              {
+                "value": "design",
+                "label": "Design"
+              },
+              {
+                "value": "other",
+                "label": "Other"
+              },
+              {
+                "value": "music",
+                "label": "Music"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "agree",
+        "title": "Agree",
+        "fields": [
+          {
+            "key": "agreements",
+            "type": "multiselect",
+            "label": "Agreements",
+            "options": [
+              {
+                "value": "terms",
+                "label": "Terms"
+              },
+              {
+                "value": "newsletter",
+                "label": "Newsletter"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "next disabled",
+      "input": {
+        "values": {
+          "interests": ["design", "music"],
+          "agreements": ["terms"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "interests": ["design", "music"],
+          "agreements": ["terms"]
+        },
+        "errors": {}
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "submit disabled",
+      "input": {
+        "values": {
+          "interests": ["design"],
+          "agreements": ["newsletter"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "interests": ["design"],
+          "agreements": ["newsletter"]
+        },
+        "errors": {}
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "submit disabled before an answer",
+      "input": {
+        "values": {
+          "interests": ["design"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "interests": ["design"]
+        },
+        "errors": {}
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "both enabled",
+      "input": {
+        "values": {
+          "interests": ["design"],
+          "agreements": ["newsletter", "terms"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "interests": ["design"],
+          "agreements": ["newsletter", "terms"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

@@ -74,7 +74,7 @@ if try await engine.next() {
 `FormEngine` follows the `FormEngine` class of `@formhaus/core` and keeps its names.
 
 - State: `values`, `errors`, `topLevelErrors`, `stepErrors`, `currentStep`, `currentStepIndex`, `visibleSteps`, `visibleFields`, `visibleNodes`, `isFirstStep`, `isLastStep`, `isMultiStep`, `canGoNext`, `progress`, `submitting`, `stepValidating`, `fieldLoading`, `items(_:)`, `isStepSkipped(_:)`, `getSubmitValues()`.
-- Values: `setValue`, `setItemValue`, `addItem`, `removeItem`, `reset`.
+- Values: `setValue`, `setItemValue`, `addItem`, `removeItem`, `reset`, `replaceDefinition`. `replaceDefinition` switches to a new definition and keeps the answers that still fit.
 - Errors: `validate`, `validateField`, `setErrors`, `setFieldLoading`.
 - Navigation: `start`, `next`, `back`, `skip(_:)`, `submit(_:)`, `goToStepWithField`, `cancelPendingActions`. `next`, `back`, `skip` and `submit` are `async throws` and return `Bool`, like the promises in TypeScript.
 - Changes: `subscribe(_:)` calls the listener after every state change and returns a function that cancels the subscription. A listener added during a notification is called in it, and one removed before its turn is not.
@@ -181,7 +181,7 @@ In script mode the iOS keyboard stays hidden. The timings are in `FormhausDemo/R
 - Definition corpus: passing. `checkDefinition` errors and warnings, overlays, text slots and value cases for the server and the browser engine.
 - Engine scenarios: passing. Every scenario in `Fixtures/conformance/scenarios` runs through `FormEngine` as its own test, named `<file>: <scenario>`.
 
-The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.19.0`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
+The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.20.2`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
 
 ```sh
 scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]

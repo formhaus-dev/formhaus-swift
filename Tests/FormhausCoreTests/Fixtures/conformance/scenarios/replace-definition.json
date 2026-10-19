@@ -1,0 +1,2238 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "replace-definition",
+  "definition": {
+    "id": "signup",
+    "title": "Sign up",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "fields": [
+          {
+            "key": "plan",
+            "type": "select",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "team",
+                "label": "Team"
+              },
+              {
+                "value": "solo",
+                "label": "Solo"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "confirm",
+        "title": "Confirm",
+        "fields": [
+          {
+            "key": "agree",
+            "type": "checkbox",
+            "label": "Agree"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "keeps answers, stays on the step and submits values from both definitions",
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "team"
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "billing",
+                "title": "Billing",
+                "fields": [
+                  {
+                    "key": "cycle",
+                    "type": "text",
+                    "label": "Billing cycle",
+                    "defaultValue": "monthly"
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "team",
+              "name": "Ada",
+              "cycle": "monthly"
+            },
+            "step": "plan",
+            "steps": ["plan", "team", "billing", "confirm"]
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": "Acme"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "agree",
+          "value": true
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "plan"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "team"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "billing"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 5
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "plan": "team",
+                  "name": "Ada",
+                  "company": "Acme",
+                  "cycle": "monthly",
+                  "agree": true
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stays on the current step when steps are inserted before it",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "billing",
+                "title": "Billing",
+                "fields": [
+                  {
+                    "key": "cycle",
+                    "type": "text",
+                    "label": "Billing cycle",
+                    "defaultValue": "monthly"
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "step": "confirm",
+            "stepIndex": 3,
+            "progress": {
+              "current": 4,
+              "total": 4
+            }
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "team",
+            "errors": {
+              "company": "This field is required"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "moves to the last surviving step before a removed current step",
+      "definition": {
+        "id": "signup",
+        "title": "Sign up",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "plan",
+            "title": "Plan",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "select",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "team",
+                    "label": "Team"
+                  },
+                  {
+                    "value": "solo",
+                    "label": "Solo"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "team",
+            "title": "Team",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "billing",
+            "title": "Billing",
+            "fields": [
+              {
+                "key": "cycle",
+                "type": "text",
+                "label": "Billing cycle",
+                "defaultValue": "monthly"
+              }
+            ]
+          },
+          {
+            "id": "confirm",
+            "title": "Confirm",
+            "fields": [
+              {
+                "key": "agree",
+                "type": "checkbox",
+                "label": "Agree"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "team",
+        "name": "Ada",
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "billing"
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "step": "team",
+            "values": {
+              "plan": "team",
+              "name": "Ada",
+              "company": "Acme"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "falls back to the first step when no earlier step survives",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "other",
+                "title": "Other",
+                "fields": [
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name"
+                  }
+                ]
+              },
+              {
+                "id": "done",
+                "title": "Done",
+                "fields": []
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "step": "other",
+            "stepIndex": 0,
+            "values": {
+              "name": "Ada"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops the value and the error of a field whose type changed",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "Taken",
+            "plan": "Not available"
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "textarea",
+                    "label": "Name",
+                    "defaultValue": "Unknown"
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "team",
+              "name": "Unknown"
+            },
+            "errors": {
+              "plan": "Not available"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps errors of fields that are still shown and drops the others",
+      "definition": {
+        "id": "signup",
+        "title": "Sign up",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "plan",
+            "title": "Plan",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "select",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "team",
+                    "label": "Team"
+                  },
+                  {
+                    "value": "solo",
+                    "label": "Solo"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "team",
+            "title": "Team",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "billing",
+            "title": "Billing",
+            "fields": [
+              {
+                "key": "cycle",
+                "type": "text",
+                "label": "Billing cycle",
+                "defaultValue": "monthly"
+              }
+            ]
+          },
+          {
+            "id": "confirm",
+            "title": "Confirm",
+            "fields": [
+              {
+                "key": "agree",
+                "type": "checkbox",
+                "label": "Agree"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "Taken",
+            "company": "Invalid",
+            "cycle": "Unknown cycle",
+            "ghost": "Form problem"
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "Taken",
+              "company": "Invalid"
+            },
+            "topLevelErrors": ["Form problem"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "expect": {
+            "errors": {
+              "company": "Invalid"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears values hidden by the new definition and restores them when shown again",
+      "values": {
+        "plan": "solo",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    },
+                    "show": [
+                      {
+                        "field": "plan",
+                        "eq": "team"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "solo"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "team"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "team",
+              "name": "Ada"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "rejects an invalid definition and leaves the engine unchanged",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "throws": {
+            "name": "FormDefinitionError"
+          }
+        },
+        {
+          "expect": {
+            "step": "confirm",
+            "steps": ["plan", "confirm"],
+            "values": {
+              "plan": "team",
+              "name": "Ada"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ignores a late onStepValidate result",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "defer": "check",
+            "return": {
+              "name": "Taken"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "expect": {
+            "stepValidating": true
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "billing",
+                "title": "Billing",
+                "fields": [
+                  {
+                    "key": "cycle",
+                    "type": "text",
+                    "label": "Billing cycle",
+                    "defaultValue": "monthly"
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "stepValidating": false
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "errors": {},
+            "step": "plan"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ignores a late before-submit result",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeSubmit": [
+          {
+            "defer": "allow",
+            "return": true
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "await": false,
+          "returns": false
+        },
+        {
+          "expect": {
+            "submitting": true
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "billing",
+                "title": "Billing",
+                "fields": [
+                  {
+                    "key": "cycle",
+                    "type": "text",
+                    "label": "Billing cycle",
+                    "defaultValue": "monthly"
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "submitting": false
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "allow"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "confirm",
+            "errors": {},
+            "log": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "applies no errors from a response that arrives after the replacement",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false,
+                "errors": {
+                  "name": "Taken"
+                }
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "billing",
+                "title": "Billing",
+                "fields": [
+                  {
+                    "key": "cycle",
+                    "type": "text",
+                    "label": "Billing cycle",
+                    "defaultValue": "monthly"
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "errors": {},
+            "step": "confirm"
+          }
+        }
+      ]
+    },
+    {
+      "name": "blocks a second submit while the first request is in flight",
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response",
+              "return": null
+            }
+          ],
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up v2",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "submitting": true
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": null
+            }
+          ],
+          "returns": false
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "submitting": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps a skipped step skipped when it still exists",
+      "definition": {
+        "id": "signup",
+        "title": "Sign up",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "plan",
+            "title": "Plan",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "select",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "team",
+                    "label": "Team"
+                  },
+                  {
+                    "value": "solo",
+                    "label": "Solo"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "team",
+            "title": "Team",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "billing",
+            "title": "Billing",
+            "fields": [
+              {
+                "key": "cycle",
+                "type": "text",
+                "label": "Billing cycle",
+                "defaultValue": "monthly"
+              }
+            ],
+            "skip": {
+              "label": "Skip"
+            }
+          },
+          {
+            "id": "confirm",
+            "title": "Confirm",
+            "fields": [
+              {
+                "key": "agree",
+                "type": "checkbox",
+                "label": "Agree"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "team",
+        "name": "Ada",
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up v2",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "billing",
+                "title": "Billing",
+                "fields": [
+                  {
+                    "key": "cycle",
+                    "type": "text",
+                    "label": "Billing cycle",
+                    "defaultValue": "monthly"
+                  }
+                ],
+                "skip": {
+                  "label": "Skip"
+                }
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "skipped": ["billing"],
+            "submitValues": {
+              "plan": "team",
+              "name": "Ada",
+              "company": "Acme"
+            }
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "skipped": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports step and visibility changes without a reset event",
+      "definition": {
+        "id": "signup",
+        "title": "Sign up",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "plan",
+            "title": "Plan",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "select",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "team",
+                    "label": "Team"
+                  },
+                  {
+                    "value": "solo",
+                    "label": "Solo"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "confirm",
+            "title": "Confirm",
+            "fields": [
+              {
+                "key": "agree",
+                "type": "checkbox",
+                "label": "Agree",
+                "show": [
+                  {
+                    "field": "plan",
+                    "eq": "team"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "team",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "confirm"
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree",
+                    "show": [
+                      {
+                        "field": "plan",
+                        "eq": "solo"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "done",
+                "title": "Done",
+                "fields": []
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "agree"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "done",
+                "title": "Done",
+                "fields": []
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "plan",
+                  "stepIndex": 0
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "turns a single-page form into steps",
+      "definition": {
+        "id": "signup",
+        "title": "Sign up",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "select",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "team",
+                "label": "Team"
+              },
+              {
+                "value": "solo",
+                "label": "Solo"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "signup",
+            "title": "Sign up",
+            "submit": {
+              "label": "Send"
+            },
+            "steps": [
+              {
+                "id": "plan",
+                "title": "Plan",
+                "fields": [
+                  {
+                    "key": "plan",
+                    "type": "select",
+                    "label": "Plan",
+                    "options": [
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "solo",
+                        "label": "Solo"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "billing",
+                "title": "Billing",
+                "fields": [
+                  {
+                    "key": "cycle",
+                    "type": "text",
+                    "label": "Billing cycle",
+                    "defaultValue": "monthly"
+                  }
+                ]
+              },
+              {
+                "id": "confirm",
+                "title": "Confirm",
+                "fields": [
+                  {
+                    "key": "agree",
+                    "type": "checkbox",
+                    "label": "Agree"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "step": "plan",
+            "steps": ["plan", "team", "billing", "confirm"],
+            "values": {
+              "name": "Ada",
+              "cycle": "monthly"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops item values and errors of item fields that changed type or were removed",
+      "definition": {
+        "id": "members",
+        "title": "Members",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "members",
+            "type": "group",
+            "label": "Members",
+            "fields": [
+              {
+                "key": "seats",
+                "type": "text",
+                "label": "Seats"
+              },
+              {
+                "key": "role",
+                "type": "text",
+                "label": "Role"
+              },
+              {
+                "key": "email",
+                "type": "email",
+                "label": "Email"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "members": [
+          {
+            "seats": "3",
+            "role": "admin",
+            "email": "ada@example.com"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "members.0.seats": "Too many",
+            "members.0.email": "Taken"
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "members",
+            "title": "Members",
+            "submit": {
+              "label": "Send"
+            },
+            "fields": [
+              {
+                "key": "members",
+                "type": "group",
+                "label": "Members",
+                "fields": [
+                  {
+                    "key": "seats",
+                    "type": "number",
+                    "label": "Seats",
+                    "defaultValue": 1
+                  },
+                  {
+                    "key": "email",
+                    "type": "email",
+                    "label": "Email"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "seats": 1,
+                  "email": "ada@example.com"
+                }
+              ]
+            },
+            "errors": {
+              "members.0.email": "Taken"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -78,16 +78,38 @@ private func catalogSlots(_ definition: FormDefinition, _ name: String, _ used: 
     }
 }
 
-func definitionSlots(_ definition: FormDefinition) -> [Slot] {
-    var labels = KeySet(definition.isMultiStep ? ["continue", "back", "stepOf", "errorSummary"] : ["errorSummary"])
-    if definition.allFields.contains(where: \.isGroup) {
-        labels.formUnion([
-            "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved", "removeItemNamed", "removeItemPrompt", "removeItemBody",
-            "cancel",
-        ])
+private let groupLabels = [
+    "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved", "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel",
+]
+private let pickerTypes = ["date", "time", "datetime"]
+
+private func unlabeled(_ value: JSONValue?, _ key: String) -> Bool {
+    value?[key]?.isTruthy != true
+}
+
+private func usedLabels(_ definition: FormDefinition) -> KeySet {
+    let steps = definition.steps ?? []
+    let nodes = definition.allFields
+    let fields = nodes.flatMap { $0.isGroup ? $0.items : [$0] }
+    var labels = KeySet(["errorSummary"])
+    func add(_ when: Bool, _ keys: [String]) {
+        if when { labels.formUnion(keys) }
     }
-    if definition.allFields.contains(where: \.hasPictures) { labels.formUnion(["enlargeImage", "close"]) }
+    add(!steps.isEmpty, ["continue", "back", "stepOf", "stepErrors"])
+    add(steps.contains { $0.json["title"]?.isTruthy != true }, ["stepTitle"])
+    add(steps.contains { $0.canSkip && unlabeled($0.json["skip"], "label") }, ["skip"])
+    add(unlabeled(definition.json["submit"], "label"), ["submit"])
+    add(nodes.contains(where: \.isGroup), groupLabels)
+    add(fields.contains(where: \.hasPictures), ["enlargeImage", "close"])
+    add(fields.contains { $0.validation?.required?.isTruthy == true }, ["required"])
+    add(fields.contains { pickerTypes.contains($0.type) || $0.type == "file" }, ["clear"])
+    add(fields.contains { pickerTypes.contains($0.type) }, ["done"])
+    add(fields.contains { $0.type == "file" }, ["chooseFile"])
+    return labels
+}
+
+func definitionSlots(_ definition: FormDefinition) -> [Slot] {
     return textNodes(definition).flatMap { nodeSlots(definition, $0) }
         + catalogSlots(definition, "messages", usedMessages(definition))
-        + catalogSlots(definition, "labels", labels)
+        + catalogSlots(definition, "labels", usedLabels(definition))
 }

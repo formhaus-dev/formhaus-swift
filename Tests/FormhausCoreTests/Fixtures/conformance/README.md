@@ -32,16 +32,17 @@ Each file holds one `definition`, the issues `checkDefinition` reports for it, a
 4. If `issues` is not empty, creating the engine with no values and running the server validation with `{}` must both fail with a definition error.
 
 The checks run on the definition as written, without `overlay`. A structural error (wrong type, missing required property) stops the checks below it in the same node, so a condition without `field` reports only `missing-property`.
-5. `texts`: if set, apply `overlay` to the definition, list its text slots, and compare the text at each listed address.
+5. `texts`: if set, apply `overlay` to the definition, list its text slots, and compare the text at each listed address. Do this even when step 1 rejected the definition: text slots do not depend on validation.
 6. If `issues` is empty, run each case.
 
 ## Cases
 
-A case has `name`, `input` (`values` and `skippedSteps`), `expected` (`values` and `errors`) and `canSubmit`.
+A case has `name`, `input` (`values` and `skippedSteps`), `expected` (`values` and `errors`), `canSubmit` and an optional `serverValues`.
 
 - Server: validating `input.values` with `input.skippedSteps` returns `expected`. The returned values are a plain object.
 - Browser engine: creating the engine with `input.values`, then `validate()` returns `expected.errors`, and the submit values equal `expected.values`. `canSubmit` says whether stepping through every step and submitting is allowed: on each step before the last, `next.disabled` does not match the submit values and `next()` succeeds; on the last, `validate()` returns no errors and `submit.disabled` does not match.
 - A payload the browser accepts passes server validation without errors.
+- `serverValues` is optional. When set, the server returns it in place of `expected.values`. The server drops an invalid group item value, and the browser engine keeps it.
 
 ## Semantics
 
