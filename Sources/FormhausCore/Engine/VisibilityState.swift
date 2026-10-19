@@ -4,18 +4,38 @@ struct ItemField {
     let field: FormField
 }
 
+struct VisibilityView {
+    var visibleSteps: [FormStep] = []
+    var currentStep: FormStep?
+    var visibleFields: [FormField] = []
+    var visibleNodes: [FormNode] = []
+}
+
 final class VisibilityState {
     let definition: FormDefinition
     let index: DefinitionIndex
     let groups: [FormField]
     let paths: PathCache
+    let conditional: [FormField]
+    let customSteps: [Int]
+    let order: [String]
     var starts = StartValues()
+    var settled = false
+    var waiting = KeySet()
+    private var visibilityDirty = true
+    private var canGoNextDirty = true
+    private var view = VisibilityView()
+    private var canGoNext = false
 
     init(_ definition: FormDefinition) {
         self.definition = definition
         index = DefinitionIndex(definition)
         groups = index.allFields.filter(\.isGroup)
         paths = PathCache(definition)
+        let index = index
+        conditional = index.allFields.filter { $0.isConditioned || index.section(of: $0)?.isConditioned == true }
+        customSteps = (definition.steps ?? []).filter { customRules($0.fields) }.map(\.ordinal)
+        order = OrderedKeys(index.fieldDependents.keys + index.stepDependents.keys).keys
     }
 
     var allFields: [FormField] { index.allFields }
@@ -23,10 +43,6 @@ final class VisibilityState {
     func scope(_ values: JSONObject) -> JSONObject { paths.path(values).values }
 
     func conditionValues(_ values: JSONObject) -> JSONObject { paths.conditionValues(values) }
-
-    func visibleSteps(_ values: JSONObject) -> [FormStep] {
-        definition.isMultiStep ? paths.path(values).steps : []
-    }
 
     func visible(_ field: FormField, _ values: JSONObject) -> Bool {
         let active = scope(values)
@@ -53,8 +69,8 @@ final class VisibilityState {
 
     func owner(_ key: String) -> String { parse(key)?.group ?? key }
 
-    func itemFields(_ group: FormField, _ item: JSONValue, _ values: JSONObject) -> [FormField] {
-        let scope = itemScope(group, item, scope(values))
+    func itemFields(_ group: FormField, _ item: JSONValue?, _ values: JSONObject) -> [FormField] {
+        let scope = itemScope(group, item ?? .null, scope(values))
         return group.items.filter { isVisible($0, scope) }
     }
 
@@ -67,90 +83,68 @@ final class VisibilityState {
         return ItemField(group: group, index: position, field: field)
     }
 
+    func state(_ values: JSONObject, _ stepIndex: Int) -> VisibilityView {
+        guard visibilityDirty else { return view }
+        visibilityDirty = false
+        let multi = definition.isMultiStep
+        let steps = multi ? paths.path(values).steps : []
+        let current = multi ? (steps.indices.contains(stepIndex) ? steps[stepIndex] : steps.last) : nil
+        let source = multi ? current?.fields ?? [] : definition.fields ?? []
+        let active = scope(values)
+        view = VisibilityView(
+            visibleSteps: steps, currentStep: current, visibleFields: shownFields(source, active),
+            visibleNodes: source.filter { isVisible($0, active) }.map { node in
+                guard let section = node.section else { return node }
+                return .section(section.filtered { isVisible($0, active) })
+            }
+        )
+        return view
+    }
+
+    func markChanged(_ structureChanged: Bool, _ valuesChanged: Bool) {
+        if structureChanged { visibilityDirty = true }
+        if structureChanged || valuesChanged { canGoNextDirty = true }
+    }
+
+    func canGoNext(_ values: JSONObject, _ stepIndex: Int, _ validators: Validators) -> Bool {
+        let step = state(values, stepIndex).currentStep
+        guard canGoNextDirty else { return canGoNext }
+        canGoNextDirty = false
+        if let step, customSteps.contains(step.ordinal) { settled = false }
+        let errors = step.map { validateFields($0.fields, conditionValues(values), validators: validators) } ?? FieldErrors()
+        canGoNext = definition.isMultiStep && errors.isEmpty
+        return canGoNext
+    }
+
+    func findStepIndex(_ fieldKey: String, _ values: JSONObject, _ stepIndex: Int) -> Int? {
+        let key = owner(fieldKey)
+        return state(values, stepIndex).visibleSteps.firstIndex { valueFields($0.fields).contains { sameText($0.key, key) } }
+    }
+
     func affectsStructure(_ key: String, _ cleared: KeySet) -> Bool {
         index.routeFields.contains(key) || index.fieldDependents.has(key) || index.stepDependents.has(key) || !cleared.isEmpty
     }
 
-    private func reconcileItems(_ values: inout JSONObject, _ errors: inout FieldErrors, _ cleared: inout KeySet) {
-        for group in groups where activeField(group.key, values)?.ordinal == group.ordinal {
-            let source = itemsOf(values[group.key])
-            let items = source.enumerated().map { position, item -> JSONValue in
-                guard var entry = item.objectValue else { return item }
-                for _ in 0...group.items.count {
-                    let shown = itemFields(group, .object(entry), values)
-                    let hidden = group.items.filter { field in !shown.contains { $0.ordinal == field.ordinal } && entry.has(field.key) }
-                    if hidden.isEmpty { break }
-                    for field in hidden {
-                        entry.removeValue(forKey: field.key)
-                        cleared.insert(itemPath(group.key, position, field.key))
-                    }
+    func conditionResults(_ values: Values) -> StringMap<(String, Bool)> {
+        var results = StringMap<(String, Bool)>()
+        for field in conditional {
+            results[field.key] = (field.key, (results[field.key]?.1 ?? false) || visible(field, values.json))
+        }
+        for group in groups {
+            for (position, item) in itemsOf(values[group.key]).enumerated() {
+                let shown = itemFields(group, item, values.json)
+                let id = item.objectValue != nil ? values.itemId(group.key, position).map { "i\($0)" } ?? "\(position)" : "\(position)"
+                for field in group.items where field.isConditioned {
+                    results["\(group.key) \(id) \(field.key)"] = (
+                        itemPath(group.key, position, field.key), shown.contains { $0.ordinal == field.ordinal }
+                    )
                 }
-                return .object(entry)
-            }
-            if items != source { values[group.key] = .array(items) }
-            for key in errors.keys {
-                guard let (position, field) = splitPath(group.key, key) else { continue }
-                if position < items.count, itemFields(group, items[position], values).contains(where: { sameText($0.key, field) }) { continue }
-                errors.removeValue(forKey: key)
-                cleared.insert(key)
             }
         }
+        return results
     }
 
-    @discardableResult
-    func reconcileHidden(_ values: inout JSONObject, _ errors: inout FieldErrors, initial: Bool = false) -> KeySet {
-        if initial { starts.resetStarts(values) }
-        let order = OrderedKeys(index.fieldDependents.keys + index.stepDependents.keys).keys
-        var queue = order
-        var queued = KeySet(queue)
-        var cleared = KeySet()
-        let groupKeys = KeySet(groups.map(\.key))
-        func held(_ key: String) -> Bool { values[key] != nil || errors[key] != nil }
-        func mark(_ key: String) {
-            cleared.insert(key)
-            for next in index.routeFields.contains(key) ? order + [key] : [key] where !queued.contains(next) {
-                queued.insert(next)
-                queue.append(next)
-            }
-        }
-        func clear(_ key: String) {
-            starts.remember(key, values[key])
-            values.removeValue(forKey: key)
-            errors.removeValue(forKey: key)
-            if groupKeys.contains(key) {
-                for errorKey in errors.keys where sameText(owner(errorKey), key) { errors.removeValue(forKey: errorKey) }
-            }
-            mark(key)
-        }
-        func update(_ field: FormField, _ shown: Bool) {
-            let key = field.key
-            let shared = (index.fieldsByKey[key]?.count ?? 0) > 1
-            let active = shared ? activeField(key, values) : nil
-            if let active, active.ordinal != field.ordinal { return }
-            guard shown else {
-                if held(key) { clear(key) }
-                return
-            }
-            let eligible = shared ? active != nil : onPath(field, values) && visible(field, values)
-            guard !held(key), eligible, let value = starts.startValue(field) else { return }
-            values[key] = value
-            mark(key)
-        }
-        var position = 0
-        while position < queue.count {
-            let key = queue[position]
-            queued.remove(key)
-            for field in index.fieldDependents[key] ?? [] where onPath(field, values) {
-                update(field, visible(field, values))
-            }
-            for step in index.stepDependents[key] ?? [] {
-                for field in valueFields(step.fields) { update(field, isVisible(step, scope(values))) }
-            }
-            position += 1
-        }
-        if !groups.isEmpty { reconcileItems(&values, &errors, &cleared) }
-        return cleared
-    }
+    func unsettle() { settled = false }
 }
 
 struct OrderedKeys {
@@ -159,5 +153,13 @@ struct OrderedKeys {
     init(_ items: [String]) {
         var seen = KeySet()
         for item in items where seen.insert(item) { keys.append(item) }
+    }
+}
+
+extension FormSection {
+    func filtered(_ include: (FormField) -> Bool) -> FormSection {
+        var copy = self
+        copy.fields = fields.filter { node in node.field.map(include) ?? false }
+        return copy
     }
 }
