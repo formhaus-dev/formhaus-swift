@@ -1,6 +1,24 @@
-# Formhaus for Swift
+<p align="center">
+  <img src=".github/assets/logo.svg" alt="Formhaus" width="360">
+</p>
 
-A native Swift port of the [formhaus](https://github.com/formhaus-dev/formhaus) form engine.
+<p align="center">
+  <a href="https://github.com/formhaus-dev/formhaus-swift/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/formhaus-dev/formhaus-swift/ci.yml?branch=main&label=tests" alt="Tests"></a>
+  <img src="https://img.shields.io/badge/Swift-6-F05138" alt="Swift 6">
+  <img src="https://img.shields.io/badge/platforms-iOS%2016%20%7C%20macOS%2013-lightgrey" alt="iOS 16, macOS 13">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/formhaus-dev/formhaus-swift" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  A native Swift engine for <a href="https://github.com/formhaus-dev/formhaus">formhaus</a> form definitions.<br>
+  The same JSON drives validation, conditions, steps and branching on the web, on the server and on iOS.
+</p>
+
+<p align="center">
+  <a href="https://formhaus.dev/guide/">Documentation</a> ·
+  <a href="https://formhaus.dev/playground">Playground</a> ·
+  <a href="https://github.com/formhaus-dev/formhaus">TypeScript core</a>
+</p>
 
 ## Install
 
