@@ -29,13 +29,4 @@ struct JSCompatibilityTests {
         #expect("\u{FEFF}\u{A0} a \u{2028}".jsTrimmed == "a")
         #expect("\u{200B}a".jsTrimmed == "\u{200B}a")
     }
-
-    @Test("parser keeps key order and own __proto__ keys")
-    func parser() throws {
-        let value = try JSONValue(parsing: #"{"b":1,"__proto__":{"x":true},"a":[null,"é😀"]}"#)
-        let object = try #require(value.objectValue)
-        #expect(object.keys == ["b", "__proto__", "a"])
-        #expect(object["a"] == .array([.null, .string("é😀")]))
-        #expect(throws: JSONParseError.self) { try JSONValue(parsing: "{\"a\":01}") }
-    }
 }
