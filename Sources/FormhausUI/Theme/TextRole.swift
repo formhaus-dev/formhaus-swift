@@ -62,7 +62,7 @@ extension FormhausTokens {
     }
 
     public func lineSpacing(_ role: TextRole) -> CGFloat {
-        max(0, role.size(typography) * (role.leading - 1.2))
+        max(0, role.size(typography) / max(1, scale) * (role.leading - 1.2))
     }
 }
 

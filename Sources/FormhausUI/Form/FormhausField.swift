@@ -32,6 +32,14 @@ struct BuiltInField: View {
         switch context.field.type {
         case "text", "email", "phone", "number", "password": TextInputField(context)
         case "textarea": TextAreaField(context)
+        case "autocomplete": AutocompleteField(context)
+        case "select": SelectField(context)
+        case "radio": RadioField(context)
+        case "multiselect": MultiselectField(context)
+        case "checkbox": CheckboxField(context)
+        case "switch": SwitchField(context)
+        case "date", "time", "datetime": DateField(context)
+        case "file": FileField(context)
         case "hidden": EmptyView()
         default: UnsupportedField(type: context.field.type)
         }
