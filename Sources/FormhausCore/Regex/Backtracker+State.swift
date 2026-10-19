@@ -17,24 +17,18 @@ extension Backtracker {
         case .groupStart(let group), .mark(let group): setRegister(group, offset)
         case .groupEnd(let group): setCapture(group, min(registers[group], offset), max(registers[group], offset))
         case .clear(let groups):
-            try budget.spend(groups.count)
+            try context.spend(groups.count)
             for group in groups { setCapture(group, -1, -1) }
         case .progress(let register): return memoized(pc) || registers[register] != offset
         }
         return true
     }
 
-    private mutating func holds(_ index: Int, _ offset: Int) throws(BudgetExceeded) -> Bool {
-        context.budget = budget
-        defer { budget = context.budget }
-        return try context.holds(index, at: offset)
-    }
-
     mutating func matchReference(_ reference: Backreference, _ offset: Int) throws(BudgetExceeded) -> Int? {
         var position = offset
-        try budget.spend(reference.groups.count)
+        try context.spend(reference.groups.count)
         for group in reference.backward ? reference.groups : reference.groups.reversed() where slots[2 * group] >= 0 {
-            try budget.spend(slots[2 * group + 1] - slots[2 * group] + 1)
+            try context.spend(slots[2 * group + 1] - slots[2 * group] + 1)
             guard let next = matchCapture(group, reference, position) else { return nil }
             position = next
         }
@@ -58,8 +52,8 @@ extension Backtracker {
 
     mutating func evaluateLook(_ index: Int, _ offset: Int) throws(BudgetExceeded) -> Bool {
         let body = program.looks[index]
-        guard let start = body.start else { return try holds(index, offset) != body.look.negated }
-        try budget.spend(2 * slots.count)
+        guard let start = body.start else { return try context.holds(index, at: offset) != body.look.negated }
+        try context.spend(2 * slots.count)
         let snapshot = slots
         if !body.look.negated {
             saved.append(snapshot)

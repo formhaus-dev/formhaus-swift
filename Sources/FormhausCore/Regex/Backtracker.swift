@@ -30,7 +30,6 @@ struct Backtracker {
     var stack: [Frame] = []
     var saved: [[Int]] = []
     let context: MatchContext
-    var budget: StepBudget
     var memo: Bitset?
     let width: Int
 
@@ -38,7 +37,6 @@ struct Backtracker {
         self.program = program
         input = MatchInput(text: context.text)
         self.context = context
-        budget = context.budget
         width = input.text.count + 1
         slots = Array(repeating: -1, count: 2 * (program.captureCount + 1))
         registers = Array(repeating: -1, count: program.registerCount)
@@ -61,7 +59,7 @@ struct Backtracker {
         var pc = entry
         var offset = position
         while true {
-            try budget.spend(1)
+            try context.spend(1)
             switch try execute(&pc, &offset) {
             case .proceed: continue
             case .success: return true

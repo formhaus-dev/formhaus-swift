@@ -8,7 +8,7 @@ extension Backtracker {
             position += step
             count += 1
         }
-        try budget.spend(count)
+        try context.spend(count)
         guard count >= repeated.min else { return nil }
         if repeated.greedy {
             if count > repeated.min {
@@ -30,7 +30,7 @@ extension Backtracker {
     mutating func resumeExtend(_ scan: Scan) throws(BudgetExceeded) -> (Int, Int)? {
         guard case .repeatSet(let repeated) = program.instructions[scan.pc], consumes(repeated, at: scan.position) else { return nil }
         let position = scan.position + scan.step
-        try budget.spend(1)
+        try context.spend(1)
         if position != scan.stop { stack.append(.extend(Scan(pc: scan.pc, position: position, stop: scan.stop, step: scan.step))) }
         return (scan.pc + 1, position)
     }

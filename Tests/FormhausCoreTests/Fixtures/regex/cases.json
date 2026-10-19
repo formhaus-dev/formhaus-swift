@@ -2,7 +2,7 @@
  "node": "v24.15.0",
  "seed": 20261019,
  "counts": {
-  "curated": 5260,
+  "curated": 5281,
   "fuzz": 5873
  },
  "cases": [
@@ -3340,6 +3340,132 @@
    "pattern": "(?i:Σ)",
    "input": "σ",
    "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^.{0,16384}$",
+   "input": "hello world",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^.{0,16384}$",
+   "input": "\n",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^[\\s\\S]{0,65535}$",
+   "input": "hello world",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^[^<>]{0,20000}$",
+   "input": "hello world",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^[^<>]{0,20000}$",
+   "input": "a<b",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^.{1,50000}$",
+   "input": "hello world",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^.{1,50000}$",
+   "input": "",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(?:[a-z]{2,8}-){0,4000}$",
+   "input": "hello world",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(?:[a-z]{2,8}-){0,4000}$",
+   "input": "ab-cd-",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(?:[a-z]{2,8}-){0,4000}$",
+   "input": "a-",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(\\w{1,200} ?){1,200}$",
+   "input": "hello world",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(\\w{1,200} ?){1,200}$",
+   "input": "hello  world",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(?:[a-z0-9]{1,63}\\.){1,127}[a-z]{2,63}$",
+   "input": "mail.example.com",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(?:[a-z0-9]{1,63}\\.){1,127}[a-z]{2,63}$",
+   "input": "x.y",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^.{0,16383}$",
+   "input": "hello world",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^[a-z]{0,10000}$",
+   "input": "hello",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^[a-z]{0,10000}$",
+   "input": "hello world",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?:a{1000}){1000}",
+   "input": "aaaa",
+   "result": false,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?:x?){20000}y",
+   "input": "xxy",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(?:(?=\\w)(?<=\\b)\\w+\\b ?){1,500}$",
+   "input": "hello world",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "^(?:(?=\\w)(?<=\\b)\\w+\\b ?){1,500}$",
+   "input": "hello  world",
+   "result": false,
    "kind": "curated"
   },
   {

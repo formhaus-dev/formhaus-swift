@@ -133,4 +133,22 @@ struct RegexRegressionTests {
         #expect(try #require(JSRegex("abcab")).test(text) == expected)
         #expect(try #require(JSRegex("[a-z]*abcab")).test(text) == expected)
     }
+
+    @Test(
+        "counted repeats larger than any input still match",
+        arguments: [
+            ("^.{0,16384}$", true), ("^[\\s\\S]{0,65535}$", true), ("^[^<>]{0,20000}$", true), ("^.{1,50000}$", true),
+            ("^(?:[a-z]{2,8}-){0,4000}$", false), ("^(\\w{1,200} ?){1,200}$", true),
+        ])
+    func repeatsBeyondTheInputLimit(source: String, expected: Bool) throws {
+        let pattern = try #require(JSRegex(source))
+        #expect(pattern.test("hello world") == expected)
+        if !source.hasPrefix("^(\\w") { #expect(pattern.test(String(repeating: "a", count: maxStringLength + 1)) == nil) }
+    }
+
+    @Test("nested counted repeats find a match on long input")
+    func nestedCountedRepeats() throws {
+        let pattern = try #require(JSRegex("^(\\w{1,200} ?){1,200}$"))
+        #expect(pattern.test(String(repeating: "a", count: maxStringLength - 1) + "b") == true)
+    }
 }

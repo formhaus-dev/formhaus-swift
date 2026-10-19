@@ -1,6 +1,6 @@
 final class MatchContext {
     let text: [UInt16]
-    var budget: StepBudget
+    @exclusivity(unchecked) var budget: StepBudget
     private let scanners: [AutomatonCache?]
     private var tables: [[Bool]?]
 
