@@ -2,44 +2,24 @@
 import SwiftUI
 
 struct SystemForm: View {
-    @State private var history: [String] = []
+    #if os(iOS)
+        @State private var store = StepStore()
+    #endif
     let model: FormModel
 
     var body: some View {
-        Group {
-            #if os(iOS)
-                SystemStepPage(model: model, level: 0, history: $history)
-            #else
-                SystemPage(
-                    model: model, nodes: model.structure.nodes, step: model.structure.currentStep, level: model.structure.stepIndex,
-                    current: true)
-            #endif
-        }
-        .onAppear {
-            if history.isEmpty { history = visited(model) } else { sync(stepID(model)) }
-        }
-        .onChange(of: stepID(model)) { _, id in sync(id) }
+        #if os(iOS)
+            SystemStepPage(model: model, level: 0, store: store)
+                .background { StackClaim(model: ObjectIdentifier(model), owner: ObjectIdentifier(store)) }
+                .onAppear { store.sync(model) }
+                .onChange(of: model.structure) { store.sync(model) }
+                .onChange(of: ObjectIdentifier(model)) { store.sync(model) }
+        #else
+            SystemPage(
+                model: model, nodes: model.structure.nodes, step: model.structure.currentStep, level: model.structure.stepIndex,
+                current: true)
+        #endif
     }
-
-    private func sync(_ id: String) {
-        if let index = history.firstIndex(of: id) {
-            history.removeSubrange((index + 1)...)
-        } else {
-            history.append(id)
-        }
-    }
-}
-
-@MainActor
-private func visited(_ model: FormModel) -> [String] {
-    let structure = model.structure
-    guard structure.isMultiStep, structure.steps.indices.contains(structure.stepIndex) else { return [stepID(model)] }
-    return structure.steps.prefix(structure.stepIndex + 1).filter { !model.engine.isStepSkipped($0.id) }.map { "step:\($0.id)" }
-}
-
-@MainActor
-func stepID(_ model: FormModel) -> String {
-    model.structure.currentStep.map { "step:\($0.id)" } ?? "form"
 }
 
 #if os(iOS)
@@ -48,50 +28,38 @@ func stepID(_ model: FormModel) -> String {
         @Environment(\.formhausBehavior) private var behavior
         @Environment(\.formhausTheme) private var theme
         @Environment(\.locale) private var locale
-        @State private var nodes: [FormNode] = []
-        @State private var step: FormStep?
         let model: FormModel
         let level: Int
-        @Binding var history: [String]
+        weak var store: StepStore?
 
         var body: some View {
-            let current = history.count == level + 1
-            let structure = model.structure
-            SystemPage(
-                model: model, nodes: current ? structure.nodes : nodes, step: current ? structure.currentStep : step, level: level,
-                current: current
-            )
-            .onAppear {
-                if current {
-                    keep(structure)
-                } else if history.indices.contains(level) {
-                    step = structure.steps.first { "step:\($0.id)" == history[level] }
-                    nodes = step?.fields ?? []
+            if let active = store {
+                let snapshot = active.snapshot(level, model.structure)
+                SystemPage(
+                    model: model, nodes: snapshot.nodes, step: snapshot.step, level: level, current: active.history.count == level + 1
+                )
+                .navigationDestination(isPresented: pushed) {
+                    SystemStepPage(model: model, level: level + 1, store: self.store)
+                        .formhausComponents(components)
+                        .formhausBehavior(behavior)
+                        .formhausTheme(theme)
+                        .environment(\.locale, locale)
+                        .resolveFormhausTokens()
                 }
+                .background { if level > 0 { StackReleaser(model: ObjectIdentifier(model), owner: ObjectIdentifier(active)) } }
             }
-            .onChange(of: structure.nodes.map(\.nodeID)) { if current { keep(model.structure) } }
-            .navigationDestination(isPresented: pushed) {
-                SystemStepPage(model: model, level: level + 1, history: $history)
-                    .formhausComponents(components)
-                    .formhausBehavior(behavior)
-                    .formhausTheme(theme)
-                    .environment(\.locale, locale)
-                    .resolveFormhausTokens()
-            }
-        }
-
-        private func keep(_ structure: FormStructure) {
-            nodes = structure.nodes
-            step = structure.currentStep
         }
 
         private var pushed: Binding<Bool> {
             Binding(
-                get: { history.count > level + 1 },
-                set: { shown in
-                    guard !shown, history.count > level + 1 else { return }
-                    history.removeSubrange((level + 1)...)
-                    Task { await model.back() }
+                get: { [weak store] in (store?.history.count ?? 0) > level + 1 },
+                set: { [weak store] shown in
+                    guard !shown, let store, store.history.count > level + 1 else { return }
+                    store.pop(to: level)
+                    Task {
+                        await model.back()
+                        store.sync(model)
+                    }
                 })
         }
     }
@@ -99,9 +67,9 @@ func stepID(_ model: FormModel) -> String {
 
 struct SystemPage: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var dismissed: [String] = []
-    let model: FormModel
     @Environment(\.formhausComponents) private var components
+    @State private var dismissed = -1
+    let model: FormModel
     let nodes: [FormNode]
     let step: FormStep?
     let level: Int
@@ -128,13 +96,21 @@ struct SystemPage: View {
                 guard current, let key = request?.key else { return }
                 withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { proxy.scrollTo(key, anchor: .center) }
             }
+            .onChange(of: current) { _, now in
+                guard now, let key = model.focusRequest?.key else { return }
+                Task {
+                    try? await Task.sleep(for: .milliseconds(400))
+                    guard model.focusRequest?.key == key else { return }
+                    model.requestFocus(key)
+                }
+            }
         }
         .modifier(SystemStepTitle(model: model, step: step, level: level))
         #if os(iOS)
             .modifier(SystemToolbar(context: actions, first: level == 0, empty: nodes.isEmpty, custom: components.slots.actions != nil))
         #endif
         .alert(errors.first ?? "", isPresented: alertShown) {
-            Button(model.text(forLabel: "close"), role: .cancel) { dismissed = errors }
+            Button(model.text(forLabel: "close"), role: .cancel) { dismissed = model.alertVersion }
         } message: {
             Text(errors.dropFirst().joined(separator: "\n"))
         }
@@ -149,7 +125,9 @@ struct SystemPage: View {
     }
 
     private var alertShown: Binding<Bool> {
-        Binding(get: { current && !errors.isEmpty && errors != dismissed }, set: { shown in if !shown { dismissed = errors } })
+        Binding(
+            get: { current && !errors.isEmpty && model.alertVersion != dismissed },
+            set: { shown in if !shown { dismissed = model.alertVersion } })
     }
 }
 

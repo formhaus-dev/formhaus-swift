@@ -77,7 +77,6 @@ extension EnvironmentValues {
 }
 
 private struct SystemSection: View {
-    @Environment(\.formhausComponents) private var components
     let section: FormSection
     let model: FormModel
 
@@ -85,7 +84,7 @@ private struct SystemSection: View {
         let fields = section.fields.compactMap(\.field).filter { $0.type != "hidden" }
         Section {
             ForEach(fields, id: \.nodeID) { field in
-                if section.isMatrix, field.type == "radio", components.fields[field.type] == nil {
+                if section.isMatrix, field.type == "radio" {
                     SystemMatrixRow(field: field, model: model)
                 } else {
                     FormhausField(field, model: model)

@@ -45,7 +45,7 @@ private struct SystemPictureTile: View {
         let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
         Button(action: choose) {
             VStack(spacing: 8) {
-                SystemOptionImage(key: ImageKey(option.image ?? "", digest: option.imageKey))
+                SystemOptionImage(option: option)
                     .clipShape(shape)
                     .overlay(shape.strokeBorder(selected ? AnyShapeStyle(.tint) : AnyShapeStyle(.separator), lineWidth: selected ? 3 : 1))
                 Text(label).font(.subheadline).foregroundStyle(Color.primary).multilineTextAlignment(.center)
@@ -69,19 +69,12 @@ private struct SystemPictureTile: View {
 }
 
 private struct SystemOptionImage: View {
-    let key: ImageKey
+    let option: FieldOption
 
     var body: some View {
         Color.clear
             .aspectRatio(4 / 3, contentMode: .fit)
-            .overlay {
-                if let image = InlineImages.shared.entry(key).image {
-                    Image(decorative: image, scale: 1).resizable().scaledToFill()
-                } else if let url = URL(string: key.source), ["https", "http"].contains(url.scheme) {
-                    AsyncImage(url: url) { phase in phase.image?.resizable().scaledToFill() }
-                }
-            }
+            .overlay { FormhausOptionImage(option: option) }
             .background(.quaternary)
-            .accessibilityHidden(true)
     }
 }

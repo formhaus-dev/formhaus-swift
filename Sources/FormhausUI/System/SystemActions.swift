@@ -79,8 +79,8 @@ struct SystemSkip: View {
                         SystemPrimaryButton(context: context, prominent: true).padding(.horizontal, 20).padding(.bottom, 8)
                     }
                 }
-                .navigationBarBackButtonHidden(context.model.submitting)
-                .interactiveDismissDisabled(context.model.submitting)
+                .navigationBarBackButtonHidden(context.model.disabled || context.model.stepValidating)
+                .interactiveDismissDisabled(context.model.disabled || context.model.stepValidating)
         }
     }
 #else

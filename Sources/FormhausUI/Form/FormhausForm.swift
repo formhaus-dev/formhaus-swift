@@ -70,6 +70,9 @@ final class ModelHolder {
 
     private func replace(_ next: FormModel, owned isOwned: Bool, definition source: JSONObject?) {
         cancel?()
+        #if os(iOS)
+            if let model, model !== next { StackClaims.shared.claim(ObjectIdentifier(model), by: nil) }
+        #endif
         model = next
         owned = isOwned
         definition = source
@@ -123,6 +126,7 @@ public struct FormhausFormContent: View {
             } else {
                 ScrollViewReader { proxy in
                     FormStack(model: model)
+                        .releasingSystemSteps(model)
                         .background(alignment: .top) { Color.clear.frame(height: 1).id(topAnchor(model)) }
                         .onChange(of: model.focusRequest) { _, request in scroll(proxy, to: request) }
                         .onChange(of: model.structure.currentStep?.nodeID) { scrollToTop(proxy) }
@@ -179,4 +183,16 @@ extension View {
             self
         }
     }
+}
+
+extension View {
+    #if os(iOS)
+        fileprivate func releasingSystemSteps(_ model: FormModel) -> some View {
+            background { StackClaim(model: ObjectIdentifier(model), owner: nil) }
+        }
+    #else
+        fileprivate func releasingSystemSteps(_: FormModel) -> some View {
+            self
+        }
+    #endif
 }
