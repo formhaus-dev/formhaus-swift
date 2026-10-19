@@ -10,10 +10,9 @@ struct RootView: View {
     var body: some View {
         NavigationStack {
             content
-                #if os(macOS)
-                    .navigationTitle(session.title)
-                #else
-                    .navigationBarTitleDisplayMode(.inline)
+                .navigationTitle(session.phase == .form ? session.title : "")
+                #if os(iOS)
+                    .navigationBarTitleDisplayMode(.large)
                 #endif
                 .toolbar { toolbar }
         }
