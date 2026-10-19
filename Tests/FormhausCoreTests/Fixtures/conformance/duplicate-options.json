@@ -1,0 +1,155 @@
+{
+  "name": "duplicate-options",
+  "issues": [],
+  "definition": {
+    "id": "duplicate-options",
+    "title": "Duplicate options",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "tags",
+        "type": "multiselect",
+        "label": "Tags",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          },
+          {
+            "value": "c",
+            "label": "C"
+          }
+        ],
+        "validation": {
+          "minLength": 3
+        }
+      },
+      {
+        "key": "topics",
+        "type": "multiselect",
+        "label": "Topics",
+        "optionsFrom": "topics"
+      },
+      {
+        "key": "pulse",
+        "type": "section",
+        "layout": "matrix",
+        "title": "Pulse",
+        "fields": [
+          {
+            "key": "tools",
+            "type": "multiselect",
+            "label": "Tools",
+            "options": [
+              {
+                "value": "1",
+                "label": "Daily"
+              },
+              {
+                "value": "2",
+                "label": "Weekly"
+              }
+            ]
+          },
+          {
+            "key": "habits",
+            "type": "multiselect",
+            "label": "Habits",
+            "options": [
+              {
+                "value": "1",
+                "label": "Daily"
+              },
+              {
+                "value": "2",
+                "label": "Weekly"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "fields": [
+          {
+            "key": "roles",
+            "type": "multiselect",
+            "label": "Roles",
+            "options": [
+              {
+                "value": "x",
+                "label": "X"
+              },
+              {
+                "value": "y",
+                "label": "Y"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "distinct options",
+      "input": {
+        "values": {
+          "tags": ["a", "b", "c"],
+          "topics": ["billing", "api"],
+          "tools": ["1", "2"],
+          "habits": ["2"],
+          "people": [{ "roles": ["x", "y"] }]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "tags": ["a", "b", "c"],
+          "topics": ["billing", "api"],
+          "tools": ["1", "2"],
+          "habits": ["2"],
+          "people": [{ "roles": ["x", "y"] }]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "repeated options",
+      "input": {
+        "values": {
+          "tags": ["a", "a", "a"],
+          "topics": ["api", "api"],
+          "tools": ["1", "1"],
+          "habits": ["2"],
+          "people": [{ "roles": ["y"] }]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "tags": ["a", "a", "a"],
+          "topics": ["api", "api"],
+          "tools": ["1", "1"],
+          "habits": ["2"],
+          "people": [{ "roles": ["y"] }]
+        },
+        "errors": {
+          "tags": "Must be a list of available options",
+          "topics": "Must be a list of available options",
+          "tools": "Must be a list of available options"
+        }
+      },
+      "canSubmit": false
+    }
+  ]
+}

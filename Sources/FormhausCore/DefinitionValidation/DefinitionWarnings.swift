@@ -7,8 +7,13 @@ private func expectedType(_ field: FormField) -> String? {
     return builtInTypes.contains(field.type) && !listTypes.contains(field.type) && field.type != "file" ? "string" : nil
 }
 
+private func mismatch(_ name: String, _ path: String, _ problem: String, _ hint: String) -> [DefinitionIssue] {
+    [warning(containsOperators.contains(name) ? "contains-not-list" : "condition-value-mismatch", path, problem, hint)]
+}
+
 private func valueIssue(_ target: FormField, _ name: String, _ operand: JSONValue?, _ path: String) -> [DefinitionIssue] {
-    let mismatch = { (problem: String, hint: String) in [warning("condition-value-mismatch", path, problem, hint)] }
+    let contains = containsOperators.contains(name)
+    let list = listTypes.contains(target.type)
     if name == "notEmpty" {
         return operand?.isTruthy == true
             ? []
@@ -18,28 +23,41 @@ private func valueIssue(_ target: FormField, _ name: String, _ operand: JSONValu
                     "Use \"notEmpty\": true, or remove the condition")
             ]
     }
-    if comparisons.contains(name) {
-        guard listTypes.contains(target.type) || booleanTypes.contains(target.type) else { return [] }
+    if comparisons.contains(name) || (contains && !list) {
+        let checked = contains ? builtInTypes.contains(target.type) || target.isGroup : list || booleanTypes.contains(target.type)
+        guard checked else { return [] }
         return mismatch(
-            "\"\(target.key)\" is a \(target.type) field, so \"\(name)\" never matches it", "Compare a number, text, radio or select field")
+            name, path,
+            "\"\(target.key)\" is a \(target.type) field, so \"\(name)\" \(name == "notContains" ? "always" : "never") matches it",
+            contains ? "Use eq or in, or test a multiselect field" : "Compare a number, text, radio or select field")
     }
-    if listTypes.contains(target.type) {
+    if list && !contains {
         let result = name == "neq" || name == "notIn" ? "always" : "never"
         return mismatch(
-            "\"\(target.key)\" holds a list of values, so \"\(name)\" \(result) matches it", "Use notEmpty, or a select or radio field")
+            name, path, "\"\(target.key)\" holds a list of values, so \"\(name)\" \(result) matches it",
+            "Use contains, notContains or notEmpty")
     }
+    return operandIssue(target, name, operand, path)
+}
+
+private func operandIssue(_ target: FormField, _ name: String, _ operand: JSONValue?, _ path: String) -> [DefinitionIssue] {
+    let list = listTypes.contains(target.type)
     let operands: [JSONValue?]
     if listOperators.contains(name), let list = operand?.arrayValue { operands = list } else { operands = [operand] }
     let expected = expectedType(target)
     if let expected, let wrong = operands.first(where: { ($0?.typeName ?? "undefined") != expected }) {
         return mismatch(
-            "\(jsonStringify(wrong)) is a \(wrong?.typeName ?? "undefined"), but \"\(target.key)\" holds a \(expected)",
+            name, path, "\(jsonStringify(wrong)) is a \(wrong?.typeName ?? "undefined"), but \"\(target.key)\" holds a \(expected)",
             "Use a \(expected) value")
     }
-    guard expected == "string", !target.hasOptionsFrom, let options = target.options, !options.isEmpty else { return [] }
+    guard expected == "string" || list, !target.hasOptionsFrom, let options = target.options, !options.isEmpty else { return [] }
     let values = options.compactMap(\.value)
     guard let missing = operands.first(where: { item in !values.contains { strictEquals(.string($0), item) } }) else { return [] }
-    return mismatch("\(jsonStringify(missing)) is not an option of \"\(target.key)\"", oneOf(values))
+    return [
+        warning(
+            containsOperators.contains(name) ? "contains-not-in-options" : "condition-value-mismatch", path,
+            "\(jsonStringify(missing)) is not an option of \"\(target.key)\"", oneOf(values))
+    ]
 }
 
 private func conditionWarnings(_ context: CheckContext, _ entry: ConditionEntry) -> [DefinitionIssue] {
@@ -217,29 +235,6 @@ private func routeWarnings(_ context: CheckContext) -> [DefinitionIssue] {
         }
         return issues
     }
-}
-
-private func versionWarnings(_ context: CheckContext) -> [DefinitionIssue] {
-    let parts = (context.definition.formatVersion ?? "1.0").split(separator: ".", omittingEmptySubsequences: false).map {
-        Double($0) ?? .nan
-    }
-    let major = parts[0]
-    let minor = parts.count > 1 ? parts[1] : 0
-    let scale = context.nodes.first { scaleTypes.contains($0.node.type) }
-    let container = context.nodes.first { $0.node.type == "section" || $0.node.type == "group" }
-    let (found, needed): (NodeEntry?, Int) = scale != nil && minor < 3 ? (scale, 3) : (container, 1)
-    guard let found, major == 1, !(minor >= Double(needed)) else { return [] }
-    let hint =
-        needed == 3
-        ? "Set \"formatVersion\": \"1.3\". Older versions of @formhaus/core treat this type as a custom type and do not validate it. "
-            + "Upgrade the server that runs validateSubmission() first"
-        : "Set \"formatVersion\": \"1.1\", so that older versions of @formhaus/core "
-            + "reject the definition instead of skipping the fields inside"
-    return [
-        warning(
-            "outdated-format-version", "/formatVersion",
-            "\(found.path) is a \(found.node.type), which needs format 1.\(needed)", hint)
-    ]
 }
 
 func definitionWarnings(_ context: CheckContext) -> [DefinitionIssue] {

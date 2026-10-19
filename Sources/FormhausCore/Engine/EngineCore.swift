@@ -1,8 +1,9 @@
 final class EngineCore {
-    let definition: FormDefinition
+    private(set) var definition: FormDefinition
     let validators: Validators
-    let messages: ResolveMessage
-    let visibility: VisibilityState
+    private let messageSource: MessageSource?
+    private(set) var messages: ResolveMessage
+    private(set) var visibility: VisibilityState
     var values = Values()
     private(set) var valuesGeneration = 0
     private(set) var errorsGeneration = 0
@@ -19,6 +20,7 @@ final class EngineCore {
     var validationEpoch = 0
     var operationEpoch = 0
     var latestOperation = 0
+    var sending: Int?
     var started = false
     var viewedStep: String?
     var shownFields: StringMap<(String, Bool)>?
@@ -32,11 +34,23 @@ final class EngineCore {
     ) {
         self.definition = definition
         self.validators = validators
+        messageSource = messages
         self.messages = messageResolver(messages, .catalog(definition.messages ?? .null))
         visibility = VisibilityState(definition)
-        let visibility = visibility
-        values = createValues(visibility.allFields, Values(fresh: initialValues)) { visibility.activeField($0, $1) }
+        values = Self.startValues(visibility, Values(fresh: initialValues), &errors)
+    }
+
+    private static func startValues(_ visibility: VisibilityState, _ initialValues: Values, _ errors: inout FieldErrors) -> Values {
+        var values = createValues(visibility.allFields, initialValues) { visibility.activeField($0, $1) }
         visibility.reconcileHidden(&values, &errors, initial: true)
+        return values
+    }
+
+    func load(_ next: FormDefinition, _ initialValues: Values) {
+        definition = next
+        messages = messageResolver(messageSource, .catalog(next.messages ?? .null))
+        visibility = VisibilityState(next)
+        replaceValues(Self.startValues(visibility, initialValues, &errors))
     }
 
     func replaceValues(_ next: Values) {

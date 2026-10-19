@@ -39,6 +39,8 @@ extension IssueCode {
     public static let conditionOperatorCount = IssueCode(rawValue: "condition-operator-count")
     public static let unknownOperator = IssueCode(rawValue: "unknown-operator")
     public static let conditionValueMismatch = IssueCode(rawValue: "condition-value-mismatch")
+    public static let containsNotList = IssueCode(rawValue: "contains-not-list")
+    public static let containsNotInOptions = IssueCode(rawValue: "contains-not-in-options")
     public static let conditionCycle = IssueCode(rawValue: "condition-cycle")
     public static let conditionAlwaysTrue = IssueCode(rawValue: "condition-always-true")
     public static let invalidPattern = IssueCode(rawValue: "invalid-pattern")

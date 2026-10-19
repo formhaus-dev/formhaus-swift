@@ -69,8 +69,8 @@ private func condition(_ value: JSONObject, _ path: String) -> [DefinitionIssue]
     typed(
         value,
         [
-            "field": .string, "eq": .scalar, "neq": .scalar, "in": .list, "notIn": .list, "notEmpty": .boolean,
-            "gt": .number, "gte": .number, "lt": .number, "lte": .number,
+            "field": .string, "eq": .scalar, "neq": .scalar, "in": .list, "notIn": .list, "contains": .scalar, "notContains": .scalar,
+            "notEmpty": .boolean, "gt": .number, "gte": .number, "lt": .number, "lte": .number,
         ],
         path
     )

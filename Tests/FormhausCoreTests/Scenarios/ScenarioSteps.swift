@@ -24,13 +24,13 @@ extension ScenarioRun {
         case "validateField": return engine.validateField(key).map(JSONValue.string)
         case "goToStepWithField": engine.goToStepWithField(key)
         case "reset": engine.reset(step["values"]?.objectValue)
+        case "replaceDefinition": try engine.replaceDefinition(file.localized(step["definition"] ?? .null))
         case let name: throw ScriptError(message: "unknown action \(name ?? "nil")")
         }
         return nil
     }
 
     private func read(_ name: String, _ expected: JSONValue?) -> JSONValue? {
-        let steps = file.definition(of: scenario)["steps"]?.arrayValue ?? []
         switch name {
         case "values": return .object(engine.values)
         case "submitValues": return .object(engine.getSubmitValues())
@@ -41,7 +41,7 @@ extension ScenarioRun {
         case "stepIndex": return .number(Double(engine.currentStepIndex))
         case "steps": return json(engine.visibleSteps.map(\.id))
         case "fields": return json(engine.visibleFields.map(\.key))
-        case "skipped": return json(steps.compactMap { $0["id"]?.stringValue }.filter(engine.isStepSkipped))
+        case "skipped": return json((engine.definition.steps ?? []).map(\.id).filter(engine.isStepSkipped))
         case "items", "distinctItemIds":
             let keys = expected?.objectValue?.keys ?? []
             return .object(

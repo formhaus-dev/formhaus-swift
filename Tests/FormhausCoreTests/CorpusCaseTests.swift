@@ -9,10 +9,10 @@ struct CorpusCaseTests {
     @MainActor private func browserCanSubmit(_ definition: FormDefinition, _ values: JSONObject) async throws -> Bool {
         let engine = FormEngine(definition: definition, values: values)
         while engine.isMultiStep && !engine.isLastStep {
-            if isActionDisabled(engine.currentStep?.next.action, engine.getSubmitValues()) { return false }
+            if engine.isActionDisabled(engine.currentStep?.next.action) { return false }
             if try await !engine.next() { return false }
         }
-        return engine.validate().isEmpty && !isActionDisabled(definition.submit, engine.getSubmitValues())
+        return engine.validate().isEmpty && !engine.isActionDisabled(definition.submit)
     }
 
     @Test("case names are unique in every fixture", arguments: Corpus.names)
@@ -37,7 +37,7 @@ struct CorpusCaseTests {
         let (fixture, testCase) = try Corpus.testCase(id)
         let options = SubmissionOptions(skippedSteps: testCase.skippedSteps)
         let result = validateSubmission(try fixture.runtime(), testCase.values, options: options)
-        #expect(strictlyEqual(.object(result.values), testCase.expectedValues))
+        #expect(strictlyEqual(.object(result.values), testCase.serverValues ?? testCase.expectedValues))
         #expect(strictlyEqual(json(result.errors), testCase.expectedErrors))
     }
 

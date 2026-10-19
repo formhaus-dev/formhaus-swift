@@ -1,9 +1,10 @@
-private func addStepValues(_ nodes: [FormNode], _ values: JSONObject, _ target: inout JSONObject) {
+private func addStepValues(_ nodes: [FormNode], _ values: JSONObject, _ target: inout JSONObject, _ limits: inout ListLimits) {
     let fields = valueFields(nodes)
+    limits.trim(fields)
     let saved = fields.map { ($0.key, target[$0.key]) }
     for field in fields { target[field.key] = trimValue(field, values[field.key]) }
-    let shown = shownFields(nodes, target).filter { values[$0.key] != nil }.map { field in
-        (field.key, field.isGroup ? cleanItems(field, values[field.key], target) : trimValue(field, values[field.key]))
+    let shown = shownFields(nodes, target, limits).filter { values[$0.key] != nil }.map { field in
+        (field.key, field.isGroup ? cleanItems(field, values[field.key], target, limits) : trimValue(field, values[field.key]))
     }
     for (key, value) in saved { target[key] = value }
     for (key, value) in shown { target[key] = value }
@@ -12,32 +13,34 @@ private func addStepValues(_ nodes: [FormNode], _ values: JSONObject, _ target: 
 struct ActivePath {
     let steps: [FormStep]
     let values: JSONObject
+    let limits: ListLimits
 
     static func walk(_ definition: FormDefinition, _ values: JSONObject) -> ActivePath {
         let steps = definition.steps ?? []
         let indexes = stepIndexes(steps)
         var result: [FormStep] = []
+        var limits = ListLimits.standard
         var available = JSONObject()
-        if steps.isEmpty { addStepValues(definition.fields ?? [], values, &available) }
+        if steps.isEmpty { addStepValues(definition.fields ?? [], values, &available, &limits) }
         var index = 0
         while index < steps.count {
             let step = steps[index]
-            guard isVisible(step, available) else {
+            guard isVisible(step, available, limits: limits) else {
                 index += 1
                 continue
             }
             result.append(step)
-            addStepValues(step.fields, values, &available)
+            addStepValues(step.fields, values, &available, &limits)
             let route = step.routes?.first { route in
-                guard isVisible(route, available) else { return false }
+                guard isVisible(route, available, limits: limits) else { return false }
                 if route.endsForm { return true }
                 guard let target = route.to.flatMap({ indexes[$0] }) else { return false }
-                return target > index && isVisible(steps[target], available)
+                return target > index && isVisible(steps[target], available, limits: limits)
             }
             if route?.endsForm == true { break }
             index = route.flatMap { $0.to.flatMap { indexes[$0] } } ?? index + 1
         }
-        return ActivePath(steps: result, values: available)
+        return ActivePath(steps: result, values: available, limits: limits)
     }
 
     func ordered(_ definition: FormDefinition) -> JSONObject {
@@ -57,7 +60,7 @@ struct ActivePath {
 final class PathCache {
     private let definition: FormDefinition
     private var source: JSONObject?
-    private var path = ActivePath(steps: [], values: JSONObject())
+    private var path = ActivePath(steps: [], values: JSONObject(), limits: .standard)
     private var ordered: JSONObject?
 
     init(_ definition: FormDefinition) {

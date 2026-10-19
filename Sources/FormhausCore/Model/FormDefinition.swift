@@ -37,7 +37,7 @@ public struct FormStep: Sendable, Conditional, NodeIdentity {
 }
 
 public struct FormDefinition: Sendable {
-    public static let supportedFormatVersion = "1.3"
+    public static let supportedFormatVersion = "1.4"
 
     let json: JSONObject
     public let id: String

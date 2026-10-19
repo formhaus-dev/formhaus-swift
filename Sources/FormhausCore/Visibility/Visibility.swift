@@ -24,6 +24,10 @@ private func compare(_ value: JSONValue?, _ operand: JSONValue?, _ test: (Double
 }
 
 public func evaluateCondition(_ condition: ShowCondition, _ values: JSONObject) -> Bool {
+    evaluateCondition(condition, values, limits: .standard)
+}
+
+func evaluateCondition(_ condition: ShowCondition, _ values: JSONObject, limits: ListLimits) -> Bool {
     guard let field = condition.field, let name = conditionOperators.first(where: { condition.operand($0) != nil }) else {
         return false
     }
@@ -35,6 +39,8 @@ public func evaluateCondition(_ condition: ShowCondition, _ values: JSONObject) 
     case "neq": return !strictEquals(value, operand)
     case "in": return list.contains { sameValueZero($0, value) }
     case "notIn": return !list.contains { sameValueZero($0, value) }
+    case "contains": return limits.contains(field, value, operand)
+    case "notContains": return !limits.contains(field, value, operand)
     case "notEmpty": return !(operand?.isTruthy ?? false) || !isBlank(value)
     case "gt": return compare(value, operand, >)
     case "gte": return compare(value, operand, >=)
@@ -44,14 +50,22 @@ public func evaluateCondition(_ condition: ShowCondition, _ values: JSONObject) 
 }
 
 public func isVisible(_ node: some Conditional, _ values: JSONObject) -> Bool {
-    let matches = { (condition: ShowCondition) in evaluateCondition(condition, values) }
+    isVisible(node, values, limits: .standard)
+}
+
+func isVisible(_ node: some Conditional, _ values: JSONObject, limits: ListLimits) -> Bool {
+    let matches = { (condition: ShowCondition) in evaluateCondition(condition, values, limits: limits) }
     let any = node.showAny ?? []
     return (node.show ?? []).allSatisfy(matches) && (any.isEmpty || any.contains(where: matches))
 }
 
 public func isActionDisabled(_ action: FormAction?, _ values: JSONObject) -> Bool {
+    isActionDisabled(action, values, limits: .standard)
+}
+
+func isActionDisabled(_ action: FormAction?, _ values: JSONObject, limits: ListLimits) -> Bool {
     guard let disabled = action?.disabled, !disabled.isEmpty else { return false }
-    return disabled.allSatisfy { evaluateCondition($0, values) }
+    return disabled.allSatisfy { evaluateCondition($0, values, limits: limits) }
 }
 
 func valueFields(_ nodes: [FormNode]) -> [FormField] {
@@ -63,12 +77,12 @@ func valueFields(_ nodes: [FormNode]) -> [FormField] {
     }
 }
 
-func shownFields(_ nodes: [FormNode], _ values: JSONObject) -> [FormField] {
+func shownFields(_ nodes: [FormNode], _ values: JSONObject, _ limits: ListLimits) -> [FormField] {
     nodes.flatMap { node -> [FormField] in
-        guard isVisible(node, values) else { return [] }
+        guard isVisible(node, values, limits: limits) else { return [] }
         switch node {
         case .field(let field): return [field]
-        case .section(let section): return section.fields.compactMap(\.field).filter { isVisible($0, values) }
+        case .section(let section): return section.fields.compactMap(\.field).filter { isVisible($0, values, limits: limits) }
         }
     }
 }
@@ -84,14 +98,14 @@ func itemScope(_ group: FormField, _ item: JSONValue, _ values: JSONObject) -> J
     return scope
 }
 
-func cleanItems(_ group: FormField, _ value: JSONValue?, _ values: JSONObject) -> JSONValue? {
+func cleanItems(_ group: FormField, _ value: JSONValue?, _ values: JSONObject, _ limits: ListLimits) -> JSONValue? {
     guard let items = value?.arrayValue else { return value }
     return .array(
         items.map { item in
             guard item.objectValue != nil else { return item }
             let scope = itemScope(group, item, values)
             var result = JSONObject()
-            for field in group.items where scope[field.key] != nil && isVisible(field, scope) {
+            for field in group.items where scope[field.key] != nil && isVisible(field, scope, limits: limits) {
                 result[field.key] = scope[field.key]
             }
             return .object(result)

@@ -1,0 +1,155 @@
+{
+  "name": "check-contains-not-list",
+  "covers": ["warns about contains on a field that does not hold a list", "does not warn about contains on a custom type"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "contains-not-list",
+      "path": "/steps/0/fields/5/show/0/contains"
+    },
+    {
+      "code": "contains-not-list",
+      "path": "/steps/0/fields/6/showAny/1/notContains"
+    },
+    {
+      "code": "contains-not-list",
+      "path": "/steps/0/next/disabled/0/contains"
+    },
+    {
+      "code": "contains-not-list",
+      "path": "/steps/0/routes/0/show/0/notContains"
+    }
+  ],
+  "texts": {
+    "steps.one.fields.note.label": "Note"
+  },
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "one",
+        "title": "One",
+        "next": {
+          "label": "Next",
+          "disabled": [
+            {
+              "field": "agree",
+              "contains": true
+            }
+          ]
+        },
+        "routes": [
+          {
+            "to": "two",
+            "show": [
+              {
+                "field": "people",
+                "notContains": "x"
+              }
+            ]
+          },
+          {
+            "to": "two"
+          }
+        ],
+        "fields": [
+          {
+            "key": "tags",
+            "type": "multiselect",
+            "label": "Tags",
+            "options": [
+              {
+                "value": "RED",
+                "label": "Red"
+              },
+              {
+                "value": "BLUE",
+                "label": "Blue"
+              }
+            ]
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          },
+          {
+            "key": "agree",
+            "type": "checkbox",
+            "label": "Agree"
+          },
+          {
+            "key": "chips",
+            "type": "x-chips",
+            "label": "Chips"
+          },
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "fields": [
+              {
+                "key": "person",
+                "type": "text",
+                "label": "Person"
+              }
+            ]
+          },
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note",
+            "show": [
+              {
+                "field": "name",
+                "contains": "a"
+              }
+            ]
+          },
+          {
+            "key": "extra",
+            "type": "text",
+            "label": "Extra",
+            "showAny": [
+              {
+                "field": "tags",
+                "notContains": "RED"
+              },
+              {
+                "field": "name",
+                "notContains": "a"
+              }
+            ]
+          },
+          {
+            "key": "custom",
+            "type": "text",
+            "label": "Custom",
+            "show": [
+              {
+                "field": "chips",
+                "contains": "a"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "two",
+        "title": "Two",
+        "fields": [
+          {
+            "key": "end",
+            "type": "text",
+            "label": "End"
+          }
+        ]
+      }
+    ]
+  }
+}

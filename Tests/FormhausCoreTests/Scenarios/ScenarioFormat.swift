@@ -14,7 +14,10 @@ struct ScenarioFile: Sendable {
     }
 
     func runtime(_ scenario: JSONObject) throws -> FormDefinition {
-        let source = definition(of: scenario)
+        try localized(definition(of: scenario))
+    }
+
+    func localized(_ source: JSONValue) throws -> FormDefinition {
         guard let overlay else { return try FormDefinition(json: source) }
         return try localize(source, overlay: overlay).definition
     }

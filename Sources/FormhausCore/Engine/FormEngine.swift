@@ -3,11 +3,14 @@ import os
 private let warningLog = Logger(subsystem: "dev.formhaus", category: "definition")
 
 @MainActor
-private func report(_ issue: DefinitionIssue, _ onWarning: WarningFn?) {
-    if let onWarning {
-        onWarning(issue)
-    } else {
-        warningLog.warning("[formhaus] \(issue.message, privacy: .public)")
+private func reportWarnings(_ definition: FormDefinition, _ options: FormEngineOptions) {
+    let issues = checkDefinition(.object(definition.json), options: CheckDefinitionOptions(validators: options.validators.keys))
+    for issue in issues {
+        if let onWarning = options.onWarning {
+            onWarning(issue)
+        } else {
+            warningLog.warning("[formhaus] \(issue.message, privacy: .public)")
+        }
     }
 }
 
@@ -59,8 +62,7 @@ public final class FormEngine {
 
     public init(definition: FormDefinition, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) {
         self.options = options
-        let issues = checkDefinition(.object(definition.json), options: CheckDefinitionOptions(validators: options.validators.keys))
-        for issue in issues { report(issue, options.onWarning) }
+        reportWarnings(definition, options)
         core = EngineCore(definition: definition, values: values, validators: options.validators, messages: options.messages)
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
@@ -178,6 +180,10 @@ public final class FormEngine {
         core.getSubmitValues()
     }
 
+    public func isActionDisabled(_ action: FormAction?) -> Bool {
+        FormhausCore.isActionDisabled(action, getSubmitValues(), limits: core.visibility.limits(core.values.json))
+    }
+
     public func goToStepWithField(_ key: String) {
         guard core.isMultiStep else { return }
         let target = core.visibility.findStepIndex(key, core.values.json, core.currentStepIndex)
@@ -190,6 +196,15 @@ public final class FormEngine {
 
     public func reset(_ values: JSONObject? = nil) {
         core.reset(values)
+    }
+
+    public func replaceDefinition(_ definition: JSONValue) throws(FormDefinitionError) {
+        replaceDefinition(try FormDefinition(json: definition))
+    }
+
+    public func replaceDefinition(_ definition: FormDefinition) {
+        reportWarnings(definition, options)
+        core.replaceDefinition(definition)
     }
 
     func moveTo(_ index: Int) {

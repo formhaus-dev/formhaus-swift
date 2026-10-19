@@ -10,7 +10,6 @@ let listTypes = ["multiselect"]
 let maxStringLength = 10000
 let maxHiddenLength = 2000
 private let maxEmailLength = 254
-private let maxItems = 1000
 let maxGroupItems = 100
 
 private let emailPattern = JSRegex(unchecked: "^[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+$")
@@ -98,6 +97,12 @@ private func staticOptions(_ field: FormField) -> [FieldOption]? {
     field.hasOptionsFrom ? nil : field.options
 }
 
+func oversizedList(_ field: FormField, _ value: JSONValue?) -> Bool {
+    guard listTypes.contains(field.type) else { return false }
+    guard let items = value?.arrayValue else { return true }
+    return items.count > staticOptions(field)?.count ?? maxListItems
+}
+
 private func isOption(_ field: FormField, _ value: JSONValue) -> Bool {
     guard let options = staticOptions(field) else { return true }
     return options.contains { strictEquals($0.json["value"], value) }
@@ -114,12 +119,14 @@ private func lengthError(_ field: FormField, _ value: String, _ fail: Fail) -> S
 
 private func multiselectError(_ field: FormField, _ value: JSONValue, _ fail: Fail) -> String? {
     guard let items = value.arrayValue else { return fail("options", [:]) }
-    if items.count > staticOptions(field)?.count ?? maxItems { return fail("option", [:]) }
-    let valid = items.allSatisfy { item in
-        guard let text = item.stringValue else { return false }
-        return text.jsLength <= maxStringLength && isOption(field, item)
+    if items.count > staticOptions(field)?.count ?? maxListItems { return fail("option", [:]) }
+    var seen = KeySet()
+    var repeated = false
+    for item in items {
+        guard let text = item.stringValue, text.jsLength <= maxStringLength, isOption(field, item) else { return fail("option", [:]) }
+        repeated = !seen.insert(text) || repeated
     }
-    return valid ? nil : fail("option", [:])
+    return repeated ? fail("options", [:]) : nil
 }
 
 private func stringError(_ field: FormField, _ value: JSONValue, _ key: MessageKey, _ fail: Fail) -> String? {

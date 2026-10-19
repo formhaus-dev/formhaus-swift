@@ -1,0 +1,54 @@
+{
+  "name": "check-outdated-version-contains",
+  "covers": ["asks for format 1.4 when a condition uses contains"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    }
+  ],
+  "texts": {
+    "fields.other.label": "Other interest"
+  },
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "interests",
+        "type": "multiselect",
+        "label": "Interests",
+        "options": [
+          {
+            "value": "design",
+            "label": "Design"
+          },
+          {
+            "value": "other",
+            "label": "Other"
+          },
+          {
+            "value": "music",
+            "label": "Music"
+          }
+        ]
+      },
+      {
+        "key": "other",
+        "type": "text",
+        "label": "Other interest",
+        "show": [
+          {
+            "field": "interests",
+            "contains": "other"
+          }
+        ]
+      }
+    ]
+  }
+}
