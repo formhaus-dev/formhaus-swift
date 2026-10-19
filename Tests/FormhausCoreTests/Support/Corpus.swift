@@ -1,5 +1,6 @@
 import Foundation
 import FormhausCore
+import Testing
 
 struct IssueEntry: Hashable, CustomStringConvertible {
     let code: String
@@ -23,18 +24,16 @@ struct CorpusCase {
     let name: String
     let values: JSONValue
     let skippedSteps: JSONValue
-    let expectedValues: JSONObject
-    let expectedErrors: FieldErrors
+    let expectedValues: JSONValue
+    let expectedErrors: JSONValue
     let canSubmit: Bool
 
     init(_ json: JSONValue) {
         name = json["name"]?.stringValue ?? ""
         values = json["input"]?["values"] ?? .object(JSONObject())
         skippedSteps = json["input"]?["skippedSteps"] ?? .array([])
-        expectedValues = json["expected"]?["values"]?.objectValue ?? JSONObject()
-        var errors = FieldErrors()
-        for (key, value) in json["expected"]?["errors"]?.objectValue ?? JSONObject() { errors[key] = value.stringValue }
-        expectedErrors = errors
+        expectedValues = json["expected"]?["values"] ?? .object(JSONObject())
+        expectedErrors = json["expected"]?["errors"] ?? .object(JSONObject())
         canSubmit = json["canSubmit"]?.boolValue ?? false
     }
 }
@@ -91,10 +90,12 @@ enum Corpus {
         return fixture.issues.isEmpty ? fixture.cases.map { "\(name): \($0.name)" } : []
     }
 
-    static func testCase(_ id: String) -> (CorpusFixture, CorpusCase) {
-        let separator = id.range(of: ": ")!
+    static func testCase(_ id: String) throws -> (CorpusFixture, CorpusCase) {
+        let separator = try #require(id.range(of: ": "))
         let fixture = fixture(String(id[..<separator.lowerBound]))
         let name = String(id[separator.upperBound...])
-        return (fixture, fixture.cases.first { $0.name == name }!)
+        let matches = fixture.cases.filter { sameUnits($0.name, name) }
+        try #require(matches.count == 1, "\(matches.count) cases named \(id)")
+        return (fixture, matches[0])
     }
 }

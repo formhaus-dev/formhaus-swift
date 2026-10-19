@@ -13,41 +13,59 @@ struct CorpusCaseTests {
         return engine.validate().isEmpty && !isActionDisabled(definition.submit, engine.getSubmitValues())
     }
 
+    @Test("case names are unique in every fixture", arguments: Corpus.names)
+    func uniqueCaseNames(name: String) {
+        #expect(duplicates(Corpus.fixture(name).cases.map(\.name)).isEmpty)
+    }
+
     @Test("texts", arguments: withTexts)
     func texts(name: String) throws {
         let fixture = Corpus.fixture(name)
-        let slots = Dictionary(try textSlots(fixture.runtime()).map { ($0.address, $0.text) }) { first, _ in first }
+        let slots = try textSlots(fixture.runtime())
+        #expect(duplicates(slots.map(\.address)).isEmpty, "duplicate text slot addresses")
         for (address, text) in fixture.texts ?? JSONObject() {
-            #expect(slots[address].map(JSONValue.string) ?? .null == text, "\(address)")
+            let found = slots.filter { sameUnits($0.address, address) }.map { JSONValue.string($0.text) }
+            #expect(strictlyEqual(found.first ?? .null, text), "\(address)")
         }
     }
 
     @Test("server", arguments: Corpus.caseNames)
     func server(id: String) throws {
-        let (fixture, testCase) = Corpus.testCase(id)
+        let (fixture, testCase) = try Corpus.testCase(id)
         let options = SubmissionOptions(skippedSteps: testCase.skippedSteps)
         let result = validateSubmission(try fixture.runtime(), testCase.values, options: options)
-        #expect(result.values == testCase.expectedValues)
-        #expect(result.errors == testCase.expectedErrors)
+        #expect(strictlyEqual(.object(result.values), testCase.expectedValues))
+        #expect(strictlyEqual(json(result.errors), testCase.expectedErrors))
     }
 
     @Test("browser engine", arguments: Corpus.caseNames)
     @MainActor func browserEngine(id: String) throws {
-        let (fixture, testCase) = Corpus.testCase(id)
+        let (fixture, testCase) = try Corpus.testCase(id)
         let definition = try fixture.runtime()
         let values = testCase.values.objectValue ?? JSONObject()
         let engine = FormEngine(definition: definition, values: values)
-        #expect(engine.validate() == testCase.expectedErrors)
-        #expect(engine.getSubmitValues() == testCase.expectedValues)
+        #expect(strictlyEqual(json(engine.validate()), testCase.expectedErrors))
+        #expect(strictlyEqual(.object(engine.getSubmitValues()), testCase.expectedValues))
         #expect(browserCanSubmit(definition, values) == testCase.canSubmit)
     }
 
     @Test("a payload the browser accepts passes the server", arguments: Corpus.caseNames)
     @MainActor func acceptedPayloadPassesServer(id: String) throws {
-        let (fixture, testCase) = Corpus.testCase(id)
+        let (fixture, testCase) = try Corpus.testCase(id)
         let definition = try fixture.runtime()
         guard browserCanSubmit(definition, testCase.values.objectValue ?? JSONObject()) else { return }
         let options = SubmissionOptions(skippedSteps: testCase.skippedSteps)
         #expect(validateSubmission(definition, testCase.values, options: options).errors.isEmpty)
+    }
+
+    @Test("strict comparison separates -0, NFC and NFD")
+    func strictComparison() {
+        #expect(!strictlyEqual(.number(-0.0), .number(0)))
+        #expect(strictlyEqual(.number(.nan), .number(.nan)))
+        #expect(!strictlyEqual(.string("caf\u{E9}"), .string("cafe\u{301}")))
+        #expect(!strictlyEqual(["caf\u{E9}": 1], ["cafe\u{301}": 1]))
+        #expect(strictlyEqual(["a": 1, "b": [true, nil]], ["b": [true, nil], "a": 1]))
+        #expect(!strictlyEqual(["a": 1], ["a": "1"]))
+        #expect(duplicates(["a", "b", "a"]) == ["a"])
     }
 }
