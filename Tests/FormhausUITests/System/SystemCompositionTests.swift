@@ -56,4 +56,14 @@ struct SystemCompositionTests {
         #expect(log.names.contains("section:team"))
         #expect(log.names.contains("group:people"))
     }
+
+    @Test("the choice prompt comes from the label catalog")
+    func choicePrompt() throws {
+        let definition = try FormDefinition(json: composed)
+        #expect(FormModel(definition: definition) { _, _ in .ok }.text(forLabel: "select") == "Select")
+        let german = FormModel(definition: definition, options: FormRendererOptions(labels: .catalog(["select": "Auswählen"]))) { _, _ in
+            .ok
+        }
+        #expect(german.text(forLabel: "select") == "Auswählen")
+    }
 }
