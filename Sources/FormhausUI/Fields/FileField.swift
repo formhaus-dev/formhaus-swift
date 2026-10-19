@@ -26,7 +26,9 @@ public struct FileField: View {
             .accessibilityHint(context.helperText ?? "")
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: types) { result in
-            if case .success(let url) = result, let copy = UploadStore.copy(url) { replace(with: copy) }
+            guard case .success(let url) = result else { return }
+            let owner = ObjectIdentifier(context.model)
+            Task { if let copy = await UploadStore.copy(url, owner: owner) { replace(with: copy) } }
         }
         .onChange(of: photo) { _, item in
             guard let item else { return }
@@ -80,14 +82,12 @@ public struct FileField: View {
         defer { photo = nil }
         guard let data = try? await item.loadTransferable(type: Data.self) else { return }
         let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
-        guard let url = UploadStore.write(data, ext: ext) else { return }
+        guard let url = await UploadStore.write(data, ext: ext, owner: ObjectIdentifier(context.model)) else { return }
         replace(with: url)
     }
 
     private func replace(with url: URL?) {
-        let previous = context.text
         context.setValue(url.map { .string($0.absoluteString) } ?? .null)
-        if !previous.isEmpty, previous != url?.absoluteString { UploadStore.discard(previous) }
     }
 }
 

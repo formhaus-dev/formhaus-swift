@@ -87,18 +87,27 @@ struct ReviewTests {
         #expect(view.fittingSize.width <= 360)
     }
 
-    @Test("picked files are copied into the upload folder and removed on clear")
-    func uploads() throws {
-        let source = FileManager.default.temporaryDirectory.appendingPathComponent("formhaus-source-\(UUID().uuidString).txt")
+    @Test("uploads are owned by their model and only their own folders are removed")
+    func uploads() async throws {
+        let manager = FileManager.default
+        let source = manager.temporaryDirectory.appendingPathComponent("formhaus-source-\(UUID().uuidString).txt")
         try Data("cv".utf8).write(to: source)
-        defer { try? FileManager.default.removeItem(at: source) }
-        let copy = try #require(UploadStore.copy(source))
+        defer { try? manager.removeItem(at: source) }
+        let owner = ObjectIdentifier(CallLog())
+        let copy = try #require(await UploadStore.copy(source, owner: owner))
         #expect(UploadStore.owns(copy))
-        #expect(FileManager.default.fileExists(atPath: copy.path))
-        UploadStore.discard(copy.absoluteString)
-        #expect(!FileManager.default.fileExists(atPath: copy.path))
-        UploadStore.discard(source.absoluteString)
-        #expect(FileManager.default.fileExists(atPath: source.path))
+        #expect(!UploadStore.owns(source))
+        let crafted = try #require(URL(string: UploadStore.directory.absoluteString + "x/..%2F..%2Fvictim/f"))
+        #expect(!UploadStore.owns(crafted))
+        UploadStore.prune(owner: owner, keeping: [copy.absoluteString])
+        #expect(manager.fileExists(atPath: copy.path))
+        UploadStore.prune(owner: owner, keeping: [])
+        #expect(!manager.fileExists(atPath: copy.path))
+        #expect(manager.fileExists(atPath: source.path))
+        let second = try #require(await UploadStore.copy(source, owner: owner))
+        UploadStore.release(owner: owner)
+        #expect(!manager.fileExists(atPath: second.path))
+        #expect(manager.fileExists(atPath: UploadStore.directory.path))
     }
 
     @Test("labels added for 0.20 resolve and can be overridden")
