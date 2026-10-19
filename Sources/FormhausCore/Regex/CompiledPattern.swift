@@ -29,11 +29,7 @@ struct CompiledPattern: Sendable {
             return try? matcher.search(prefilter)
         }
         let context = MatchContext(units, scanners: scanners, budget: .linear(units: units.count, instructions: size))
-        var local = automaton.snapshot()
-        let revision = local.revision
-        let matched = try? local.matches(units, first: prefilter.first, context: context)
-        if local.revision != revision { automaton.store(local) }
-        return matched
+        return try? automaton.matches(units, first: prefilter.first, context: context)
     }
 }
 
@@ -51,25 +47,6 @@ private func codeUnits(_ text: String) -> [UInt16] {
         return wide == 0 ? units : nil
     }
     return ascii ?? Array(text.utf16)
-}
-
-final class AutomatonCache: Sendable {
-    private let shared: OSAllocatedUnfairLock<LazyDFA>
-
-    init(_ automaton: LazyDFA) {
-        shared = OSAllocatedUnfairLock(initialState: automaton)
-    }
-
-    func snapshot() -> LazyDFA {
-        shared.withLock { $0 }
-    }
-
-    func store(_ automaton: LazyDFA) {
-        var automaton = automaton
-        shared.withLockUnchecked { current in
-            if automaton.revision > current.revision { swap(&current, &automaton) }
-        }
-    }
 }
 
 final class PatternCache: Sendable {

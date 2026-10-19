@@ -18,10 +18,7 @@ final class MatchContext {
     func holds(_ index: Int, at position: Int) throws(BudgetExceeded) -> Bool {
         if let table = tables[index] { return table[position] }
         guard let scanner = scanners[index] else { preconditionFailure("look \(index) runs inline") }
-        var local = scanner.snapshot()
-        let revision = local.revision
-        let table = try local.acceptance(text, context: self)
-        if local.revision != revision { scanner.store(local) }
+        let table = try scanner.acceptance(text, context: self)
         tables[index] = table
         return table[position]
     }

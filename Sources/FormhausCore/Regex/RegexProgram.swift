@@ -65,6 +65,14 @@ struct RegexProgram: Sendable {
     let memoFrom: Int
     let automaton: Bool
 
+    func consumes(_ pc: Int, _ unit: UInt16) -> Bool {
+        switch instructions[pc] {
+        case .unit(let expected, _): expected == unit
+        case .set(let index, _): sets[index].contains(unit)
+        default: false
+        }
+    }
+
     func advance(_ instruction: Instruction, in input: MatchInput, from position: Int) -> Int? {
         switch instruction {
         case .unit(let expected, let backward):
