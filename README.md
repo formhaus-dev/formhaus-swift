@@ -35,7 +35,7 @@ targets: [
 
 No version is tagged yet, so depend on `branch: "main"`. After the first tag, switch to `from: "<version>"`.
 
-Requires Swift 6, iOS 16 or macOS 13. `FormhausCore` uses Foundation and JavaScriptCore, so it builds for Apple platforms only.
+Requires Swift 6, iOS 16 or macOS 13. `FormhausCore` uses Foundation and `os`, so it builds for Apple platforms only. It has no JavaScript runtime.
 
 ## Usage
 
@@ -92,14 +92,50 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 
 ## Differences from @formhaus/core
 
-- Patterns compile with JavaScriptCore's `RegExp`. Syntax added to JavaScript after the installed OS version of JavaScriptCore can behave differently than in Node.
-- If a pattern match throws inside JavaScriptCore, the value fails the pattern rule. `@formhaus/core` lets the value pass.
+- Patterns run on a native engine that follows `new RegExp(pattern).test(value)` in ECMAScript 2025 with no flags, including Annex B syntax, modifier groups such as `(?i:...)` and duplicate named groups. `Tests/FormhausCoreTests/Fixtures/regex/cases.json` holds the expected results, recorded with Node. To record them again, run `node scripts/regex-cases.mjs`.
+- Duplicate group names follow V8, which accepts some patterns that the specification rejects, such as `(?<a>a)(?:b|(?<a>c))`.
+- A pattern with more than 100 nested groups counts as invalid. JavaScript accepts it.
+- Patterns with backreferences use a backtracking matcher, and so do patterns whose counted repeats such as `{1,5000}` would compile to more than 20,000 instructions. A match there that needs more than 10,000,000 steps fails the pattern rule. `@formhaus/core` keeps matching until it finishes. All other patterns match in linear time.
 - The JSON parser rejects strings with unpaired surrogate escapes such as `"\uD800"`. Swift `String` cannot hold them, and replacing them with U+FFFD would change the value.
 - The JSON parser rejects documents nested deeper than 512 levels (`JSONValue.maxNestingDepth`). Swift compares and frees nested values recursively, so deeper values could overflow the stack.
 - `JSONValue` equality compares structure. A new array or object with the same contents counts as the same value, where JavaScript compares object identity. `FormEngine` keeps the JavaScript rule: every array or object passed to `setValue` or `setItemValue` counts as a change, and group items keep their identity across edits.
 - Without `onWarning`, definition warnings go to `os.Logger` with subsystem `dev.formhaus`. `@formhaus/core` logs them with `console.warn`.
 - Hooks are always `async`. A TypeScript hook can also return a plain value. The engine suspends after every hook call, as TypeScript does at each `await`, so main-actor tasks queued during an action run before it continues, even when the hook returns at once.
 - `FieldErrors` holds strings. A TypeScript `onStepValidate` can return other values, which the engine keeps as they are.
+
+## Performance
+
+Patterns without backreferences compile to a lazy DFA, so nested quantifiers such as `(a+)+$` cannot backtrack. Lookarounds are evaluated once per position. Only patterns with backreferences or very large counted repeats use a backtracking matcher. It memoizes the part of the pattern after the last backreference.
+
+Median time of one `validateFieldValue` call with a `pattern` rule, on an Apple M5 Pro with macOS 26 and Swift 6.4. "Long" inputs have 10,000 code units. "Compile" uses a new pattern on every call, so it includes the first match.
+
+| Benchmark | JavaScriptCore | Native |
+| --- | ---: | ---: |
+| compile email | 3.0 µs | 9.0 µs |
+| compile phone | 2.8 µs | 10 µs |
+| compile postcode | 3.1 µs | 7.0 µs |
+| compile IBAN | 2.9 µs | 11 µs |
+| compile password (3 lookaheads) | 3.3 µs | 21 µs |
+| compile quoted (backreference) | 2.5 µs | 3.7 µs |
+| match email, short / long | 1.5 µs / 21 µs | 0.75 µs / 14 µs |
+| match phone, short / long | 1.4 µs / 44 µs | 0.74 µs / 2.7 µs |
+| match postcode, short / long | 1.5 µs / 44 µs | 0.72 µs / 2.6 µs |
+| match IBAN, short / long | 1.4 µs / 44 µs | 0.78 µs / 2.7 µs |
+| match password, short / long | 1.7 µs / 120 µs | 1.6 µs / 83 µs |
+| match quoted, short / long | 1.3 µs / 93 µs | 1.1 µs / 120 µs |
+| `(a+)+$` on 9,999 `a` and `!` | 882 ms | 12 µs |
+| `(a\|aa)+$` on 9,999 `a` and `!` | 1,249 ms | 12 µs |
+| `(x+x+)+y` on 10,000 `x` | 929 ms | 12 µs |
+
+JavaScriptCore stops the pathological patterns at its backtracking limit and returns `false`. The native engine adds 150 KB to a stripped release executable that links `FormhausCore`.
+
+To run the benchmarks:
+
+```sh
+cd Benchmarks && swift package benchmark
+```
+
+The benchmarks use jemalloc when it is installed. Without it, set `BENCHMARK_DISABLE_JEMALLOC=true`.
 
 ## Scenario runner
 
