@@ -6,7 +6,6 @@ struct CompiledPattern: Sendable {
     let automaton: AutomatonCache?
     let scanners: [AutomatonCache?]
     let oversized: Bool
-    private let size: Int
 
     init(_ source: String) throws(RegexSyntaxError) {
         let parsed = try RegexParser.parse(source)
@@ -16,19 +15,18 @@ struct CompiledPattern: Sendable {
         scanners = zip(program.scans, program.looks).map { scan, body in
             scan.map { AutomatonCache(LazyDFA($0, anchored: false, backward: !body.look.behind, scanning: true)) }
         }
-        size = program.instructions.count + program.scans.reduce(0) { $0 + ($1?.instructions.count ?? 0) }
-        oversized = size > RegexCompiler.instructionLimit
+        oversized = program.size > RegexCompiler.instructionLimit
     }
 
     func test(_ text: String) -> Bool? {
-        guard !oversized else { return nil }
         let units = codeUnits(text)
         guard prefilter.admits(units) else { return false }
+        guard !oversized else { return nil }
         guard let automaton else {
             var matcher = Backtracker(program, MatchContext(units, scanners: scanners, budget: .backtracking))
             return try? matcher.search(prefilter)
         }
-        let context = MatchContext(units, scanners: scanners, budget: .linear(units: units.count, instructions: size))
+        let context = MatchContext(units, scanners: scanners, budget: .linear(units: units.count, instructions: program.size))
         return try? automaton.matches(units, first: prefilter.first, context: context)
     }
 }

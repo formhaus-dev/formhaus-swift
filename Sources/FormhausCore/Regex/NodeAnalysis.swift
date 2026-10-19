@@ -32,19 +32,20 @@ extension RegexNode {
         }
     }
 
-    var isCounted: Bool {
-        guard case .quantified(_, let quantifier) = self else { return false }
-        return quantifier.min > 1 || (quantifier.max ?? 0) > 1
-    }
-
-    var expandedSize: Double {
+    var minimumLength: Int {
         switch self {
-        case .sequence(let nodes): nodes.reduce(0) { $0 + $1.expandedSize }
-        case .alternation(let nodes): nodes.reduce(0) { $0 + $1.expandedSize + 2 }
-        case .group(let body, _), .look(let body, _): body.expandedSize + 2
+        case .unit, .set: 1
+        case .sequence(let nodes): nodes.reduce(0) { saturatingSum($0, $1.minimumLength) }
+        case .alternation(let nodes): nodes.map(\.minimumLength).min() ?? 0
+        case .group(let body, _): body.minimumLength
         case .quantified(let body, let quantifier):
-            Double(quantifier.max ?? quantifier.min + 1) * (body.expandedSize + 4)
-        default: 1
+            body.minimumLength == 0
+                ? 0 : quantifier.min > Int(Int32.max) / body.minimumLength ? Int(Int32.max) : quantifier.min * body.minimumLength
+        case .assertion, .look, .backreference: 0
         }
     }
+}
+
+private func saturatingSum(_ first: Int, _ second: Int) -> Int {
+    min(first + second, Int(Int32.max))
 }

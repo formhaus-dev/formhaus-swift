@@ -9,8 +9,10 @@ struct Prefilter: Sendable {
     let required: [UInt16]
     let anchored: Bool
     let first: CharSet?
+    let minimumLength: Int
 
     init(_ root: RegexNode) {
+        minimumLength = root.minimumLength
         required = Self.required(root)
         anchored = Self.anchored(root)
         let first = Self.first(root)
@@ -18,6 +20,7 @@ struct Prefilter: Sendable {
     }
 
     func admits(_ text: [UInt16]) -> Bool {
+        guard text.count >= minimumLength else { return false }
         guard let lead = required.first else { return true }
         guard text.count >= required.count else { return false }
         return text.withUnsafeBufferPointer { text in
