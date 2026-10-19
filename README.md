@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/formhaus-dev/formhaus-swift/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/formhaus-dev/formhaus-swift/ci.yml?branch=main&label=tests" alt="Tests"></a>
   <img src="https://img.shields.io/badge/Swift-6-blue" alt="Swift 6">
-  <img src="https://img.shields.io/badge/platforms-iOS%2016%20%7C%20macOS%2013-blue" alt="iOS 16, macOS 13">
+  <img src="https://img.shields.io/badge/platforms-iOS%2017%20%7C%20macOS%2014-blue" alt="iOS 17, macOS 14">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/formhaus-dev/formhaus-swift" alt="MIT license"></a>
 </p>
 
@@ -35,7 +35,7 @@ targets: [
 
 No version is tagged yet, so depend on `branch: "main"`. After the first tag, switch to `from: "<version>"`.
 
-Requires Swift 6, iOS 16 or macOS 13. `FormhausCore` uses Foundation and `os`, so it builds for Apple platforms only. It has no JavaScript runtime.
+Requires Swift 6, iOS 17 or macOS 14. `FormhausCore` uses Foundation and `os`, so it builds for Apple platforms only. It has no JavaScript runtime.
 
 ## Usage
 
