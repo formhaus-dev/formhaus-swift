@@ -85,6 +85,7 @@ public final class FormModel {
     func requestFocus(_ key: String?) {
         focusCounter += 1
         focusRequest = FocusRequest(key: key, id: focusCounter)
+        if let key { field(key).requestFocus() }
     }
 
     func noteInvalidAttempt() {
