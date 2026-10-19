@@ -16,30 +16,42 @@ public struct OptionCardStyle: ButtonStyle {
 
 private struct OptionCardBody: View {
     @Environment(\.formhausTokens) private var tokens
-    @Environment(\.isEnabled) private var enabled
-    @State private var hovered = false
     let configuration: ButtonStyleConfiguration
     let selected: Bool
     let invalid: Bool
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
         configuration.label
             .padding(.vertical, tokens.spacing.s5)
             .padding(.horizontal, tokens.spacing.s6)
             .frame(maxWidth: .infinity, minHeight: tokens.controls.hitTarget, alignment: .leading)
+            .selectableSurface(selected: selected, invalid: invalid, solid: false)
+            .scaleEffect(configuration.isPressed && !tokens.reduceMotion ? 0.99 : 1)
+    }
+}
+
+struct SelectableSurface: ViewModifier {
+    @Environment(\.formhausTokens) private var tokens
+    @Environment(\.isEnabled) private var enabled
+    @State private var hovered = false
+    let selected: Bool
+    let invalid: Bool
+    let solid: Bool
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
+        content
             .background(shape.fill(fill))
             .overlay(shape.strokeBorder(border, lineWidth: 1))
             .contentShape(shape)
             .opacity(enabled ? 1 : 0.6)
-            .scaleEffect(configuration.isPressed && !tokens.reduceMotion ? 0.99 : 1)
             .onHover { hovered = $0 }
             .animation(tokens.quick, value: selected)
             .animation(tokens.quick, value: hovered)
     }
 
     private var fill: Color {
-        if selected { return tokens.colors.primarySoft }
+        if selected { return solid ? tokens.colors.primary : tokens.colors.primarySoft }
         return hovered && enabled ? tokens.colors.backgroundHover : tokens.colors.background
     }
 
@@ -47,6 +59,12 @@ private struct OptionCardBody: View {
         if selected { return tokens.colors.primary }
         if invalid { return tokens.colors.error }
         return hovered && enabled ? tokens.colors.borderHover : tokens.colors.border
+    }
+}
+
+extension View {
+    func selectableSurface(selected: Bool, invalid: Bool, solid: Bool) -> some View {
+        modifier(SelectableSurface(selected: selected, invalid: invalid, solid: solid))
     }
 }
 
