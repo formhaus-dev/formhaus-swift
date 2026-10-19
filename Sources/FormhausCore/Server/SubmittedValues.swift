@@ -56,7 +56,10 @@ func rejectGroups(_ visibility: VisibilityState, _ fields: [FormField], _ input:
     func fits(_ key: String) -> Bool {
         fields.contains { sameText($0.key, key) && typeError($0, source[key], resolve) == nil }
     }
-    reject(OrderedKeys(fields.filter(\.isGroup).map(\.key)).keys.filter { source.has($0) && !fits($0) })
+    func unchecked(_ key: String) -> Bool {
+        fields.contains { sameText($0.key, key) && ($0.isGroup || oversizedList($0, source[key])) }
+    }
+    reject(OrderedKeys(fields.map(\.key)).keys.filter { source.has($0) && unchecked($0) && !fits($0) })
     let resolved = activeValues(visibility, fields, source)
     let misfits = resolved.active.filter { $0.field.isGroup && typeError($0.field, resolved.values[$0.key], resolve) != nil }
     if misfits.isEmpty { return RejectedGroups(resolved: resolved, rejected: rejected) }
