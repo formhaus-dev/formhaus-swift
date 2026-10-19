@@ -6,3 +6,4 @@ xcuserdata/
 DerivedData/
 *.xcodeproj
 Package.resolved
+!Examples/FormhausDemo/FormhausDemo.xcodeproj
