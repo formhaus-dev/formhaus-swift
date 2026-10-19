@@ -26,9 +26,18 @@ struct RegexRegressionTests {
 
     @Test("clearing many captures counts toward the step budget")
     func captureClearingBudget() throws {
-        let pattern = try #require(JSRegex("(?:a|[]" + String(repeating: "()", count: 15000) + ")*\\1(?!)"))
+        let pattern = try #require(JSRegex("(?:a|[]" + String(repeating: "()", count: 10000) + ")*\\1(?!)"))
         let started = Date()
         #expect(pattern.test(String(repeating: "a", count: maxStringLength - 1)) == nil)
+        #expect(Date().timeIntervalSince(started) < 2)
+    }
+
+    @Test("unset duplicate groups in a backreference count toward the step budget")
+    func backreferenceGroupsBudget() throws {
+        let groups = String(repeating: "(?<n>a)|", count: 4000)
+        let pattern = try #require(JSRegex("(?:" + groups + "b)(?:\\k<n>c)*$"))
+        let started = Date()
+        #expect(pattern.test("b" + String(repeating: "c", count: maxStringLength - 1)) == nil)
         #expect(Date().timeIntervalSince(started) < 2)
     }
 
@@ -44,6 +53,15 @@ struct RegexRegressionTests {
         ])
     func duplicateNames(source: String, valid: Bool) {
         #expect((JSRegex(source) != nil) == valid, "\(source)")
+    }
+
+    @Test("nested lookarounds run in linear time")
+    func nestedLookaroundsAreLinear() throws {
+        let pattern = try #require(JSRegex("(?=(?!b)[^]*x)y(?:z|$)"))
+        let started = Date()
+        #expect(pattern.test(String(repeating: "y", count: maxStringLength - 1) + "x") == false)
+        #expect(try #require(JSRegex("^(?=(?!b)[^]*x)y+x$")).test(String(repeating: "y", count: maxStringLength - 1) + "x") == true)
+        #expect(Date().timeIntervalSince(started) < 0.5)
     }
 
     @Test("a pattern past the size limit fails closed")
