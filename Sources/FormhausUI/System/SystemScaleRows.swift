@@ -16,7 +16,7 @@ struct SystemScale: View {
                         } label: {
                             SystemScaleDot(point: point, selected: current == point)
                         }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.plain)
                     }
                 }
                 if scale.anchors.contains(where: { $0 != nil }) {
