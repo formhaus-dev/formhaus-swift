@@ -99,11 +99,11 @@ public final class FormModel {
         if let state = groupStates[key] { return state }
         let state = GroupState(key: key)
         groupStates[key] = state
-        state.update(engine.items(key))
+        refreshGroup(state)
         return state
     }
 
-    public func label(_ key: String, _ params: JSONObject = JSONObject()) -> String {
+    public func text(forLabel key: String, _ params: JSONObject = JSONObject()) -> String {
         let text = engine.label(key, options.labels, params)
         guard text.isEmpty, let fallback = upcomingLabels[key] else { return text }
         return formatTemplate(fallback, params)
@@ -146,11 +146,16 @@ public final class FormModel {
         lastValues = values
         if valuesChanged { valuesVersion += 1 }
         for state in fieldStates.values { refreshField(state) }
-        for state in groupStates.values { state.update(engine.items(state.key)) }
+        for state in groupStates.values { refreshGroup(state) }
         refreshStatus()
         if previousStep != structure.currentStep?.nodeID { requestFocus(engine.firstErrorKey()) }
         if valuesChanged || structureChanged { reloadOptions() }
         if valuesChanged { emitValues() }
+    }
+
+    private func refreshGroup(_ state: GroupState) {
+        let items = engine.items(state.key)
+        state.update(items, filled: items.indices.map { engine.itemHasContent(state.key, $0) })
     }
 
     private func refreshField(_ state: FieldState) {

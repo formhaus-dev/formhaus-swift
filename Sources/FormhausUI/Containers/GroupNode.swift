@@ -18,21 +18,20 @@ struct GroupNode: View {
                 DefaultGroup(context: context, state: model.field(group.key))
             }
         }
-        .alert(prompt, isPresented: confirmationShown, presenting: pendingIndex(state.items)) { index in
-            Button(removeName(index), role: .destructive) { drop(index) }
-            Button(model.label("cancel"), role: .cancel) { confirming = nil }
-        } message: { index in
-            Text(model.label("removeItemBody", ["item": .string(title(index))]))
-        }
+        .modifier(
+            RemoveConfirmation(isPresented: confirmationShown, context: confirmContext(state.items), custom: components.slots.confirm))
     }
 
     private var confirmationShown: Binding<Bool> {
         Binding(get: { confirming != nil }, set: { if !$0 { confirming = nil } })
     }
 
-    private var prompt: String {
-        let index = pendingIndex(model.group(group.key).items) ?? 0
-        return model.label("removeItemPrompt", ["item": .string(title(index))])
+    private func confirmContext(_ items: [GroupItem]) -> ConfirmContext? {
+        guard let index = pendingIndex(items) else { return nil }
+        return ConfirmContext(
+            title: model.text(forLabel: "removeItemPrompt", ["item": .string(title(index))]),
+            message: model.text(forLabel: "removeItemBody", ["item": .string(title(index))]), confirmLabel: removeName(index),
+            cancelLabel: model.text(forLabel: "cancel"), confirm: { drop(index) }, cancel: { keep(index) })
     }
 
     private func pendingIndex(_ items: [GroupItem]) -> Int? {
@@ -44,27 +43,37 @@ struct GroupNode: View {
         let entries = items.enumerated().map { index, item in itemContext(item, index, canRemove: items.count > limits.min) }
         return GroupContext(
             group: group, label: group.label ?? "", helperText: group.helperText, error: model.field(group.key).error, items: entries,
-            canAdd: items.count < limits.max, addLabel: group.addLabel ?? model.label("addItem"), disabled: model.disabled,
+            canAdd: items.count < limits.max, addLabel: group.addLabel ?? model.text(forLabel: "addItem"), disabled: model.disabled,
             add: { model.addItem(toGroup: group.key) })
     }
 
     private func itemContext(_ item: GroupItem, _ index: Int, canRemove: Bool) -> GroupItemContext {
         let content = AnyView(GroupItemFields(group: group, item: item, index: index, model: model))
         let wrapped = GroupItemContext(
-            id: item.id, index: index, title: title(index), canRemove: canRemove, hasContent: model.engine.itemHasContent(group.key, index),
+            id: item.id, index: index, title: title(index), canRemove: canRemove,
+            hasContent: model.group(group.key).filled.indices.contains(index) && model.group(group.key).filled[index],
             removeLabel: removeLabel, removeName: removeName(index), disabled: model.disabled, content: content,
-            requestRemove: { ask(index) }, remove: { drop(index) })
+            requestRemove: { ask(index) }, remove: { drop(index) }, removeFocus: model.field(removeKey(index)))
         return wrapped
     }
 
-    private var removeLabel: String { group.removeLabel ?? model.label("removeItem") }
+    private var removeLabel: String { group.removeLabel ?? model.text(forLabel: "removeItem") }
 
     private func title(_ index: Int) -> String {
         model.itemTitle(index, inGroup: group.key)
     }
 
     private func removeName(_ index: Int) -> String {
-        model.label("removeItemNamed", ["label": .string(removeLabel), "item": .string(title(index))])
+        model.text(forLabel: "removeItemNamed", ["label": .string(removeLabel), "item": .string(title(index))])
+    }
+
+    private func removeKey(_ index: Int) -> String {
+        "\(group.key)#remove\(index)"
+    }
+
+    private func keep(_ index: Int) {
+        confirming = nil
+        model.requestFocus(removeKey(index))
     }
 
     private func drop(_ index: Int) {
@@ -93,6 +102,27 @@ private struct GroupItemFields: View {
         VStack(alignment: .leading, spacing: tokens.spacing.gap) {
             ForEach(item.fields.filter { $0.type != "hidden" }, id: \.nodeID) { field in
                 FormhausField(field, key: "\(group.key).\(index).\(field.key)", model: model)
+            }
+        }
+    }
+}
+
+private struct RemoveConfirmation: ViewModifier {
+    @Binding var isPresented: Bool
+    let context: ConfirmContext?
+    let custom: SlotBuilder<ConfirmContext>?
+
+    func body(content: Content) -> some View {
+        if let custom {
+            content.sheet(isPresented: $isPresented) {
+                if let context { custom(context) }
+            }
+        } else {
+            content.alert(context?.title ?? "", isPresented: $isPresented, presenting: context) { context in
+                Button(context.confirmLabel, role: .destructive, action: context.confirm)
+                Button(context.cancelLabel, role: .cancel, action: context.cancel)
+            } message: { context in
+                Text(context.message)
             }
         }
     }

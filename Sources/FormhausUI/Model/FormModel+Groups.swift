@@ -10,20 +10,20 @@ extension FormModel {
     @discardableResult
     public func addItem(toGroup key: String) -> Bool {
         let count = group(key).items.count
-        guard changeItems(key, { engine.addItem(key) }) else { return false }
+        guard changeItems(ofGroup: key, using: { engine.addItem(key) }) else { return false }
         if let first = group(key).items.last?.fields.first(where: { $0.type != "hidden" }) {
             requestFocus("\(key).\(count).\(first.key)")
         }
-        announce(label("itemAdded", ["item": .string(itemTitle(count, inGroup: key))]))
+        announce(text(forLabel: "itemAdded", ["item": .string(itemTitle(count, inGroup: key))]))
         return true
     }
 
     @discardableResult
     public func removeItem(_ index: Int, fromGroup key: String) -> Bool {
         let name = itemTitle(index, inGroup: key)
-        guard changeItems(key, { engine.removeItem(key, index) }) else { return false }
+        guard changeItems(ofGroup: key, using: { engine.removeItem(key, index) }) else { return false }
         requestFocus(key)
-        announce(label("itemRemoved", ["item": .string(name)]))
+        announce(text(forLabel: "itemRemoved", ["item": .string(name)]))
         return true
     }
 

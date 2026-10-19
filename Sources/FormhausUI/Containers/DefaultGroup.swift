@@ -44,6 +44,7 @@ struct DefaultGroup: View {
 
 struct DefaultGroupItem: View {
     @Environment(\.formhausTokens) private var tokens
+    @FocusState private var removeFocused: Bool
     let context: GroupItemContext
 
     var body: some View {
@@ -57,6 +58,8 @@ struct DefaultGroupItem: View {
                         .buttonStyle(FormButtonStyle(.danger, compact: true))
                         .disabled(context.disabled)
                         .accessibilityLabel(context.removeName)
+                        .focused($removeFocused)
+                        .onFormhausFocus(context.removeFocus, disabled: context.disabled) { removeFocused = true }
                         .padding(.trailing, -tokens.spacing.s4)
                 }
             }

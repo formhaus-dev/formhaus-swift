@@ -22,6 +22,17 @@ public struct GroupItemContext: Identifiable {
     public let content: AnyView
     public let requestRemove: @MainActor () -> Void
     public let remove: @MainActor () -> Void
+    let removeFocus: FieldState
+}
+
+@MainActor
+public struct ConfirmContext {
+    public let title: String
+    public let message: String
+    public let confirmLabel: String
+    public let cancelLabel: String
+    public let confirm: @MainActor () -> Void
+    public let cancel: @MainActor () -> Void
 }
 
 @MainActor
@@ -60,7 +71,7 @@ public struct ActionsContext {
     public let busy: Bool
     public let model: FormModel
 
-    public func primary() { Task { await model.primary() } }
+    public func performPrimaryAction() { Task { await model.performPrimaryAction() } }
     public func back() { Task { await model.back() } }
     public func skip() { Task { await model.skip() } }
     public func cancel() { model.cancel() }
@@ -72,6 +83,7 @@ struct ContainerSlots: Sendable {
     var section: SlotBuilder<SectionContext>?
     var group: SlotBuilder<GroupContext>?
     var groupItem: SlotBuilder<GroupItemContext>?
+    var confirm: SlotBuilder<ConfirmContext>?
     var progress: SlotBuilder<ProgressContext>?
     var actions: SlotBuilder<ActionsContext>?
 }
@@ -92,6 +104,12 @@ extension FormComponents {
     public func groupItem<Content: View>(@ViewBuilder _ content: @escaping @MainActor @Sendable (GroupItemContext) -> Content) -> Self {
         var copy = self
         copy.slots.groupItem = { AnyView(content($0)) }
+        return copy
+    }
+
+    public func confirmDialog<Content: View>(@ViewBuilder _ content: @escaping @MainActor @Sendable (ConfirmContext) -> Content) -> Self {
+        var copy = self
+        copy.slots.confirm = { AnyView(content($0)) }
         return copy
     }
 

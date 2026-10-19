@@ -13,6 +13,11 @@ public struct FieldContext {
     public let model: FormModel
     let state: FieldState
 
+    public init(field: FormField, key: String? = nil, model: FormModel) {
+        let key = key ?? field.key
+        self.init(field: field, key: key, state: model.field(key), model: model)
+    }
+
     init(field: FormField, key: String, state: FieldState, model: FormModel) {
         self.field = field
         self.key = key
@@ -30,7 +35,7 @@ public struct FieldContext {
     public var isLocked: Bool { disabled || loading }
     public var label: String { field.label ?? "" }
     public var accessibilityName: String {
-        isRequired ? "\(label), \(label("required"))" : label
+        isRequired ? "\(label), \(text(forLabel: "required"))" : label
     }
 
     public var helperText: String? { field.helperText.flatMap { $0.isEmpty ? nil : $0 } }
@@ -47,23 +52,23 @@ public struct FieldContext {
     }
 
     public func setValue(_ value: JSONValue?) {
-        model.update(key, value)
+        model.setValue(value, forKey: key)
     }
 
     public func commit(_ value: JSONValue?) {
         if advancesOnCommit {
-            model.commit(key, value)
+            model.commitValue(value, forKey: key)
         } else {
-            model.update(key, value)
+            model.setValue(value, forKey: key)
         }
     }
 
-    public func submitPrimary() {
-        Task { await model.primary() }
+    public func performPrimaryAction() {
+        Task { await model.performPrimaryAction() }
     }
 
-    public func label(_ key: String, _ params: JSONObject = JSONObject()) -> String {
-        model.label(key, params)
+    public func text(forLabel key: String, _ params: JSONObject = JSONObject()) -> String {
+        model.text(forLabel: key, params)
     }
 
     public var textBinding: Binding<String> {

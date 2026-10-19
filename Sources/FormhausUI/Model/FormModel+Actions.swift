@@ -2,23 +2,23 @@
 import Foundation
 
 extension FormModel {
-    public func update(_ key: String, _ value: JSONValue?) {
+    public func setValue(_ value: JSONValue?, forKey key: String) {
         guard !disabled else { return }
         engine.setValue(key, value)
         options.onFieldChange?(key, value, engine.values)
     }
 
-    public func commit(_ key: String, _ value: JSONValue?) {
+    public func commitValue(_ value: JSONValue?, forKey key: String) {
         guard !disabled else { return }
         let step = engine.currentStep?.nodeID
         let field = engine.visibleFields.first { $0.key == key }
-        update(key, value)
+        setValue(value, forKey: key)
         guard field?.advancesOnCommit == true, engine.currentStep?.nodeID == step, !engine.isLastStep else { return }
         Task { await run { try await self.engine.autoAdvance() } }
     }
 
     @discardableResult
-    public func changeItems(_ key: String, _ apply: () -> Bool) -> Bool {
+    public func changeItems(ofGroup key: String, using apply: () -> Bool) -> Bool {
         guard !disabled, apply() else { return false }
         options.onFieldChange?(key, engine.values[key], engine.values)
         return true
@@ -47,7 +47,7 @@ extension FormModel {
         }
     }
 
-    public func primary() async {
+    public func performPrimaryAction() async {
         if actions.isLastStep { await submit() } else { await next() }
     }
 
@@ -60,7 +60,7 @@ extension FormModel {
         if !errors.isEmpty { requestFocus(engine.firstErrorKey()) }
     }
 
-    public func show(_ key: String) {
+    public func focus(field key: String) {
         engine.goToStepWithField(key)
         requestFocus(key)
     }

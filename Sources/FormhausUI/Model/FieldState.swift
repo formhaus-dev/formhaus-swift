@@ -53,13 +53,15 @@ public final class FieldState {
 public final class GroupState {
     public let key: String
     public private(set) var items: [GroupItem] = []
+    public private(set) var filled: [Bool] = []
 
     init(key: String) {
         self.key = key
     }
 
-    func update(_ items: [GroupItem]) {
+    func update(_ items: [GroupItem], filled: [Bool]) {
         if self.items != items { self.items = items }
+        if self.filled != filled { self.filled = filled }
     }
 }
 
