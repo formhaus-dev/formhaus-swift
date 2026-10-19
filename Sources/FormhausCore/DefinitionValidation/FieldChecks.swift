@@ -68,7 +68,7 @@ private func nodeId(_ entry: FieldEntry) -> String {
 
 private func dependencyGraph(_ context: CheckContext) -> (keys: [String], edges: StringMap<[String]>) {
     var keys: [String] = []
-    var edges = StringMap<[String]>()
+    var edges = StringMap<[String]>(insertionOrder: true)
     func link(_ owners: [String], _ source: Conditional, _ group: String? = nil) {
         let known = source.conditionFields.compactMap { context.target($0, group: group).map(nodeId) }
         guard !known.isEmpty else { return }
@@ -86,7 +86,7 @@ private func dependencyGraph(_ context: CheckContext) -> (keys: [String], edges:
 }
 
 private func findCycles(_ keys: [String], _ graph: StringMap<[String]>) -> [[String]] {
-    var visiting = StringMap<Bool>()
+    var visiting = StringMap<Bool>(insertionOrder: true)
     var cycles: [[String]] = []
     for start in keys where visiting[start] == nil {
         visiting[start] = true
@@ -113,7 +113,7 @@ private func findCycles(_ keys: [String], _ graph: StringMap<[String]>) -> [[Str
 }
 
 func graphIssues(_ context: CheckContext) -> [DefinitionIssue] {
-    var paths = StringMap<String>()
+    var paths = StringMap<String>(insertionOrder: true)
     for entry in context.entries { paths[nodeId(entry)] = entry.path }
     let (keys, edges) = dependencyGraph(context)
     return findCycles(keys, edges).map { cycle in

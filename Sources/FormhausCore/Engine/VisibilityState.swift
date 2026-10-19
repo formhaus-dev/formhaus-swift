@@ -126,7 +126,7 @@ final class VisibilityState {
     }
 
     func conditionResults(_ values: Values) -> StringMap<(String, Bool)> {
-        var results = StringMap<(String, Bool)>()
+        var results = StringMap<(String, Bool)>(insertionOrder: true)
         for field in conditional {
             results[field.key] = (field.key, (results[field.key]?.1 ?? false) || visible(field, values.json))
         }

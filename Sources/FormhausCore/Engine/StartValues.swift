@@ -2,7 +2,7 @@ struct StartValues {
     private var seeds = Values()
     private var remembering = true
     private var writeWatch: (id: Int, keys: KeySet)?
-    private var memory = StringMap<ValueSlot>()
+    private var memory = StringMap<ValueSlot>(insertionOrder: true)
     private var itemSeeds: [Int: JSONObject] = [:]
     private var itemMemory: [Int: JSONObject] = [:]
 

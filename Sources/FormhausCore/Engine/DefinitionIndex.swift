@@ -1,5 +1,5 @@
 struct OrderedIndex<Value: NodeIdentity> {
-    private var storage = StringMap<[Value]>()
+    private var storage = StringMap<[Value]>(insertionOrder: true)
 
     var keys: [String] { storage.keys }
 
