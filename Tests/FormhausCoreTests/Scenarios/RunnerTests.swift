@@ -77,4 +77,27 @@ struct RunnerTests {
         ])
         #expect(result == [])
     }
+
+    @Test("treats a null skip handler as no handler")
+    func nullHandler() async throws {
+        let file = ScenarioFile(
+            name: "runner",
+            definition: [
+                "id": "f", "title": "F", "submit": ["label": "S"],
+                "steps": [["id": "one", "title": "One", "skip": true, "fields": [["key": "a", "type": "text", "label": "A"]]]],
+            ],
+            overlay: nil, scenarios: []
+        )
+        let result = try await ScenarioRun(file, ["name": "x", "steps": [["do": "skip", "handler": nil, "returns": false]]]).run()
+        #expect(result == [])
+    }
+
+    @Test("coerces non-string onStepValidate errors like JavaScript String")
+    func nonStringErrors() async throws {
+        let result = try await failures([
+            "name": "x", "hooks": ["onStepValidate": [["return": ["a": 5, "z": [1, 2]]]]],
+            "steps": [["do": "next", "returns": false], ["expect": ["errors": ["a": "5"], "topLevelErrors": ["1,2"]]]],
+        ])
+        #expect(result == [])
+    }
 }

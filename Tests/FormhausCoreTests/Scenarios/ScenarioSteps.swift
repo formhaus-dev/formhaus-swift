@@ -18,7 +18,7 @@ extension ScenarioRun {
         case "cancelPendingActions": engine.cancelPendingActions()
         case "next": return .bool(try await engine.next())
         case "back": return .bool(try await engine.back())
-        case "skip": return .bool(try await engine.skip(step.has("handler") ? handler(step["handler"]) : nil))
+        case "skip": return .bool(try await engine.skip(truthy(step["handler"]) ? handler(step["handler"]) : nil))
         case "submit": return .bool(try await engine.submit(handler(step["handler"])))
         case "validate": return json(engine.validate())
         case "validateField": return engine.validateField(key).map(JSONValue.string)

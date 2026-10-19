@@ -1,5 +1,5 @@
 import Foundation
-import FormhausCore
+@testable import FormhausCore
 import Testing
 
 struct ScenarioFile: Sendable {
@@ -132,8 +132,12 @@ func errorProjection(_ error: any Error, _ expected: JSONObject) -> JSONValue {
 func fieldErrors(_ value: JSONValue?) -> FieldErrors? {
     guard let object = value?.objectValue else { return nil }
     var errors = FieldErrors()
-    for (key, message) in object { errors[key] = message.stringValue ?? render(message) }
+    for (key, message) in object { errors[key] = jsString(message) }
     return errors
+}
+
+func truthy(_ value: JSONValue?) -> Bool {
+    value?.isTruthy == true
 }
 
 func flag(_ value: JSONValue?) -> Bool? {
