@@ -9,7 +9,7 @@ struct SystemForm: View {
 
     var body: some View {
         #if os(iOS)
-            SystemStepPage(model: model, level: 0, store: store)
+            SystemStepPage(model: model, level: 0, owner: ObjectIdentifier(store), store: store)
                 .background { StackClaim(model: ObjectIdentifier(model), owner: ObjectIdentifier(store)) }
                 .onAppear { store.sync(model) }
                 .onChange(of: model.structure) { store.sync(model) }
@@ -30,23 +30,29 @@ struct SystemForm: View {
         @Environment(\.locale) private var locale
         let model: FormModel
         let level: Int
+        let owner: ObjectIdentifier
         weak var store: StepStore?
 
         var body: some View {
+            page.background { if level > 0 { StackReleaser(model: ObjectIdentifier(model), owner: owner) } }
+        }
+
+        @ViewBuilder private var page: some View {
             if let active = store {
                 let snapshot = active.snapshot(level, model.structure)
                 SystemPage(
                     model: model, nodes: snapshot.nodes, step: snapshot.step, level: level, current: active.history.count == level + 1
                 )
                 .navigationDestination(isPresented: pushed) {
-                    SystemStepPage(model: model, level: level + 1, store: self.store)
+                    SystemStepPage(model: model, level: level + 1, owner: owner, store: self.store)
                         .formhausComponents(components)
                         .formhausBehavior(behavior)
                         .formhausTheme(theme)
                         .environment(\.locale, locale)
                         .resolveFormhausTokens()
                 }
-                .background { if level > 0 { StackReleaser(model: ObjectIdentifier(model), owner: ObjectIdentifier(active)) } }
+            } else {
+                Color.clear
             }
         }
 
