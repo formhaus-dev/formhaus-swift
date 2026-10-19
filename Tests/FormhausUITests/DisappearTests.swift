@@ -12,6 +12,23 @@ final class TabChoice {
 }
 
 @MainActor
+final class Gate {
+    private var waiter: CheckedContinuation<Void, Never>?
+    private var opened = false
+
+    func wait() async {
+        guard !opened else { return }
+        await withCheckedContinuation { waiter = $0 }
+    }
+
+    func open() {
+        opened = true
+        waiter?.resume()
+        waiter = nil
+    }
+}
+
+@MainActor
 final class ModelLog {
     var model: FormModel?
     var calls: [String] = []
@@ -44,7 +61,7 @@ private struct Tabs: View {
 @Suite("Leaving and returning to a form", .serialized)
 @MainActor
 struct DisappearTests {
-    @Test("a submit keeps running when the form disappears and comes back")
+    @Test("a submit keeps running when the form disappears and comes back", .timeLimit(.minutes(1)))
     func tabSwitch() async throws {
         let log = ModelLog()
         let choice = TabChoice()
@@ -52,24 +69,27 @@ struct DisappearTests {
             "id": "p", "title": "P", "submit": ["label": "Send"], "fields": [["key": "a", "type": "probe", "label": "A"]],
         ])
         let components = FormComponents.standard.field("probe") { ModelProbe(context: $0, log: log) }
+        let gate = Gate()
         let submit: SubmitHandler = { _, _ in
-            try? await Task.sleep(for: .milliseconds(300))
+            log.calls.append("sent")
+            await gate.wait()
             log.calls.append("done")
             return .rejected(errors: ["a": "Taken"])
         }
         let view = host(Tabs(choice: choice, definition: definition, components: components, submit: submit).frame(height: 600))
         let model = try #require(log.model)
         let task = Task { await model.submit() }
-        try await Task.sleep(for: .milliseconds(50))
+        while log.calls.isEmpty { await Task.yield() }
         #expect(model.submitting)
         choice.tab = 1
         settle(view)
-        try await Task.sleep(for: .milliseconds(50))
         #expect(model.submitting)
         choice.tab = 0
         settle(view)
+        #expect(model.submitting)
+        gate.open()
         await task.value
-        #expect(log.calls == ["done"])
+        #expect(log.calls == ["sent", "done"])
         #expect(model.field("a").error == "Taken")
         #expect(log.model === model)
     }

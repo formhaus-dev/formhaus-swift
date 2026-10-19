@@ -2,6 +2,7 @@ included:
   - Package.swift
   - Sources
   - Tests
+  - Examples
 excluded:
   - Tests/FormhausCoreTests/Fixtures
   - .build
@@ -78,5 +79,6 @@ custom_rules:
     included:
       - Sources/
       - Tests/
+      - Examples/
     message: Code must not contain comments.
     severity: error
