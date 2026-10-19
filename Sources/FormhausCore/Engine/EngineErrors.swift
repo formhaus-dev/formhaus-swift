@@ -21,7 +21,8 @@ extension EngineCore {
         let scope = visibility.conditionValues(self.values.json)
         return unsettleOnWrite {
             validateShown(
-                nodes, values, scope, ShownChecks(validators: validators, messages: .function(messages), limits: definition.listLimits))
+                nodes, values, scope,
+                ShownChecks(validators: validators, messages: .function(messages), limits: visibility.limits(self.values.json)))
         }
     }
 

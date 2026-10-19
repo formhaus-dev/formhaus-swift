@@ -1,21 +1,17 @@
 let maxListItems = 1000
 
+private func exemptLength(_ field: FormField) -> Int? {
+    guard listTypes.contains(field.type), !field.hasOptionsFrom, let count = field.options?.count, count > maxListItems else { return nil }
+    return count
+}
+
 struct ListLimits: Sendable {
-    static let standard = ListLimits(lengths: StringMap())
+    static let standard = ListLimits()
 
-    private let lengths: StringMap<Int>
+    private var lengths = StringMap<Int>()
 
-    private init(lengths: StringMap<Int>) {
-        self.lengths = lengths
-    }
-
-    init(_ fields: [FormField]) {
-        var lengths = StringMap<Int>()
-        for field in fields.flatMap({ [$0] + $0.items }) where listTypes.contains(field.type) && !field.hasOptionsFrom {
-            let count = field.options?.count ?? 0
-            if count > maxListItems { lengths[field.key] = max(lengths[field.key] ?? 0, count) }
-        }
-        self.lengths = lengths
+    mutating func trim(_ fields: [FormField]) {
+        for field in fields.flatMap({ [$0] + $0.items }) { lengths[field.key] = exemptLength(field) }
     }
 
     func contains(_ key: String, _ value: JSONValue?, _ operand: JSONValue?) -> Bool {
