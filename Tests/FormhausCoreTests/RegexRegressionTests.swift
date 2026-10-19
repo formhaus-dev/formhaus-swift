@@ -172,4 +172,21 @@ struct RegexRegressionTests {
         #expect(try #require(JSRegex(source)).test("a\u{212A}-_\u{FEFF}\u{E9}x1") == nil)
         #expect(Date().timeIntervalSince(started) < 15)
     }
+
+    @Test("the pattern cache stays inside its byte limit")
+    func patternCacheBytes() throws {
+        let cache = PatternCache(byteLimit: 4 << 20)
+        let large = (0..<12).map { "a\($0)" + String(repeating: "b?", count: 16000) }
+        for source in large {
+            #expect(cache.pattern(source)?.test("a") == false)
+            #expect(cache.bytes <= 4 << 20)
+        }
+        #expect(cache.bytes > 2 << 20)
+        let small = try #require(cache.pattern("^ok$"))
+        #expect(small.test("ok") == true)
+        let huge = "x" + String(repeating: "y?", count: 100_000)
+        let before = cache.bytes
+        #expect(cache.pattern(huge)?.test("xy") == true)
+        #expect(cache.bytes == before)
+    }
 }
