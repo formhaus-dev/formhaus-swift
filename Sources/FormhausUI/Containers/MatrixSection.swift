@@ -31,7 +31,7 @@ struct MatrixRows: View {
     }
 
     private func isRow(_ field: FormField) -> Bool {
-        (field.type == "radio" || field.type == "multiselect") && components.fields[field.type] == nil && components.builtIns
+        (field.type == "radio" || field.type == "multiselect") && components.builtIns
     }
 }
 

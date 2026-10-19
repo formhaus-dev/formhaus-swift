@@ -26,12 +26,20 @@ public struct MultiselectField: View {
 }
 
 @MainActor
-struct ChoiceSelection {
+public struct ChoiceSelection {
     let context: FieldContext
 
-    var multiple: Bool { context.field.type == "multiselect" }
+    public init(context: FieldContext) {
+        self.context = context
+    }
 
-    var values: [String] { Self.values(context.state.value, multiple: multiple) }
+    public var multiple: Bool { context.field.type == "multiselect" }
+
+    public var values: [String] { Self.values(context.state.value, multiple: multiple) }
+
+    public func isSelected(_ value: String) -> Bool {
+        values.contains(value)
+    }
 
     static func values(_ value: JSONValue?, multiple: Bool) -> [String] {
         if multiple { return value?.arrayValue?.compactMap(\.stringValue) ?? [] }
@@ -39,7 +47,7 @@ struct ChoiceSelection {
         return [value.stringValue ?? value.numberValue.map(numberText) ?? ""]
     }
 
-    func choose(_ value: String) {
+    public func choose(_ value: String) {
         guard multiple else {
             context.commit(.string(value))
             return

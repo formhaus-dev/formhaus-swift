@@ -108,5 +108,7 @@ private struct SwitchRow: View {
                 .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
         }
         .frame(minHeight: tokens.controls.hitTarget)
+        .contentShape(Rectangle())
+        .accessibilityRepresentation { Toggle(isOn: configuration.$isOn) { configuration.label } }
     }
 }

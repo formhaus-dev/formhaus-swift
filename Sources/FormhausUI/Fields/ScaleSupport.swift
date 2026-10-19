@@ -1,11 +1,12 @@
 @_spi(Renderer) import FormhausCore
 import SwiftUI
 
-struct ScalePoints {
-    let points: [Int]
+@MainActor
+public struct ScalePoints {
+    public let points: [Int]
     let anchors: [String?]
 
-    init(_ context: FieldContext) {
+    public init(_ context: FieldContext) {
         let range = context.field.scaleRange ?? (1, 5)
         let low = clampedInt(range.min, -1_000_000...1_000_000) ?? 1
         let high = clampedInt(range.max, -1_000_000...1_000_000) ?? 5
@@ -19,10 +20,14 @@ struct ScalePoints {
         }
     }
 
-    var low: Int { points.first ?? 1 }
-    var high: Int { points.last ?? 1 }
+    public var low: Int { points.first ?? 1 }
+    public var high: Int { points.last ?? 1 }
 
-    func anchor(for point: Int) -> String? {
+    public func clamped(_ point: Int) -> Int {
+        min(max(point, low), high)
+    }
+
+    public func anchor(for point: Int) -> String? {
         if point == low { return anchors[0] }
         if point == high { return anchors[2] }
         let middle = Int((Double(low + high) / 2).rounded(.down))
@@ -35,7 +40,7 @@ struct ScalePoints {
         return points.contains(point) ? point : nil
     }
 
-    func selected(_ value: JSONValue?) -> Int? {
+    public func selected(_ value: JSONValue?) -> Int? {
         guard let number = value?.numberValue, let point = Int(exactly: number) else { return nil }
         return points.contains(point) ? point : nil
     }
