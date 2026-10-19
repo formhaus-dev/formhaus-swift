@@ -35,6 +35,11 @@ extension FormNode {
     }
 }
 
+extension FormDefinition {
+    @_spi(Renderer)
+    public var source: JSONObject { json }
+}
+
 extension FormStep {
     @_spi(Renderer)
     public var nodeID: Int { ordinal }

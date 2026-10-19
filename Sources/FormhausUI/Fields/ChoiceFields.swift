@@ -48,7 +48,7 @@ struct ChoiceList: View {
         FieldShell(context, variant: .group) {
             options
                 .disabled(context.isLocked)
-                .fieldFocus(context, $focused)
+                .formhausFocus(context, $focused)
         }
         .sheet(item: $zoomed) { zoomed in
             ImageViewer(title: zoomed.label, source: zoomed.image, closeLabel: context.label("close"))

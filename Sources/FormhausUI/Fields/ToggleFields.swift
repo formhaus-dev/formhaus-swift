@@ -16,7 +16,7 @@ public struct CheckboxField: View {
             .toggleStyle(CheckboxStyle(invalid: context.isInvalid))
             .accessibilityHint(context.helperText ?? "")
             .disabled(context.isLocked)
-            .fieldFocus(context, $focused)
+            .formhausFocus(context, $focused)
         }
     }
 }
@@ -74,7 +74,7 @@ public struct SwitchField: View {
             .toggleStyle(SwitchRowStyle())
             .accessibilityHint(context.helperText ?? "")
             .disabled(context.isLocked)
-            .fieldFocus(context, $focused)
+            .formhausFocus(context, $focused)
         }
     }
 }

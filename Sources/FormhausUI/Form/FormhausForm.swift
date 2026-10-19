@@ -3,36 +3,75 @@ import SwiftUI
 
 public struct FormhausForm: View {
     @State private var holder = ModelHolder()
-    private let make: @MainActor () -> FormModel
+    private let source: ModelSource
 
     public init(model: FormModel) {
-        make = { model }
+        source = .model(model)
     }
 
     public init(
         definition: FormDefinition, initialValues: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions(),
         renderer: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler
     ) {
-        make = {
-            FormModel(definition: definition, initialValues: initialValues, engineOptions: options, options: renderer, onSubmit: onSubmit)
-        }
+        source = .definition(
+            OwnedForm(definition: definition, values: initialValues, engine: options, renderer: renderer, submit: onSubmit))
     }
 
     public var body: some View {
-        let model = holder.resolve(make)
-        FormScroller(model: model).resolveFormhausTokens()
+        let model = holder.resolve(source)
+        FormScroller(model: model)
+            .id(ObjectIdentifier(model))
+            .resolveFormhausTokens()
+            .onDisappear { holder.release() }
     }
 }
 
-@MainActor
-private final class ModelHolder {
-    private var model: FormModel?
+struct OwnedForm {
+    let definition: FormDefinition
+    let values: JSONObject
+    let engine: FormEngineOptions
+    let renderer: FormRendererOptions
+    let submit: SubmitHandler
+}
 
-    func resolve(_ make: () -> FormModel) -> FormModel {
-        if let model { return model }
-        let created = make()
-        model = created
-        return created
+enum ModelSource {
+    case model(FormModel)
+    case definition(OwnedForm)
+}
+
+@MainActor
+final class ModelHolder {
+    private var model: FormModel?
+    private var owned = false
+    private var definition: JSONObject?
+
+    func resolve(_ source: ModelSource) -> FormModel {
+        switch source {
+        case .model(let given):
+            if model !== given { replace(given, owned: false, definition: nil) }
+            return given
+        case .definition(let form):
+            if let model, owned, definition == form.definition.source {
+                model.updateHandlers(engineOptions: form.engine, options: form.renderer, onSubmit: form.submit)
+                return model
+            }
+            let created = FormModel(
+                definition: form.definition, initialValues: form.values, engineOptions: form.engine, options: form.renderer,
+                onSubmit: form.submit)
+            replace(created, owned: true, definition: form.definition.source)
+            return created
+        }
+    }
+
+    func release() {
+        if owned { model?.engine.cancelPendingActions() }
+    }
+
+    private func replace(_ next: FormModel, owned isOwned: Bool, definition source: JSONObject?) {
+        release()
+        model = next
+        owned = isOwned
+        definition = source
     }
 }
 
@@ -41,24 +80,19 @@ private struct FormScroller: View {
     let model: FormModel
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                FormhausFormContent(model: model)
-                    .padding(tokens.spacing.s10)
-                    .frame(maxWidth: tokens.controls.maxWidth)
-                    .frame(maxWidth: .infinity)
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .onChange(of: model.focusRequest) { _, request in
-                guard let key = request?.key else { return }
-                withAnimation(tokens.animation(tokens.motion.progress)) { proxy.scrollTo(key, anchor: .center) }
-            }
+        ScrollView {
+            FormhausFormContent(model: model)
+                .padding(tokens.spacing.s10)
+                .frame(maxWidth: tokens.controls.maxWidth)
+                .frame(maxWidth: .infinity)
         }
+        .scrollDismissesKeyboard(.interactively)
         .background(tokens.colors.background)
     }
 }
 
 public struct FormhausFormContent: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let model: FormModel
 
     public init(model: FormModel) {
@@ -66,11 +100,33 @@ public struct FormhausFormContent: View {
     }
 
     public var body: some View {
-        FormStack(model: model)
-            .formLocale(model.definition.lang)
-            .onAppear { model.start() }
-            .resolveFormhausTokens()
+        ScrollViewReader { proxy in
+            FormStack(model: model)
+                .background(alignment: .top) { Color.clear.frame(height: 1).id(topAnchor(model)) }
+                .onChange(of: model.focusRequest) { _, request in scroll(proxy, to: request) }
+                .onChange(of: model.structure.currentStep?.nodeID) { scrollToTop(proxy) }
+        }
+        .formLocale(model.definition.lang)
+        .onAppear { model.start() }
+        .resolveFormhausTokens()
     }
+}
+
+extension FormhausFormContent {
+    private func scroll(_ proxy: ScrollViewProxy, to request: FocusRequest?) {
+        guard let key = request?.key else { return }
+        withAnimation(scrollAnimation) { proxy.scrollTo(key, anchor: .center) }
+    }
+
+    private func scrollToTop(_ proxy: ScrollViewProxy) {
+        withAnimation(scrollAnimation) { proxy.scrollTo(topAnchor(model), anchor: .top) }
+    }
+
+    private var scrollAnimation: Animation? { reduceMotion ? nil : .easeOut(duration: 0.2) }
+}
+
+func topAnchor(_ model: FormModel) -> String {
+    "formhaus.top.\(ObjectIdentifier(model).hashValue)"
 }
 
 private struct FormStack: View {

@@ -5,8 +5,10 @@ import Observation
 @Observable
 public final class FormModel {
     public let engine: FormEngine
-    public let options: FormRendererOptions
-    @ObservationIgnored let submitHandler: SubmitHandler
+    @ObservationIgnored public private(set) var options: FormRendererOptions
+    @ObservationIgnored private(set) var submitHandler: SubmitHandler
+    @ObservationIgnored private var hooks: HookBox?
+    @ObservationIgnored private nonisolated(unsafe) var unsubscribe: (@MainActor () -> Void)?
 
     public private(set) var structure: FormStructure
     public private(set) var stepValidating = false
@@ -32,6 +34,7 @@ public final class FormModel {
     @ObservationIgnored private var lastValues: JSONObject
     @ObservationIgnored private var lastErrors: FieldErrors
     @ObservationIgnored private var focusCounter = 0
+    @ObservationIgnored private var pendingFocusKey: String?
     @ObservationIgnored private var emittedValues: JSONObject?
 
     public init(engine: FormEngine, options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler) {
@@ -43,15 +46,30 @@ public final class FormModel {
         lastValues = engine.values
         lastErrors = engine.errors
         refreshStatus()
-        _ = engine.subscribe { [weak self] in self?.refresh() }
+        unsubscribe = engine.subscribe { [weak self] in self?.refresh() }
+    }
+
+    deinit {
+        guard let unsubscribe else { return }
+        Task { @MainActor in unsubscribe() }
     }
 
     public convenience init(
         definition: FormDefinition, initialValues: JSONObject = JSONObject(), engineOptions: FormEngineOptions = FormEngineOptions(),
         options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler
     ) {
-        let engine = FormEngine(definition: definition, values: initialValues, options: engineOptions)
+        let hooks = HookBox(engineOptions)
+        let engine = FormEngine(definition: definition, values: initialValues, options: hooks.forwarding())
         self.init(engine: engine, options: options, onSubmit: onSubmit)
+        self.hooks = hooks
+    }
+
+    public func updateHandlers(
+        engineOptions: FormEngineOptions? = nil, options: FormRendererOptions? = nil, onSubmit: SubmitHandler? = nil
+    ) {
+        if let engineOptions { hooks?.current = engineOptions }
+        if let options { self.options = options }
+        if let onSubmit { submitHandler = onSubmit }
     }
 
     public convenience init(
@@ -98,6 +116,8 @@ public final class FormModel {
     func requestFocus(_ key: String?) {
         focusCounter += 1
         focusRequest = FocusRequest(key: key, id: focusCounter)
+        if let previous = pendingFocusKey, previous != key { fieldStates[previous]?.dropFocusRequest() }
+        pendingFocusKey = key
         if let key { field(key).requestFocus() }
     }
 

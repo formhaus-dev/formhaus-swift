@@ -39,7 +39,7 @@ public struct SelectField: View {
             .buttonStyle(.plain)
             .menuIndicator(.hidden)
             .disabled(context.isLocked)
-            .fieldFocus(context, $focused)
+            .formhausFocus(context, $focused)
             .accessibilityLabel(context.label)
             .accessibilityValue(selectedLabel ?? "")
             .accessibilityHint(context.helperText ?? "")
@@ -75,7 +75,7 @@ public struct AutocompleteField: View {
                     .onSubmit { context.submitPrimary() }
                     .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
                     .disabled(context.isLocked)
-                    .fieldFocus(context, $focused)
+                    .formhausFocus(context, $focused)
                 if focused, !suggestions.isEmpty {
                     SuggestionList(options: suggestions) { context.setValue(.string($0)) }
                 }

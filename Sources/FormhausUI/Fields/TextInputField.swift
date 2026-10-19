@@ -24,7 +24,7 @@ public struct TextInputField: View {
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
             .disabled(context.isLocked)
-            .fieldFocus(context, $focused)
+            .formhausFocus(context, $focused)
         }
     }
 

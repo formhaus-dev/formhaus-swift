@@ -124,7 +124,7 @@ private struct ScaleInput: ViewModifier {
                     focused: focused, scale: scale, current: current, commit: { context.commit(.number(Double($0))) },
                     select: { context.setValue(.number(Double($0))) })
             )
-            .fieldFocus(context, focused)
+            .formhausFocus(context, focused)
     }
 }
 

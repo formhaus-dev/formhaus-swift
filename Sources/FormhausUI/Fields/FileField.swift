@@ -27,7 +27,7 @@ public struct FileField: View {
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
             .disabled(context.isLocked)
-            .fieldFocus(context, $focused)
+            .formhausFocus(context, $focused)
             .accessibilityHint(context.helperText ?? "")
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: types) { result in

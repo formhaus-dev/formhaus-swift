@@ -103,7 +103,7 @@ public struct DateField: View {
             .padding(.horizontal, date == nil ? 0 : tokens.spacing.s4)
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked, padded: date == nil)
             .disabled(context.isLocked)
-            .fieldFocus(context, $focused)
+            .formhausFocus(context, $focused)
             .accessibilityHint(context.helperText ?? "")
         }
     }
