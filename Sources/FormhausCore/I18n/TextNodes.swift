@@ -12,12 +12,12 @@ enum NodeKind {
     }
 }
 
-public let defaultLabelKeys = [
+let defaultLabelKeys = [
     "continue", "back", "stepOf", "errorSummary", "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved",
     "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel",
 ]
 
-public let defaultLabels: [String: String] = [
+let defaultLabels: [String: String] = [
     "continue": "Continue",
     "back": "Back",
     "stepOf": "Step {current} of {total}",

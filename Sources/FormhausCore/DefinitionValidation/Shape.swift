@@ -1,7 +1,5 @@
 import Foundation
 
-public let formatVersion = "1.2"
-
 private let versionPattern = JSRegex("^[1-9]\\d*(\\.\\d+)?$")!
 
 func nestable(_ path: String) -> Bool {
@@ -152,11 +150,11 @@ func formatIssues(_ input: JSONObject) -> [DefinitionIssue] {
     guard let version = input["formatVersion"] else { return [] }
     let text = version.stringValue
     let valid = text.map { versionPattern.test($0) == true } ?? false
-    if valid, Double(text!.prefix { $0 != "." })! <= Double(formatVersion.prefix { $0 != "." })! { return [] }
+    if valid, Double(text!.prefix { $0 != "." })! <= Double(FormDefinition.supportedFormatVersion.prefix { $0 != "." })! { return [] }
     return [
         valid
             ? error("unsupported-format-version", "/formatVersion", "format \(text!) is not supported", "Upgrade @formhaus/core")
-            : error("invalid-type", "/formatVersion", "must be a version string", "Use \"\(formatVersion)\""),
+            : error("invalid-type", "/formatVersion", "must be a version string", "Use \"\(FormDefinition.supportedFormatVersion)\""),
     ]
 }
 

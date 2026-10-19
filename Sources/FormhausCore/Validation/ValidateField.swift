@@ -1,4 +1,4 @@
-public typealias ValidatorFn = (JSONValue, JSONObject) -> String?
+public typealias ValidatorFn = @Sendable (JSONValue, JSONObject) -> String?
 public typealias Validators = StringMap<ValidatorFn>
 
 private func isEmptyValue(_ value: JSONValue?, _ field: FormField) -> Bool {
@@ -27,11 +27,11 @@ func rejects(_ pattern: JSRegex, _ text: String) -> Bool {
 private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: FormField, _ resolve: ResolveMessage) -> String? {
     switch value {
     case .number(let number):
-        return boundError(number, "", rules) { resolve($0, $1, field) }
+        return boundError(number, "", rules) { resolve(MessageKey(rawValue: $0), $1, field) }
     case .string(let text):
-        return boundError(Double(text.jsLength), "Length", rules) { resolve("\($0)Length", $1, field) }
+        return boundError(Double(text.jsLength), "Length", rules) { resolve(MessageKey(rawValue: "\($0)Length"), $1, field) }
     case .array(let items):
-        return boundError(Double(items.count), "Length", rules) { resolve("\($0)Items", $1, field) }
+        return boundError(Double(items.count), "Length", rules) { resolve(MessageKey(rawValue: "\($0)Items"), $1, field) }
     default:
         return nil
     }

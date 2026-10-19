@@ -1,4 +1,4 @@
-public let sourceNames = ["referrer", "page", "pageTitle", "language", "timezone", "device", "country"]
+let sourceNames = ["referrer", "page", "pageTitle", "language", "timezone", "device", "country"]
 
 private func rangeIssue(_ rules: FieldValidation, _ path: String, _ min: String, _ max: String) -> [DefinitionIssue] {
     guard let low = rules.json[min]?.numberValue, let high = rules.json[max]?.numberValue, low > high else { return [] }
