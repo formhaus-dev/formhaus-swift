@@ -38,8 +38,10 @@ func renderPNG(_ view: some View, style: SnapshotStyle, to url: URL) throws {
     host.appearance = NSAppearance(named: style.appearance.name)
     host.frame = CGRect(origin: .zero, size: CGSize(width: style.width, height: 10))
     host.layoutSubtreeIfNeeded()
-    host.frame.size = host.fittingSize
-    host.layoutSubtreeIfNeeded()
+    for _ in 0..<3 {
+        host.frame.size = CGSize(width: style.width, height: host.fittingSize.height)
+        host.layoutSubtreeIfNeeded()
+    }
     guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return }
     host.cacheDisplay(in: host.bounds, to: rep)
     try rep.representation(using: .png, properties: [:])?.write(to: url)
