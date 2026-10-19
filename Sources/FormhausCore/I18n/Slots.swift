@@ -69,8 +69,8 @@ private func catalogSlots(_ definition: FormDefinition, _ name: String, _ used: 
     let order = isMessages ? defaultMessageKeys.map(\.rawValue) : defaultLabelKeys
     let fallback = { (item: String) in isMessages ? defaultMessages[MessageKey(rawValue: item)] : defaultLabels[item] }
     let keys = definition.i18n?[name]?.objectValue ?? JSONObject()
-    return order.map { item in
-        let source = definition.json[name]?[item]?.stringValue ?? fallback(item)!
+    return order.compactMap { item in
+        guard let source = definition.json[name]?[item]?.stringValue ?? fallback(item) else { return nil }
         return Slot(
             kind: isMessages ? .message : .label, address: [name, item], key: keys[item]?.stringValue, source: source,
             fallback: source, params: JSONObject(), template: used.contains(item), location: [name], property: item

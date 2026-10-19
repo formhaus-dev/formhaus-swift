@@ -111,7 +111,7 @@ public func localize(_ input: JSONValue, overlay: JSONValue, lang: String? = nil
         }
         json.assign(value, at: slot.location[...], key: slot.property)
     }
-    let definition = FormDefinition(unchecked: json.objectValue!)
+    let definition = FormDefinition(unchecked: json.objectValue ?? parsed.json)
     return Localized(
         definition: definition, messages: json["messages"] ?? .object(JSONObject()), labels: json["labels"] ?? .object(JSONObject()))
 }
