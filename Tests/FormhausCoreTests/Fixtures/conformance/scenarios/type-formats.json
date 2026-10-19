@@ -54,7 +54,7 @@
       },
       {
         "key": "rating",
-        "type": "rating",
+        "type": "x-rating",
         "label": "rating"
       },
       {
@@ -190,7 +190,7 @@
       ]
     },
     {
-      "name": "accepts rating {\"stars\":4}",
+      "name": "accepts any value for a custom type",
       "values": {
         "rating": {
           "stars": 4

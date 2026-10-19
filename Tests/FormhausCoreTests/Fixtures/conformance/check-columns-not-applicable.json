@@ -1,0 +1,162 @@
+{
+  "name": "check-columns-not-applicable",
+  "issues": [],
+  "warnings": [
+    {
+      "code": "columns-not-applicable",
+      "path": "/fields/3/columns"
+    },
+    {
+      "code": "columns-not-applicable",
+      "path": "/fields/4/columns"
+    },
+    {
+      "code": "columns-not-applicable",
+      "path": "/fields/5/columns"
+    },
+    {
+      "code": "columns-not-applicable",
+      "path": "/fields/6/fields/0/columns"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "one",
+        "type": "radio",
+        "label": "One",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": 1
+      },
+      {
+        "key": "four",
+        "type": "multiselect",
+        "label": "Four",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": 4
+      },
+      {
+        "key": "auto",
+        "type": "radio",
+        "label": "Auto",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ]
+      },
+      {
+        "key": "plain",
+        "type": "radio",
+        "label": "Plain",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ],
+        "columns": 3
+      },
+      {
+        "key": "select",
+        "type": "select",
+        "label": "Select",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ],
+        "columns": 2
+      },
+      {
+        "key": "picker",
+        "type": "select",
+        "label": "Picker",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": 2
+      },
+      {
+        "key": "grid",
+        "type": "section",
+        "layout": "matrix",
+        "title": "Grid",
+        "fields": [
+          {
+            "key": "row",
+            "type": "radio",
+            "label": "Row",
+            "options": [
+              {
+                "value": "a",
+                "label": "A",
+                "image": "https://example.com/a.jpg"
+              },
+              {
+                "value": "b",
+                "label": "B",
+                "image": "https://example.com/b.jpg"
+              }
+            ],
+            "columns": 2
+          }
+        ]
+      }
+    ]
+  },
+  "cases": []
+}

@@ -1,0 +1,128 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "field-statement",
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "field-statement",
+    "title": "field-statement",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "welcome",
+        "title": "Welcome",
+        "description": "Two minutes.",
+        "fields": [],
+        "next": {
+          "label": "Start"
+        }
+      },
+      {
+        "id": "rate",
+        "title": "Rate",
+        "fields": [
+          {
+            "key": "note",
+            "type": "section",
+            "title": "Before you rate",
+            "description": "Be honest.",
+            "fields": []
+          },
+          {
+            "key": "stars",
+            "type": "rating",
+            "label": "stars",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "moves past a step without fields",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "step": "welcome",
+            "fields": [],
+            "progress": {
+              "current": 1,
+              "total": 2
+            },
+            "isFirstStep": true
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "rate",
+            "fields": ["stars"],
+            "progress": {
+              "current": 2,
+              "total": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "submits without values from the statement",
+      "values": {
+        "stars": 4
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": null
+            }
+          ],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "welcome"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "stars": 4
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

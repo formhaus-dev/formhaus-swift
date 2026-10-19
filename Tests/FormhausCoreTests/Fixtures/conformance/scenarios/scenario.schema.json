@@ -294,6 +294,12 @@
             "type": "integer"
           }
         },
+        "distinctItemIds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
         "isFirstStep": {
           "type": "boolean"
         },

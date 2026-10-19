@@ -1,0 +1,190 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "field-matrix",
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "field-matrix",
+    "title": "field-matrix",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "team",
+        "type": "text",
+        "label": "team"
+      },
+      {
+        "key": "pulse",
+        "type": "section",
+        "layout": "matrix",
+        "title": "pulse",
+        "show": [
+          {
+            "field": "team",
+            "notEmpty": true
+          }
+        ],
+        "fields": [
+          {
+            "key": "clear",
+            "type": "radio",
+            "label": "clear",
+            "options": [
+              {
+                "value": "1",
+                "label": "Disagree"
+              },
+              {
+                "value": "2",
+                "label": "Neutral"
+              },
+              {
+                "value": "3",
+                "label": "Agree"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "heard",
+            "type": "radio",
+            "label": "heard",
+            "options": [
+              {
+                "value": "1",
+                "label": "Disagree"
+              },
+              {
+                "value": "2",
+                "label": "Neutral"
+              },
+              {
+                "value": "3",
+                "label": "Agree"
+              }
+            ]
+          },
+          {
+            "key": "tools",
+            "type": "multiselect",
+            "label": "tools",
+            "options": [
+              {
+                "value": "1",
+                "label": "Disagree"
+              },
+              {
+                "value": "2",
+                "label": "Neutral"
+              },
+              {
+                "value": "3",
+                "label": "Agree"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "why",
+        "type": "text",
+        "label": "why",
+        "show": [
+          {
+            "field": "clear",
+            "eq": "1"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "keeps one flat value per row",
+      "values": {
+        "team": "core",
+        "clear": "3",
+        "heard": "2",
+        "tools": ["1", "3"]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {}
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "team": "core",
+              "clear": "3",
+              "heard": "2",
+              "tools": ["1", "3"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "validates each row on its own",
+      "values": {
+        "team": "core",
+        "heard": "4"
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "clear": "This field is required",
+            "heard": "Select one of the available options"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hides every row with the section",
+      "values": {
+        "clear": "3",
+        "heard": "2"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["team"],
+            "submitValues": {}
+          }
+        },
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    },
+    {
+      "name": "conditions read a row like any radio",
+      "values": {
+        "team": "core",
+        "clear": "2"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["team", "clear", "heard", "tools"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "clear",
+          "value": "1"
+        },
+        {
+          "expect": {
+            "fields": ["team", "clear", "heard", "tools", "why"]
+          }
+        }
+      ]
+    }
+  ]
+}

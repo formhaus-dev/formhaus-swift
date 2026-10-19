@@ -1,0 +1,122 @@
+{
+  "name": "check-columns",
+  "issues": [
+    {
+      "code": "invalid-range",
+      "path": "/fields/1/columns"
+    },
+    {
+      "code": "invalid-range",
+      "path": "/fields/2/columns"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/3/columns"
+    },
+    {
+      "code": "invalid-range",
+      "path": "/fields/4/columns"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "two",
+        "type": "radio",
+        "label": "Two",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": 2
+      },
+      {
+        "key": "zero",
+        "type": "radio",
+        "label": "Zero",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": 0
+      },
+      {
+        "key": "half",
+        "type": "multiselect",
+        "label": "Half",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": 2.5
+      },
+      {
+        "key": "text",
+        "type": "radio",
+        "label": "Text",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": "3"
+      },
+      {
+        "key": "five",
+        "type": "radio",
+        "label": "Five",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "image": "https://example.com/b.jpg"
+          }
+        ],
+        "columns": 5
+      }
+    ]
+  }
+}

@@ -42,9 +42,16 @@ extension ScenarioRun {
         case "steps": return json(engine.visibleSteps.map(\.id))
         case "fields": return json(engine.visibleFields.map(\.key))
         case "skipped": return json(steps.compactMap { $0["id"]?.stringValue }.filter(engine.isStepSkipped))
-        case "items":
+        case "items", "distinctItemIds":
             let keys = expected?.objectValue?.keys ?? []
-            return .object(JSONObject(keys.map { ($0, .number(Double(engine.items($0).count))) }))
+            return .object(
+                JSONObject(
+                    keys.map { key in
+                        let ids = engine.items(key).map(\.id)
+                        return (key, .number(Double(name == "items" ? ids.count : Set(ids).count)))
+                    }
+                )
+            )
         case "isFirstStep": return .bool(engine.isFirstStep)
         case "isLastStep": return .bool(engine.isLastStep)
         case "canGoNext": return .bool(engine.canGoNext)

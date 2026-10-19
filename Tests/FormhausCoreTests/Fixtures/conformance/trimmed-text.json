@@ -105,7 +105,7 @@
           "secret": "x"
         },
         "errors": {
-          "name": "Must be at least 3 characters"
+          "name": "Minimum length is 3"
         }
       },
       "canSubmit": false

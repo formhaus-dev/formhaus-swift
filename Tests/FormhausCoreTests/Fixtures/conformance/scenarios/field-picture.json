@@ -1,0 +1,164 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "field-picture",
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "field-picture",
+    "title": "field-picture",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "room",
+        "type": "radio",
+        "label": "room",
+        "columns": 2,
+        "validation": {
+          "required": true
+        },
+        "options": [
+          {
+            "value": "garden",
+            "label": "Garden",
+            "image": "https://example.com/garden.jpg"
+          },
+          {
+            "value": "sea",
+            "label": "Sea",
+            "image": "https://example.com/sea.jpg"
+          }
+        ]
+      },
+      {
+        "key": "extras",
+        "type": "multiselect",
+        "label": "extras",
+        "options": [
+          {
+            "value": "spa",
+            "label": "Spa",
+            "image": "https://example.com/spa.jpg"
+          },
+          {
+            "value": "pool",
+            "label": "Pool",
+            "image": "https://example.com/pool.jpg"
+          }
+        ]
+      },
+      {
+        "key": "seaNote",
+        "type": "text",
+        "label": "seaNote",
+        "show": [
+          {
+            "field": "room",
+            "eq": "sea"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "accepts an option value",
+      "values": {
+        "room": "sea"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "room",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "rejects a value that is not an option",
+      "values": {
+        "room": "loft"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "room",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects the image URL as a value",
+      "values": {
+        "room": "https://example.com/sea.jpg"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "room",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "requires a value",
+      "values": {},
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "room",
+          "returns": "This field is required"
+        }
+      ]
+    },
+    {
+      "name": "accepts a list of option values",
+      "values": {
+        "extras": ["spa", "pool"]
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "extras",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "rejects an unknown value in the list",
+      "values": {
+        "extras": ["spa", "gym"]
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "extras",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "shows a field by the picked option",
+      "values": {
+        "room": "garden"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["room", "extras"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "room",
+          "value": "sea"
+        },
+        {
+          "expect": {
+            "fields": ["room", "extras", "seaNote"]
+          }
+        }
+      ]
+    }
+  ]
+}

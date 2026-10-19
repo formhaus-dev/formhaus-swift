@@ -84,7 +84,7 @@ if try await engine.next() {
 - Definition corpus: passing. `checkDefinition` errors and warnings, overlays, text slots and value cases for the server and the browser engine.
 - Engine scenarios: passing. Every scenario in `Fixtures/conformance/scenarios` runs through `FormEngine` as its own test, named `<file>: <scenario>`.
 
-The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to formhaus commit `ec53afff48308581ca1e7037b3759ebc26e7b623`. A tag will replace the commit once a `@formhaus/core` release contains the suite. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
+The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.19.0`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
 
 ```sh
 scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]

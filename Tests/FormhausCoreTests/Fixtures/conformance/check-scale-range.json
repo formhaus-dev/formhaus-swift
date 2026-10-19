@@ -1,0 +1,131 @@
+{
+  "name": "check-scale-range",
+  "covers": [
+    "rejects a scale or rating with fewer than 2 or more than 11 points",
+    "rejects a scale or rating with bounds that are not whole numbers"
+  ],
+  "issues": [
+    {
+      "code": "invalid-scale",
+      "path": "/fields/2/validation"
+    },
+    {
+      "code": "invalid-scale",
+      "path": "/fields/3/validation"
+    },
+    {
+      "code": "invalid-scale",
+      "path": "/fields/4/validation"
+    },
+    {
+      "code": "invalid-scale",
+      "path": "/fields/6/validation"
+    },
+    {
+      "code": "invalid-scale",
+      "path": "/fields/7/validation"
+    },
+    {
+      "code": "invalid-scale",
+      "path": "/fields/8/validation"
+    }
+  ],
+  "warnings": [],
+  "texts": {
+    "fields.nps.label": "NPS",
+    "fields.stars.label": "Stars"
+  },
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "nps",
+        "type": "scale",
+        "label": "NPS",
+        "validation": {
+          "min": 0,
+          "max": 10
+        }
+      },
+      {
+        "key": "pair",
+        "type": "scale",
+        "label": "Pair",
+        "validation": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      {
+        "key": "wide",
+        "type": "scale",
+        "label": "Wide",
+        "validation": {
+          "min": 0,
+          "max": 11
+        }
+      },
+      {
+        "key": "single",
+        "type": "scale",
+        "label": "Single",
+        "validation": {
+          "min": 3,
+          "max": 3
+        }
+      },
+      {
+        "key": "half",
+        "type": "scale",
+        "label": "Half",
+        "validation": {
+          "min": 0.5,
+          "max": 5
+        }
+      },
+      {
+        "key": "stars",
+        "type": "rating",
+        "label": "Stars",
+        "validation": {
+          "max": 11
+        }
+      },
+      {
+        "key": "many",
+        "type": "rating",
+        "label": "Many",
+        "validation": {
+          "max": 12
+        }
+      },
+      {
+        "key": "one",
+        "type": "rating",
+        "label": "One",
+        "validation": {
+          "max": 1
+        }
+      },
+      {
+        "key": "fraction",
+        "type": "rating",
+        "label": "Fraction",
+        "validation": {
+          "max": 4.5
+        }
+      },
+      {
+        "key": "plain",
+        "type": "rating",
+        "label": "Plain"
+      }
+    ]
+  },
+  "cases": []
+}

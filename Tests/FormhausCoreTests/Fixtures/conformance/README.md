@@ -40,8 +40,21 @@ The checks run on the definition as written, without `overlay`. A structural err
 A case has `name`, `input` (`values` and `skippedSteps`), `expected` (`values` and `errors`) and `canSubmit`.
 
 - Server: validating `input.values` with `input.skippedSteps` returns `expected`. The returned values are a plain object.
-- Browser engine: creating the engine with `input.values`, then `validate()` returns `expected.errors`, and the submit values equal `expected.values`. `canSubmit` says whether stepping through every step and submitting is allowed.
+- Browser engine: creating the engine with `input.values`, then `validate()` returns `expected.errors`, and the submit values equal `expected.values`. `canSubmit` says whether stepping through every step and submitting is allowed: on each step before the last, `next.disabled` does not match the submit values and `next()` succeeds; on the last, `validate()` returns no errors and `submit.disabled` does not match.
 - A payload the browser accepts passes server validation without errors.
+
+## Semantics
+
+The corpus and the scenarios assume the ECMAScript semantics of the TypeScript implementation. A port matches these even where its language differs:
+
+- Strings are sequences of UTF-16 code units. `minLength`, `maxLength` and the character caps count code units. Keys, `eq`, option membership and sorting compare code units, without Unicode normalization, so `"café"` and `"cafe\u0301"` are different keys.
+- `pattern` is an ECMAScript regular expression compiled with `new RegExp(pattern)` and no flags. Without the `u` flag, `.` and character classes match one code unit, and Annex B syntax such as `\8`, `a{` or `]` is valid. Any other dialect accepts or rejects different patterns.
+- Trimming removes the ECMAScript whitespace set of `String.prototype.trim`, which includes U+FEFF and excludes U+200B.
+- Numeric conditions convert strings with `Number()`. It accepts surrounding whitespace, hexadecimal and `Infinity`, and rejects `1_0`.
+- `pattern` tests non-string values through `String(value)`. Message parameters are formatted like JavaScript numbers, so `5` and not `5.0`.
+- Properties such as `skip`, `optionsFrom` and a string `required` follow JavaScript truthiness: `"skip": "x"` is set and `"required": ""` is not.
+- `matchField` compares arrays and objects by reference, so two such values never match.
+- `reserved-key` covers the own property names of `Object.prototype` and `prototype`: `__defineGetter__`, `__defineSetter__`, `__lookupGetter__`, `__lookupSetter__`, `__proto__`, `constructor`, `hasOwnProperty`, `isPrototypeOf`, `propertyIsEnumerable`, `prototype`, `toLocaleString`, `toString` and `valueOf`.
 
 ## Versions
 

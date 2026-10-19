@@ -1,0 +1,90 @@
+{
+  "name": "check-matrix",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "welcome",
+        "title": "Welcome",
+        "fields": [],
+        "next": {
+          "label": "Start"
+        }
+      },
+      {
+        "id": "pulse",
+        "title": "Pulse",
+        "fields": [
+          {
+            "key": "intro",
+            "type": "section",
+            "title": "About you",
+            "fields": []
+          },
+          {
+            "key": "grid",
+            "type": "section",
+            "layout": "matrix",
+            "title": "Agree?",
+            "fields": [
+              {
+                "key": "clear",
+                "type": "radio",
+                "label": "Clear",
+                "options": [
+                  {
+                    "value": "1",
+                    "label": "No"
+                  },
+                  {
+                    "value": "2",
+                    "label": "Yes"
+                  }
+                ]
+              },
+              {
+                "key": "heard",
+                "type": "radio",
+                "label": "Heard",
+                "options": [
+                  {
+                    "value": "1",
+                    "label": "No"
+                  },
+                  {
+                    "value": "2",
+                    "label": "Yes"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "room",
+            "type": "radio",
+            "label": "Room",
+            "options": [
+              {
+                "value": "sea",
+                "label": "Sea",
+                "image": "https://example.com/sea.jpg"
+              }
+            ]
+          },
+          {
+            "key": "mood",
+            "type": "x-rating",
+            "label": "Mood"
+          }
+        ]
+      }
+    ]
+  }
+}

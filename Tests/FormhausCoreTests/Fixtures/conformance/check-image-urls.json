@@ -1,0 +1,86 @@
+{
+  "name": "check-image-urls",
+  "covers": ["warns about option images that are not https: or data:image/ URLs"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "unsafe-image-url",
+      "path": "/fields/1/options/0/image"
+    },
+    {
+      "code": "unsafe-image-url",
+      "path": "/fields/1/options/1/image"
+    },
+    {
+      "code": "unsafe-image-url",
+      "path": "/fields/1/options/2/image"
+    },
+    {
+      "code": "unsafe-image-url",
+      "path": "/fields/1/options/3/image"
+    }
+  ],
+  "texts": {
+    "fields.safe.options.0": "Option 0"
+  },
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "safe",
+        "type": "radio",
+        "label": "Safe",
+        "options": [
+          {
+            "value": "0",
+            "label": "Option 0",
+            "image": "https://example.com/a.jpg"
+          },
+          {
+            "value": "1",
+            "label": "Option 1",
+            "image": "HTTPS://example.com/b.jpg"
+          },
+          {
+            "value": "2",
+            "label": "Option 2",
+            "image": "data:image/png;base64,iVBORw0KGgo="
+          }
+        ]
+      },
+      {
+        "key": "unsafe",
+        "type": "multiselect",
+        "label": "Unsafe",
+        "options": [
+          {
+            "value": "0",
+            "label": "Option 0",
+            "image": "http://example.com/a.jpg"
+          },
+          {
+            "value": "1",
+            "label": "Option 1",
+            "image": "/images/b.jpg"
+          },
+          {
+            "value": "2",
+            "label": "Option 2",
+            "image": "javascript:alert(1)"
+          },
+          {
+            "value": "3",
+            "label": "Option 3",
+            "image": "data:text/html,<p>x</p>"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": []
+}

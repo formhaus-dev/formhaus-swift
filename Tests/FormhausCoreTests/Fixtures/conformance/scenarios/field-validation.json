@@ -295,7 +295,7 @@
         {
           "do": "validateField",
           "key": "minLength",
-          "returns": "Must be at least 3 characters"
+          "returns": "Minimum length is 3"
         }
       ]
     },
@@ -347,7 +347,7 @@
         {
           "do": "validateField",
           "key": "maxLength",
-          "returns": "Must be at most 5 characters"
+          "returns": "Maximum length is 5"
         }
       ]
     },
@@ -460,7 +460,7 @@
         {
           "do": "validateField",
           "key": "codeMax",
-          "returns": "Must be at most 5 characters"
+          "returns": "Maximum length is 5"
         }
       ]
     },
@@ -605,7 +605,7 @@
         {
           "do": "validateField",
           "key": "tagsMin",
-          "returns": "Must be at least 2 items"
+          "returns": "At least 2 required"
         }
       ]
     },
@@ -618,7 +618,7 @@
         {
           "do": "validateField",
           "key": "tagsMax",
-          "returns": "Must be at most 2 items"
+          "returns": "At most 2 allowed"
         }
       ]
     },
@@ -683,7 +683,7 @@
         {
           "do": "validateField",
           "key": "trimMin",
-          "returns": "Must be at least 3 characters"
+          "returns": "Minimum length is 3"
         }
       ]
     },
