@@ -33,6 +33,7 @@ public final class FormModel {
     @ObservationIgnored private var fieldStates: [String: FieldState] = [:]
     @ObservationIgnored private var groupStates: [String: GroupState] = [:]
     @ObservationIgnored var optionStates: [String: OptionsState] = [:]
+    @ObservationIgnored var optionsRevision = -1
     @ObservationIgnored private var lastValues: JSONObject
     @ObservationIgnored private var lastErrors: FieldErrors
     @ObservationIgnored private var focusCounter = 0

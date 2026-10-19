@@ -8,6 +8,7 @@ final class EngineCore {
     private(set) var valuesGeneration = 0
     private(set) var errorsGeneration = 0
     private(set) var serverErrorsGeneration = 0
+    private(set) var definitionGeneration = 0
     var errors = FieldErrors()
     var serverErrors = FieldErrors()
     var topLevelErrors: [String] = []
@@ -48,6 +49,7 @@ final class EngineCore {
 
     func load(_ next: FormDefinition, _ initialValues: Values) {
         definition = next
+        definitionGeneration += 1
         messages = messageResolver(messageSource, .catalog(next.messages ?? .null))
         visibility = VisibilityState(next)
         replaceValues(Self.startValues(visibility, initialValues, &errors))

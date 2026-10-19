@@ -15,6 +15,7 @@
         private(set) var snapshots: [String: StepSnapshot] = [:]
         let token = UUID()
         @ObservationIgnored private var owner: ObjectIdentifier?
+        @ObservationIgnored private var revision: Int?
         @ObservationIgnored private var target: Int?
 
         isolated deinit {
@@ -25,11 +26,12 @@
         }
 
         func sync(_ model: FormModel) {
-            if owner != ObjectIdentifier(model) {
+            let structure = model.structure
+            if owner != ObjectIdentifier(model) || revision != structure.revision {
                 owner = ObjectIdentifier(model)
+                revision = structure.revision
                 snapshots = [:]
             }
-            let structure = model.structure
             let ids = path(structure)
             if let current = ids.last { snapshots[current] = StepSnapshot(nodes: structure.nodes, step: structure.currentStep) }
             if target == nil, history != ids { history = ids }

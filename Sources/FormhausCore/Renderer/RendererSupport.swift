@@ -64,6 +64,9 @@ extension FormEngine {
     public var errorsVersion: Int { core.errorsGeneration }
 
     @_spi(Renderer)
+    public var definitionRevision: Int { core.definitionGeneration }
+
+    @_spi(Renderer)
     @discardableResult
     public func autoAdvance() async throws -> Bool {
         try await advance(.autoAdvance)

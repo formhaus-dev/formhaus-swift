@@ -70,10 +70,26 @@ public final class GroupState {
 final class OptionsState {
     private(set) var options: [FieldOption]?
     @ObservationIgnored var request = 0
-    @ObservationIgnored var inputs: [JSONValue?]?
+    @ObservationIgnored var source: OptionsSource?
 
-    func update(_ options: [FieldOption]) {
+    func update(_ options: [FieldOption]?) {
         if self.options != options { self.options = options }
+    }
+
+    func cancel() {
+        request += 1
+        source = nil
+        update(nil)
+    }
+}
+
+struct OptionsSource: Equatable {
+    let provider: String
+    let revision: Int
+    let inputs: [JSONValue?]
+
+    static func == (lhs: OptionsSource, rhs: OptionsSource) -> Bool {
+        lhs.provider == rhs.provider && lhs.revision == rhs.revision && lhs.inputs == rhs.inputs
     }
 }
 
@@ -86,6 +102,7 @@ public struct FormStructure: Equatable {
     public let isMultiStep: Bool
     public let isFirstStep: Bool
     public let isLastStep: Bool
+    let revision: Int
     let signature: [Int]
 
     @MainActor
@@ -98,6 +115,7 @@ public struct FormStructure: Equatable {
         isMultiStep = engine.isMultiStep
         isFirstStep = engine.isFirstStep
         isLastStep = engine.isLastStep
+        revision = engine.definitionRevision
         signature = nodeSignature(nodes) + [-2] + steps.map(\.nodeID)
     }
 
@@ -111,7 +129,7 @@ public struct FormStructure: Equatable {
     }
 
     public static func == (lhs: FormStructure, rhs: FormStructure) -> Bool {
-        lhs.signature == rhs.signature && lhs.stepIndex == rhs.stepIndex && lhs.progress == rhs.progress
+        lhs.revision == rhs.revision && lhs.signature == rhs.signature && lhs.stepIndex == rhs.stepIndex && lhs.progress == rhs.progress
             && lhs.currentStep?.nodeID == rhs.currentStep?.nodeID && lhs.isLastStep == rhs.isLastStep
     }
 }

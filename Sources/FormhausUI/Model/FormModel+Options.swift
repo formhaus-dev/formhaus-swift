@@ -19,12 +19,19 @@ extension FormModel {
 
     func reloadOptions() {
         guard !options.optionsProviders.isEmpty else { return }
+        let revision = structure.revision
+        let replaced = revision != optionsRevision
+        optionsRevision = revision
+        var active = Set<String>()
         for (key, field) in optionSources() {
             guard let name = field.optionsFrom?.stringValue, let provider = options.optionsProviders[name] else { continue }
             let state = optionsState(key)
-            let inputs = (field.optionsDependsOn ?? []).map { engine.values[$0] }
-            guard state.inputs != inputs else { continue }
-            state.inputs = inputs
+            if replaced { active.insert(key) }
+            let source = OptionsSource(
+                provider: name, revision: revision, inputs: (field.optionsDependsOn ?? []).map { engine.values[$0] })
+            guard state.source != source else { continue }
+            if state.source?.provider != name { state.update(nil) }
+            state.source = source
             state.request += 1
             let request = state.request
             let values = engine.values
@@ -33,6 +40,8 @@ extension FormModel {
                 if state.request == request { state.update(loaded) }
             }
         }
+        guard replaced else { return }
+        for (key, state) in optionStates where !active.contains(key) { state.cancel() }
     }
 
     private func optionSources() -> [(String, FormField)] {
