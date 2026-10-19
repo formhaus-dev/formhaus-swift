@@ -5,10 +5,11 @@ import Testing
 struct CorpusCaseTests {
     static let withTexts = Corpus.names.filter { Corpus.fixture($0).texts != nil }
 
-    @MainActor private func browserCanSubmit(_ definition: FormDefinition, _ values: JSONObject) -> Bool {
+    @MainActor private func browserCanSubmit(_ definition: FormDefinition, _ values: JSONObject) async throws -> Bool {
         let engine = FormEngine(definition: definition, values: values)
         while engine.isMultiStep && !engine.isLastStep {
-            if isActionDisabled(engine.currentStep?.next.action, engine.getSubmitValues()) || !engine.next() { return false }
+            if isActionDisabled(engine.currentStep?.next.action, engine.getSubmitValues()) { return false }
+            if try await !engine.next() { return false }
         }
         return engine.validate().isEmpty && !isActionDisabled(definition.submit, engine.getSubmitValues())
     }
@@ -39,21 +40,21 @@ struct CorpusCaseTests {
     }
 
     @Test("browser engine", arguments: Corpus.caseNames)
-    @MainActor func browserEngine(id: String) throws {
+    @MainActor func browserEngine(id: String) async throws {
         let (fixture, testCase) = try Corpus.testCase(id)
         let definition = try fixture.runtime()
         let values = testCase.values.objectValue ?? JSONObject()
         let engine = FormEngine(definition: definition, values: values)
         #expect(strictlyEqual(json(engine.validate()), testCase.expectedErrors))
         #expect(strictlyEqual(.object(engine.getSubmitValues()), testCase.expectedValues))
-        #expect(browserCanSubmit(definition, values) == testCase.canSubmit)
+        #expect(try await browserCanSubmit(definition, values) == testCase.canSubmit)
     }
 
     @Test("a payload the browser accepts passes the server", arguments: Corpus.caseNames)
-    @MainActor func acceptedPayloadPassesServer(id: String) throws {
+    @MainActor func acceptedPayloadPassesServer(id: String) async throws {
         let (fixture, testCase) = try Corpus.testCase(id)
         let definition = try fixture.runtime()
-        guard browserCanSubmit(definition, testCase.values.objectValue ?? JSONObject()) else { return }
+        guard try await browserCanSubmit(definition, testCase.values.objectValue ?? JSONObject()) else { return }
         let options = SubmissionOptions(skippedSteps: testCase.skippedSteps)
         #expect(validateSubmission(definition, testCase.values, options: options).errors.isEmpty)
     }

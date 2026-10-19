@@ -75,4 +75,19 @@ struct APISurfaceTests {
         #expect(engine.validate().isEmpty)
         #expect(FormDefinition.supportedFormatVersion == "1.2")
     }
+
+    @Test("subscribers hear every change until they cancel")
+    @MainActor func subscribers() async throws {
+        let engine = try FormEngine(definition: Self.definition)
+        var count = 0
+        let cancel = engine.subscribe { count += 1 }
+        engine.setValue("a", "x")
+        let heard = count
+        #expect(heard > 0)
+        cancel()
+        engine.setValue("a", "y")
+        #expect(count == heard)
+        #expect(try await engine.next())
+        #expect(engine.currentStep?.id == "two")
+    }
 }
