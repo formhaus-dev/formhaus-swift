@@ -22,8 +22,8 @@ private struct Probe: View {
 @Suite("Render granularity", .serialized)
 @MainActor
 struct RenderCountTests {
-    @Test("a keystroke re-renders only the edited field")
-    func keystroke() throws {
+    @Test("a keystroke re-renders only the edited field", arguments: [false, true])
+    func keystroke(system: Bool) throws {
         _ = NSApplication.shared
         let definition: JSONValue = [
             "id": "probe", "title": "Probe", "submit": ["label": "Send"],
@@ -34,11 +34,12 @@ struct RenderCountTests {
         ]
         let form = FormModel(definition: try FormDefinition(json: definition)) { _, _ in nil }
         let counter = BodyCounter()
-        let components = FormComponents.standard.field("probe") { Probe(context: $0, counter: counter) }
+        let components = (system ? FormComponents.system : .standard).field("probe") { Probe(context: $0, counter: counter) }
         let host = NSHostingView(rootView: FormhausFormContent(model: form).formhausComponents(components).frame(width: 400))
         host.frame = CGRect(x: 0, y: 0, width: 400, height: 600)
         settle(host)
         let start = counter.counts
+        #expect(start["a", default: 0] > 0)
         #expect(start["a"] == start["b"])
         form.setValue("x", forKey: "a")
         settle(host)
