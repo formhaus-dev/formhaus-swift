@@ -108,34 +108,34 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 
 ## Performance
 
-Patterns without backreferences compile to a lazy DFA, so nested quantifiers such as `(a+)+$` cannot backtrack. A lookaround without backreferences runs as one automaton scan over the whole input, so its result for every position costs time linear in the input. Only patterns with backreferences use a backtracking matcher. It memoizes the part of the pattern after the last backreference, and it runs lookarounds that contain no backreferences as scans too. The DFA states of one pattern may use 1 MB and the states of all patterns 32 MB. When a pattern reaches its limit, its states are cleared once per match. If the limit is reached again in the same match, the match continues on the NFA without caching, so the result stays the same.
+Patterns without backreferences compile to a lazy DFA, so nested quantifiers such as `(a+)+$` cannot backtrack. A lookaround without backreferences runs as one automaton scan over the whole input, so its result for every position costs time linear in the input. Only patterns with backreferences use a backtracking matcher. It memoizes the part of the pattern after the last backreference, and it runs lookarounds that contain no backreferences as scans too. Each pattern keeps up to 8 DFA copies, so threads that match the same pattern at once each get their own cache. One copy may use 1 MB, and all copies of all patterns together 32 MB. When the total is full, copies that were not used since the last reclaim give their memory back first. When a copy reaches its own limit, its states are cleared once per match. If the limit is reached again in the same match, the match continues on the NFA without caching, so the result stays the same.
 
 Median time of one `validateFieldValue` call with a `pattern` rule, on an Apple M5 Pro with macOS 26 and Swift 6.4. "Long" inputs have 10,000 code units. "Compile" uses a new pattern on every call, so it includes the first match.
 
 | Benchmark | JavaScriptCore | Native |
 | --- | ---: | ---: |
-| compile email | 3.0 µs | 9.5 µs |
+| compile email | 3.0 µs | 11 µs |
 | compile phone | 2.8 µs | 11 µs |
-| compile postcode | 3.1 µs | 8.7 µs |
-| compile IBAN | 2.9 µs | 11 µs |
-| compile password (3 lookaheads) | 3.3 µs | 22 µs |
-| compile quoted (backreference) | 2.5 µs | 3.5 µs |
-| match email, short / long | 1.5 µs / 21 µs | 0.74 µs / 16 µs |
-| match phone, short / long | 1.4 µs / 44 µs | 0.72 µs / 2.6 µs |
-| match postcode, short / long | 1.5 µs / 44 µs | 0.71 µs / 2.7 µs |
-| match IBAN, short / long | 1.4 µs / 44 µs | 0.74 µs / 2.7 µs |
-| match password, short / long | 1.7 µs / 120 µs | 1.2 µs / 75 µs |
-| match quoted, short / long | 1.3 µs / 93 µs | 1.0 µs / 144 µs |
+| compile postcode | 3.1 µs | 8.9 µs |
+| compile IBAN | 2.9 µs | 13 µs |
+| compile password (3 lookaheads) | 3.3 µs | 29 µs |
+| compile quoted (backreference) | 2.5 µs | 3.2 µs |
+| match email, short / long | 1.5 µs / 21 µs | 0.74 µs / 15 µs |
+| match phone, short / long | 1.4 µs / 44 µs | 0.70 µs / 2.4 µs |
+| match postcode, short / long | 1.5 µs / 44 µs | 0.71 µs / 2.5 µs |
+| match IBAN, short / long | 1.4 µs / 44 µs | 0.73 µs / 2.5 µs |
+| match password, short / long | 1.7 µs / 120 µs | 1.2 µs / 74 µs |
+| match quoted, short / long | 1.3 µs / 93 µs | 1.1 µs / 143 µs |
 | `(a+)+$` on 9,999 `a` and `!` | 882 ms | 12 µs |
 | `(a\|aa)+$` on 9,999 `a` and `!` | 1,249 ms | 12 µs |
 | `(x+x+)+y` on 10,000 `x` | 929 ms | 12 µs |
 | `(?:a\|[]()…)*\1(?!)` with 15,000 `()` on 9,999 `a` | 5.4 ms | 5.6 ms |
-| `(?=(?!b)[^]*x)y(?:z\|$)` on 9,999 `y` and `x` | 46 ms | 2.5 ms |
-| `[^]*a[^]{3900}$` on 10,000 random `a` and `b` | 12 µs | 99 ms |
-| `[a-z]{0,4001}1` on 6,000 `b` and `1` | 26 ms | 193 ms |
+| `(?=(?!b)[^]*x)y(?:z\|$)` on 9,999 `y` and `x` | 46 ms | 2.3 ms |
+| `[^]*a[^]{3900}$` on 10,000 random `a` and `b` | 12 µs | 97 ms |
+| `[a-z]{0,4001}1` on 6,000 `b` and `1` | 26 ms | 188 ms |
 | `[ab]*a[ab]{12}$` on 10,000 random `a` and `b` | 15 µs | 2.0 ms |
 
-JavaScriptCore stops the pathological patterns at its backtracking limit and returns `false`. The native engine fails the rule for the pattern with 15,000 captures when it runs out of steps. Node takes 94 s for `[^]*a[^]{3900}$` on the same input. The last three patterns build many large DFA states, so they run on the NFA without caching once the 1 MB limit is reached. The native engine adds 150 KB to a stripped release executable that links `FormhausCore`.
+JavaScriptCore stops the pathological patterns at its backtracking limit and returns `false`. The native engine fails the rule for the pattern with 15,000 captures when it runs out of steps. Node takes 94 s for `[^]*a[^]{3900}$` on the same input. The last three patterns build many large DFA states, so they run on the NFA without caching once a copy reaches its 1 MB limit. The native engine adds 165 KB to a stripped release executable that links `FormhausCore`: 1,008,336 bytes against 839,664 on main.
 
 To run the benchmarks:
 
