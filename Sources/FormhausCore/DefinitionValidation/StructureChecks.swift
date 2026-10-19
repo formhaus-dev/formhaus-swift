@@ -68,50 +68,49 @@ private func stepIssues(_ context: CheckContext) -> [DefinitionIssue] {
     return issues
 }
 
-private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
+private func keyClashes(_ context: CheckContext) -> [NodeEntry?] {
     let reachable = reachableSteps(context.definition.steps ?? [])
     let exclusive = { (a: NodeEntry, b: NodeEntry) in
         a.step != b.step && !(reachable.indices.contains(a.step) && reachable[a.step].contains(b.step))
     }
-    let outer = context.nodes.filter { $0.group == nil }
-    let groups = outer.filter { $0.node.field?.isGroup == true }
     var firstOuter = StringMap<NodeEntry>(insertionOrder: true)
-    for entry in outer where firstOuter[entry.node.key] == nil { firstOuter[entry.node.key] = entry }
+    for entry in context.nodes where entry.group == nil && firstOuter[entry.node.key] == nil { firstOuter[entry.node.key] = entry }
     var earlierOuter = StringMap<[NodeEntry]>(insertionOrder: true)
     var earlierInner: [Int: StringMap<NodeEntry>] = [:]
-    var issues: [DefinitionIssue] = []
-    for entry in context.nodes {
+    return context.nodes.map { entry in
         let key = entry.node.key
-        let clash: NodeEntry?
-        if let group = entry.group {
-            let id = group.ordinal
-            clash = earlierInner[id]?[key] ?? firstOuter[key]
-            if earlierInner[id]?[key] == nil { earlierInner[id, default: [:]][key] = entry }
-        } else {
-            clash = earlierOuter[key]?.first { !exclusive($0, entry) }
-            earlierOuter[key, default: []].append(entry)
+        guard let group = entry.group else {
+            defer { earlierOuter[key, default: []].append(entry) }
+            return earlierOuter[key]?.first { !exclusive($0, entry) }
         }
-        let prefix = entry.group == nil ? groups.first { hasTextPrefix(key, "\($0.node.key).") } : nil
-        if reservedKeys.contains(key) {
-            issues.append(
-                error("reserved-key", "\(entry.path)/key", "\"\(key)\" is a built-in object property name", "Rename the field key"))
-        } else if let clash {
-            let inGroup = entry.group != nil
-            issues.append(
-                error(
-                    "duplicate-key", "\(entry.path)/key",
-                    "key \"\(key)\" is already used by \(clash.path)\(inGroup ? "" : " on the same path")",
-                    inGroup ? "Rename the field" : "Rename one of the fields, or move them to route branches that never meet"
-                )
-            )
-        } else if let prefix {
-            issues.append(
-                error(
-                    "duplicate-key", "\(entry.path)/key", "key \"\(key)\" starts with the group key \"\(prefix.node.key).\"",
-                    "Rename the field"))
-        }
+        let earlier = earlierInner[group.ordinal]?[key]
+        if earlier == nil { earlierInner[group.ordinal, default: [:]][key] = entry }
+        return earlier ?? firstOuter[key]
     }
-    return issues
+}
+
+private func keyIssue(_ entry: NodeEntry, clash: NodeEntry?, prefix: NodeEntry?) -> DefinitionIssue? {
+    let key = entry.node.key
+    if reservedKeys.contains(key) {
+        return error("reserved-key", "\(entry.path)/key", "\"\(key)\" is a built-in object property name", "Rename the field key")
+    }
+    if let clash {
+        let inGroup = entry.group != nil
+        return error(
+            "duplicate-key", "\(entry.path)/key", "key \"\(key)\" is already used by \(clash.path)\(inGroup ? "" : " on the same path")",
+            inGroup ? "Rename the field" : "Rename one of the fields, or move them to route branches that never meet")
+    }
+    guard let prefix else { return nil }
+    return error(
+        "duplicate-key", "\(entry.path)/key", "key \"\(key)\" starts with the group key \"\(prefix.node.key).\"", "Rename the field")
+}
+
+private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
+    let groups = context.nodes.filter { $0.group == nil && $0.node.field?.isGroup == true }
+    return zip(context.nodes, keyClashes(context)).compactMap { entry, clash in
+        let prefix = entry.group == nil ? groups.first { hasTextPrefix(entry.node.key, "\($0.node.key).") } : nil
+        return keyIssue(entry, clash: clash, prefix: prefix)
+    }
 }
 
 private func nestingIssues(_ context: CheckContext) -> [DefinitionIssue] {
