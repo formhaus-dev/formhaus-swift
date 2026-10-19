@@ -13,7 +13,7 @@ struct SystemPictures: View {
             LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
                 ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
                     let value = option.value ?? ""
-                    SystemPictureTile(option: option, selected: selected.contains(value), multiple: selection.multiple) {
+                    SystemPictureTile(option: option, selected: selected.contains(value)) {
                         selection.choose(value)
                     }
                 }
@@ -37,7 +37,6 @@ struct SystemPictures: View {
 private struct SystemPictureTile: View {
     let option: FieldOption
     let selected: Bool
-    let multiple: Bool
     let choose: () -> Void
 
     var body: some View {
@@ -52,7 +51,7 @@ private struct SystemPictureTile: View {
                     .fixedSize(horizontal: false, vertical: true)
                 Image(systemName: indicator)
                     .font(.title3)
-                    .foregroundStyle(selected ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
+                    .foregroundStyle(selected ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
             }
             .contentShape(Rectangle())
         }
@@ -63,8 +62,7 @@ private struct SystemPictureTile: View {
     }
 
     private var indicator: String {
-        if multiple { return selected ? "checkmark.square.fill" : "square" }
-        return selected ? "checkmark.circle.fill" : "circle"
+        selected ? "checkmark.circle.fill" : "circle"
     }
 }
 

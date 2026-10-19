@@ -7,4 +7,6 @@ let upcomingLabels: [String: String] = [
     "stepTitle": "Step {index}",
     "stepErrors": "Errors: {count}",
     "done": "Done",
+    "next": "Next",
+    "optional": "Optional",
 ]

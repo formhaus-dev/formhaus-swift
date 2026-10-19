@@ -38,7 +38,7 @@ struct SystemGroup<Confirmation: ViewModifier>: View {
             if context.items.isEmpty { header }
         } footer: {
             VStack(alignment: .leading, spacing: 4) {
-                if let helper = context.helperText, !helper.isEmpty { Text(helper) }
+                if let helper = context.helperText, !helper.isEmpty { Text(helper).systemSecondaryText() }
                 if let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
             }
         }
@@ -47,7 +47,7 @@ struct SystemGroup<Confirmation: ViewModifier>: View {
     }
 
     private var header: some View {
-        Text(context.label).textCase(nil)
+        Text(context.label).textCase(nil).systemSecondaryText()
             .accessibilityLabel(
                 context.group.isRequired ? "\(context.label), \(context.model.text(forLabel: "required"))" : context.label)
     }

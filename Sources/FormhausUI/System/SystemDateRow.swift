@@ -14,11 +14,15 @@ struct SystemDateRow: View {
                 HStack {
                     Text(context.label).foregroundStyle(Color.primary)
                     Spacer(minLength: 12)
-                    Text(display ?? context.prompt)
-                        .foregroundStyle(expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(display == nil ? .tertiary : .primary))
-                        .padding(.horizontal, 11)
-                        .padding(.vertical, 6)
-                        .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    if let display {
+                        Text(display)
+                            .foregroundStyle(expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 6)
+                            .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    } else {
+                        Text(context.prompt).foregroundStyle(expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
+                    }
                 }
                 .contentShape(Rectangle())
             }

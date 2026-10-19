@@ -56,7 +56,7 @@ struct SystemNotes: View {
 
     var body: some View {
         if let helper = context.helperText {
-            Text(helper).font(.footnote).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Text(helper).font(.footnote).systemSecondaryText().fixedSize(horizontal: false, vertical: true)
         }
         if !footerErrors, let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
     }
@@ -98,7 +98,16 @@ struct SystemBlock<Content: View>: View {
             Section {
                 content.disabled(context.isLocked).formhausScrollAnchor(context)
             } header: {
-                Text(context.label).textCase(nil).accessibilityLabel(context.accessibilityName)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(context.label)
+                    Spacer(minLength: 8)
+                    if context.isRequired { Text(context.requiredPrompt) }
+                }
+                .textCase(nil)
+                .systemSecondaryText()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(context.accessibilityName)
+                .accessibilityAddTraits(.isHeader)
             } footer: {
                 VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context) }
             }
@@ -113,6 +122,11 @@ extension FieldContext {
     }
 
     var prompt: String {
-        field.placeholder ?? field.mask?.stringValue ?? (isRequired ? requiredPrompt : "")
+        field.placeholder ?? field.mask?.stringValue ?? (isRequired ? requiredPrompt : optionalPrompt)
+    }
+
+    var optionalPrompt: String {
+        let text = text(forLabel: "optional")
+        return text.prefix(1).localizedUppercase + text.dropFirst()
     }
 }

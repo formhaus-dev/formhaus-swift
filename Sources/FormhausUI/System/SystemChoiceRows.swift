@@ -37,7 +37,7 @@ struct SystemPickerRow: View {
                     .environment(\.locale, locale)
                     .resolveFormhausTokens()
             } label: {
-                SystemValueRow(label: context.label, value: summary, prompt: context.prompt, tinted: false)
+                SystemValueRow(label: context.label, value: summary, prompt: context.prompt)
             }
         }
     #endif
@@ -53,7 +53,7 @@ struct SystemPickerRow: View {
             }
             .pickerStyle(.inline)
         } label: {
-            SystemValueRow(label: context.label, value: summary, prompt: context.prompt, tinted: true, chevrons: true)
+            SystemValueRow(label: context.label, value: summary, prompt: context.prompt, chevrons: true)
         }
         .buttonStyle(.plain)
     }
@@ -88,7 +88,6 @@ private struct SystemValueRow: View {
     let label: String
     let value: String?
     let prompt: String
-    let tinted: Bool
     var chevrons = false
 
     var body: some View {
@@ -96,11 +95,11 @@ private struct SystemValueRow: View {
             Text(label).foregroundStyle(Color.primary)
             Spacer(minLength: 12)
             Text(value ?? prompt)
-                .foregroundStyle(value != nil && tinted ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                .systemSecondaryText()
                 .multilineTextAlignment(.trailing)
             if chevrons {
                 Image(systemName: "chevron.up.chevron.down").font(.footnote.weight(.medium))
-                    .foregroundStyle(value != nil ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                    .systemSecondaryText()
             }
         }
         .contentShape(Rectangle())

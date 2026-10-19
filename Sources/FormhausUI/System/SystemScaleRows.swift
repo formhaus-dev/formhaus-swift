@@ -6,18 +6,18 @@ struct SystemScale: View {
 
     var body: some View {
         let scale = ScalePoints(context)
+        let current = scale.selected(context.value)
         SystemBlock(context: context) {
-            VStack(spacing: 6) {
-                if scale.points.count > 7 {
-                    picker(scale).pickerStyle(.menu).labelsHidden()
-                } else {
-                    picker(scale).pickerStyle(.segmented).labelsHidden()
-                        .frame(minHeight: 44)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(context.accessibilityName)
-                        .accessibilityValue(spoken(scale))
-                        .accessibilityHint(context.helperText ?? "")
-                        .accessibilityAdjustableAction { direction in step(scale, direction) }
+            VStack(spacing: 8) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 44, maximum: 56), spacing: 6)], spacing: 6) {
+                    ForEach(scale.points, id: \.self) { point in
+                        Button {
+                            context.commit(.number(Double(point)))
+                        } label: {
+                            SystemScaleDot(point: point, selected: current == point)
+                        }
+                        .buttonStyle(.borderless)
+                    }
                 }
                 if scale.anchors.contains(where: { $0 != nil }) {
                     HStack(alignment: .top) {
@@ -26,39 +26,50 @@ struct SystemScale: View {
                         Text(scale.anchors[2] ?? "").multilineTextAlignment(.trailing)
                     }
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .systemSecondaryText()
                     .accessibilityHidden(true)
                 }
             }
             .padding(.vertical, 4)
-            .sensoryFeedback(.selection, trigger: scale.selected(context.value))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(context.accessibilityName)
+            .accessibilityValue(spoken(scale, current))
+            .accessibilityHint(context.helperText ?? "")
+            .accessibilityAdjustableAction { direction in step(scale, current, direction) }
+            .focusable()
+            .formhausFocus(context, $focused)
+            .sensoryFeedback(.selection, trigger: current)
         }
     }
 
-    private func picker(_ scale: ScalePoints) -> some View {
-        Picker(selection: selection(scale)) {
-            ForEach(scale.points, id: \.self) { point in
-                Text(String(point)).monospacedDigit().tag(Optional(point)).accessibilityHint(scale.anchor(for: point) ?? "")
+    private func spoken(_ scale: ScalePoints, _ current: Int?) -> String {
+        guard let current else { return "" }
+        return [String(current), scale.anchor(for: current)].compactMap(\.self).joined(separator: ", ")
+    }
+
+    private func step(_ scale: ScalePoints, _ current: Int?, _ direction: AccessibilityAdjustmentDirection) {
+        let start = current ?? (direction == .increment ? scale.low - 1 : scale.high + 1)
+        context.setValue(.number(Double(scale.clamped(start + (direction == .increment ? 1 : -1)))))
+    }
+}
+
+private struct SystemScaleDot: View {
+    let point: Int
+    let selected: Bool
+
+    var body: some View {
+        Text(String(point))
+            .font(.body.monospacedDigit().weight(selected ? .semibold : .regular))
+            .foregroundStyle(selected ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
+            .frame(minWidth: 44, minHeight: 44)
+            .background {
+                if selected {
+                    Circle().fill(.tint)
+                } else {
+                    Circle().strokeBorder(systemSecondary, lineWidth: 1)
+                }
             }
-        } label: {
-            Text(context.accessibilityName)
-        }
-        .formhausFocus(context, $focused)
-    }
-
-    private func spoken(_ scale: ScalePoints) -> String {
-        guard let point = scale.selected(context.value) else { return "" }
-        return [String(point), scale.anchor(for: point)].compactMap(\.self).joined(separator: ", ")
-    }
-
-    private func step(_ scale: ScalePoints, _ direction: AccessibilityAdjustmentDirection) {
-        let current = scale.selected(context.value) ?? (direction == .increment ? scale.low - 1 : scale.high + 1)
-        let next = current + (direction == .increment ? 1 : -1)
-        if scale.points.contains(next) { context.setValue(.number(Double(next))) }
-    }
-
-    private func selection(_ scale: ScalePoints) -> Binding<Int?> {
-        Binding(get: { scale.selected(context.value) }, set: { point in point.map { context.commit(.number(Double($0))) } })
+            .contentShape(Circle())
     }
 }
 
@@ -77,7 +88,7 @@ struct SystemRating: View {
                     } label: {
                         Image(systemName: point <= current ? "star.fill" : "star")
                             .font(.title2)
-                            .foregroundStyle(point <= current ? AnyShapeStyle(.tint) : AnyShapeStyle(context.isInvalid ? .red : .secondary))
+                            .foregroundStyle(point <= current ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
                             .frame(minWidth: 44, minHeight: 44)
                             .contentShape(Rectangle())
                     }
@@ -92,8 +103,7 @@ struct SystemRating: View {
                 current > 0 ? [String(current), scale.anchor(for: current)].compactMap(\.self).joined(separator: ", ") : ""
             )
             .accessibilityAdjustableAction { direction in
-                let next = direction == .increment ? current + 1 : current - 1
-                if scale.points.contains(next) { context.setValue(.number(Double(next))) }
+                context.setValue(.number(Double(scale.clamped(direction == .increment ? current + 1 : current - 1))))
             }
             .focusable()
             .formhausFocus(context, $focused)

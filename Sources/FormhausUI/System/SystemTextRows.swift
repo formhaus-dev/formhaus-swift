@@ -111,7 +111,28 @@ private struct SystemToggleStyle: ViewModifier {
         #if os(macOS)
             if checkbox { content.toggleStyle(.checkbox) } else { content.toggleStyle(.switch) }
         #else
-            content.toggleStyle(.switch)
+            if checkbox { content.toggleStyle(SystemCircleCheck()) } else { content.toggleStyle(.switch) }
         #endif
     }
 }
+
+#if os(iOS)
+    private struct SystemCircleCheck: ToggleStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            Button {
+                configuration.isOn.toggle()
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")
+                        .font(.title2)
+                        .foregroundStyle(configuration.isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
+                    configuration.label.foregroundStyle(Color.primary)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityRepresentation { Toggle(isOn: configuration.$isOn) { configuration.label } }
+        }
+    }
+#endif

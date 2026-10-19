@@ -1,17 +1,13 @@
 @_spi(Renderer) import FormhausCore
 import SwiftUI
 
-private struct Chunk: Identifiable {
-    enum Kind {
-        case rows([FormField], errorKey: String?)
-        case node(FormNode)
-    }
-
-    let kind: Kind
+private enum Chunk: Identifiable {
+    case rows([FormField])
+    case node(FormNode)
 
     var id: Int {
-        switch kind {
-        case .rows(let fields, _): fields.first?.nodeID ?? -1
+        switch self {
+        case .rows(let fields): fields.first?.nodeID ?? -1
         case .node(let node): node.nodeID
         }
     }
@@ -24,12 +20,16 @@ struct SystemNodes: View {
 
     var body: some View {
         ForEach(chunks) { chunk in
-            switch chunk.kind {
-            case .rows(let fields, let errorKey):
+            switch chunk {
+            case .rows(let fields):
                 Section {
                     ForEach(fields, id: \.nodeID) { field in FormhausField(field, model: model) }
                 } footer: {
-                    if let errorKey { SystemFooterError(state: model.field(errorKey)) }
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(fields, id: \.nodeID) { field in
+                            SystemFooterError(state: model.field(field.key), label: fields.count > 1 ? field.label : nil)
+                        }
+                    }
                 }
                 .environment(\.formhausFooterErrors, true)
             case .node(.section(let section)):
@@ -43,32 +43,30 @@ struct SystemNodes: View {
     }
 
     private var chunks: [Chunk] {
-        let invalid = Set(model.errorEntries.map(\.key))
         var result: [Chunk] = []
         var rows: [FormField] = []
-        func close(_ errorKey: String?) {
-            if !rows.isEmpty { result.append(Chunk(kind: .rows(rows, errorKey: errorKey))) }
-            rows = []
-        }
         for node in nodes {
             if let field = node.field, !field.isGroup, !isSystemBlock(field, components) {
                 rows.append(field)
-                if invalid.contains(field.key) { close(field.key) }
                 continue
             }
-            close(nil)
-            result.append(Chunk(kind: .node(node)))
+            if !rows.isEmpty { result.append(.rows(rows)) }
+            rows = []
+            result.append(.node(node))
         }
-        close(nil)
+        if !rows.isEmpty { result.append(.rows(rows)) }
         return result
     }
 }
 
 private struct SystemFooterError: View {
     let state: FieldState
+    let label: String?
 
     var body: some View {
-        if let error = state.error, !error.isEmpty { SystemErrorText(text: error) }
+        if let error = state.error, !error.isEmpty {
+            SystemErrorText(text: label.map { summaryLine($0, error) } ?? error)
+        }
     }
 }
 
@@ -91,9 +89,11 @@ private struct SystemSection: View {
                 }
             }
         } header: {
-            if let title = section.title, !title.isEmpty { Text(title).textCase(nil).accessibilityAddTraits(.isHeader) }
+            if let title = section.title, !title.isEmpty {
+                Text(title).textCase(nil).systemSecondaryText().accessibilityAddTraits(.isHeader)
+            }
         } footer: {
-            if let description = section.description, !description.isEmpty { Text(description) }
+            if let description = section.description, !description.isEmpty { Text(description).systemSecondaryText() }
         }
         .environment(\.formhausNested, true)
     }

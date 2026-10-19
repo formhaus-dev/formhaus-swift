@@ -14,7 +14,7 @@ struct SystemFileRow: View {
                     Text(context.label).foregroundStyle(Color.primary)
                     Spacer(minLength: 12)
                     Text(context.fileName ?? context.field.placeholder ?? context.text(forLabel: "chooseFile"))
-                        .foregroundStyle(context.fileName == nil ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                        .systemSecondaryText()
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
