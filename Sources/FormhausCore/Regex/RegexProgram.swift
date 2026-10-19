@@ -45,6 +45,7 @@ struct RegexProgram: Sendable {
     let looks: [LookBody]
     let scans: [RegexProgram?]
     let size: Int
+    let clamped: Bool
     let references: [Backreference]
     let captureCount: Int
     let registerCount: Int

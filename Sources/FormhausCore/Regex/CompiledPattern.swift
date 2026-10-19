@@ -6,27 +6,38 @@ struct CompiledPattern: Sendable {
     let automaton: AutomatonCache?
     let scanners: [AutomatonCache?]
     let oversized: Bool
+    private static let probeSize = 2048
 
     init(_ source: String) throws(RegexSyntaxError) {
         let parsed = try RegexParser.parse(source)
         program = RegexCompiler.compile(parsed)
         prefilter = Prefilter(parsed.root)
+        oversized = program.size > RegexCompiler.instructionLimit
+        guard !oversized else {
+            automaton = nil
+            scanners = []
+            return
+        }
         automaton = program.automaton ? AutomatonCache(LazyDFA(program, anchored: prefilter.anchored)) : nil
         scanners = zip(program.scans, program.looks).map { scan, body in
             scan.map { AutomatonCache(LazyDFA($0, anchored: false, backward: !body.look.behind, scanning: true)) }
         }
-        oversized = program.size > RegexCompiler.instructionLimit
     }
 
     func test(_ text: String) -> Bool? {
         let units = codeUnits(text)
         guard prefilter.admits(units) else { return false }
-        guard !oversized else { return nil }
+        guard !oversized, units.count <= maxStringLength || !program.clamped else { return nil }
         guard let automaton else {
             var matcher = Backtracker(program, MatchContext(units, scanners: scanners, budget: .backtracking))
             return try? matcher.search(prefilter)
         }
-        let context = MatchContext(units, scanners: scanners, budget: .linear(units: units.count, instructions: program.size))
+        let context = MatchContext(units, scanners: scanners, budget: StepBudget(limit: 16 * (units.count + 64)))
+        if program.size >= Self.probeSize {
+            var probe = Backtracker(program, context)
+            if let found = try? probe.search(prefilter) { return found }
+        }
+        context.budget = .linear(units: units.count, instructions: program.size)
         return try? automaton.matches(units, first: prefilter.first, context: context)
     }
 }

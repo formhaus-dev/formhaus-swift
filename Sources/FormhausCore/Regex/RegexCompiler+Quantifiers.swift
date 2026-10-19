@@ -1,6 +1,7 @@
 extension RegexCompiler {
-    mutating func emitQuantified(_ body: RegexNode, _ quantifier: Quantifier, backward: Bool) {
-        guard quantifier.max != 0 else { return }
+    mutating func emitQuantified(_ body: RegexNode, _ requested: Quantifier, backward: Bool) {
+        guard requested.max != 0 else { return }
+        let quantifier = clamp(requested, body)
         if !automaton, let set = singleSet(body) {
             code.append(
                 .repeatSet(
@@ -18,6 +19,15 @@ extension RegexCompiler {
         } else {
             emitStar(body, greedy: quantifier.greedy, mark: mark, backward: backward)
         }
+    }
+
+    private mutating func clamp(_ quantifier: Quantifier, _ body: RegexNode) -> Quantifier {
+        let length = body.minimumLength
+        let usable = length == 0 ? maxStringLength + 1 : (maxStringLength + length - 1) / length
+        let min = Swift.min(quantifier.min, usable + 1)
+        let max = quantifier.max.map { Swift.max(Swift.min($0, usable), min) }
+        if min != quantifier.min || max != quantifier.max { clamped = true }
+        return Quantifier(min: min, max: max, greedy: quantifier.greedy)
     }
 
     private mutating func singleSet(_ body: RegexNode) -> Int? {

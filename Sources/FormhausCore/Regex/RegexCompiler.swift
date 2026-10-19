@@ -30,12 +30,13 @@ struct PatternAnalysis {
 }
 
 struct RegexCompiler {
-    static let instructionLimit = 32768
+    static let instructionLimit = 1 << 18
 
     var code: [Instruction] = []
     var registers: Int
     var dependentEnd = 0
     var inMain = true
+    var clamped = false
     let analysis: PatternAnalysis
     let automaton: Bool
     private var sets: [CharSet] = []
@@ -63,12 +64,15 @@ struct RegexCompiler {
         compiler.inMain = false
         compiler.emitInlineLooks()
         var size = compiler.code.count
+        var clamped = compiler.clamped
         let scans = analysis.looks.map { info -> RegexProgram? in
             guard info.pure, size <= instructionLimit else { return nil }
             let scan = scanner(info, analysis)
             size += scan.size
+            clamped = clamped || scan.clamped
             return scan
         }
+        compiler.clamped = clamped
         return compiler.program(mainEnd: mainEnd, scans: scans, size: size)
     }
 
@@ -84,7 +88,8 @@ struct RegexCompiler {
     private func program(mainEnd: Int, scans: [RegexProgram?], size: Int) -> RegexProgram {
         RegexProgram(
             instructions: code, sets: sets, looks: analysis.looks.map { LookBody(look: $0.look, start: inline[$0.look.index]) },
-            scans: scans, size: size, references: references, captureCount: analysis.captureCount, registerCount: registers,
+            scans: scans, size: size, clamped: clamped, references: references, captureCount: analysis.captureCount,
+            registerCount: registers,
             mainEnd: mainEnd, memoFrom: dependentEnd, automaton: automaton)
     }
 
