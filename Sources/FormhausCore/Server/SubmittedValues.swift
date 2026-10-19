@@ -15,7 +15,8 @@ func activeValues(_ visibility: VisibilityState, _ fields: [FormField], _ source
     for _ in 0...fields.count {
         var values = JSONObject()
         for key in keys {
-            if let value = normalizeValue(result.field(key) ?? first[key]!, source[key]) { values[key] = value }
+            guard let field = result.field(key) ?? first[key] else { continue }
+            if let value = normalizeValue(field, source[key]) { values[key] = value }
         }
         var active: [(key: String, field: FormField)] = []
         for key in keys {

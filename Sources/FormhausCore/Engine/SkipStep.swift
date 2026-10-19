@@ -13,7 +13,7 @@ extension FormEngine {
         let errors = core.errors
         let serverErrors = core.serverErrors
         let outcome = Box<Bool?>(nil)
-        let restore = core.skipCurrentStep()
+        let restore = core.skip(step)
         let skippedGeneration = core.valuesGeneration
         let skippedValues = core.values
         let watch = core.visibility.starts.watchWrites()
