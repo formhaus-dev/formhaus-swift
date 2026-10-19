@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SystemGroup<Confirmation: ViewModifier>: View {
     @Environment(\.formhausComponents) private var components
+    @Environment(\.formhausTokens) private var tokens
     @FocusState private var addFocused: Bool
     let context: GroupContext
     let state: FieldState
@@ -47,7 +48,7 @@ struct SystemGroup<Confirmation: ViewModifier>: View {
     }
 
     private var header: some View {
-        Text(context.label).textCase(nil).systemSecondaryText()
+        tokens.marked(context.label, required: context.group.isRequired).textCase(nil).systemSecondaryText()
             .accessibilityLabel(
                 context.group.isRequired ? "\(context.label), \(context.model.text(forLabel: "required"))" : context.label)
     }

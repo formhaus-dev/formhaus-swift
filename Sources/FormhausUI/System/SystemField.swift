@@ -88,6 +88,7 @@ struct SystemErrorText: View {
 
 struct SystemBlock<Content: View>: View {
     @Environment(\.formhausNested) private var nested
+    @Environment(\.formhausTokens) private var tokens
     let context: FieldContext
     let content: Content
 
@@ -99,7 +100,7 @@ struct SystemBlock<Content: View>: View {
     var body: some View {
         if nested {
             VStack(alignment: .leading, spacing: 8) {
-                Text(context.label).accessibilityLabel(context.accessibilityName).accessibilityAddTraits(.isHeader)
+                SystemRowLabel(context: context).accessibilityAddTraits(.isHeader)
                 content
                 SystemNotes(context: context)
             }
@@ -109,16 +110,11 @@ struct SystemBlock<Content: View>: View {
             Section {
                 content.disabled(context.isLocked).formhausScrollAnchor(context)
             } header: {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(context.label)
-                    Spacer(minLength: 8)
-                    if context.isRequired { Text(context.requiredPrompt) }
-                }
-                .textCase(nil)
-                .systemSecondaryText()
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(context.accessibilityName)
-                .accessibilityAddTraits(.isHeader)
+                tokens.marked(context.label, required: context.isRequired)
+                    .textCase(nil)
+                    .systemSecondaryText()
+                    .accessibilityLabel(context.accessibilityName)
+                    .accessibilityAddTraits(.isHeader)
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
                     SystemNotes(context: context)
@@ -130,11 +126,6 @@ struct SystemBlock<Content: View>: View {
 }
 
 extension FieldContext {
-    var requiredPrompt: String {
-        let text = text(forLabel: "required")
-        return text.prefix(1).localizedUppercase + text.dropFirst()
-    }
-
     var prompt: String {
         field.placeholder ?? field.mask?.stringValue ?? ""
     }
