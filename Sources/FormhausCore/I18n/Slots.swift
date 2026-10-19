@@ -17,7 +17,7 @@ struct Slot {
 private let bounds = ["minLength": "min", "maxLength": "max", "min": "min", "max": "max"]
 
 private func ruleKey(_ field: FormField, _ rule: String) -> String {
-    (field.type == "multiselect" || field.isGroup) && rule.hasSuffix("Length")
+    (listTypes.contains(field.type) || field.isGroup) && rule.hasSuffix("Length")
         ? rule.replacingOccurrences(of: "Length", with: "Items") : rule
 }
 
@@ -86,6 +86,7 @@ func definitionSlots(_ definition: FormDefinition) -> [Slot] {
             "cancel",
         ])
     }
+    if definition.allFields.contains(where: \.hasPictures) { labels.formUnion(["enlargeImage", "close"]) }
     return textNodes(definition).flatMap { nodeSlots(definition, $0) }
         + catalogSlots(definition, "messages", usedMessages(definition))
         + catalogSlots(definition, "labels", labels)
