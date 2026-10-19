@@ -26,7 +26,6 @@ extension FormEngine {
         let core = core
         guard !core.submitting, !core.stepValidating else { return false }
         if !keepSkipped { core.includeCurrentStep() }
-        var dispatched = false
         var succeeded = false
         let epoch = core.validationEpoch
         let operation = core.beginOperation()
@@ -37,14 +36,14 @@ extension FormEngine {
         core.submitting = true
         core.notify()
         defer {
-            if operation == core.operationEpoch {
+            if operation == core.latestOperation {
                 core.submitting = false
                 core.notify()
             }
         }
         do {
             guard let values = try await approveSubmission(checked, stale) else { return false }
-            dispatched = true
+            core.sending = operation
             let skippedSteps = core.skipped.map(\.id)
             let sent = core.values
             let serverErrors = core.serverErrorsGeneration
@@ -58,7 +57,7 @@ extension FormEngine {
         } catch is CancellationError {
             return succeeded
         } catch {
-            if !dispatched && stale() { return false }
+            if core.sending != operation && stale() { return false }
             throw error
         }
     }
