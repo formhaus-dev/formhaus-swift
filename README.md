@@ -4,8 +4,8 @@
 
 <p align="center">
   <a href="https://github.com/formhaus-dev/formhaus-swift/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/formhaus-dev/formhaus-swift/ci.yml?branch=main&label=tests" alt="Tests"></a>
-  <img src="https://img.shields.io/badge/Swift-6-F05138" alt="Swift 6">
-  <img src="https://img.shields.io/badge/platforms-iOS%2016%20%7C%20macOS%2013-lightgrey" alt="iOS 16, macOS 13">
+  <img src="https://img.shields.io/badge/Swift-6-blue" alt="Swift 6">
+  <img src="https://img.shields.io/badge/platforms-iOS%2016%20%7C%20macOS%2013-blue" alt="iOS 16, macOS 13">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/formhaus-dev/formhaus-swift" alt="MIT license"></a>
 </p>
 
