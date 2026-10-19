@@ -158,7 +158,9 @@ private struct JSONParser {
             while index < bytes.count, bytes[index] != UInt8(ascii: "\""), bytes[index] != UInt8(ascii: "\\"), bytes[index] >= 0x20 {
                 index += 1
             }
-            units.append(contentsOf: String(decoding: bytes[start..<index], as: UTF8.self).utf16)
+            _ = transcode(bytes[start..<index].makeIterator(), from: UTF8.self, to: UTF16.self, stoppingOnError: false) {
+                units.append($0)
+            }
         }
     }
 
@@ -178,7 +180,7 @@ private struct JSONParser {
         case UInt8(ascii: "t"): return 0x09
         case UInt8(ascii: "u"):
             guard index + 4 <= bytes.count, bytes[index..<index + 4].allSatisfy({ Character(Unicode.Scalar($0)).isHexDigit }),
-                let unit = UInt16(String(decoding: bytes[index..<index + 4], as: UTF8.self), radix: 16)
+                let hex = String(bytes: bytes[index..<index + 4], encoding: .ascii), let unit = UInt16(hex, radix: 16)
             else { throw fail("invalid unicode escape") }
             index += 4
             return unit
@@ -206,7 +208,9 @@ private struct JSONParser {
             if index < bytes.count, bytes[index] == UInt8(ascii: "+") || bytes[index] == UInt8(ascii: "-") { index += 1 }
             guard digits(&self) > 0 else { throw fail("expected exponent digits") }
         }
-        guard let value = Double(String(decoding: bytes[start..<index], as: UTF8.self)) else { throw fail("invalid number") }
+        guard let text = String(bytes: bytes[start..<index], encoding: .ascii), let value = Double(text) else {
+            throw fail("invalid number")
+        }
         return value
     }
 }

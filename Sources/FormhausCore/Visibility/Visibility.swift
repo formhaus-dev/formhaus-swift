@@ -104,15 +104,14 @@ func itemPath(_ group: String, _ index: Int, _ field: String) -> String {
 }
 
 func splitPath(_ group: String, _ key: String) -> (Int, String)? {
-    let prefix = Array("\(group).".utf8)
-    let bytes = Array(key.utf8)
-    guard bytes.starts(with: prefix) else { return nil }
-    let rest = bytes[prefix.count...]
+    let prefix = "\(group).".utf8
+    guard key.utf8.starts(with: prefix) else { return nil }
+    let rest = key.utf8.dropFirst(prefix.count)
     guard let dot = rest.firstIndex(of: UInt8(ascii: ".")), dot != rest.startIndex else { return nil }
     let digits = rest[..<dot]
-    let field = rest[(dot + 1)...]
+    let field = rest[rest.index(after: dot)...]
     guard !field.isEmpty, digits.allSatisfy({ (0x30...0x39).contains($0) }), digits.count == 1 || digits.first != 0x30,
-        let index = Int(String(decoding: digits, as: UTF8.self))
+        let index = Int(Substring(digits))
     else { return nil }
-    return (index, String(decoding: field, as: UTF8.self))
+    return (index, String(Substring(field)))
 }
