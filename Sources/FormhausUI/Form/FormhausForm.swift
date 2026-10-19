@@ -22,7 +22,6 @@ public struct FormhausForm: View {
         FormScroller(model: model)
             .id(ObjectIdentifier(model))
             .resolveFormhausTokens()
-            .onDisappear { holder.release() }
     }
 }
 
@@ -44,6 +43,12 @@ final class ModelHolder {
     private var model: FormModel?
     private var owned = false
     private var definition: JSONObject?
+    private nonisolated(unsafe) var cancel: (@MainActor () -> Void)?
+
+    deinit {
+        guard let cancel else { return }
+        Task { @MainActor in cancel() }
+    }
 
     func resolve(_ source: ModelSource) -> FormModel {
         switch source {
@@ -63,15 +68,17 @@ final class ModelHolder {
         }
     }
 
-    func release() {
-        if owned { model?.engine.cancelPendingActions() }
-    }
-
     private func replace(_ next: FormModel, owned isOwned: Bool, definition source: JSONObject?) {
-        release()
+        cancel?()
         model = next
         owned = isOwned
         definition = source
+        let engine = next.engine
+        if isOwned {
+            cancel = { @MainActor in engine.cancelPendingActions() }
+        } else {
+            cancel = nil
+        }
     }
 }
 

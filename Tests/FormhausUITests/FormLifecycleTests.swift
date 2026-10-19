@@ -82,7 +82,6 @@ struct FormLifecycleTests {
         await pending.value
         #expect(first !== second)
         #expect(!first.submitting)
-        holder.release()
         #expect(!second.submitting)
     }
 }
