@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 
 public struct FileField: View {
     @Environment(\.formhausTokens) private var tokens
-    @FocusState private var focused: Bool
     @State private var picking = false
     let context: FieldContext
 
@@ -13,22 +12,8 @@ public struct FileField: View {
     }
 
     public var body: some View {
-        FieldShell(context) {
-            HStack(spacing: tokens.spacing.s3) {
-                Button {
-                    picking = true
-                } label: {
-                    summary
-                }
-                .buttonStyle(.plain)
-                FieldAccessories(context: context, clearable: !context.text.isEmpty) { context.replaceFile(with: nil) }
-            }
-            .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
-            .disabled(context.isLocked)
-            .formhausFocus(context, $focused)
-            .accessibilityHint(context.helperText ?? "")
-        }
-        .filePicker(context, isPresented: $picking)
+        PickerInput(context: context, active: picking, clearable: !context.text.isEmpty, cleared: .null, label: summary) { picking = true }
+            .filePicker(context, isPresented: $picking)
     }
 
     private var summary: some View {

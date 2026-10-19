@@ -30,6 +30,12 @@ enum DateKind: Sendable {
         }
     }
 
+    func display(_ text: String, dateStyle: Date.FormatStyle.DateStyle, locale: Locale) -> String? {
+        guard !text.isEmpty, let date = date(text) else { return nil }
+        let style: Date.FormatStyle.DateStyle = self == .time ? .omitted : dateStyle
+        return date.formatted(Date.FormatStyle(date: style, time: self == .date ? .omitted : .shortened, locale: locale))
+    }
+
     func pattern(_ locale: Locale) -> String {
         let date = DateFormatter.dateFormat(fromTemplate: "yyyyMMdd", options: 0, locale: locale)?.lowercased() ?? ""
         switch self {
@@ -61,7 +67,6 @@ enum DateKind: Sendable {
 public struct DateField: View {
     @Environment(\.formhausTokens) private var tokens
     @Environment(\.locale) private var locale
-    @FocusState private var focused: Bool
     @State private var picking = false
     let context: FieldContext
 
@@ -70,42 +75,34 @@ public struct DateField: View {
     }
 
     public var body: some View {
-        FieldShell(context) {
-            HStack(spacing: tokens.spacing.s3) {
-                Button {
-                    picking = true
-                } label: {
-                    HStack(spacing: tokens.spacing.s3) {
-                        Text(display ?? context.field.placeholder ?? kind.pattern(locale))
-                            .formhausText(.body, colored: false)
-                            .foregroundStyle(
-                                display == nil ? tokens.colors.control : context.isLocked ? tokens.colors.textMuted : tokens.colors.text
-                            )
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        if display == nil {
-                            Image(systemName: kind == .time ? "clock" : "calendar").foregroundStyle(tokens.colors.textMuted)
-                        }
-                    }
-                    .contentShape(Rectangle())
+        PickerInput(context: context, active: picking, clearable: date != nil, cleared: .string(""), label: summary) { picking = true }
+            .datePickerPresentation(isPresented: $picking) {
+                DatePickerPanel(kind: kind, initial: date ?? Date(), label: context.label, done: context.text(forLabel: "done")) {
+                    context.setValue(.string(kind.text($0)))
+                    picking = false
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(context.accessibilityName)
-                .accessibilityValue(display ?? "")
-                .datePickerPresentation(isPresented: $picking) {
-                    DatePickerPanel(kind: kind, initial: date ?? Date(), label: context.label, done: context.text(forLabel: "done")) {
-                        context.setValue(.string(kind.text($0)))
-                        picking = false
-                    }
-                }
-                FieldAccessories(context: context, clearable: date != nil) { context.setValue(.string("")) }
             }
-            .inputChrome(focused: focused || picking, invalid: context.isInvalid, disabled: context.isLocked)
-            .disabled(context.isLocked)
-            .formhausFocus(context, $focused)
-            .accessibilityHint(context.helperText ?? "")
+    }
+
+    private var summary: some View {
+        HStack(spacing: tokens.spacing.s3) {
+            Text(display ?? context.field.placeholder ?? kind.pattern(locale))
+                .formhausText(.body, colored: false)
+                .foregroundStyle(
+                    display == nil ? tokens.colors.control : context.isLocked ? tokens.colors.textMuted : tokens.colors.text
+                )
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            if display == nil {
+                Image(systemName: kind == .time ? "clock" : "calendar").foregroundStyle(tokens.colors.textMuted)
+            }
         }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(context.accessibilityName)
+        .accessibilityValue(display ?? "")
+        .accessibilityAddTraits(.isButton)
     }
 
     private var kind: DateKind { DateKind(context.field.type) }
@@ -115,12 +112,7 @@ public struct DateField: View {
     }
 
     private var display: String? {
-        guard let date else { return nil }
-        switch kind {
-        case .date: return date.formatted(Date.FormatStyle(date: .long, time: .omitted, locale: locale))
-        case .time: return date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale))
-        case .datetime: return date.formatted(Date.FormatStyle(date: .long, time: .shortened, locale: locale))
-        }
+        kind.display(context.text, dateStyle: .long, locale: locale)
     }
 }
 
@@ -144,7 +136,7 @@ private struct DatePickerPanel: View {
         VStack(alignment: .trailing, spacing: tokens.spacing.s5) {
             DatePicker(selection: selection, displayedComponents: kind.components) { Text(label) }
                 .labelsHidden()
-                .modifier(PickerStyleChoice(kind: kind))
+                .modifier(DatePickerStyleChoice(kind: kind))
                 .tint(tokens.colors.primary)
             Button(done) { pick(draft) }
                 .buttonStyle(FormButtonStyle(.primary, compact: true))
@@ -163,22 +155,14 @@ private struct DatePickerPanel: View {
     }
 }
 
-private struct PickerStyleChoice: ViewModifier {
+struct DatePickerStyleChoice: ViewModifier {
     let kind: DateKind
 
     func body(content: Content) -> some View {
         #if os(iOS)
-            if kind == .time {
-                content.datePickerStyle(.wheel)
-            } else {
-                content.datePickerStyle(.graphical)
-            }
+            if kind == .time { content.datePickerStyle(.wheel) } else { content.datePickerStyle(.graphical) }
         #else
-            if kind == .time {
-                content.datePickerStyle(.stepperField)
-            } else {
-                content.datePickerStyle(.graphical)
-            }
+            if kind == .time { content.datePickerStyle(.stepperField) } else { content.datePickerStyle(.graphical) }
         #endif
     }
 }

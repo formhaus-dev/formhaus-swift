@@ -57,12 +57,7 @@ struct SystemDateRow: View {
     }
 
     private var display: String? {
-        guard let date else { return nil }
-        switch kind {
-        case .date: return date.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, locale: locale))
-        case .time: return date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale))
-        case .datetime: return date.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale))
-        }
+        kind.display(context.text, dateStyle: .abbreviated, locale: locale)
     }
 }
 
@@ -87,7 +82,7 @@ private struct SystemDatePanel: View {
         VStack(spacing: 8) {
             DatePicker(selection: selection, displayedComponents: kind.components) { Text(label) }
                 .labelsHidden()
-                .modifier(SystemDateStyle(kind: kind))
+                .modifier(DatePickerStyleChoice(kind: kind))
             if clear != nil || kind != .date {
                 HStack {
                     if let clear { DateAction(title: clear, role: .destructive) { commit(nil) } }
@@ -118,17 +113,5 @@ private struct DateAction: View {
             .buttonStyle(.borderless)
             .fontWeight(role == nil ? .semibold : .regular)
             .frame(minHeight: 44)
-    }
-}
-
-private struct SystemDateStyle: ViewModifier {
-    let kind: DateKind
-
-    func body(content: Content) -> some View {
-        #if os(iOS)
-            if kind == .time { content.datePickerStyle(.wheel) } else { content.datePickerStyle(.graphical) }
-        #else
-            if kind == .time { content.datePickerStyle(.stepperField) } else { content.datePickerStyle(.graphical) }
-        #endif
     }
 }
