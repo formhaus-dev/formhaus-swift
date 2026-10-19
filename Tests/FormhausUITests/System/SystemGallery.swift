@@ -9,7 +9,6 @@ func renderSystem(_ name: String, _ model: FormModel, height: CGFloat = 900, beh
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let styles = [
         SnapshotStyle(appearance: .light, width: 520), SnapshotStyle(appearance: .dark, width: 520),
-        SnapshotStyle(appearance: .light, typeSize: .accessibility2, width: 520),
     ]
     for style in styles {
         let view = NavigationStack {
