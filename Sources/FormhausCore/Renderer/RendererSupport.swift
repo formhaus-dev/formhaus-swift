@@ -81,7 +81,7 @@ extension FormEngine {
     @_spi(Renderer)
     public func itemLimits(_ group: FormField) -> (min: Int, max: Int) {
         let limits = core.itemLimits(group)
-        return (Int(limits.min), Int(limits.max))
+        return (clampedInt(limits.min, 0...1_000_000) ?? 0, clampedInt(limits.max, 0...1_000_000) ?? maxGroupItems)
     }
 
     @_spi(Renderer)
@@ -103,4 +103,13 @@ extension FormEngine {
         let nodes = currentStep?.fields ?? definition.fields ?? []
         return errorKeys(nodes, errors, core.values.json).first
     }
+}
+
+@_spi(Renderer)
+public func clampedInt(_ value: Double?, _ range: ClosedRange<Int>) -> Int? {
+    guard let value, value.isFinite else { return nil }
+    let floor = value.rounded(.down)
+    if floor <= Double(range.lowerBound) { return range.lowerBound }
+    if floor >= Double(range.upperBound) { return range.upperBound }
+    return Int(floor)
 }

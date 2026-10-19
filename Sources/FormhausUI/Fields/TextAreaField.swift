@@ -1,3 +1,4 @@
+@_spi(Renderer) import FormhausCore
 import SwiftUI
 
 public struct TextAreaField: View {
@@ -24,7 +25,7 @@ public struct TextAreaField: View {
     }
 
     private var rows: Int {
-        context.field.rows?.numberValue.map { max(1, Int($0)) } ?? 3
+        clampedInt(context.field.rows?.numberValue, 1...40) ?? 3
     }
 
     private var minHeight: CGFloat {
