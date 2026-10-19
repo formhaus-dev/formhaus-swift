@@ -37,7 +37,7 @@ struct CorpusCaseTests {
         let (fixture, testCase) = try Corpus.testCase(id)
         let options = SubmissionOptions(skippedSteps: testCase.skippedSteps)
         let result = validateSubmission(try fixture.runtime(), testCase.values, options: options)
-        #expect(strictlyEqual(.object(result.values), testCase.expectedValues))
+        #expect(strictlyEqual(.object(result.values), testCase.serverValues ?? testCase.expectedValues))
         #expect(strictlyEqual(json(result.errors), testCase.expectedErrors))
     }
 
