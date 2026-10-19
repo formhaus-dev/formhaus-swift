@@ -18,7 +18,7 @@ struct CompiledPattern: Sendable {
             scanners = []
             return
         }
-        automaton = program.automaton ? AutomatonCache(LazyDFA(program, anchored: prefilter.anchored)) : nil
+        automaton = program.automaton ? AutomatonCache(LazyDFA(program, anchored: prefilter.anchored, first: prefilter.first)) : nil
         scanners = zip(program.scans, program.looks).map { scan, body in
             scan.map { AutomatonCache(LazyDFA($0, anchored: false, backward: !body.look.behind, scanning: true)) }
         }
@@ -38,7 +38,7 @@ struct CompiledPattern: Sendable {
             if let found = try? probe.search(prefilter) { return found }
         }
         context.budget = .linear(units: units.count, instructions: program.size)
-        return try? automaton.matches(units, first: prefilter.first, context: context)
+        return try? automaton.matches(units, context: context)
     }
 }
 

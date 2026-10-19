@@ -22,6 +22,7 @@ struct LazyDFA: Sendable {
 
     let classes: UnitClasses
     let width: Int
+    let first: CharSet?
     private(set) var stepper: ThreadStep
     private var keys: [Key] = []
     private var idle: [Bool] = []
@@ -31,7 +32,8 @@ struct LazyDFA: Sendable {
     private var memory = AutomatonMemory()
     private var resets = 0
 
-    init(_ program: RegexProgram, anchored: Bool, backward: Bool = false, scanning: Bool = false) {
+    init(_ program: RegexProgram, anchored: Bool, first: CharSet? = nil, backward: Bool = false, scanning: Bool = false) {
+        self.first = first
         classes = UnitClasses(program)
         width = classes.count + 1
         stepper = ThreadStep(program, anchored: anchored, backward: backward, scanning: scanning)
@@ -44,10 +46,10 @@ struct LazyDFA: Sendable {
         memory.release()
     }
 
-    mutating func matches(_ text: [UInt16], first: CharSet?, context: MatchContext) throws(BudgetExceeded) -> Bool {
+    mutating func matches(_ text: [UInt16], context: MatchContext) throws(BudgetExceeded) -> Bool {
         var state: Int32 = 0
         var position = 0
-        var overflow = Overflow()
+        var mayReset = true
         let skipping = first != nil && !stepper.anchored
         while position < text.count {
             fastForward(text, &state, &position, skipping: skipping)
@@ -57,11 +59,11 @@ struct LazyDFA: Sendable {
                 if next != position {
                     position = next
                     let key = Key(pcs: [0], context: UnitContext(text[next - 1]))
-                    guard let restart = intern(key, &overflow) else { return try stepper.matches(key, text, from: position, context) }
+                    guard let restart = intern(key, &mayReset) else { return try stepper.matches(key, text, from: position, context) }
                     state = restart
                 }
             }
-            let move = try step(state, text[position], position, context, &overflow)
+            let move = try step(state, text[position], position, context, &mayReset)
             if move.accepts { return true }
             switch move.next {
             case .state(let next): state = next
@@ -70,16 +72,16 @@ struct LazyDFA: Sendable {
             }
             position += 1
         }
-        return try step(state, nil, position, context, &overflow).accepts
+        return try step(state, nil, position, context, &mayReset).accepts
     }
 
     mutating func acceptance(_ text: [UInt16], context: MatchContext) throws(BudgetExceeded) -> [Bool] {
         var accepted = Array(repeating: false, count: text.count + 1)
         var state: Int32 = 0
-        var overflow = Overflow()
+        var mayReset = true
         for offset in 0...text.count {
             let position = stepper.backward ? text.count - offset : offset
-            let move = try step(state, text.nextUnit(from: position, backward: stepper.backward), position, context, &overflow)
+            let move = try step(state, text.nextUnit(from: position, backward: stepper.backward), position, context, &mayReset)
             accepted[position] = move.accepts
             switch move.next {
             case .state(let next): state = next
@@ -110,7 +112,7 @@ struct LazyDFA: Sendable {
     }
 
     private mutating func step(
-        _ state: Int32, _ unit: UInt16?, _ position: Int, _ context: MatchContext, _ overflow: inout Overflow
+        _ state: Int32, _ unit: UInt16?, _ position: Int, _ context: MatchContext, _ mayReset: inout Bool
     ) throws(BudgetExceeded) -> Move {
         let slot = Int(state) * width + column(unit)
         let target = table[slot]
@@ -124,7 +126,7 @@ struct LazyDFA: Sendable {
         }
         let next = Key(pcs: advance.next.sorted(), context: UnitContext(unit))
         let generation = resets
-        guard let id = intern(next, &overflow) else { return Move(accepts: advance.accepts, next: .threads(next)) }
+        guard let id = intern(next, &mayReset) else { return Move(accepts: advance.accepts, next: .threads(next)) }
         if generation == resets { record(slot, id, advance) }
         return Move(accepts: advance.accepts, next: .state(id))
     }
@@ -134,12 +136,12 @@ struct LazyDFA: Sendable {
         accepting[slot] = advance.accepts
     }
 
-    private mutating func intern(_ key: Key, _ overflow: inout Overflow) -> Int32? {
+    private mutating func intern(_ key: Key, _ mayReset: inout Bool) -> Int32? {
         if let state = lookup[key] { return state }
         let cost = 4 * key.pcs.count + 5 * width + 96
         if memory.reserve(cost) { return append(key) }
-        guard overflow.mayReset else { return nil }
-        overflow.mayReset = false
+        guard mayReset else { return nil }
+        mayReset = false
         reset()
         return memory.reserve(cost) ? append(key) : nil
     }
@@ -165,8 +167,4 @@ struct LazyDFA: Sendable {
         accepting.append(contentsOf: repeatElement(false, count: width))
         return state
     }
-}
-
-private struct Overflow {
-    var mayReset = true
 }
