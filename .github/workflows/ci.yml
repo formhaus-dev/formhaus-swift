@@ -22,3 +22,25 @@ jobs:
       - run: swift --version
       - run: swift build --build-tests -Xswiftc -warnings-as-errors
       - run: swift test --skip-build
+
+  lint:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - id: tools
+        run: echo "key=$(scripts/lint.sh versions)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            .build/tools
+            ~/.npm/_npx
+          key: lint-tools-${{ runner.os }}-${{ steps.tools.outputs.key }}
+      - run: scripts/lint.sh install
+      - run: scripts/lint.sh format
+      - run: scripts/lint.sh swiftlint
+      - run: scripts/lint.sh duplicates
+      - run: scripts/lint.sh periphery
