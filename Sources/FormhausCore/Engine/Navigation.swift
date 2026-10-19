@@ -41,6 +41,7 @@ extension EngineCore {
             let current = activePathKey()
             return current.count != path.count || !zip(current, path).allSatisfy(sameText)
                 || seen.contains { !values.slot($0.0).isSame($0.1) }
+                || getSubmitValues().keys.contains { !checked.has($0) && visibility.activeField($0, values.json)?.type != "hidden" }
         }
     }
 
