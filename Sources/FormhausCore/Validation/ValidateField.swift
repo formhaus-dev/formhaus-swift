@@ -1,4 +1,5 @@
 public typealias ValidatorFn = (JSONValue, JSONObject) -> String?
+public typealias Validators = StringMap<ValidatorFn>
 
 private func isEmptyValue(_ value: JSONValue?, _ field: FormField) -> Bool {
     isBlank(value) || (value == .bool(false) && booleanTypes.contains(field.type))
@@ -37,7 +38,7 @@ private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: Fo
 }
 
 public func validateFieldValue(
-    _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, validators: [String: ValidatorFn] = [:],
+    _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, validators: Validators = [:],
     messages: MessageSource? = nil
 ) -> String? {
     let value = trimValue(field, input)

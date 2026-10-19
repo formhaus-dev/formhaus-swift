@@ -1,12 +1,12 @@
 public func validateStep(
-    _ step: FormStep, _ values: JSONObject, validators: [String: ValidatorFn] = [:], messages: MessageSource? = nil
-) -> [String: String] {
+    _ step: FormStep, _ values: JSONObject, validators: Validators = [:], messages: MessageSource? = nil
+) -> FieldErrors {
     validateFields(step.fields, values, validators: validators, messages: messages)
 }
 
 public func validateFields(
-    _ fields: [FormNode], _ values: JSONObject, validators: [String: ValidatorFn] = [:], messages: MessageSource? = nil
-) -> [String: String] {
+    _ fields: [FormNode], _ values: JSONObject, validators: Validators = [:], messages: MessageSource? = nil
+) -> FieldErrors {
     validateShown(fields, values, values, validators, messages)
 }
 
@@ -15,9 +15,9 @@ func customRules(_ nodes: [FormNode]) -> Bool {
 }
 
 private func validateItems(
-    _ group: FormField, _ values: JSONObject, _ validators: [String: ValidatorFn], _ messages: MessageSource?, _ scope: JSONObject
-) -> [String: String] {
-    var errors: [String: String] = [:]
+    _ group: FormField, _ values: JSONObject, _ validators: Validators, _ messages: MessageSource?, _ scope: JSONObject
+) -> FieldErrors {
+    var errors = FieldErrors()
     for (index, item) in itemsOf(values[group.key]).enumerated() {
         let own = itemScope(group, item, values)
         let shown = itemScope(group, item, scope)
@@ -31,15 +31,15 @@ private func validateItems(
 }
 
 func validateShown(
-    _ fields: [FormNode], _ values: JSONObject, _ scope: JSONObject, _ validators: [String: ValidatorFn], _ messages: MessageSource?
-) -> [String: String] {
-    var errors: [String: String] = [:]
+    _ fields: [FormNode], _ values: JSONObject, _ scope: JSONObject, _ validators: Validators, _ messages: MessageSource?
+) -> FieldErrors {
+    var errors = FieldErrors()
     for field in shownFields(fields, scope) {
         if let error = validateFieldValue(field, values[field.key], values, validators: validators, messages: messages) {
             errors[field.key] = error
         }
         if field.isGroup {
-            errors.merge(validateItems(field, values, validators, messages, scope)) { $1 }
+            errors.merge(validateItems(field, values, validators, messages, scope))
         }
     }
     return errors

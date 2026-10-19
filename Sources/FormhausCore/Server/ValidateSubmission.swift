@@ -1,15 +1,15 @@
 public struct SubmissionOptions {
     public var skippedSteps: JSONValue?
-    public var validators: [String: ValidatorFn]
+    public var validators: Validators
     public var messages: MessageSource?
 
-    public init(skippedSteps: [String]? = nil, validators: [String: ValidatorFn] = [:], messages: MessageSource? = nil) {
+    public init(skippedSteps: [String]? = nil, validators: Validators = [:], messages: MessageSource? = nil) {
         self.skippedSteps = skippedSteps.map { .array($0.map(JSONValue.string)) }
         self.validators = validators
         self.messages = messages
     }
 
-    public init(skippedSteps: JSONValue?, validators: [String: ValidatorFn] = [:], messages: MessageSource? = nil) {
+    public init(skippedSteps: JSONValue?, validators: Validators = [:], messages: MessageSource? = nil) {
         self.skippedSteps = skippedSteps
         self.validators = validators
         self.messages = messages
@@ -18,23 +18,23 @@ public struct SubmissionOptions {
 
 public struct SubmissionResult: Sendable, Hashable {
     public let values: JSONObject
-    public let errors: [String: String]
+    public let errors: FieldErrors
 }
 
 private let bodyMessage = "Pass the values object as the second argument, not the request body with \"values\" and \"skippedSteps\"."
 
-private func setError(_ visibility: VisibilityState, _ errors: inout [String: String], _ key: String, _ error: String) {
+private func setError(_ visibility: VisibilityState, _ errors: inout FieldErrors, _ key: String, _ error: String) {
     errors[key] = error
-    guard visibility.groups.contains(where: { $0.key == key }) else { return }
-    for path in errors.keys where path != key && visibility.owner(path) == key { errors.removeValue(forKey: path) }
+    guard visibility.groups.contains(where: { sameText($0.key, key) }) else { return }
+    for path in errors.keys where !sameText(path, key) && sameText(visibility.owner(path), key) { errors.removeValue(forKey: path) }
 }
 
-private func ignoredValidators(_ fields: [FormField], _ given: [String: ValidatorFn]) -> [String: ValidatorFn] {
-    var validators: [String: ValidatorFn] = [:]
+private func ignoredValidators(_ fields: [FormField], _ given: Validators) -> Validators {
+    var validators = Validators()
     for field in fields.flatMap({ [$0] + $0.items }) {
         if let name = field.validation?.validator, !name.isEmpty { validators[name] = { _, _ in nil } }
     }
-    return validators.merging(given) { $1 }
+    return validators.merging(given)
 }
 
 private struct Prepared {
@@ -43,7 +43,7 @@ private struct Prepared {
     let check: () -> SubmissionResult
 }
 
-private func itemErrors(_ engine: FormEngine, _ invalid: Set<String>, _ resolve: @escaping ResolveMessage) -> [(key: String, error: String)] {
+private func itemErrors(_ engine: FormEngine, _ invalid: KeySet, _ resolve: @escaping ResolveMessage) -> [(key: String, error: String)] {
     var errors: [(key: String, error: String)] = []
     for group in engine.visibility.groups where !invalid.contains(group.key) {
         guard let active = engine.visibility.activeField(group.key, engine.values), active.isGroup else { continue }
@@ -62,7 +62,7 @@ private func itemErrors(_ engine: FormEngine, _ invalid: Set<String>, _ resolve:
     return errors
 }
 
-private func dropUnchecked(_ engine: FormEngine, _ submitted: inout JSONObject, _ errors: inout [String: String], _ resolve: @escaping ResolveMessage) {
+private func dropUnchecked(_ engine: FormEngine, _ submitted: inout JSONObject, _ errors: inout FieldErrors, _ resolve: @escaping ResolveMessage) {
     let visibility = engine.visibility
     for key in submitted.keys {
         guard let field = visibility.activeField(key, engine.values), errors[key] == nil else { continue }
@@ -103,7 +103,7 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
     let groups = rejectGroups(visibility, fields, values, resolve)
     let resolved = groups.resolved
     let invalid = typeErrors(resolved, resolve)
-    let invalidKeys = Set(invalid.map(\.key))
+    let invalidKeys = KeySet(invalid.map(\.key))
     let engineOptions = FormEngineOptions(validators: ignoredValidators(fields, options.validators), messages: .function(messages))
     let engine = FormEngine(definition: withoutRules(definition, invalidKeys), values: resolved.values, options: engineOptions)
     engine.loadSubmitted(resolved.values)
@@ -119,7 +119,7 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
             submitted[key] = resolved.values[key]
         }
         for (key, value) in groups.rejected {
-            guard let field = visibility.activeField(key, engine.values), !skipped.contains(key) else { continue }
+            guard let field = visibility.activeField(key, engine.values), !skipped.containsText(key) else { continue }
             setError(visibility, &errors, key, typeError(field, value, resolve) ?? resolve("value", [:], field))
             submitted.removeValue(forKey: key)
         }
@@ -152,7 +152,7 @@ public func validateSubmission(_ definition: FormDefinition, _ values: JSONValue
     var round = 0
     while round < (definition.steps?.count ?? 0) && !prepared.skipped.isEmpty {
         let next = prepare(definition, fields, withSkipped(source, prepared), options)
-        let settled = next.skipped.joined(separator: ",") == prepared.skipped.joined(separator: ",")
+        let settled = sameText(next.skipped.joined(separator: ","), prepared.skipped.joined(separator: ","))
         prepared = next
         if settled { break }
         round += 1

@@ -3,12 +3,12 @@ struct ActiveValues {
     var active: [(key: String, field: FormField)] = []
 
     func field(_ key: String) -> FormField? {
-        active.first { $0.key == key }?.field
+        active.first { sameText($0.key, key) }?.field
     }
 }
 
 func activeValues(_ visibility: VisibilityState, _ fields: [FormField], _ source: JSONObject) -> ActiveValues {
-    var first: [String: FormField] = [:]
+    var first = StringMap<FormField>()
     for field in fields.reversed() { first[field.key] = field }
     let keys = OrderedKeys(fields.map(\.key)).keys.filter { source.has($0) }
     var result = ActiveValues()
@@ -22,7 +22,7 @@ func activeValues(_ visibility: VisibilityState, _ fields: [FormField], _ source
             if let field = visibility.activeField(key, values) { active.append((key, field)) }
         }
         let settled = keys.allSatisfy { key in
-            let next = active.first { $0.key == key }?.field
+            let next = active.first { sameText($0.key, key) }?.field
             let previous = result.field(key)
             return next === previous
         }
@@ -51,7 +51,7 @@ func rejectGroups(_ visibility: VisibilityState, _ fields: [FormField], _ input:
         }
     }
     func fits(_ key: String) -> Bool {
-        fields.contains { $0.key == key && typeError($0, source[key], resolve) == nil }
+        fields.contains { sameText($0.key, key) && typeError($0, source[key], resolve) == nil }
     }
     reject(OrderedKeys(fields.filter(\.isGroup).map(\.key)).keys.filter { source.has($0) && !fits($0) })
     let resolved = activeValues(visibility, fields, source)
@@ -61,7 +61,7 @@ func rejectGroups(_ visibility: VisibilityState, _ fields: [FormField], _ input:
     return RejectedGroups(resolved: activeValues(visibility, fields, source), rejected: rejected)
 }
 
-private func strip(_ nodes: JSONValue?, _ invalid: Set<String>) -> JSONValue? {
+private func strip(_ nodes: JSONValue?, _ invalid: KeySet) -> JSONValue? {
     guard let items = nodes?.arrayValue else { return nodes }
     return .array(
         items.map { item in
@@ -76,7 +76,7 @@ private func strip(_ nodes: JSONValue?, _ invalid: Set<String>) -> JSONValue? {
     )
 }
 
-func withoutRules(_ definition: FormDefinition, _ invalid: Set<String>) -> FormDefinition {
+func withoutRules(_ definition: FormDefinition, _ invalid: KeySet) -> FormDefinition {
     var json = definition.json
     if json["fields"]?.arrayValue != nil { json["fields"] = strip(json["fields"], invalid) }
     if let steps = definition.json["steps"]?.arrayValue {

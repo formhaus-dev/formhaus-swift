@@ -36,25 +36,33 @@ public enum MessageSource {
     case function(MessageFn)
 }
 
-func formatText(_ template: String, _ params: JSONObject) -> String {
-    let chars = Array(template)
-    var output = ""
+private func isWordUnit(_ unit: UInt16) -> Bool {
+    (0x30...0x39).contains(unit) || (0x41...0x5A).contains(unit) || (0x61...0x7A).contains(unit) || unit == 0x5F
+}
+
+func replacePlaceholders(_ template: String, _ replacement: (String) -> String?) -> String {
+    let units = Array(template.utf16)
+    var output: [UInt16] = []
     var index = 0
-    while index < chars.count {
-        if chars[index] == "{" {
+    while index < units.count {
+        if units[index] == 0x7B {
             var end = index + 1
-            while end < chars.count, chars[end].isASCII, chars[end].isLetter || chars[end].isNumber || chars[end] == "_" { end += 1 }
-            if end > index + 1, end < chars.count, chars[end] == "}" {
-                let name = String(chars[(index + 1)..<end])
-                output += params[name].map { jsString($0) } ?? "{\(name)}"
+            while end < units.count, isWordUnit(units[end]) { end += 1 }
+            if end > index + 1, end < units.count, units[end] == 0x7D {
+                let name = String(decoding: units[(index + 1)..<end], as: UTF16.self)
+                output += replacement(name).map { Array($0.utf16) } ?? Array(units[index...end])
                 index = end + 1
                 continue
             }
         }
-        output.append(chars[index])
+        output.append(units[index])
         index += 1
     }
-    return output
+    return String(decoding: output, as: UTF16.self)
+}
+
+func formatText(_ template: String, _ params: JSONObject) -> String {
+    replacePlaceholders(template) { params[$0].map { jsString($0) } }
 }
 
 func resolveText(
