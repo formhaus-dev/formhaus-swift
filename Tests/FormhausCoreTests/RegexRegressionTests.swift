@@ -69,7 +69,19 @@ struct RegexRegressionTests {
         let optional = (RegexCompiler.instructionLimit - 2) / 2
         #expect(try #require(JSRegex("a" + String(repeating: "b?", count: optional))).test("ab") == true)
         #expect(try #require(JSRegex("a" + String(repeating: "b?", count: optional + 1))).test("ab") == nil)
-        #expect(try #require(JSRegex(String(repeating: "a", count: RegexCompiler.instructionLimit))).test("a") == nil)
+        let literal = String(repeating: "a", count: RegexCompiler.instructionLimit)
+        #expect(try #require(JSRegex(literal)).test(literal) == nil)
+        #expect(try #require(JSRegex(literal)).test("a") == false)
+        #expect(try #require(JSRegex("(?:a{1000}){1000}")).test("aaaa") == false)
+    }
+
+    @Test("large counted repeats match every input up to the length limit")
+    func largeCountedRepeats() throws {
+        #expect(try #require(JSRegex("[a-z]{0,4001}1")).test(String(repeating: "b", count: 6000) + "1") == true)
+        #expect(try #require(JSRegex("[a-z]{0,4001}1")).test(String(repeating: "b", count: 6000) + "2") == false)
+        #expect(try #require(JSRegex("(?:x?){4001}y")).test("xay") == true)
+        #expect(try #require(JSRegex("(?:a|b){4001}c")).test(String(repeating: "ab", count: 2001) + "c") == true)
+        #expect(try #require(JSRegex("^(?:a{0,2}){2001}$")).test(String(repeating: "a", count: 4002)) == true)
     }
 
     @Test("automaton memory stays inside the pattern and global limits")
