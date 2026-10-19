@@ -1,5 +1,15 @@
 public struct FieldOption: Sendable, Hashable {
     let json: JSONObject
+    let imageDigest: Int?
+
+    init(json: JSONObject) {
+        self.json = json
+        imageDigest = json["image"]?.stringValue.map { image in
+            var hasher = Hasher()
+            hasher.combine(image)
+            return hasher.finalize()
+        }
+    }
 
     public var value: String? { json["value"]?.stringValue }
     public var label: String? { json["label"]?.stringValue }

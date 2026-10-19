@@ -22,7 +22,7 @@ struct ChoiceCard: View, Equatable {
         let label = option.label ?? option.value ?? ""
         Button(action: choose) {
             VStack(alignment: .leading, spacing: tokens.spacing.s3) {
-                if picture, let image = option.image, !image.isEmpty { OptionImage(source: image) }
+                if picture, let image = option.image, !image.isEmpty { OptionImage(key: ImageKey(image, digest: option.imageKey)) }
                 OptionRow(shape, label: label, selected: selected)
             }
             .padding(.top, picture ? tokens.spacing.s3 - tokens.spacing.s5 : 0)

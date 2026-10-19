@@ -6,6 +6,11 @@ extension FieldOption {
     }
 }
 
+extension FieldOption {
+    @_spi(Renderer)
+    public var imageKey: Int? { imageDigest }
+}
+
 extension FormField {
     @_spi(Renderer)
     public var nodeID: Int { ordinal }

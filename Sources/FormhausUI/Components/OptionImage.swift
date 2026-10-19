@@ -3,8 +3,10 @@ import SwiftUI
 
 struct OptionImage: View {
     @Environment(\.formhausTokens) private var tokens
-    let source: String
+    let key: ImageKey
     var fit = false
+
+    private var source: String { key.source }
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: max(0, tokens.radii.control - tokens.spacing.s1), style: .continuous)
@@ -18,11 +20,11 @@ struct OptionImage: View {
         .background(tokens.colors.backgroundDisabled)
         .clipShape(shape)
         .accessibilityHidden(true)
-        .onAppear { InlineImages.shared.prefetch([source]) }
+        .onAppear { InlineImages.shared.prefetch([key]) }
     }
 
     @ViewBuilder private var picture: some View {
-        if let image = isInline(source) ? InlineImages.shared.entry(source).image : nil {
+        if let image = isInline(source) ? InlineImages.shared.entry(key).image : nil {
             Image(decorative: image, scale: 1).resizable()
         } else if let url = URL(string: source), ["https", "http"].contains(url.scheme) {
             AsyncImage(url: url) { phase in
@@ -42,13 +44,9 @@ struct ImageKey: Hashable, Sendable {
     let source: String
     private let digest: Int
 
-    init(_ source: String) {
+    init(_ source: String, digest: Int? = nil) {
         self.source = source
-        var hasher = Hasher()
-        hasher.combine(source.utf8.count)
-        hasher.combine(source.prefix(96))
-        hasher.combine(source.suffix(96))
-        digest = hasher.finalize()
+        self.digest = digest ?? fullDigest(source)
     }
 
     func hash(into hasher: inout Hasher) {
@@ -58,6 +56,12 @@ struct ImageKey: Hashable, Sendable {
     static func == (lhs: ImageKey, rhs: ImageKey) -> Bool {
         lhs.digest == rhs.digest && lhs.source == rhs.source
     }
+}
+
+private func fullDigest(_ source: String) -> Int {
+    var hasher = Hasher()
+    hasher.combine(source)
+    return hasher.finalize()
 }
 
 @MainActor
@@ -77,35 +81,35 @@ final class InlineImages {
     private let maxBytes = 48 * 1024 * 1024
     private let maxCount = 256
 
-    func entry(_ source: String) -> ImageEntry {
-        let key = ImageKey(source)
+    func entry(_ key: ImageKey) -> ImageEntry {
         if let entry = entries[key] { return entry }
         let entry = ImageEntry()
         entries[key] = entry
         return entry
     }
 
-    func cached(_ source: String) -> CGImage? {
-        entries[ImageKey(source)]?.image
+    func cached(_ key: ImageKey) -> CGImage? {
+        entries[key]?.image
     }
 
-    func prefetch(_ sources: [String]) {
-        for source in sources where isInline(source) { load(source, entry(source)) }
+    func prefetch(_ keys: [ImageKey]) {
+        for key in keys where isInline(key.source) { load(key, entry(key)) }
     }
 
-    func image(_ source: String) async -> CGImage? {
-        let entry = entry(source)
+    func image(_ key: ImageKey) async -> CGImage? {
+        let entry = entry(key)
         if let image = entry.image { return image }
+        let source = key.source
         guard let image = await Task.detached(priority: .userInitiated, operation: { decodeInline(source) }).value else { return nil }
-        store(image, ImageKey(source), entry)
+        store(image, key, entry)
         return image
     }
 
-    private func load(_ source: String, _ entry: ImageEntry) {
+    private func load(_ key: ImageKey, _ entry: ImageEntry) {
         guard entry.image == nil, !entry.loading else { return }
         entry.loading = true
         Task {
-            _ = await image(source)
+            _ = await image(key)
             entry.loading = false
         }
     }
@@ -158,7 +162,7 @@ struct ImageViewer: View {
     @Environment(\.formhausTokens) private var tokens
     @Environment(\.dismiss) private var dismiss
     let title: String
-    let source: String
+    let key: ImageKey
     let closeLabel: String
 
     var body: some View {
@@ -170,7 +174,7 @@ struct ImageViewer: View {
             .padding(.vertical, tokens.spacing.s7)
             .padding(.leading, tokens.spacing.s9)
             .padding(.trailing, tokens.spacing.s5)
-            OptionImage(source: source, fit: true)
+            OptionImage(key: key, fit: true)
                 .padding([.horizontal, .bottom], tokens.spacing.s9)
         }
         .frame(minWidth: 320, idealWidth: 560)

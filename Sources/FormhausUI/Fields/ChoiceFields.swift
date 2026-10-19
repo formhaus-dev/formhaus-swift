@@ -63,9 +63,12 @@ struct ChoiceList: View {
                 .disabled(context.isLocked)
                 .formhausFocus(context, $focused)
         }
-        .onAppear { InlineImages.shared.prefetch(context.options.prefix(64).compactMap(\.image)) }
+        .onAppear {
+            InlineImages.shared.prefetch(
+                context.options.prefix(64).compactMap { option in option.image.map { ImageKey($0, digest: option.imageKey) } })
+        }
         .sheet(item: $zoomed) { zoomed in
-            ImageViewer(title: zoomed.label, source: zoomed.image, closeLabel: context.text(forLabel: "close"))
+            ImageViewer(title: zoomed.label, key: zoomed.image, closeLabel: context.text(forLabel: "close"))
         }
     }
 
@@ -107,7 +110,7 @@ struct ChoiceList: View {
             hint: context.helperText ?? "",
             zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
             choose: { selection.choose(value) },
-            zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: option.image ?? "") }
+            zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: ImageKey(option.image ?? "", digest: option.imageKey)) }
         )
         .equatable()
     }
@@ -116,5 +119,5 @@ struct ChoiceList: View {
 private struct Zoomed: Identifiable {
     let id: String
     let label: String
-    let image: String
+    let image: ImageKey
 }
