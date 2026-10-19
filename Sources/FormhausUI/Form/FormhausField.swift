@@ -17,6 +17,8 @@ public struct FormhausField: View {
         let context = FieldContext(field: field, key: key, state: model.field(key), model: model)
         if let custom = components.fields[field.type] {
             custom(context)
+        } else if components.system {
+            SystemField(context: context)
         } else if components.builtIns {
             BuiltInField(context: context)
         } else {
