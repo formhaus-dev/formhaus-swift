@@ -51,6 +51,6 @@ struct CoreAdditionsTests {
         #expect(groups.map(\.id) == ["one", "two"])
         #expect(groups.map(\.title) == ["Contact", "Step 2"])
         #expect(groups.flatMap(\.entries).map(\.text) == ["Name? Taken", "City: Missing", "Zip\u{FF1A} Bad"])
-        #expect(engine.errorEntries(nil).map(\.key) == ["a", "b", "c"])
+        #expect(groups.flatMap(\.entries).map(\.key) == ["a", "b", "c"])
     }
 }

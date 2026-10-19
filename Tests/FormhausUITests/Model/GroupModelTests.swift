@@ -34,7 +34,7 @@ struct GroupModelTests {
     func itemErrors() async throws {
         let form = try model(groupDefinition)
         await form.submit()
-        #expect(form.errorEntries.map(\.label) == ["Name (People 1)"])
+        #expect(form.errorGroups.flatMap(\.entries).map(\.label) == ["Name (People 1)"])
         #expect(form.focusRequest?.key == "people.0.name")
     }
 

@@ -11,32 +11,21 @@ public struct FormErrorSummary: View {
     }
 
     public var body: some View {
-        let entries = model.errorEntries
-        if !entries.isEmpty {
+        let groups = model.errorGroups
+        if !groups.isEmpty {
             let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
             let title = model.text(forLabel: "errorSummary")
             VStack(alignment: .leading, spacing: 0) {
                 Text(title).formhausText(.label).accessibilityAddTraits(.isHeader).padding(.bottom, tokens.spacing.s1)
-                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
-                    if index > 0 { tokens.colors.border.frame(height: 1 / displayScale).accessibilityHidden(true) }
-                    Button {
-                        model.focus(field: entry.key)
-                    } label: {
-                        HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
-                            Text(verbatim: summaryLine(entry.label, entry.message)).fixedSize(horizontal: false, vertical: true)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: tokens.typography.small, weight: .semibold))
-                                .accessibilityHidden(true)
-                        }
-                        .formhausText(.body, colored: false)
-                        .foregroundStyle(tokens.colors.error)
-                        .padding(.vertical, tokens.spacing.s3)
-                        .frame(minHeight: tokens.controls.hitTarget, alignment: .leading)
-                        .contentShape(Rectangle())
+                ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
+                    if groups.count > 1 {
+                        Text(group.title).formhausText(.helper).accessibilityAddTraits(.isHeader)
+                            .padding(.top, index > 0 ? tokens.spacing.s5 : tokens.spacing.s3)
                     }
-                    .buttonStyle(.plain)
+                    ForEach(Array(group.entries.enumerated()), id: \.element.id) { row, entry in
+                        if row > 0 { tokens.colors.border.frame(height: 1 / displayScale).accessibilityHidden(true) }
+                        entryButton(entry)
+                    }
                 }
             }
             .padding(.vertical, tokens.spacing.s5)
@@ -46,6 +35,27 @@ public struct FormErrorSummary: View {
             .accessibilityElement(children: .contain)
             .onAppear { announce(title) }
         }
+    }
+
+    private func entryButton(_ entry: ErrorEntry) -> some View {
+        Button {
+            model.focus(field: entry.key)
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
+                Text(verbatim: entry.text).fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: tokens.typography.small, weight: .semibold))
+                    .accessibilityHidden(true)
+            }
+            .formhausText(.body, colored: false)
+            .foregroundStyle(tokens.colors.error)
+            .padding(.vertical, tokens.spacing.s3)
+            .frame(minHeight: tokens.controls.hitTarget, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -68,11 +78,4 @@ public struct FormTopLevelErrors: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-}
-
-private let closingPunctuation: Set<Character> = ["?", "!", ":", ".", "\u{FF1F}", "\u{FF01}", "\u{FF1A}", "\u{FF0E}", "\u{3002}"]
-
-func summaryLine(_ label: String, _ message: String) -> String {
-    guard let last = label.last, closingPunctuation.contains(last) else { return "\(label): \(message)" }
-    return "\(label) \(message)"
 }
