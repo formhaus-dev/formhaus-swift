@@ -54,6 +54,27 @@ struct RegexTests {
         #expect(JSRegex("\")+(1") == nil)
     }
 
+    @Test("a pattern that cannot run rejects the value")
+    func failsClosed() {
+        #expect(JSRegex(unchecked: "(").test("a") == nil)
+        #expect(rejects(JSRegex(unchecked: "("), "a"))
+        #expect(rejects(JSRegex("^a$")!, String(repeating: "a", count: maxStringLength + 1)))
+        #expect(!rejects(JSRegex("^a+$")!, String(repeating: "a", count: maxStringLength)))
+    }
+
+    @Test("a slow match does not block other threads")
+    func slowMatchDoesNotBlock() async {
+        let slow = JSRegex("^(a+)+$")!
+        let text = String(repeating: "a", count: 29) + "!"
+        let blocked = Task.detached { slow.test(text) }
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        let started = Date()
+        #expect(JSRegex("^b$")?.test("b") == true)
+        let elapsed = Date().timeIntervalSince(started)
+        #expect(await blocked.value == false)
+        #expect(elapsed < 0.5)
+    }
+
     @Test("patterns compile and match from many threads")
     func concurrentUse() async {
         await withTaskGroup(of: Bool.self) { group in
