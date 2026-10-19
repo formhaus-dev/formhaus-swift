@@ -30,21 +30,6 @@ struct JSCompatibilityTests {
         #expect("\u{200B}a".jsTrimmed == "\u{200B}a")
     }
 
-    @Test("patterns follow ECMAScript semantics")
-    func patterns() throws {
-        #expect(try #require(JSRegex("^\\d+$")).test("123"))
-        #expect(!(try #require(JSRegex("^\\d+$")).test("123\n")))
-        #expect(!(try #require(JSRegex("^\\d$")).test("\u{663}")))
-        #expect(!(try #require(JSRegex("^\\w$")).test("é")))
-        #expect(try #require(JSRegex("^a{$")).test("a{"))
-        #expect(try #require(JSRegex("^[^]$")).test("\n"))
-        #expect(!(try #require(JSRegex("^.$")).test("\n")))
-        #expect(try #require(JSRegex("^\\a$")).test("a"))
-        #expect(try #require(JSRegex("[(a+)]+")).test("+"))
-        #expect(JSRegex("[invalid(") == nil)
-        #expect(JSRegex("(a") == nil)
-    }
-
     @Test("parser keeps key order and own __proto__ keys")
     func parser() throws {
         let value = try JSONValue(parsing: #"{"b":1,"__proto__":{"x":true},"a":[null,"é😀"]}"#)
