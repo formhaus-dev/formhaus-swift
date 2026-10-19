@@ -1,6 +1,8 @@
 import FormhausCore
 import Testing
 
+@testable import FormhausUI
+
 let planOptions: JSONValue = [
     ["value": "free", "label": "Free"], ["value": "pro", "label": "Pro, billed monthly"],
     ["value": "team", "label": "Team with shared workspaces and admin controls"],
@@ -41,7 +43,8 @@ struct ChoiceGalleryTests {
     }
 
     @Test("toggles, autocomplete and picture options in every state")
-    func toggles() throws {
+    func toggles() async throws {
+        _ = await InlineImages.shared.image(swatch)
         try renderEntries(
             "choice",
             [

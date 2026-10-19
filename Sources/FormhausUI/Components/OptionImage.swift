@@ -3,7 +3,6 @@ import SwiftUI
 
 struct OptionImage: View {
     @Environment(\.formhausTokens) private var tokens
-    @State private var decoded: CGImage?
     let source: String
     var fit = false
 
@@ -19,14 +18,11 @@ struct OptionImage: View {
         .background(tokens.colors.backgroundDisabled)
         .clipShape(shape)
         .accessibilityHidden(true)
-        .task(id: source) {
-            guard isInline(source) else { return }
-            decoded = await InlineImages.shared.image(source)
-        }
+        .onAppear { InlineImages.shared.prefetch([source]) }
     }
 
     @ViewBuilder private var picture: some View {
-        if let image = decoded ?? InlineImages.shared.cached(source) {
+        if let image = InlineImages.shared.cached(source) {
             Image(decorative: image, scale: 1).resizable()
         } else if let url = URL(string: source), ["https", "http"].contains(url.scheme) {
             AsyncImage(url: url) { phase in
@@ -43,10 +39,22 @@ private func isInline(_ source: String) -> Bool {
 }
 
 @MainActor
+@Observable
 final class InlineImages {
     static let shared = InlineImages()
     private var cache: [String: CGImage] = [:]
-    private var order: [String] = []
+    @ObservationIgnored private var order: [String] = []
+    @ObservationIgnored private var loading: Set<String> = []
+
+    func prefetch(_ sources: [String]) {
+        for source in sources where isInline(source) && cache[source] == nil && !loading.contains(source) {
+            loading.insert(source)
+            Task {
+                _ = await image(source)
+                loading.remove(source)
+            }
+        }
+    }
 
     func cached(_ source: String) -> CGImage? {
         cache[source]
@@ -130,7 +138,7 @@ struct IconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: tokens.controls.iconButton * 0.44, weight: .semibold))
+                .font(.system(size: tokens.controls.iconButton * 0.44 * (embedded ? max(1, tokens.scale) : 1), weight: .semibold))
                 .foregroundStyle(tokens.colors.textMuted)
                 .frame(width: tokens.controls.iconButton, height: tokens.controls.iconButton)
                 .frame(minWidth: tokens.controls.hitTarget, minHeight: tokens.controls.hitTarget)

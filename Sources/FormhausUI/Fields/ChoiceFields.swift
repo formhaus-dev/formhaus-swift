@@ -63,6 +63,7 @@ struct ChoiceList: View {
                 .disabled(context.isLocked)
                 .formhausFocus(context, $focused)
         }
+        .onAppear { InlineImages.shared.prefetch(context.options.prefix(64).compactMap(\.image)) }
         .sheet(item: $zoomed) { zoomed in
             ImageViewer(title: zoomed.label, source: zoomed.image, closeLabel: context.text(forLabel: "close"))
         }
@@ -88,6 +89,7 @@ struct ChoiceList: View {
 
     private var gridColumns: [GridItem] {
         let spacing = tokens.spacing.s5
+        if tokens.scale >= 1.6 { return [GridItem(.flexible(), spacing: spacing, alignment: .top)] }
         if let columns = context.field.columns, (1...4).contains(columns) {
             return Array(repeating: GridItem(.flexible(), spacing: spacing, alignment: .top), count: columns)
         }
