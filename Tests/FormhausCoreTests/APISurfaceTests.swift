@@ -59,6 +59,34 @@ struct APISurfaceTests {
         #expect(getDefaultMessage(.min, ["min": 2]) == "Must be at least 2")
     }
 
+    @Test("scale, rating, picture options and matrix sections expose their settings")
+    func surveyAccessors() throws {
+        let form = try FormDefinition(json: [
+            "formatVersion": "1.3", "id": "f", "title": "F", "submit": ["label": "S"],
+            "fields": [
+                ["key": "nps", "type": "scale", "label": "N", "validation": ["min": 0, "max": 10]],
+                ["key": "stars", "type": "rating", "label": "R", "validation": ["min": 3]],
+                [
+                    "key": "pick", "type": "radio", "label": "P", "columns": 2,
+                    "options": [["value": "a", "label": "A", "image": "https://example.com/a.png"]],
+                ],
+                ["key": "grid", "type": "section", "layout": "matrix", "title": "G", "fields": []],
+            ],
+        ])
+        let nodes = try #require(form.fields)
+        let nps = try #require(nodes[0].field?.scaleRange)
+        let stars = try #require(nodes[1].field?.scaleRange)
+        #expect(nps.min == 0 && nps.max == 10)
+        #expect(stars.min == 1 && stars.max == 5)
+        #expect(nodes[1].field?.isScale == true && nodes[2].field?.scaleRange == nil)
+        #expect(nodes[2].field?.columns == 2)
+        #expect(nodes[2].field?.options?.first?.image == "https://example.com/a.png")
+        #expect(nodes[3].section?.layout == "matrix" && nodes[3].section?.isMatrix == true)
+        #expect(IssueCode.invalidScale.rawValue == "invalid-scale")
+        #expect(IssueCode.unsafeImageUrl.rawValue == "unsafe-image-url")
+        #expect(IssueCode.columnsNotApplicable.rawValue == "columns-not-applicable")
+    }
+
     @Test("message functions receive message keys")
     func messageFunctions() throws {
         let options = SubmissionOptions(messages: .function { key, _, field in key == .required ? "Need \(field.key)" : nil })
@@ -92,7 +120,7 @@ struct APISurfaceTests {
         #expect(engine.isMultiStep)
         #expect(engine.currentStep?.id == "one")
         #expect(engine.validate().isEmpty)
-        #expect(FormDefinition.supportedFormatVersion == "1.2")
+        #expect(FormDefinition.supportedFormatVersion == "1.3")
     }
 
     @Test("subscribers hear every change until they cancel")
