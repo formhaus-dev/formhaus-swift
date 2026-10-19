@@ -15,6 +15,7 @@ enum NodeKind {
 let defaultLabelKeys = [
     "continue", "back", "stepOf", "errorSummary", "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved",
     "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel",
+    "enlargeImage", "close",
 ]
 
 let defaultLabels: [String: String] = [
@@ -31,6 +32,8 @@ let defaultLabels: [String: String] = [
     "removeItemPrompt": "Remove {item}?",
     "removeItemBody": "This removes {item} and its answers. This cannot be undone.",
     "cancel": "Cancel",
+    "enlargeImage": "Enlarge image: {label}",
+    "close": "Close",
 ]
 
 func hasRule(_ node: JSONObject, _ slot: String) -> Bool {

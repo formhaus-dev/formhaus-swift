@@ -1,0 +1,158 @@
+{
+  "name": "check-scale",
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    },
+    {
+      "code": "rule-not-applicable",
+      "path": "/fields/1/validation/minLength"
+    },
+    {
+      "code": "condition-value-mismatch",
+      "path": "/fields/3/show/0/eq"
+    },
+    {
+      "code": "unknown-field-type",
+      "path": "/fields/5/type"
+    },
+    {
+      "code": "unknown-field-type",
+      "path": "/fields/6/type"
+    },
+    {
+      "code": "unknown-field-type",
+      "path": "/fields/7/type"
+    },
+    {
+      "code": "unknown-field-type",
+      "path": "/fields/8/type"
+    },
+    {
+      "code": "unknown-field-type",
+      "path": "/fields/9/type"
+    }
+  ],
+  "overlay": {
+    "fields": {
+      "nps": {
+        "options": {
+          "0": "Совсем нет"
+        }
+      }
+    }
+  },
+  "texts": {
+    "fields.nps.options.0": "Совсем нет",
+    "fields.nps.options.10": "Extremely likely"
+  },
+  "definition": {
+    "formatVersion": "1.2",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "nps",
+        "type": "scale",
+        "label": "NPS",
+        "validation": {
+          "min": 0,
+          "max": 10
+        },
+        "options": [
+          {
+            "value": "0",
+            "label": "Not at all likely"
+          },
+          {
+            "value": "10",
+            "label": "Extremely likely"
+          }
+        ]
+      },
+      {
+        "key": "stars",
+        "type": "rating",
+        "label": "Stars",
+        "validation": {
+          "min": 2,
+          "max": 10,
+          "minLength": 1
+        }
+      },
+      {
+        "key": "promoter",
+        "type": "text",
+        "label": "Promoter",
+        "show": [
+          {
+            "field": "nps",
+            "eq": 7
+          }
+        ]
+      },
+      {
+        "key": "wrong",
+        "type": "text",
+        "label": "Wrong",
+        "show": [
+          {
+            "field": "nps",
+            "eq": "9"
+          }
+        ]
+      },
+      {
+        "key": "low",
+        "type": "text",
+        "label": "Low",
+        "show": [
+          {
+            "field": "stars",
+            "lte": 2
+          }
+        ]
+      },
+      {
+        "key": "multiselect",
+        "type": "multi-select",
+        "label": "multi-select"
+      },
+      {
+        "key": "textarea",
+        "type": "text-area",
+        "label": "text-area"
+      },
+      {
+        "key": "datetime",
+        "type": "date-time",
+        "label": "date-time"
+      },
+      {
+        "key": "checkbox",
+        "type": "check-box",
+        "label": "check-box"
+      },
+      {
+        "key": "email",
+        "type": "e-mail",
+        "label": "e-mail"
+      },
+      {
+        "key": "xrating",
+        "type": "x-rating",
+        "label": "x-rating"
+      },
+      {
+        "key": "acmescale",
+        "type": "acme:scale",
+        "label": "acme:scale"
+      }
+    ]
+  }
+}

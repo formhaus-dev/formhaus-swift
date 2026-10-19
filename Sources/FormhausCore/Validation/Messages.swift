@@ -7,10 +7,10 @@ private let invalidValueMessage = "Invalid value"
 
 let defaultMessages: [MessageKey: String] = [
     "required": "This field is required",
-    "minLength": "Must be at least {min} characters",
-    "maxLength": "Must be at most {max} characters",
-    "minItems": "Must be at least {min} items",
-    "maxItems": "Must be at most {max} items",
+    "minLength": "Minimum length is {min}",
+    "maxLength": "Maximum length is {max}",
+    "minItems": "At least {min} required",
+    "maxItems": "At most {max} allowed",
     "min": "Must be at least {min}",
     "max": "Must be at most {max}",
     "pattern": "Invalid format",
@@ -99,5 +99,5 @@ func namedResolver(_ resolve: @escaping ResolveMessage) -> ResolveMessage {
 public func getDefaultMessage(_ rule: MessageKey, _ params: JSONObject = JSONObject()) -> String {
     let template = defaultMessages[rule] ?? invalidValueMessage
     let custom = params.has("unit") && (rule == .minLength || rule == .maxLength)
-    return formatText(custom ? template.replacingOccurrences(of: "characters", with: "{unit}") : template, params)
+    return formatText(custom ? "At \(rule == .minLength ? "least {min}" : "most {max}") {unit}" : template, params)
 }

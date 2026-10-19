@@ -836,6 +836,204 @@
           }
         }
       ]
+    },
+    {
+      "name": "discards stale before-hook work after an empty field is answered",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "personal"
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards a pending submission when an empty field is answered",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeSubmit": [
+          {
+            "defer": "allow"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "personal"
+        },
+        {
+          "do": "resolve",
+          "deferred": "allow"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "submitting": false,
+            "log": [
+              {
+                "call": "onBeforeSubmit",
+                "values": {
+                  "name": "Ada"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps a pending step change when a hook fills an empty hidden field",
+      "definition": {
+        "id": "multi",
+        "title": "Multi-Step",
+        "submit": {
+          "label": "Submit"
+        },
+        "steps": [
+          {
+            "id": "personal",
+            "title": "Personal Info",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "accountType",
+                "type": "radio",
+                "label": "Account",
+                "options": [
+                  {
+                    "value": "personal",
+                    "label": "Personal"
+                  },
+                  {
+                    "value": "business",
+                    "label": "Business"
+                  }
+                ]
+              },
+              {
+                "key": "leadId",
+                "type": "hidden"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business Info",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company"
+              }
+            ],
+            "show": [
+              {
+                "field": "accountType",
+                "eq": "business"
+              }
+            ]
+          },
+          {
+            "id": "payment",
+            "title": "Payment",
+            "fields": [
+              {
+                "key": "method",
+                "type": "select",
+                "label": "Method",
+                "options": [
+                  {
+                    "value": "bank",
+                    "label": "Bank"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "leadId",
+          "value": "lead-1"
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "payment",
+            "stepValidating": false
+          }
+        }
+      ]
     }
   ]
 }

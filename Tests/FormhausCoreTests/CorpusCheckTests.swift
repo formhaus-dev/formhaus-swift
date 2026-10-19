@@ -4,10 +4,13 @@ import Testing
 @Suite("Conformance corpus: definition checks")
 struct CorpusCheckTests {
     static let audited = [
-        "check-clean", "check-conditions", "check-container-conditions", "check-container-keys", "check-container-nesting",
+        "check-clean", "check-columns", "check-columns-not-applicable", "check-conditions", "check-container-conditions",
+        "check-container-keys", "check-container-nesting",
         "check-container-scope", "check-container-shape", "check-custom-type-names", "check-disabled-not-applicable",
-        "check-escaped-property", "check-field-rules", "check-group-scope", "check-missing-required", "check-null-lists",
-        "check-numeric-id", "check-outdated-version-1-0", "check-outdated-version-missing", "check-outdated-version-newer",
+        "check-escaped-property", "check-field-rules", "check-group-scope", "check-image-urls", "check-matrix", "check-missing-required",
+        "check-null-lists",
+        "check-numeric-id", "check-outdated-version-1-0", "check-outdated-version-missing", "check-outdated-version-newer", "check-scale",
+        "check-scale-range",
         "check-section-forward-reference", "check-slow-pattern", "disabled-actions", "flat-api-steps", "format-version",
         "i18n-empty-overlay", "i18n-exclusive-branches", "i18n-own-properties", "i18n-signup-steps", "impossible-dates",
         "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "options-from", "proto-keys",

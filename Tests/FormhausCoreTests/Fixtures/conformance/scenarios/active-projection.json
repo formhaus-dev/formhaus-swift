@@ -434,7 +434,7 @@
         {
           "do": "validateField",
           "key": "name",
-          "returns": "Must be at least 3 characters"
+          "returns": "Minimum length is 3"
         },
         {
           "do": "setValue",

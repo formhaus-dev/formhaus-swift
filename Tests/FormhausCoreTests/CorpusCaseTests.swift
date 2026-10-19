@@ -23,7 +23,8 @@ struct CorpusCaseTests {
     @Test("texts", arguments: withTexts)
     func texts(name: String) throws {
         let fixture = Corpus.fixture(name)
-        let slots = try textSlots(fixture.runtime())
+        let unchecked = fixture.issues.isEmpty ? nil : fixture.definition.objectValue.map(FormDefinition.init(unchecked:))
+        let slots = try textSlots(unchecked ?? fixture.runtime())
         #expect(duplicates(slots.map(\.address)).isEmpty, "duplicate text slot addresses")
         for (address, text) in fixture.texts ?? JSONObject() {
             let found = slots.filter { sameUnits($0.address, address) }.map { JSONValue.string($0.text) }

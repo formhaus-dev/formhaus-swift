@@ -1,0 +1,251 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "field-rating",
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "field-rating",
+    "title": "field-rating",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "stars",
+        "type": "rating",
+        "label": "stars",
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "food",
+        "type": "rating",
+        "label": "food",
+        "validation": {
+          "min": 3,
+          "max": 10
+        },
+        "options": [
+          {
+            "value": "1",
+            "label": "Awful"
+          },
+          {
+            "value": "10",
+            "label": "Perfect"
+          }
+        ]
+      },
+      {
+        "key": "custom",
+        "type": "rating",
+        "label": "custom",
+        "validation": {
+          "min": 2,
+          "minMessage": "Pick at least 2 stars"
+        }
+      },
+      {
+        "key": "complaint",
+        "type": "text",
+        "label": "complaint",
+        "show": [
+          {
+            "field": "stars",
+            "lte": 2
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "accepts 5 on the default range",
+      "values": {
+        "stars": 5
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "stars",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts 1 on the default range",
+      "values": {
+        "stars": 1
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "stars",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "rejects 6 on the default range",
+      "values": {
+        "stars": 6
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "stars",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects 0",
+      "values": {
+        "stars": 0
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "stars",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects a non-integer value",
+      "values": {
+        "stars": 7.5
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "stars",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects a string",
+      "values": {
+        "stars": "five"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "stars",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "requires a value",
+      "values": {},
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "stars",
+          "returns": "This field is required"
+        }
+      ]
+    },
+    {
+      "name": "accepts 10 when max is 10",
+      "values": {
+        "food": 10
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "food",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "rejects 11 when max is 10",
+      "values": {
+        "food": 11
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "food",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "applies min as an ordinary rule",
+      "values": {
+        "food": 2
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "food",
+          "returns": "Must be at least 3"
+        }
+      ]
+    },
+    {
+      "name": "uses minMessage for min",
+      "values": {
+        "custom": 1
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "custom",
+          "returns": "Pick at least 2 stars"
+        }
+      ]
+    },
+    {
+      "name": "accepts the min itself",
+      "values": {
+        "food": 3
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "food",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "skips an empty optional rating",
+      "values": {},
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "food",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "shows a field by lte",
+      "values": {
+        "stars": 4
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["stars", "food", "custom"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "stars",
+          "value": 2
+        },
+        {
+          "expect": {
+            "fields": ["stars", "food", "custom", "complaint"]
+          }
+        }
+      ]
+    }
+  ]
+}

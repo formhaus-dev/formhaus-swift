@@ -1,0 +1,303 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "field-scale",
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "field-scale",
+    "title": "field-scale",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "nps",
+        "type": "scale",
+        "label": "nps",
+        "validation": {
+          "min": 0,
+          "max": 10,
+          "required": true
+        },
+        "options": [
+          {
+            "value": "0",
+            "label": "Not at all likely"
+          },
+          {
+            "value": "10",
+            "label": "Extremely likely"
+          }
+        ]
+      },
+      {
+        "key": "ease",
+        "type": "scale",
+        "label": "ease"
+      },
+      {
+        "key": "detractor",
+        "type": "text",
+        "label": "detractor",
+        "show": [
+          {
+            "field": "nps",
+            "lte": 6
+          }
+        ]
+      },
+      {
+        "key": "promoter",
+        "type": "text",
+        "label": "promoter",
+        "show": [
+          {
+            "field": "nps",
+            "gte": 9
+          }
+        ]
+      },
+      {
+        "key": "answered",
+        "type": "text",
+        "label": "answered",
+        "show": [
+          {
+            "field": "nps",
+            "notEmpty": true
+          }
+        ]
+      },
+      {
+        "key": "exact",
+        "type": "text",
+        "label": "exact",
+        "show": [
+          {
+            "field": "ease",
+            "eq": 3
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "counts 0 on a 0-based scale as filled",
+      "values": {
+        "nps": 0
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": null
+        },
+        {
+          "expect": {
+            "fields": ["nps", "ease", "detractor", "answered"]
+          }
+        },
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    },
+    {
+      "name": "accepts the top of the range",
+      "values": {
+        "nps": 10
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "rejects a value above the range",
+      "values": {
+        "nps": 11
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects a value below the range",
+      "values": {
+        "nps": -1
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects a non-integer value",
+      "values": {
+        "nps": 7.5
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects a numeric string in the engine",
+      "values": {
+        "nps": "7"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects a boolean",
+      "values": {
+        "nps": true
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "requires a value",
+      "values": {},
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "nps",
+          "returns": "This field is required"
+        }
+      ]
+    },
+    {
+      "name": "defaults the range to 1 to 5",
+      "values": {
+        "ease": 5
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "ease",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "rejects 0 on the default range",
+      "values": {
+        "ease": 0
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "ease",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "rejects 6 on the default range",
+      "values": {
+        "ease": 6
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "ease",
+          "returns": "Select one of the available options"
+        }
+      ]
+    },
+    {
+      "name": "shows fields by gte and lte",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "fields": ["nps", "ease"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "nps",
+          "value": 9
+        },
+        {
+          "expect": {
+            "fields": ["nps", "ease", "promoter", "answered"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "nps",
+          "value": 6
+        },
+        {
+          "expect": {
+            "fields": ["nps", "ease", "detractor", "answered"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "nps",
+          "value": 7
+        },
+        {
+          "expect": {
+            "fields": ["nps", "ease", "answered"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "ease",
+          "value": 3
+        },
+        {
+          "expect": {
+            "fields": ["nps", "ease", "answered", "exact"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "submits the number",
+      "values": {
+        "nps": 0,
+        "ease": 2
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "nps": 0,
+              "ease": 2
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

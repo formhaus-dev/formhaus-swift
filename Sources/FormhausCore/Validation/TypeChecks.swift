@@ -1,8 +1,11 @@
 let booleanTypes = ["checkbox", "switch"]
 let builtInTypes = [
     "text", "email", "phone", "number", "password", "select", "autocomplete", "multiselect", "checkbox", "radio", "switch",
-    "file", "date", "datetime", "time", "textarea", "hidden",
+    "file", "date", "datetime", "time", "textarea", "hidden", "scale", "rating",
 ]
+let scaleTypes = ["scale", "rating"]
+let numberTypes = ["number"] + scaleTypes
+let listTypes = ["multiselect"]
 
 let maxStringLength = 10000
 let maxHiddenLength = 2000
@@ -18,7 +21,7 @@ private let dateOnly = JSRegex(unchecked: "^\(datePattern)$")
 private let dateTime = JSRegex(unchecked: "^\(datePattern)T\(hours)(?::[0-5]\\d(?:\\.\\d{1,3})?)?(?:Z|[+-]\(hours))?$")
 private let timePattern = JSRegex(unchecked: "^\(hours)(?::[0-5]\\d)?$")
 private let textTypes: Set<String> = ["text", "phone", "password", "textarea", "autocomplete", "hidden"]
-private let untrimmedTypes: Set<String> = ["password", "number", "select", "radio", "file"]
+private let untrimmedTypes = Set(["password", "select", "radio", "file"] + numberTypes)
 
 private enum Format {
     case email, date, datetime, time
@@ -69,10 +72,10 @@ func trimValue(_ field: FormField, _ value: JSONValue?) -> JSONValue? {
 }
 
 func normalizeValue(_ field: FormField, _ input: JSONValue?) -> JSONValue? {
-    if let items = input?.arrayValue, items.isEmpty, field.type != "multiselect", builtInTypes.contains(field.type) { return nil }
+    if let items = input?.arrayValue, items.isEmpty, !listTypes.contains(field.type), builtInTypes.contains(field.type) { return nil }
     if field.isGroup { return normalizeItems(field, input) }
     let value = trimValue(field, input)
-    guard field.type == "number", case .string(let text)? = value, decimal.test(text) == true else { return value }
+    guard numberTypes.contains(field.type), case .string(let text)? = value, decimal.test(text) == true else { return value }
     let parsed = jsNumber(fromString: text)
     return parsed.isFinite ? .number(parsed) : value
 }
@@ -136,7 +139,7 @@ private func primitiveError(_ field: FormField, _ value: JSONValue, _ fail: Fail
 }
 
 private func isEmpty(_ field: FormField, _ value: JSONValue?) -> Bool {
-    isBlank(value) && (field.type == "multiselect" || value?.arrayValue == nil)
+    isBlank(value) && (listTypes.contains(field.type) || value?.arrayValue == nil)
 }
 
 private func groupError(_ field: FormField, _ value: JSONValue, _ fail: Fail) -> String? {
@@ -154,7 +157,11 @@ func typeError(_ field: FormField, _ input: JSONValue?, _ resolve: @escaping Res
     if field.isGroup { return groupError(field, value, fail) }
     if booleanTypes.contains(field.type) { return value.boolValue != nil ? nil : fail("boolean", [:]) }
     if field.type == "number" { return value.isFiniteNumber ? nil : fail("number", [:]) }
-    if field.type == "multiselect" { return multiselectError(field, value, fail) }
+    if let range = field.scaleRange {
+        let point = value.numberValue.map { $0.isInteger && range.min <= $0 && $0 <= range.max }
+        return point == true ? nil : fail("option", [:])
+    }
+    if listTypes.contains(field.type) { return multiselectError(field, value, fail) }
     if field.type == "file" { return stringError(field, value, "file", fail) }
     if let format = Format(field.type) { return formatError(field, value, format, fail) }
     if field.type == "select" || field.type == "radio" {
@@ -167,7 +174,8 @@ func typeMessageKeys(_ field: FormField) -> [MessageKey] {
     if field.isGroup { return ["value"] }
     if booleanTypes.contains(field.type) { return ["boolean"] }
     if field.type == "number" { return ["number"] }
-    if field.type == "multiselect" { return ["options", "option"] }
+    if field.isScale { return ["option"] }
+    if listTypes.contains(field.type) { return ["options", "option"] }
     if let format = Format(field.type) { return [format.key, "maxLength"] }
     if field.type == "file" { return ["file", "maxLength"] }
     if field.type == "select" || field.type == "radio" { return ["option", "maxLength"] }

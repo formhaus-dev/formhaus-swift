@@ -339,7 +339,7 @@
         {
           "do": "validate",
           "returns": {
-            "people": "Must be at least 2 items"
+            "people": "At least 2 required"
           }
         }
       ]
@@ -1433,6 +1433,100 @@
                   "name": "Cy"
                 }
               ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps item ids distinct when items that are not objects are edited",
+      "definition": {
+        "id": "list",
+        "title": "List",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "g",
+            "type": "group",
+            "label": "G",
+            "fields": [
+              {
+                "key": "n",
+                "type": "text",
+                "label": "N"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "g": [
+          1,
+          2,
+          {
+            "n": "x"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "distinctItemIds": {
+              "g": 3
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "g",
+          "index": 0,
+          "field": "n",
+          "value": "a"
+        },
+        {
+          "do": "setItemValue",
+          "key": "g",
+          "index": 1,
+          "field": "n",
+          "value": "b"
+        },
+        {
+          "expect": {
+            "values": {
+              "g": [
+                {
+                  "n": "a"
+                },
+                {
+                  "n": "b"
+                },
+                {
+                  "n": "x"
+                }
+              ]
+            },
+            "distinctItemIds": {
+              "g": 3
+            }
+          }
+        },
+        {
+          "do": "removeItem",
+          "key": "g",
+          "index": 0,
+          "returns": true
+        },
+        {
+          "do": "addItem",
+          "key": "g",
+          "returns": true
+        },
+        {
+          "expect": {
+            "distinctItemIds": {
+              "g": 3
             }
           }
         }

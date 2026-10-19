@@ -6,14 +6,14 @@ enum Properties {
     static let step: [String] = ["id", "title", "description", "fields", "show", "showAny", "routes", "next", "back", "skip", "i18n"]
     static let field: [String] = [
         "key", "type", "label", "placeholder", "helperText", "autoAdvance", "defaultValue", "source", "show", "showAny", "validation",
-        "options", "layout", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode", "props", "i18n",
+        "options", "layout", "columns", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode", "props", "i18n",
     ]
-    static let section: [String] = ["key", "type", "title", "description", "show", "showAny", "fields", "i18n"]
+    static let section: [String] = ["key", "type", "title", "description", "layout", "show", "showAny", "fields", "i18n"]
     static let group: [String] = [
         "key", "type", "label", "helperText", "itemLabel", "addLabel", "removeLabel", "defaultItems", "show", "showAny", "validation",
         "fields", "i18n",
     ]
-    static let option: [String] = ["value", "label", "i18n"]
+    static let option: [String] = ["value", "label", "image", "i18n"]
     static let action: [String] = ["label", "variant", "disabled", "i18n"]
     static let route: [String] = ["to", "show", "showAny"]
     static let validation: [String] = [
@@ -22,6 +22,7 @@ enum Properties {
     ]
 }
 
+private let safeImage = JSRegex(unchecked: "^(?i:https:|data:image\\/)")
 private let labelHint = "Add a label so screen readers can name the input"
 
 private func unknown(_ value: JSONObject, _ path: String, _ known: [String], hint: (String) -> String? = { _ in nil }) -> [DefinitionIssue]
@@ -63,10 +64,24 @@ private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     if empty { issues.append(warning("empty-label", "\(path)/label", "the label of \"\(field.key)\" is empty", labelHint)) }
     issues += unknown(field.json, path, field.isGroup ? Properties.group : Properties.field, hint: misplaced)
     for (index, option) in (field.options ?? []).enumerated() {
-        issues +=
-            required(option.json, "\(path)/options/\(index)", "label") + unknown(option.json, "\(path)/options/\(index)", Properties.option)
+        let at = "\(path)/options/\(index)"
+        issues += required(option.json, at, "label") + unknown(option.json, at, Properties.option)
+        if let image = option.image, safeImage.test(image) != true {
+            issues.append(
+                warning(
+                    "unsafe-image-url", "\(at)/image",
+                    "the image of option \"\(option.value ?? "")\" in \"\(field.key)\" is not an https: or data:image/ URL",
+                    "Serve the image over https"))
+        }
     }
     if let validation = field.validation { issues += unknown(validation.json, "\(path)/validation", Properties.validation) }
+    if field.json["columns"] != nil, !field.hasPictures || entry.parent?.json["layout"]?.stringValue == "matrix" {
+        issues.append(
+            warning(
+                "columns-not-applicable", "\(path)/columns",
+                "\"columns\" of \"\(field.key)\" applies to radio and multiselect options with images outside a matrix",
+                "Remove \"columns\""))
+    }
     return issues
 }
 

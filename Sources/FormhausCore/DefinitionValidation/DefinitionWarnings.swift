@@ -2,9 +2,9 @@ private let listOperators = ["in", "notIn"]
 private let comparisons = ["gt", "gte", "lt", "lte"]
 
 private func expectedType(_ field: FormField) -> String? {
-    if field.type == "number" { return "number" }
+    if numberTypes.contains(field.type) { return "number" }
     if booleanTypes.contains(field.type) { return "boolean" }
-    return builtInTypes.contains(field.type) && field.type != "multiselect" && field.type != "file" ? "string" : nil
+    return builtInTypes.contains(field.type) && !listTypes.contains(field.type) && field.type != "file" ? "string" : nil
 }
 
 private func valueIssue(_ target: FormField, _ name: String, _ operand: JSONValue?, _ path: String) -> [DefinitionIssue] {
@@ -19,11 +19,11 @@ private func valueIssue(_ target: FormField, _ name: String, _ operand: JSONValu
             ]
     }
     if comparisons.contains(name) {
-        guard target.type == "multiselect" || booleanTypes.contains(target.type) else { return [] }
+        guard listTypes.contains(target.type) || booleanTypes.contains(target.type) else { return [] }
         return mismatch(
             "\"\(target.key)\" is a \(target.type) field, so \"\(name)\" never matches it", "Compare a number, text, radio or select field")
     }
-    if target.type == "multiselect" {
+    if listTypes.contains(target.type) {
         let result = name == "neq" || name == "notIn" ? "always" : "never"
         return mismatch(
             "\"\(target.key)\" holds a list of values, so \"\(name)\" \(result) matches it", "Use notEmpty, or a select or radio field")
@@ -139,9 +139,9 @@ private func ruleWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [Defi
     }
     let items = field.isGroup
     let known = items || builtInTypes.contains(field.type)
-    let numeric = field.type == "number"
+    let numeric = numberTypes.contains(field.type)
     let ranges = known && !numeric ? ["min", "max"].filter { rules.has($0) } : []
-    let sized = known && ["number", "checkbox", "switch"].contains(field.type) ? ["minLength", "maxLength"].filter { rules.has($0) } : []
+    let sized = known && (numberTypes + booleanTypes).contains(field.type) ? ["minLength", "maxLength"].filter { rules.has($0) } : []
     var issues = ranges.map {
         rule($0, "\"\($0)\" applies to number fields only", "Use \($0)Length to limit \(items ? "the number of items" : "text length")")
     }
@@ -166,13 +166,16 @@ private func ruleWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [Defi
 private func fieldWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [DefinitionIssue] {
     let field = entry.field
     let custom = !builtInTypes.contains(field.type) && field.type != "group"
-    let match = custom ? closest(field.type, builtInTypes + ["group", "section"]) : nil
+    let named = field.type.contains("-") || field.type.contains(":")
+    let spelled = field.type.filter { !"-_:".contains($0) }
+    let match =
+        !custom ? nil : named ? builtInTypes.first { sameText($0, spelled) } : closest(field.type, builtInTypes + ["group", "section"])
     let problem = "\"\(field.type)\" is not a built-in field type"
     var issues: [DefinitionIssue] = []
     if let match {
         issues.append(
             warning("unknown-field-type", "\(entry.path)/type", problem, "Use \"\(match)\", or register a component for \"\(field.type)\""))
-    } else if custom && !field.type.contains("-") && !field.type.contains(":") {
+    } else if custom && !named {
         issues.append(
             warning(
                 "custom-type-name", "\(entry.path)/type", problem,
@@ -222,14 +225,20 @@ private func versionWarnings(_ context: CheckContext) -> [DefinitionIssue] {
     }
     let major = parts[0]
     let minor = parts.count > 1 ? parts[1] : 0
-    guard let container = context.nodes.first(where: { $0.node.type == "section" || $0.node.type == "group" }), major == 1, !(minor >= 1)
-    else { return [] }
+    let scale = context.nodes.first { scaleTypes.contains($0.node.type) }
+    let container = context.nodes.first { $0.node.type == "section" || $0.node.type == "group" }
+    let (found, needed): (NodeEntry?, Int) = scale != nil && minor < 3 ? (scale, 3) : (container, 1)
+    guard let found, major == 1, !(minor >= Double(needed)) else { return [] }
+    let hint =
+        needed == 3
+        ? "Set \"formatVersion\": \"1.3\". Older versions of @formhaus/core treat this type as a custom type and do not validate it. "
+            + "Upgrade the server that runs validateSubmission() first"
+        : "Set \"formatVersion\": \"1.1\", so that older versions of @formhaus/core "
+            + "reject the definition instead of skipping the fields inside"
     return [
         warning(
-            "outdated-format-version", "/formatVersion", "\(container.path) is a \(container.node.type), which needs format 1.1",
-            "Set \"formatVersion\": \"1.1\", so that older versions of @formhaus/core "
-                + "reject the definition instead of skipping the fields inside"
-        )
+            "outdated-format-version", "/formatVersion",
+            "\(found.path) is a \(found.node.type), which needs format 1.\(needed)", hint)
     ]
 }
 
