@@ -180,6 +180,10 @@ public final class FormEngine {
         core.getSubmitValues()
     }
 
+    public func isActionDisabled(_ action: FormAction?) -> Bool {
+        FormhausCore.isActionDisabled(action, getSubmitValues(), limits: core.visibility.limits(core.values.json))
+    }
+
     public func goToStepWithField(_ key: String) {
         guard core.isMultiStep else { return }
         let target = core.visibility.findStepIndex(key, core.values.json, core.currentStepIndex)

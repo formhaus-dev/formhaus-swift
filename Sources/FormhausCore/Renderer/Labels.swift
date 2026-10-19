@@ -114,7 +114,7 @@ extension FormEngine {
             cancelAction: definition.cancel, isFirstStep: isFirstStep, isLastStep: last, isMultiStep: isMultiStep,
             primaryLabel: last
                 ? definition.submit.label ?? label("submit", source) : next.action?.label ?? label("continue", source),
-            primaryDisabled: isActionDisabled(primaryAction, getSubmitValues(), limits: definition.listLimits),
+            primaryDisabled: isActionDisabled(primaryAction),
             showPrimary: last || next != .hidden,
             showBack: isMultiStep && !isFirstStep && step?.back != .hidden,
             backLabel: step?.back.action?.label ?? label("back", source),
