@@ -10,10 +10,15 @@ struct Prefilter: Sendable {
     let anchored: Bool
     let first: CharSet?
     let minimumLength: Int
+    private let shifts: [Int]
 
     init(_ root: RegexNode) {
         minimumLength = root.minimumLength
-        required = Self.required(root)
+        let required = Self.required(root)
+        self.required = required
+        var shifts = Array(repeating: required.count, count: 256)
+        for (index, unit) in required.dropLast().enumerated() { shifts[Int(unit & 0xFF)] = required.count - 1 - index }
+        self.shifts = shifts
         anchored = Self.anchored(root)
         let first = Self.first(root)
         self.first = first?.nullable == false ? first?.set : nil
@@ -21,15 +26,15 @@ struct Prefilter: Sendable {
 
     func admits(_ text: [UInt16]) -> Bool {
         guard text.count >= minimumLength else { return false }
-        guard let lead = required.first else { return true }
-        guard text.count >= required.count else { return false }
+        guard let tail = required.last else { return true }
+        let last = required.count - 1
         return text.withUnsafeBufferPointer { text in
             required.withUnsafeBufferPointer { required in
                 var start = 0
-                let last = text.count - required.count
-                while start <= last {
-                    if text[start] == lead, (1..<required.count).allSatisfy({ text[start + $0] == required[$0] }) { return true }
-                    start += 1
+                while start + last < text.count {
+                    let unit = text[start + last]
+                    if unit == tail, (0..<last).allSatisfy({ text[start + $0] == required[$0] }) { return true }
+                    start += shifts[Int(unit & 0xFF)]
                 }
                 return false
             }

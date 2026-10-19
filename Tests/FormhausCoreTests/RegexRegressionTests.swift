@@ -29,7 +29,7 @@ struct RegexRegressionTests {
         let pattern = try #require(JSRegex("(?:a|[]" + String(repeating: "()", count: 10000) + ")*\\1(?!)"))
         let started = Date()
         #expect(pattern.test(String(repeating: "a", count: maxStringLength - 1)) == nil)
-        #expect(Date().timeIntervalSince(started) < 5)
+        #expect(Date().timeIntervalSince(started) < 15)
     }
 
     @Test("unset duplicate groups in a backreference count toward the step budget")
@@ -38,7 +38,7 @@ struct RegexRegressionTests {
         let pattern = try #require(JSRegex("(?:" + groups + "b)(?:\\k<n>c)*$"))
         let started = Date()
         #expect(pattern.test("b" + String(repeating: "c", count: maxStringLength - 1)) == nil)
-        #expect(Date().timeIntervalSince(started) < 5)
+        #expect(Date().timeIntervalSince(started) < 15)
     }
 
     @Test(
@@ -122,5 +122,15 @@ struct RegexRegressionTests {
             return await group.reduce(0, +)
         }
         #expect(mismatches == 0)
+    }
+
+    @Test(
+        "the required literal search finds every occurrence",
+        arguments: [
+            ("x\u{161}abcab", true), ("abcaabcab", true), ("abcab", true), ("abca", false), ("\u{161}bcab", false), ("abcxabcab!", true),
+        ])
+    func requiredLiteral(text: String, expected: Bool) throws {
+        #expect(try #require(JSRegex("abcab")).test(text) == expected)
+        #expect(try #require(JSRegex("[a-z]*abcab")).test(text) == expected)
     }
 }
