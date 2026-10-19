@@ -25,7 +25,7 @@ public struct Palette: Sendable {
 
     public init(
         text: Color = Color(hex: 0x18181B), textMuted: Color = Color(hex: 0x5F5F68), border: Color = Color(hex: 0xD4D4D8),
-        inputBorder: Color = Color(hex: 0x8E8E93), borderHover: Color = Color(hex: 0xA1A1AA), control: Color = Color(hex: 0x71717A),
+        inputBorder: Color = Color(hex: 0x84848D), borderHover: Color = Color(hex: 0xA1A1AA), control: Color = Color(hex: 0x71717A),
         error: Color = Color(hex: 0xC0352D),
         errorHover: Color = Color(hex: 0x9E2A23), background: Color = .white, backgroundDisabled: Color = Color(hex: 0xF4F4F5),
         backgroundHover: Color = Color(hex: 0xF6F6F7), primary: Color = Color(hex: 0x5502FB), onPrimary: Color = .white,
@@ -50,16 +50,24 @@ public struct Palette: Sendable {
         self.shadow = shadow
     }
 
-    public static let light = Palette()
+    public static let light: Palette = {
+        var palette = Palette()
+        palette.inputBorderHover = Color(hex: 0x5F5F68)
+        return palette
+    }()
 
-    public static let dark = Palette(
-        text: Color(hex: 0xECECEE), textMuted: Color(hex: 0xA8A8B3), border: Color(hex: 0x3A3A41), inputBorder: Color(hex: 0x6B6B75),
-        borderHover: Color(hex: 0x5A5A63),
-        control: Color(hex: 0x80808B), error: Color(hex: 0xF2736A), errorHover: Color(hex: 0xF6958E), background: Color(hex: 0x18181C),
-        backgroundDisabled: Color(hex: 0x232328), backgroundHover: Color(hex: 0x212126), primary: Color(hex: 0x7C4DFF),
-        onPrimary: .white, secondaryBorder: Color(hex: 0x3A3A41), scrim: Color(hex: 0x000000, opacity: 0.55),
-        shadow: Color(hex: 0x000000, opacity: 0.6)
-    )
+    public static let dark: Palette = {
+        var palette = Palette(
+            text: Color(hex: 0xECECEE), textMuted: Color(hex: 0xA8A8B3), border: Color(hex: 0x3A3A41), inputBorder: Color(hex: 0x73737D),
+            borderHover: Color(hex: 0x5A5A63),
+            control: Color(hex: 0x80808B), error: Color(hex: 0xF2736A), errorHover: Color(hex: 0xF6958E), background: Color(hex: 0x18181C),
+            backgroundDisabled: Color(hex: 0x232328), backgroundHover: Color(hex: 0x212126), primary: Color(hex: 0x7C4DFF),
+            onPrimary: .white, secondaryBorder: Color(hex: 0x3A3A41), scrim: Color(hex: 0x000000, opacity: 0.55),
+            shadow: Color(hex: 0x000000, opacity: 0.6)
+        )
+        palette.inputBorderHover = Color(hex: 0x9A9AA5)
+        return palette
+    }()
 }
 
 public struct ResolvedPalette: Sendable {

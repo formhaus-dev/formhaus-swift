@@ -29,10 +29,11 @@ extension Palette {
         var raised = self
         raised.textMuted = raise(textMuted, to: 7)
         raised.control = raise(control, to: 4.5)
-        raised.border = raise(border, to: 3)
         raised.inputBorder = raise(inputBorder, to: 4.5)
-        raised.borderHover = raise(borderHover, to: 4.5)
-        raised.secondaryBorder = raise(secondaryBorder, to: 3)
+        raised.inputBorderHover = raise(inputBorderHover ?? text, to: 7)
+        raised.border = raised.inputBorder
+        raised.borderHover = raised.inputBorderHover ?? raised.inputBorder
+        raised.secondaryBorder = raised.inputBorder
         raised.error = raise(error, to: 4.5)
         raised.primary = raise(primary, to: 4.5)
         let fill = raised.primary.resolve(in: environment)

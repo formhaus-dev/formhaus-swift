@@ -21,7 +21,13 @@ func checkPalette(_ name: String, _ palette: Palette, increased: Bool) {
     for (check, value, minimum) in checks {
         #expect(value >= minimum, "\(name) \(check): \(value)")
     }
-    if increased { #expect(ratio(palette.border, background) >= 3, "\(name) border") }
+    if increased {
+        #expect(ratio(palette.border, palette.inputBorder) < 1.01, "\(name) card border follows the input border")
+        #expect(ratio(palette.secondaryBorder, palette.inputBorder) < 1.01, "\(name) secondary border follows the input border")
+    }
+    if let hover = palette.inputBorderHover {
+        #expect(ratio(hover, background) > ratio(palette.inputBorder, background), "\(name) input hover stands out")
+    }
 }
 
 private let forest: FormhausTheme = {
@@ -49,6 +55,14 @@ struct ContrastTests {
         checkPalette("forest \(scheme) increased", increased, increased: true)
         let primary = increased.primary.resolve(in: EnvironmentValues())
         #expect(primary.green > primary.red && primary.green > primary.blue)
+    }
+
+    @Test("formhaus input borders match the web tokens")
+    func webTokens() {
+        #expect(ratio(Palette.light.inputBorder, Color(hex: 0x84848D)) < 1.01)
+        #expect(ratio(Palette.dark.inputBorder, Color(hex: 0x73737D)) < 1.01)
+        #expect(ratio(Palette.light.inputBorderHover ?? .clear, Color(hex: 0x5F5F68)) < 1.01)
+        #expect(ratio(Palette.dark.inputBorderHover ?? .clear, Color(hex: 0x9A9AA5)) < 1.01)
     }
 
     @Test("an explicit Increase Contrast palette wins over the derived one")
