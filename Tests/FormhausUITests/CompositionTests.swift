@@ -29,7 +29,8 @@ private struct ColorField: View {
 private let everyType: JSONValue = [
     "id": "all", "title": "All", "submit": ["label": "Send"],
     "fields": .array(
-        ["radio", "multiselect", "select", "autocomplete", "checkbox", "switch", "date", "time", "datetime", "file"].map { type in
+        ["radio", "multiselect", "select", "autocomplete", "checkbox", "switch", "date", "time", "datetime", "file", "scale", "rating"].map
+        { type in
             ["key": .string(type), "type": .string(type), "label": .string(type), "options": [["value": "a", "label": "A"]]]
         }),
 ]
@@ -82,6 +83,8 @@ struct CompositionTests {
             .field("time") { DateField($0) }
             .field("datetime") { DateField($0) }
             .field("file") { FileField($0) }
+            .field("scale") { ScaleField($0) }
+            .field("rating") { RatingField($0) }
         let host = NSHostingView(rootView: FormFields(model: model).formhausComponents(components).frame(width: 400))
         host.frame = CGRect(x: 0, y: 0, width: 400, height: 1600)
         host.layoutSubtreeIfNeeded()

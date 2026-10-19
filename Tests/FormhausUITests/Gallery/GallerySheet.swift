@@ -21,7 +21,11 @@ struct GalleryEntry {
 func stateModel(_ entry: GalleryEntry, _ state: FieldStateKind) throws -> FormModel {
     var field = entry.field.objectValue ?? [:]
     let key = field["key"]?.stringValue ?? "field"
-    if state == .error, field["validation"] == nil { field["validation"] = ["required": true] }
+    if state == .error {
+        var validation = field["validation"]?.objectValue ?? [:]
+        validation["required"] = true
+        field["validation"] = .object(validation)
+    }
     let definition: JSONValue = ["id": "gallery", "title": "Gallery", "submit": ["label": "Send"], "fields": [.object(field)]]
     var values: JSONObject = [:]
     if state != .empty, state != .error, let value = entry.value { values[key] = value }
