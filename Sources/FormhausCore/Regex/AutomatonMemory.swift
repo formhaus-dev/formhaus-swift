@@ -1,21 +1,52 @@
 import os
 
+final class MemoryPool: Sendable {
+    struct Entry {
+        weak var shard: AutomatonShard?
+    }
+
+    static let shared = MemoryPool()
+    @TaskLocal static var current = shared
+
+    private let total = OSAllocatedUnfairLock(initialState: 0)
+    let registry = OSAllocatedUnfairLock(uncheckedState: [ObjectIdentifier: Entry]())
+
+    var reserved: Int { total.withLock { $0 } }
+
+    func take(_ bytes: Int) -> Bool {
+        total.withLock { total in
+            guard total + bytes <= AutomatonMemory.globalLimit else { return false }
+            total += bytes
+            return true
+        }
+    }
+
+    func give(_ bytes: Int) {
+        total.withLock { $0 -= bytes }
+    }
+
+    func reclaim() -> Bool {
+        let shards = registry.withLockUnchecked { $0.values.compactMap(\.shard) }
+        return shards.contains { $0.evict(sparingRecent: true) } || shards.contains { $0.evict(sparingRecent: false) }
+    }
+}
+
 struct AutomatonMemory: Sendable {
     static let patternLimit = 1 << 20
     static let globalLimit = 32 << 20
     private static let chunk = 4 << 10
-    private static let pool = OSAllocatedUnfairLock(initialState: 0)
 
+    let pool = MemoryPool.current
     private(set) var used = 0
     private var reserved = 0
 
-    static var reservedTotal: Int { pool.withLock { $0 } }
+    static var reservedTotal: Int { MemoryPool.current.reserved }
 
     mutating func reserve(_ bytes: Int) -> Bool {
         guard used + bytes <= Self.patternLimit else { return false }
         if used + bytes > reserved {
             let grant = min(max(Self.chunk, used + bytes - reserved), Self.patternLimit - reserved)
-            guard Self.take(grant) || AutomatonShard.reclaim() && Self.take(grant) else { return false }
+            guard pool.take(grant) || pool.reclaim() && pool.take(grant) else { return false }
             reserved += grant
         }
         used += bytes
@@ -23,29 +54,15 @@ struct AutomatonMemory: Sendable {
     }
 
     mutating func release() {
-        let returned = reserved
-        Self.pool.withLock { $0 -= returned }
+        pool.give(reserved)
         used = 0
         reserved = 0
-    }
-
-    private static func take(_ bytes: Int) -> Bool {
-        pool.withLock { total in
-            guard total + bytes <= globalLimit else { return false }
-            total += bytes
-            return true
-        }
     }
 }
 
 final class AutomatonShard: @unchecked Sendable {
-    private struct Entry {
-        weak var shard: AutomatonShard?
-    }
-
-    private static let registry = OSAllocatedUnfairLock(uncheckedState: [ObjectIdentifier: Entry]())
-
     private let template: LazyDFA
+    private let pool: MemoryPool
     private let lock = UnsafeMutablePointer<os_unfair_lock>.allocate(capacity: 1)
     @exclusivity(unchecked) private var automaton: LazyDFA
     @exclusivity(unchecked) private var recent = false
@@ -53,14 +70,15 @@ final class AutomatonShard: @unchecked Sendable {
     init(_ template: LazyDFA) {
         self.template = template
         automaton = template
+        pool = template.pool
         lock.initialize(to: os_unfair_lock())
-        let entry = Entry(shard: self)
-        Self.registry.withLockUnchecked { $0[ObjectIdentifier(self)] = entry }
+        let entry = MemoryPool.Entry(shard: self)
+        pool.registry.withLockUnchecked { $0[ObjectIdentifier(self)] = entry }
     }
 
     deinit {
         let key = ObjectIdentifier(self)
-        Self.registry.withLockUnchecked { _ = $0.removeValue(forKey: key) }
+        pool.registry.withLockUnchecked { _ = $0.removeValue(forKey: key) }
         automaton.release()
         lock.deallocate()
     }
@@ -78,12 +96,7 @@ final class AutomatonShard: @unchecked Sendable {
         return Result { () throws(BudgetExceeded) in try body(&automaton) }
     }
 
-    static func reclaim() -> Bool {
-        let shards = registry.withLockUnchecked { $0.values.compactMap(\.shard) }
-        return shards.contains { $0.evict(sparingRecent: true) } || shards.contains { $0.evict(sparingRecent: false) }
-    }
-
-    private func evict(sparingRecent: Bool) -> Bool {
+    func evict(sparingRecent: Bool) -> Bool {
         guard os_unfair_lock_trylock(lock) else { return false }
         defer { os_unfair_lock_unlock(lock) }
         guard automaton.bytes > 0 else { return false }
