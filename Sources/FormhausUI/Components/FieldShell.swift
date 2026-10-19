@@ -22,14 +22,15 @@ public struct FieldShell<Content: View>: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.s3) {
             if !isInline, !context.label.isEmpty {
-                FieldLabel(text: context.label, required: context.isRequired)
+                FieldLabel(text: context.label, required: context.isRequired, requiredLabel: context.label("required"))
                     .accessibilityAddTraits(variant == .group ? .isHeader : [])
+                    .measured("\(context.key)/label")
             }
             if !isInline, let helper = context.helperText {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
                     .padding(.top, -tokens.spacing.s1)
             }
-            content
+            content.measured("\(context.key)/control")
             if isInline, let helper = context.helperText {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true).padding(.leading, inset)
                     .padding(.top, variant == .row ? -tokens.spacing.s3 : -tokens.spacing.s1)
@@ -40,6 +41,8 @@ public struct FieldShell<Content: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
+        .opacity(isInline && context.isLocked ? 0.6 : 1)
+        .measured("\(context.key)/field")
         .accessibilityElement(children: .contain)
         .formhausScrollAnchor(context)
     }
@@ -53,17 +56,19 @@ public struct FieldLabel: View {
     @Environment(\.formhausTokens) private var tokens
     let text: String
     let required: Bool
+    let requiredLabel: String
 
-    public init(text: String, required: Bool) {
+    public init(text: String, required: Bool, requiredLabel: String = "required") {
         self.text = text
         self.required = required
+        self.requiredLabel = requiredLabel
     }
 
     public var body: some View {
         (Text(text) + Text(required ? " *" : "").foregroundStyle(tokens.colors.error))
             .formhausText(.label)
             .fixedSize(horizontal: false, vertical: true)
-            .accessibilityLabel(text)
+            .accessibilityLabel(required ? "\(text), \(requiredLabel)" : text)
     }
 }
 

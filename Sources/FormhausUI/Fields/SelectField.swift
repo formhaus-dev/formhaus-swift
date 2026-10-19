@@ -12,38 +12,49 @@ public struct SelectField: View {
 
     public var body: some View {
         FieldShell(context) {
-            Menu {
-                Picker(selection: selection) {
-                    ForEach(context.options, id: \.self) { option in
-                        Text(option.label ?? option.value ?? "").tag(option.value ?? "")
-                    }
-                } label: {
-                    Text(context.label)
-                }
-                .pickerStyle(.inline)
-            } label: {
-                HStack(spacing: tokens.spacing.s3) {
-                    Text(selectedLabel ?? context.field.placeholder ?? "")
-                        .formhausText(.body, colored: false)
-                        .foregroundStyle(selectedLabel == nil ? tokens.colors.control : tokens.colors.text)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    LoadingIndicator(visible: context.loading)
-                    Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: tokens.typography.small, weight: .semibold))
-                        .foregroundStyle(tokens.colors.textMuted)
-                }
-                .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
+            HStack(spacing: tokens.spacing.s3) {
+                Text(selectedLabel ?? context.field.placeholder ?? "")
+                    .formhausText(.body, colored: false)
+                    .foregroundStyle(textColor)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                LoadingIndicator(visible: context.loading)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: tokens.typography.small, weight: .semibold))
+                    .foregroundStyle(tokens.colors.textMuted)
             }
-            .menuStyle(.button)
-            .buttonStyle(.plain)
-            .menuIndicator(.hidden)
-            .disabled(context.isLocked)
-            .formhausFocus(context, $focused)
-            .accessibilityLabel(context.label)
-            .accessibilityValue(selectedLabel ?? "")
-            .accessibilityHint(context.helperText ?? "")
+            .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
+            .accessibilityHidden(true)
+            .overlay { menu }
         }
+    }
+
+    private var menu: some View {
+        Menu {
+            Picker(selection: selection) {
+                ForEach(context.options, id: \.self) { option in
+                    Text(option.label ?? option.value ?? "").tag(option.value ?? "")
+                }
+            } label: {
+                Text(context.accessibilityName)
+            }
+            .pickerStyle(.inline)
+        } label: {
+            Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity).contentShape(Rectangle())
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .disabled(context.isLocked)
+        .formhausFocus(context, $focused)
+        .accessibilityLabel(context.accessibilityName)
+        .accessibilityValue(selectedLabel ?? "")
+        .accessibilityHint(context.helperText ?? "")
+    }
+
+    private var textColor: Color {
+        if selectedLabel == nil { return tokens.colors.control }
+        return context.isLocked ? tokens.colors.textMuted : tokens.colors.text
     }
 
     private var selectedLabel: String? {
@@ -68,7 +79,7 @@ public struct AutocompleteField: View {
     public var body: some View {
         FieldShell(context) {
             VStack(alignment: .leading, spacing: tokens.spacing.s1) {
-                TextField(text: context.textBinding, prompt: Text(verbatim: "")) { Text(context.label) }
+                TextField(text: context.textBinding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .placeholder(context.field.placeholder, visible: context.text.isEmpty)

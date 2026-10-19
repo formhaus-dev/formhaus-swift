@@ -18,7 +18,8 @@ struct InputChrome: ViewModifier {
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
         content
-            .formhausText(.body)
+            .formhausText(.body, colored: false)
+            .foregroundStyle(disabled ? tokens.colors.textMuted : tokens.colors.text)
             .padding(.horizontal, padded ? tokens.spacing.s6 : 0)
             .padding(.vertical, padded ? tokens.spacing.s4 : 0)
             .frame(maxWidth: .infinity, minHeight: tokens.controls.height, alignment: .leading)
