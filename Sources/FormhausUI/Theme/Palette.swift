@@ -48,6 +48,17 @@ public struct Palette: Sendable {
 
     public static let light = Palette()
 
+    public static let lightIncreased = Palette(
+        text: Color(hex: 0x09090B), textMuted: Color(hex: 0x3F3F46), border: Color(hex: 0x71717A), borderHover: Color(hex: 0x52525B),
+        control: Color(hex: 0x52525B), error: Color(hex: 0x9E2A23), errorHover: Color(hex: 0x7F1D1D), primary: Color(hex: 0x4300C8),
+        secondaryBorder: Color(hex: 0x71717A))
+
+    public static let darkIncreased = Palette(
+        text: .white, textMuted: Color(hex: 0xD4D4D8), border: Color(hex: 0x8E8E99), borderHover: Color(hex: 0xB4B4BD),
+        control: Color(hex: 0xB4B4BD), error: Color(hex: 0xFF9A92), errorHover: Color(hex: 0xFFB8B2), background: Color(hex: 0x111114),
+        backgroundDisabled: Color(hex: 0x232328), backgroundHover: Color(hex: 0x1C1C21), primary: Color(hex: 0xA48BFF), onPrimary: .black,
+        secondaryBorder: Color(hex: 0x8E8E99), scrim: Color(hex: 0x000000, opacity: 0.6), shadow: Color(hex: 0x000000, opacity: 0.6))
+
     public static let dark = Palette(
         text: Color(hex: 0xECECEE), textMuted: Color(hex: 0xA8A8B3), border: Color(hex: 0x3A3A41), borderHover: Color(hex: 0x5A5A63),
         control: Color(hex: 0x80808B), error: Color(hex: 0xF2736A), errorHover: Color(hex: 0xF6958E), background: Color(hex: 0x18181C),

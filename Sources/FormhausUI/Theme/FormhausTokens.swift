@@ -11,13 +11,14 @@ public struct FormhausTokens: Sendable {
     public let scale: CGFloat
 
     init(
-        theme: FormhausTheme, dark: Bool, typeSize: DynamicTypeSize, reduceMotion: Bool,
+        theme: FormhausTheme, dark: Bool, typeSize: DynamicTypeSize, reduceMotion: Bool, increasedContrast: Bool = false,
         environment: EnvironmentValues = EnvironmentValues()
     ) {
         let scale = typeScale(typeSize)
         let grow = max(1, scale)
         let rhythm = 1 + (grow - 1) / 2
-        colors = ResolvedPalette(dark ? theme.dark : theme.light, dark: dark, environment: environment)
+        let palette = increasedContrast ? (dark ? theme.darkIncreased : theme.lightIncreased) : (dark ? theme.dark : theme.light)
+        colors = ResolvedPalette(palette, dark: dark, environment: environment)
         var typography = theme.typography
         typography.body *= scale
         typography.small *= scale
@@ -99,6 +100,7 @@ private struct TokenResolver: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorSchemeContrast) private var contrast
 
     private var environment: EnvironmentValues {
         var values = EnvironmentValues()
@@ -108,7 +110,8 @@ private struct TokenResolver: ViewModifier {
 
     func body(content: Content) -> some View {
         let tokens = FormhausTokens(
-            theme: theme, dark: colorScheme == .dark, typeSize: typeSize, reduceMotion: reduceMotion, environment: environment)
+            theme: theme, dark: colorScheme == .dark, typeSize: typeSize, reduceMotion: reduceMotion,
+            increasedContrast: contrast == .increased, environment: environment)
         content.environment(\.formhausTokens, tokens).tint(tokens.colors.primary)
     }
 }
