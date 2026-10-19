@@ -1,3 +1,5 @@
+import Foundation
+
 public typealias LabelFn = @Sendable (String, JSONObject) -> String?
 
 public enum LabelSource: Sendable {
@@ -25,7 +27,20 @@ public struct ErrorEntry: Sendable, Hashable, Identifiable {
     public let message: String
 
     public var id: String { key }
+
+    public var text: String {
+        let closing = label.precomposedStringWithCompatibilityMapping.unicodeScalars.last.map { closingPunctuation.contains($0) } ?? false
+        return label + (closing ? " " : ": ") + message
+    }
 }
+
+public struct ErrorGroup: Sendable, Hashable, Identifiable {
+    public let id: String
+    public let title: String
+    public let entries: [ErrorEntry]
+}
+
+private let closingPunctuation = Set("?!:.\u{3002}".unicodeScalars)
 
 public struct FormActionsState: Sendable, Hashable {
     public let submitAction: FormAction
@@ -55,11 +70,6 @@ extension FormEngine {
         labelFor(key, params, source, definitionLabels)
     }
 
-    private func fallbackLabel(_ key: String, _ text: String, _ source: LabelSource?) -> String {
-        let found = label(key, source)
-        return found.isEmpty ? text : found
-    }
-
     @_spi(Renderer)
     public func itemTitle(_ group: FormField, _ index: Int, _ source: LabelSource?) -> String {
         let params: JSONObject = ["label": group.label.map { .string($0) } ?? .null, "index": .number(Double(index + 1))]
@@ -69,16 +79,27 @@ extension FormEngine {
 
     @_spi(Renderer)
     public func errorEntries(_ source: LabelSource?) -> [ErrorEntry] {
+        errorGroups(source).flatMap(\.entries)
+    }
+
+    @_spi(Renderer)
+    public func errorGroups(_ source: LabelSource?) -> [ErrorGroup] {
         let errors = core.errors
         guard !errors.isEmpty else { return [] }
         let values = core.values.json
-        let nodes = isMultiStep ? visibleSteps.flatMap(\.fields) : (definition.fields ?? [])
-        return errorKeys(nodes, errors, values).compactMap { key in
-            let item = core.visibility.activeItem(key, values)
-            guard let field = item?.field ?? core.visibility.activeField(key, values), let message = errors[key] else { return nil }
-            let name = field.label ?? ""
-            let label = item.map { "\(name) (\(itemTitle($0.group, $0.index, source)))" } ?? name
-            return ErrorEntry(key: key, label: label, message: message)
+        let sections: [(id: String, title: String?, fields: [FormNode])] =
+            isMultiStep ? visibleSteps.map { ($0.id, $0.title, $0.fields) } : [(definition.id, definition.title, definition.fields ?? [])]
+        return sections.enumerated().compactMap { index, section in
+            let entries = errorKeys(section.fields, errors, values).compactMap { key -> ErrorEntry? in
+                let item = core.visibility.activeItem(key, values)
+                guard let field = item?.field ?? core.visibility.activeField(key, values), let message = errors[key] else { return nil }
+                let name = field.label ?? ""
+                let label = item.map { "\(name) (\(itemTitle($0.group, $0.index, source)))" } ?? name
+                return ErrorEntry(key: key, label: label, message: message)
+            }
+            guard !entries.isEmpty else { return nil }
+            let title = section.title.flatMap { $0.isEmpty ? nil : $0 } ?? label("stepTitle", source, ["index": .number(Double(index + 1))])
+            return ErrorGroup(id: section.id, title: title, entries: entries)
         }
     }
 
@@ -92,13 +113,13 @@ extension FormEngine {
             submitAction: definition.submit, nextAction: next.action, backAction: step?.back.action, skipAction: step?.skip.action,
             cancelAction: definition.cancel, isFirstStep: isFirstStep, isLastStep: last, isMultiStep: isMultiStep,
             primaryLabel: last
-                ? definition.submit.label ?? fallbackLabel("submit", "Submit", source) : next.action?.label ?? label("continue", source),
-            primaryDisabled: isActionDisabled(primaryAction, getSubmitValues()),
+                ? definition.submit.label ?? label("submit", source) : next.action?.label ?? label("continue", source),
+            primaryDisabled: isActionDisabled(primaryAction, getSubmitValues(), limits: definition.listLimits),
             showPrimary: last || next != .hidden,
             showBack: isMultiStep && !isFirstStep && step?.back != .hidden,
             backLabel: step?.back.action?.label ?? label("back", source),
             showSkip: step?.canSkip == true && next != .hidden,
-            skipLabel: step?.skip.action?.label ?? fallbackLabel("skip", "Skip", source)
+            skipLabel: step?.skip.action?.label ?? label("skip", source)
         )
     }
 }
