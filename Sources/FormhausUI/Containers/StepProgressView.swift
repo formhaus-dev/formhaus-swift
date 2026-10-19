@@ -26,7 +26,10 @@ struct FormProgress: View {
         guard behavior.stepErrorMarks else { return nil }
         let counts = model.stepErrorCounts
         return structure.steps.enumerated().map { index, step in
-            StepStatus(id: step.id, title: step.title ?? "Step \(index + 1)", errorCount: counts[step.id] ?? 0)
+            let count = counts[step.id] ?? 0
+            return StepStatus(
+                id: step.id, title: step.title ?? model.label("stepTitle", ["index": .number(Double(index + 1))]), errorCount: count,
+                errorLabel: count > 0 ? model.label("stepErrors", ["count": .number(Double(count))]) : nil)
         }
     }
 }
@@ -96,11 +99,16 @@ private struct StepMark: View {
     let current: Bool
 
     var body: some View {
-        let suffix = step.errorCount > 0 ? " · \(step.errorCount) \(step.errorCount == 1 ? "error" : "errors")" : ""
-        Text(step.title + suffix)
-            .formhausText(.counter, colored: false)
-            .fontWeight(current ? .semibold : .regular)
-            .foregroundStyle(step.errorCount > 0 ? tokens.colors.error : current ? tokens.colors.text : tokens.colors.textMuted)
-            .accessibilityAddTraits(current ? .isSelected : [])
+        HStack(spacing: tokens.spacing.s1) {
+            Text(step.title).fontWeight(current ? .semibold : .regular)
+            if let errors = step.errorLabel {
+                Text(verbatim: "·").accessibilityHidden(true)
+                Text(errors)
+            }
+        }
+        .formhausText(.counter, colored: false)
+        .foregroundStyle(step.errorCount > 0 ? tokens.colors.error : current ? tokens.colors.text : tokens.colors.textMuted)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(current ? .isSelected : [])
     }
 }

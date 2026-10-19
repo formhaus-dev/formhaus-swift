@@ -41,6 +41,7 @@ public struct StepStatus: Sendable, Hashable, Identifiable {
     public let id: String
     public let title: String
     public let errorCount: Int
+    public let errorLabel: String?
 }
 
 @MainActor

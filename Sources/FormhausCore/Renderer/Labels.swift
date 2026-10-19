@@ -55,6 +55,11 @@ extension FormEngine {
         labelFor(key, params, source, definitionLabels)
     }
 
+    private func fallbackLabel(_ key: String, _ text: String, _ source: LabelSource?) -> String {
+        let found = label(key, source)
+        return found.isEmpty ? text : found
+    }
+
     @_spi(Renderer)
     public func itemTitle(_ group: FormField, _ index: Int, _ source: LabelSource?) -> String {
         let params: JSONObject = ["label": group.label.map { .string($0) } ?? .null, "index": .number(Double(index + 1))]
@@ -86,13 +91,19 @@ extension FormEngine {
         return FormActionsState(
             submitAction: definition.submit, nextAction: next.action, backAction: step?.back.action, skipAction: step?.skip.action,
             cancelAction: definition.cancel, isFirstStep: isFirstStep, isLastStep: last, isMultiStep: isMultiStep,
-            primaryLabel: last ? definition.submit.label ?? "Submit" : next.action?.label ?? label("continue", source),
+            primaryLabel: last
+                ? definition.submit.label ?? fallbackLabel("submit", "Submit", source) : next.action?.label ?? label("continue", source),
             primaryDisabled: isActionDisabled(primaryAction, getSubmitValues()),
             showPrimary: last || next != .hidden,
             showBack: isMultiStep && !isFirstStep && step?.back != .hidden,
             backLabel: step?.back.action?.label ?? label("back", source),
             showSkip: step?.canSkip == true && next != .hidden,
-            skipLabel: step?.skip.action?.label ?? "Skip"
+            skipLabel: step?.skip.action?.label ?? fallbackLabel("skip", "Skip", source)
         )
     }
+}
+
+@_spi(Renderer)
+public func formatTemplate(_ template: String, _ params: JSONObject) -> String {
+    formatText(template, params)
 }

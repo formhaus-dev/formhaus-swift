@@ -104,7 +104,9 @@ public final class FormModel {
     }
 
     public func label(_ key: String, _ params: JSONObject = JSONObject()) -> String {
-        engine.label(key, options.labels, params)
+        let text = engine.label(key, options.labels, params)
+        guard text.isEmpty, let fallback = upcomingLabels[key] else { return text }
+        return formatTemplate(fallback, params)
     }
 
     public func start() {
