@@ -24,7 +24,7 @@ struct CorpusCase {
     let values: JSONValue
     let skippedSteps: JSONValue
     let expectedValues: JSONObject
-    let expectedErrors: [String: String]
+    let expectedErrors: FieldErrors
     let canSubmit: Bool
 
     init(_ json: JSONValue) {
@@ -32,7 +32,7 @@ struct CorpusCase {
         values = json["input"]?["values"] ?? .object(JSONObject())
         skippedSteps = json["input"]?["skippedSteps"] ?? .array([])
         expectedValues = json["expected"]?["values"]?.objectValue ?? JSONObject()
-        var errors: [String: String] = [:]
+        var errors = FieldErrors()
         for (key, value) in json["expected"]?["errors"]?.objectValue ?? JSONObject() { errors[key] = value.stringValue }
         expectedErrors = errors
         canSubmit = json["canSubmit"]?.boolValue ?? false
