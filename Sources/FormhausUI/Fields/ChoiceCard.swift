@@ -6,7 +6,6 @@ struct ChoiceCard: View, Equatable {
     let option: FieldOption
     let shape: IndicatorShape
     let selected: Bool
-    let invalid: Bool
     let picture: Bool
     let hint: String
     let zoomLabel: String
@@ -14,7 +13,7 @@ struct ChoiceCard: View, Equatable {
     let zoom: @MainActor () -> Void
 
     nonisolated static func == (lhs: ChoiceCard, rhs: ChoiceCard) -> Bool {
-        lhs.option == rhs.option && lhs.shape == rhs.shape && lhs.selected == rhs.selected && lhs.invalid == rhs.invalid
+        lhs.option == rhs.option && lhs.shape == rhs.shape && lhs.selected == rhs.selected
             && lhs.picture == rhs.picture && lhs.hint == rhs.hint && lhs.zoomLabel == rhs.zoomLabel
     }
 
@@ -28,7 +27,7 @@ struct ChoiceCard: View, Equatable {
             .padding(.top, picture ? tokens.spacing.s3 - tokens.spacing.s5 : 0)
             .frame(maxHeight: picture ? .infinity : nil, alignment: .topLeading)
         }
-        .buttonStyle(OptionCardStyle(selected: selected, invalid: invalid))
+        .buttonStyle(OptionCardStyle(selected: selected))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityHint(hint)
         .overlay(alignment: .topTrailing) {

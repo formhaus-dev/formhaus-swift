@@ -13,7 +13,7 @@ public struct CheckboxField: View {
             Toggle(isOn: context.boolBinding) {
                 Text(context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
-            .toggleStyle(CheckboxStyle(invalid: context.isInvalid))
+            .toggleStyle(CheckboxStyle())
             .accessibilityLabel(context.accessibilityName)
             .accessibilityHint(context.helperText ?? "")
             .disabled(context.isLocked)

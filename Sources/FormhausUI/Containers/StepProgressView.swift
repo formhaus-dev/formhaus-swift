@@ -87,7 +87,7 @@ private struct ProgressBar: View {
 
     var body: some View {
         Capsule()
-            .fill(tokens.colors.backgroundDisabled)
+            .fill(tokens.colors.border)
             .frame(height: tokens.controls.progressHeight)
             .overlay(alignment: .leading) {
                 GeometryReader { proxy in

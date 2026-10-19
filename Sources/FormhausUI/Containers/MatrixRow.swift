@@ -69,12 +69,11 @@ private struct MatrixRowBody: View {
     private func cell(_ option: FieldOption, caption: Bool) -> some View {
         let value = option.value ?? ""
         let selected = isSelected(value)
-        let invalid = context.isInvalid && !selected
         return Button {
             choose(value)
         } label: {
             VStack(spacing: tokens.spacing.s1) {
-                ChoiceIndicator(context.field.type == "radio" ? .radio : .checkbox, selected: selected, invalid: invalid)
+                ChoiceIndicator(context.field.type == "radio" ? .radio : .checkbox, selected: selected)
                 if caption {
                     Text(option.label ?? value).formhausText(.caption).multilineTextAlignment(.center)
                 }

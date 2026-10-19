@@ -43,7 +43,6 @@ public struct RatingField: View {
     }
 
     private func color(_ filled: Bool) -> Color {
-        if context.isInvalid, !filled { return tokens.colors.error }
         if filled { return hovered != nil ? tokens.colors.primaryHover : tokens.colors.primary }
         return tokens.colors.control
     }

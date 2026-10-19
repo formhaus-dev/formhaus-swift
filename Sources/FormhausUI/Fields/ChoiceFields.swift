@@ -114,7 +114,7 @@ struct ChoiceList: View {
         let value = option.value ?? ""
         let selection = ChoiceSelection(context: context)
         return ChoiceCard(
-            option: option, shape: shape, selected: selected.contains(value), invalid: context.isInvalid, picture: picture,
+            option: option, shape: shape, selected: selected.contains(value), picture: picture,
             hint: context.helperText ?? "",
             zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
             choose: { selection.choose(value) },
