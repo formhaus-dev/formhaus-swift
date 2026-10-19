@@ -16,6 +16,7 @@ struct RootView: View {
                 #endif
                 .toolbar { toolbar }
         }
+        .id(session.style)
         .tint(session.style.tint(scheme))
         .task { await playScript() }
     }
