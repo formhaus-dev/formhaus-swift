@@ -54,6 +54,19 @@ public final class FormModel {
         self.init(engine: engine, options: options, onSubmit: onSubmit)
     }
 
+    public convenience init(
+        localized: Localized, initialValues: JSONObject = JSONObject(), engineOptions: FormEngineOptions = FormEngineOptions(),
+        options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler
+    ) {
+        var engineOptions = engineOptions
+        if engineOptions.messages == nil { engineOptions.messages = .catalog(localized.messages) }
+        var options = options
+        if options.labels == nil { options.labels = .catalog(localized.labels) }
+        self.init(
+            definition: localized.definition, initialValues: initialValues, engineOptions: engineOptions, options: options,
+            onSubmit: onSubmit)
+    }
+
     public var definition: FormDefinition { engine.definition }
 
     public func field(_ key: String) -> FieldState {

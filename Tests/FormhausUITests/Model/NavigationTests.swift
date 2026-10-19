@@ -68,3 +68,20 @@ struct NavigationTests {
         #expect(form.actions.primaryLabel == "Weiter")
     }
 }
+
+@Suite("Localized forms")
+@MainActor
+struct LocalizedTests {
+    @Test("an overlay translates texts, messages and labels")
+    func overlay() async throws {
+        let overlay: JSONValue = [
+            "fields": ["email": ["label": "E-Mail"]], "messages": ["required": "Pflichtfeld"], "labels": ["errorSummary": "Bitte prüfen"],
+        ]
+        let localized = try localize(signupDefinition, overlay: overlay, lang: "de")
+        let form = FormModel(localized: localized, initialValues: ["agree": true]) { _, _ in nil }
+        #expect(form.label("errorSummary") == "Bitte prüfen")
+        #expect(form.structure.visibleFields.first?.label == "E-Mail")
+        await form.submit()
+        #expect(form.field("email").error == "Pflichtfeld")
+    }
+}
