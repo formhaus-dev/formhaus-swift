@@ -23,9 +23,9 @@ struct GroupModelTests {
         let first = form.field("people.0.name")
         let group = form.group("people")
         #expect(group.items.count == 1)
-        #expect(fires({ _ = first.value }, when: { form.update("people.0.name", "Ada") }))
-        #expect(!fires({ _ = group.items }, when: { form.update("people.0.name", "Adam") }))
-        #expect(fires({ _ = group.items }, when: { _ = form.changeItems("people") { form.engine.addItem("people") } }))
+        #expect(fires({ _ = first.value }, when: { form.setValue("Ada", forKey: "people.0.name") }))
+        #expect(!fires({ _ = group.items }, when: { form.setValue("Adam", forKey: "people.0.name") }))
+        #expect(fires({ _ = group.items }, when: { _ = form.changeItems(ofGroup: "people", using: { form.engine.addItem("people") }) }))
         #expect(group.items.count == 2)
         #expect(form.field("people.1.name").value == nil)
     }
@@ -48,7 +48,7 @@ struct GroupModelTests {
         form.start()
         for _ in 0..<10 where form.options(for: "city") == nil { await Task.yield() }
         #expect(form.options(for: "city") == [])
-        form.update("country", "de")
+        form.setValue("de", forKey: "country")
         for _ in 0..<10 where form.options(for: "city")?.isEmpty != false { await Task.yield() }
         #expect(form.options(for: "city")?.map(\.label) == ["Berlin"])
     }

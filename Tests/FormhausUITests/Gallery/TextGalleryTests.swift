@@ -18,7 +18,7 @@ struct TextGalleryTests {
                     value: "Grace Hopper"),
                 GalleryEntry(name: "email", field: ["key": "email", "type": "email", "label": "Email"], value: "grace@navy.mil"),
                 GalleryEntry(
-                    name: "phone", field: ["key": "phone", "type": "phone", "label": "Phone", "mask": "+1 (___) ___-____"],
+                    name: "phone", field: ["key": "phone", "type": "phone", "label": "Phone", "placeholder": "+1 555 000 0000"],
                     value: "+1 555 0100"),
                 GalleryEntry(name: "number", field: ["key": "age", "type": "number", "label": "Age"], value: 42),
                 GalleryEntry(name: "password", field: ["key": "pw", "type": "password", "label": "Password"], value: "hunter22"),

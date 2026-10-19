@@ -8,7 +8,7 @@ struct NavigationTests {
     @Test("commit on an autoAdvance field moves to the next step")
     func autoAdvance() async throws {
         let form = try model(stepsDefinition, values: ["name": "Ada"])
-        form.commit("seat", "w")
+        form.commitValue("w", forKey: "seat")
         for _ in 0..<20 where form.structure.currentStep?.id != "when" { await Task.yield() }
         #expect(form.structure.currentStep?.id == "when")
         #expect(form.structure.progress.current == 2)
@@ -40,7 +40,7 @@ struct NavigationTests {
     func show() async throws {
         let form = try model(stepsDefinition, values: ["name": "Ada"])
         await form.next()
-        form.show("name")
+        form.focus(field: "name")
         #expect(form.structure.currentStep?.id == "who")
         #expect(form.focusRequest?.key == "name")
     }
@@ -50,7 +50,7 @@ struct NavigationTests {
         let form = try model(stepsDefinition, values: ["name": "Ada"])
         form.loading = true
         #expect(form.disabled)
-        form.update("name", "Bo")
+        form.setValue("Bo", forKey: "name")
         await form.next()
         #expect(form.field("name").value == "Ada")
         #expect(form.structure.currentStep?.id == "who")
@@ -62,9 +62,9 @@ struct NavigationTests {
         definition["labels"] = ["back": "Zurück"]
         let source = LabelSource.catalog(["continue": "Weiter"])
         let form = try model(.object(definition), options: FormRendererOptions(labels: source))
-        #expect(form.label("continue") == "Weiter")
-        #expect(form.label("back") == "Zurück")
-        #expect(form.label("stepOf", ["current": 1, "total": 2]) == "Step 1 of 2")
+        #expect(form.text(forLabel: "continue") == "Weiter")
+        #expect(form.text(forLabel: "back") == "Zurück")
+        #expect(form.text(forLabel: "stepOf", ["current": 1, "total": 2]) == "Step 1 of 2")
         #expect(form.actions.primaryLabel == "Weiter")
     }
 }
@@ -79,7 +79,7 @@ struct LocalizedTests {
         ]
         let localized = try localize(signupDefinition, overlay: overlay, lang: "de")
         let form = FormModel(localized: localized, initialValues: ["agree": true]) { _, _ in nil }
-        #expect(form.label("errorSummary") == "Bitte prüfen")
+        #expect(form.text(forLabel: "errorSummary") == "Bitte prüfen")
         #expect(form.structure.visibleFields.first?.label == "E-Mail")
         await form.submit()
         #expect(form.field("email").error == "Pflichtfeld")

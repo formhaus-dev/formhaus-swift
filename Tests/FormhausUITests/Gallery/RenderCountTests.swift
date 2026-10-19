@@ -40,12 +40,12 @@ struct RenderCountTests {
         settle(host)
         let start = counter.counts
         #expect(start["a"] == start["b"])
-        form.update("a", "x")
+        form.setValue("x", forKey: "a")
         settle(host)
         #expect(counter.counts["a", default: 0] > start["a", default: 0])
         #expect(counter.counts["b"] == start["b"])
-        form.update("c", "typing")
-        form.update("c", "typing more")
+        form.setValue("typing", forKey: "c")
+        form.setValue("typing more", forKey: "c")
         settle(host)
         #expect(counter.counts["b"] == start["b"])
     }

@@ -39,6 +39,7 @@ func renderPNG(_ view: some View, style: SnapshotStyle, to url: URL) throws {
     host.frame = CGRect(origin: .zero, size: CGSize(width: style.width, height: 10))
     host.layoutSubtreeIfNeeded()
     for _ in 0..<3 {
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         host.frame.size = CGSize(width: style.width, height: host.fittingSize.height)
         host.layoutSubtreeIfNeeded()
     }

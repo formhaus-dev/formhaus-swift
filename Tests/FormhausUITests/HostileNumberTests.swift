@@ -43,7 +43,7 @@ struct HostileNumberTests {
         _ = model.engine.itemLimits(model.structure.visibleFields.first { $0.isGroup } ?? model.structure.visibleFields[0])
         _ = model.engine.itemHasContent("team", Int.max)
         _ = model.field("team.\(Int.max).name").value
-        model.update("team.99999999999999999999.name", number)
+        model.setValue(number, forKey: "team.99999999999999999999.name")
         let host = NSHostingView(rootView: FormhausFormContent(model: model).frame(width: 360))
         host.frame = CGRect(x: 0, y: 0, width: 360, height: 900)
         host.layoutSubtreeIfNeeded()

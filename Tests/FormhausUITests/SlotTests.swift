@@ -84,7 +84,7 @@ private func slotComponents(_ log: SlotLog) -> FormComponents {
         }
         .actions { context in
             FormActionsBar(context: context).onAppear { log.names.insert("actions:\(context.state.primaryLabel):\(context.busy)") }
-            Button("Primary", action: context.primary)
+            Button("Primary", action: context.performPrimaryAction)
             Button("Back", action: context.back)
             Button("Skip", action: context.skip)
             Button("Cancel", action: context.cancel)

@@ -18,14 +18,14 @@ struct SignalTests {
             _ = form.actions
             _ = form.errorEntries
         }
-        #expect(!fires(others, when: { form.update("email", "a") }))
-        #expect(fires({ _ = email.value }, when: { form.update("email", "ab") }))
+        #expect(!fires(others, when: { form.setValue("a", forKey: "email") }))
+        #expect(fires({ _ = email.value }, when: { form.setValue("ab", forKey: "email") }))
         #expect(
             !fires(
                 {
                     _ = email.error
                     _ = email.loading
-                }, when: { form.update("email", "abc") }))
+                }, when: { form.setValue("abc", forKey: "email") }))
         #expect(email.value == "abc")
         #expect(name.version == 0)
     }
@@ -35,18 +35,18 @@ struct SignalTests {
         let form = try model(signupDefinition)
         let name = form.field("name")
         let before = form.structureVersion
-        #expect(fires({ _ = form.structure }, when: { form.update("work", true) }))
+        #expect(fires({ _ = form.structure }, when: { form.setValue(true, forKey: "work") }))
         #expect(form.structureVersion == before + 1)
         #expect(form.structure.visibleFields.map(\.key).contains("company"))
-        #expect(!fires({ _ = name.value }, when: { form.update("work", false) }))
+        #expect(!fires({ _ = name.value }, when: { form.setValue(false, forKey: "work") }))
     }
 
     @Test("action state changes only when its output changes")
     func actions() throws {
         let form = try model(signupDefinition)
         #expect(form.actions.primaryDisabled)
-        #expect(!fires({ _ = form.actions }, when: { form.update("name", "Ada") }))
-        #expect(fires({ _ = form.actions }, when: { form.update("agree", true) }))
+        #expect(!fires({ _ = form.actions }, when: { form.setValue("Ada", forKey: "name") }))
+        #expect(fires({ _ = form.actions }, when: { form.setValue(true, forKey: "agree") }))
         #expect(!form.actions.primaryDisabled)
         #expect(form.actions.primaryLabel == "Create")
     }
@@ -57,8 +57,8 @@ struct SignalTests {
         let form = try model(signupDefinition, options: FormRendererOptions(onValuesChange: { emitted.append($0) }))
         form.start()
         let start = form.valuesVersion
-        form.update("name", "A")
-        form.update("name", "A")
+        form.setValue("A", forKey: "name")
+        form.setValue("A", forKey: "name")
         #expect(form.valuesVersion == start + 1)
         #expect(emitted.count == 2)
         #expect(emitted.last?["name"] == "A")
@@ -67,7 +67,7 @@ struct SignalTests {
     @Test("snapshot counters follow the engine")
     func counters() throws {
         let form = try model(signupDefinition)
-        form.update("name", "A")
+        form.setValue("A", forKey: "name")
         #expect(form.version == form.engine.version)
         #expect(form.field("name").version == 1)
     }
