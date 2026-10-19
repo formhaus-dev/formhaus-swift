@@ -37,7 +37,7 @@ struct SystemPickerRow: View {
                     .environment(\.locale, locale)
                     .resolveFormhausTokens()
             } label: {
-                SystemValueRow(label: context.label, value: summary, prompt: context.prompt)
+                SystemValueRow(label: context.label, value: summary, prompt: context.choicePrompt)
             }
         }
     #endif
@@ -53,7 +53,7 @@ struct SystemPickerRow: View {
             }
             .pickerStyle(.inline)
         } label: {
-            SystemValueRow(label: context.label, value: summary, prompt: context.prompt, chevrons: true)
+            SystemValueRow(label: context.label, value: summary, prompt: context.choicePrompt, chevrons: true)
         }
         .buttonStyle(.plain)
     }

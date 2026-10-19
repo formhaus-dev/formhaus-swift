@@ -8,5 +8,5 @@ let upcomingLabels: [String: String] = [
     "stepErrors": "Errors: {count}",
     "done": "Done",
     "next": "Next",
-    "optional": "Optional",
+    "select": "Select",
 ]

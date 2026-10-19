@@ -21,7 +21,7 @@ struct SystemDateRow: View {
                             .padding(.vertical, 6)
                             .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     } else {
-                        Text(context.prompt).foregroundStyle(expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
+                        Text(context.choicePrompt).foregroundStyle(expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
                     }
                 }
                 .contentShape(Rectangle())

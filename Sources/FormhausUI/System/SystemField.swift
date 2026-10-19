@@ -63,12 +63,13 @@ struct SystemNotes: View {
 }
 
 struct SystemErrorText: View {
+    @Environment(\.formhausTokens) private var tokens
     let text: String
 
     var body: some View {
         Text(text)
             .font(.footnote)
-            .foregroundStyle(.red)
+            .foregroundStyle(tokens.colors.error)
             .fixedSize(horizontal: false, vertical: true)
             .onAppear { announce(text) }
             .onChange(of: text) { _, message in announce(message) }
@@ -109,7 +110,10 @@ struct SystemBlock<Content: View>: View {
                 .accessibilityLabel(context.accessibilityName)
                 .accessibilityAddTraits(.isHeader)
             } footer: {
-                VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context) }
+                VStack(alignment: .leading, spacing: 4) {
+                    SystemNotes(context: context)
+                    if context.isRequired, (context.error ?? "").isEmpty { Text(verbatim: " ").font(.footnote).accessibilityHidden(true) }
+                }
             }
         }
     }
@@ -122,11 +126,10 @@ extension FieldContext {
     }
 
     var prompt: String {
-        field.placeholder ?? field.mask?.stringValue ?? (isRequired ? requiredPrompt : optionalPrompt)
+        field.placeholder ?? field.mask?.stringValue ?? ""
     }
 
-    var optionalPrompt: String {
-        let text = text(forLabel: "optional")
-        return text.prefix(1).localizedUppercase + text.dropFirst()
+    var choicePrompt: String {
+        field.placeholder ?? text(forLabel: "select")
     }
 }
