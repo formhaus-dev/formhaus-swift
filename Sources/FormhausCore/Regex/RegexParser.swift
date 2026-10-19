@@ -9,13 +9,6 @@ struct RegexParser {
         let quantifiable: Bool
     }
 
-    struct Interval {
-        let lower: Int
-        let upper: Int
-
-        func contains(_ index: Int) -> Bool { lower <= index && index <= upper }
-    }
-
     struct NamedGroup {
         let name: String
         let index: Int
@@ -36,8 +29,7 @@ struct RegexParser {
     var modifiers = RegexModifiers()
     var captures = 0
     var depth = 0
-    var groupIndex = 0
-    var interval = Interval(lower: 0, upper: 0)
+    var scope = NameScope(start: 0)
     var named: [NamedGroup] = []
 
     private init(_ units: [UInt16]) {
@@ -72,7 +64,7 @@ struct RegexParser {
         guard depth <= Self.maxDepth else { throw RegexSyntaxError() }
         var branches = [try parseAlternative()]
         while consume("|") {
-            interval = Interval(lower: interval.upper != 0 ? interval.lower : groupIndex, upper: captures)
+            scope.addAlternative(captures: captures)
             branches.append(try parseAlternative())
         }
         return branches.count == 1 ? branches[0] : .alternation(branches)

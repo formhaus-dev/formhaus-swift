@@ -49,17 +49,13 @@ extension RegexParser {
     }
 
     private mutating func parseGroupBody(capture: Int? = nil, name: String? = nil) throws(RegexSyntaxError) -> RegexNode {
-        let savedIndex = groupIndex
-        let savedInterval = interval
-        defer {
-            groupIndex = savedIndex
-            interval = savedInterval
-        }
-        if let capture { groupIndex = capture }
+        let enclosing = scope
+        defer { scope = enclosing }
+        scope = enclosing.opening(start: capture ?? captures)
         let body = try parseDisjunction()
         guard consume(")") else { throw RegexSyntaxError() }
         if let name, let capture {
-            guard named.allSatisfy({ $0.name != name || interval.contains($0.index) }) else { throw RegexSyntaxError() }
+            guard named.allSatisfy({ $0.name != name || scope.admitsDuplicate($0.index) }) else { throw RegexSyntaxError() }
             named.append(NamedGroup(name: name, index: capture))
         }
         return body

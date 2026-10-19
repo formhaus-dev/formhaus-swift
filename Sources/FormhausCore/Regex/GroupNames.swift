@@ -38,6 +38,31 @@ struct CaptureScan {
     }
 }
 
+struct NameScope {
+    private var start: Int
+    private var lower = 0
+    private var upper = 0
+
+    init(start: Int) {
+        self.start = start
+    }
+
+    func opening(start: Int) -> NameScope {
+        var scope = self
+        scope.start = start
+        return scope
+    }
+
+    mutating func addAlternative(captures: Int) {
+        if upper == 0 { lower = start }
+        upper = captures
+    }
+
+    func admitsDuplicate(_ index: Int) -> Bool {
+        lower <= index && index <= upper
+    }
+}
+
 struct GroupName {
     let name: String
     let end: Int
