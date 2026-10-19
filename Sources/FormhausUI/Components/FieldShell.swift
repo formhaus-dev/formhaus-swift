@@ -3,6 +3,7 @@ import SwiftUI
 public enum FieldShellVariant: Sendable {
     case standard
     case inline
+    case row
     case group
 }
 
@@ -20,28 +21,32 @@ public struct FieldShell<Content: View>: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.s3) {
-            if variant != .inline, !context.label.isEmpty {
+            if !isInline, !context.label.isEmpty {
                 FieldLabel(text: context.label, required: context.isRequired)
                     .accessibilityAddTraits(variant == .group ? .isHeader : [])
             }
-            if variant != .inline, let helper = context.helperText {
+            if !isInline, let helper = context.helperText {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
                     .padding(.top, -tokens.spacing.s1)
             }
             content
-            if variant == .inline, let helper = context.helperText {
+            if isInline, let helper = context.helperText {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true).padding(.leading, inset)
+                    .padding(.top, variant == .row ? -tokens.spacing.s3 : -tokens.spacing.s1)
             }
             if let error = context.error, !error.isEmpty {
-                FieldError(text: error).padding(.leading, variant == .inline ? inset : 0)
+                FieldError(text: error).padding(.leading, inset)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .contain)
         .id(context.key)
     }
 
-    private var inset: CGFloat { tokens.controls.indicator + tokens.spacing.s5 }
+    private var isInline: Bool { variant == .inline || variant == .row }
+
+    private var inset: CGFloat { variant == .inline ? tokens.controls.indicator + tokens.spacing.s5 : 0 }
 }
 
 public struct FieldLabel: View {

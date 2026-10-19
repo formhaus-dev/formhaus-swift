@@ -1,0 +1,76 @@
+import SwiftUI
+
+public struct OptionCardStyle: ButtonStyle {
+    let selected: Bool
+    let invalid: Bool
+
+    public init(selected: Bool, invalid: Bool = false) {
+        self.selected = selected
+        self.invalid = invalid
+    }
+
+    public func makeBody(configuration: Configuration) -> some View {
+        OptionCardBody(configuration: configuration, selected: selected, invalid: invalid)
+    }
+}
+
+private struct OptionCardBody: View {
+    @Environment(\.formhausTokens) private var tokens
+    @Environment(\.isEnabled) private var enabled
+    @State private var hovered = false
+    let configuration: ButtonStyleConfiguration
+    let selected: Bool
+    let invalid: Bool
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
+        configuration.label
+            .padding(.vertical, tokens.spacing.s5)
+            .padding(.horizontal, tokens.spacing.s6)
+            .frame(maxWidth: .infinity, minHeight: tokens.controls.hitTarget, alignment: .leading)
+            .background(shape.fill(fill))
+            .overlay(shape.strokeBorder(border, lineWidth: 1))
+            .contentShape(shape)
+            .opacity(enabled ? 1 : 0.6)
+            .scaleEffect(configuration.isPressed && !tokens.reduceMotion ? 0.99 : 1)
+            .onHover { hovered = $0 }
+            .animation(tokens.quick, value: selected)
+            .animation(tokens.quick, value: hovered)
+    }
+
+    private var fill: Color {
+        if selected { return tokens.colors.primarySoft }
+        return hovered && enabled ? tokens.colors.backgroundHover : tokens.colors.background
+    }
+
+    private var border: Color {
+        if selected { return tokens.colors.primary }
+        if invalid { return tokens.colors.error }
+        return hovered && enabled ? tokens.colors.borderHover : tokens.colors.border
+    }
+}
+
+public struct OptionRow: View {
+    @Environment(\.formhausTokens) private var tokens
+    let shape: IndicatorShape
+    let label: String
+    let selected: Bool
+    let invalid: Bool
+
+    public init(_ shape: IndicatorShape, label: String, selected: Bool, invalid: Bool = false) {
+        self.shape = shape
+        self.label = label
+        self.selected = selected
+        self.invalid = invalid
+    }
+
+    public var body: some View {
+        let offset = tokens.typography.body * 0.36
+        HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s5) {
+            ChoiceIndicator(shape, selected: selected, invalid: invalid)
+                .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
+            Text(label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
