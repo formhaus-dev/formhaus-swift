@@ -34,7 +34,25 @@ private let pathological = [
     Case(name: "(a+)+$", pattern: "(a+)+$", short: "", long: String(repeating: "a", count: 9999) + "!"),
     Case(name: "(a|aa)+$", pattern: "(a|aa)+$", short: "", long: String(repeating: "a", count: 9999) + "!"),
     Case(name: "(x+x+)+y", pattern: "(x+x+)+y", short: "", long: String(repeating: "x", count: 10000)),
+    Case(
+        name: "captures cleared in a loop", pattern: "(?:a|[]" + String(repeating: "()", count: 15000) + ")*\\1(?!)", short: "",
+        long: String(repeating: "a", count: 9999)),
+    Case(
+        name: "nested lookarounds", pattern: "(?=(?!b)[^]*x)y(?:z|$)", short: "",
+        long: String(repeating: "y", count: 9999) + "x"),
+    Case(name: "large DFA states", pattern: "[^]*a[^]{3900}$", short: "", long: randomText(10000, seed: 1)),
+    Case(name: "large counted repeat", pattern: "[a-z]{0,4001}1", short: "", long: String(repeating: "b", count: 6000) + "1"),
+    Case(name: "DFA cache reset", pattern: "[ab]*a[ab]{12}$", short: "", long: randomText(10000, seed: 7)),
 ]
+
+private func randomText(_ count: Int, seed: UInt64) -> String {
+    var state = seed
+    return String(
+        (0..<count).map { _ -> Character in
+            state = state &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+            return state >> 63 == 0 ? "a" : "b"
+        })
+}
 
 private func field(_ pattern: String) -> FormField {
     let escaped = pattern.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")

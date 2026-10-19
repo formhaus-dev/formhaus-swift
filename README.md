@@ -93,6 +93,7 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 ## Differences from @formhaus/core
 
 - Patterns run on a native engine that follows `new RegExp(pattern).test(value)` in ECMAScript 2025 with no flags, including Annex B syntax, modifier groups such as `(?i:...)` and duplicate named groups. `Tests/FormhausCoreTests/Fixtures/regex/cases.json` holds the expected results, recorded with Node. To record them again, run `node scripts/regex-cases.mjs`.
+- Node 24.15 returns `false` for `(?i:b|[ab])` and `(?i:x|[a-c])` on `A`, and for `^(?i:\u0178)$` on `ÿ`. The specification and the native engine return `true`. `scripts/regex-cases.mjs` leaves these cases out and checks every recorded case again in a new node process.
 - Duplicate group names follow V8, which accepts some patterns that the specification rejects, such as `(?<a>a)(?:b|(?<a>c))`.
 - A pattern with more than 100 nested groups counts as invalid. JavaScript accepts it.
 - A pattern that compiles to more than 32,768 instructions fails the pattern rule, unless the value is shorter than any match. Counted repeats are expanded, so `(?:ab){100}` takes about 200 instructions. A single character or class repeated in a pattern with backreferences, such as `\w{1,5000}`, takes one. V8 reports "Regular expression too large" near the same size for long literals, and accepts larger counted repeats.
@@ -113,23 +114,28 @@ Median time of one `validateFieldValue` call with a `pattern` rule, on an Apple 
 
 | Benchmark | JavaScriptCore | Native |
 | --- | ---: | ---: |
-| compile email | 3.0 µs | 9.0 µs |
-| compile phone | 2.8 µs | 10 µs |
-| compile postcode | 3.1 µs | 7.0 µs |
+| compile email | 3.0 µs | 9.5 µs |
+| compile phone | 2.8 µs | 11 µs |
+| compile postcode | 3.1 µs | 8.7 µs |
 | compile IBAN | 2.9 µs | 11 µs |
-| compile password (3 lookaheads) | 3.3 µs | 21 µs |
-| compile quoted (backreference) | 2.5 µs | 3.7 µs |
-| match email, short / long | 1.5 µs / 21 µs | 0.75 µs / 14 µs |
-| match phone, short / long | 1.4 µs / 44 µs | 0.74 µs / 2.7 µs |
-| match postcode, short / long | 1.5 µs / 44 µs | 0.72 µs / 2.6 µs |
-| match IBAN, short / long | 1.4 µs / 44 µs | 0.78 µs / 2.7 µs |
-| match password, short / long | 1.7 µs / 120 µs | 1.6 µs / 83 µs |
-| match quoted, short / long | 1.3 µs / 93 µs | 1.1 µs / 120 µs |
+| compile password (3 lookaheads) | 3.3 µs | 22 µs |
+| compile quoted (backreference) | 2.5 µs | 3.5 µs |
+| match email, short / long | 1.5 µs / 21 µs | 0.74 µs / 16 µs |
+| match phone, short / long | 1.4 µs / 44 µs | 0.72 µs / 2.6 µs |
+| match postcode, short / long | 1.5 µs / 44 µs | 0.71 µs / 2.7 µs |
+| match IBAN, short / long | 1.4 µs / 44 µs | 0.74 µs / 2.7 µs |
+| match password, short / long | 1.7 µs / 120 µs | 1.2 µs / 75 µs |
+| match quoted, short / long | 1.3 µs / 93 µs | 1.0 µs / 144 µs |
 | `(a+)+$` on 9,999 `a` and `!` | 882 ms | 12 µs |
 | `(a\|aa)+$` on 9,999 `a` and `!` | 1,249 ms | 12 µs |
 | `(x+x+)+y` on 10,000 `x` | 929 ms | 12 µs |
+| `(?:a\|[]()…)*\1(?!)` with 15,000 `()` on 9,999 `a` | 5.4 ms | 5.6 ms |
+| `(?=(?!b)[^]*x)y(?:z\|$)` on 9,999 `y` and `x` | 46 ms | 2.5 ms |
+| `[^]*a[^]{3900}$` on 10,000 random `a` and `b` | 12 µs | 99 ms |
+| `[a-z]{0,4001}1` on 6,000 `b` and `1` | 26 ms | 193 ms |
+| `[ab]*a[ab]{12}$` on 10,000 random `a` and `b` | 15 µs | 2.0 ms |
 
-JavaScriptCore stops the pathological patterns at its backtracking limit and returns `false`. The native engine adds 150 KB to a stripped release executable that links `FormhausCore`.
+JavaScriptCore stops the pathological patterns at its backtracking limit and returns `false`. The native engine fails the rule for the pattern with 15,000 captures when it runs out of steps. Node takes 94 s for `[^]*a[^]{3900}$` on the same input. The last three patterns build many large DFA states, so they run on the NFA without caching once the 1 MB limit is reached. The native engine adds 150 KB to a stripped release executable that links `FormhausCore`.
 
 To run the benchmarks:
 
