@@ -30,6 +30,7 @@ struct Backtracker {
     var stack: [Frame] = []
     var saved: [[Int]] = []
     let context: MatchContext
+    var budget: StepBudget
     var memo: Bitset?
     let width: Int
 
@@ -37,6 +38,7 @@ struct Backtracker {
         self.program = program
         input = MatchInput(text: context.text)
         self.context = context
+        budget = context.budget
         width = input.text.count + 1
         slots = Array(repeating: -1, count: 2 * (program.captureCount + 1))
         registers = Array(repeating: -1, count: program.registerCount)
@@ -59,7 +61,7 @@ struct Backtracker {
         var pc = entry
         var offset = position
         while true {
-            try context.spend(1)
+            try budget.spend(1)
             switch try execute(&pc, &offset) {
             case .proceed: continue
             case .success: return true
@@ -96,11 +98,13 @@ struct Backtracker {
 
     private mutating func execute(_ pc: inout Int, _ offset: inout Int) throws(BudgetExceeded) -> Outcome {
         if memoized(pc), memo?.insert((pc - program.memoFrom) * width + offset) == false { return .failure }
-        let instruction = program.instructions[pc]
-        switch instruction {
-        case .unit, .set:
-            guard let next = program.advance(instruction, in: input, from: offset) else { return .failure }
-            offset = next
+        switch program.instructions[pc] {
+        case .unit(let expected, let backward):
+            guard input.unit(at: offset, backward: backward) == expected else { return .failure }
+            offset += backward ? -1 : 1
+        case .set(let index, let backward):
+            guard let unit = input.unit(at: offset, backward: backward), program.sets[index].contains(unit) else { return .failure }
+            offset += backward ? -1 : 1
         case .split(let first, let second):
             stack.append(.resume(second, offset))
             pc = first
@@ -120,8 +124,8 @@ struct Backtracker {
         case .repeatSet(let repeated):
             guard let next = try enterRepeat(repeated, pc, offset) else { return .failure }
             offset = next
-        default:
-            guard try updateState(instruction, pc, offset) else { return .failure }
+        case .state(let change):
+            guard try apply(change, pc, offset) else { return .failure }
         }
         pc += 1
         return .proceed

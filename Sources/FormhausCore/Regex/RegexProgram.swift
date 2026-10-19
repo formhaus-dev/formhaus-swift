@@ -4,16 +4,20 @@ enum Instruction: Sendable {
     case split(Int, Int)
     case jump(Int)
     case assertion(RegexAssertion)
-    case groupStart(Int)
-    case groupEnd(Int)
-    case clear(ClosedRange<Int>)
-    case mark(Int)
-    case progress(Int)
+    case state(StateChange)
     case repeatSet(RepeatSet)
     case backreference(Int)
     case look(Int)
     case succeed
     case match
+}
+
+enum StateChange: Sendable {
+    case groupStart(Int)
+    case groupEnd(Int)
+    case clear(ClosedRange<Int>)
+    case mark(Int)
+    case progress(Int)
 }
 
 struct RepeatSet: Sendable {
@@ -49,24 +53,9 @@ struct RegexProgram: Sendable {
     let automaton: Bool
 
     func consumes(_ pc: Int, _ unit: UInt16) -> Bool {
-        switch instructions[pc] {
-        case .unit(let expected, _): expected == unit
-        case .set(let index, _): sets[index].contains(unit)
-        default: false
-        }
-    }
-
-    func advance(_ instruction: Instruction, in input: MatchInput, from position: Int) -> Int? {
-        switch instruction {
-        case .unit(let expected, let backward):
-            guard input.unit(at: position, backward: backward) == expected else { return nil }
-            return position + (backward ? -1 : 1)
-        case .set(let index, let backward):
-            guard let unit = input.unit(at: position, backward: backward), sets[index].contains(unit) else { return nil }
-            return position + (backward ? -1 : 1)
-        default:
-            return nil
-        }
+        if case .unit(let expected, _) = instructions[pc] { return expected == unit }
+        if case .set(let index, _) = instructions[pc] { return sets[index].contains(unit) }
+        return false
     }
 }
 

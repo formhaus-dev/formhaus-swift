@@ -29,10 +29,10 @@ extension RegexCompiler {
     }
 
     private mutating func emitIteration(_ body: RegexNode, mark: Int?, backward: Bool) {
-        if !automaton, let captures = body.captureRange { code.append(.clear(captures)) }
-        if let mark { code.append(.mark(mark)) }
+        if !automaton, let captures = body.captureRange { code.append(.state(.clear(captures))) }
+        if let mark { code.append(.state(.mark(mark))) }
         emit(body, backward: backward)
-        if let mark { code.append(.progress(mark)) }
+        if let mark { code.append(.state(.progress(mark))) }
     }
 
     private mutating func emitStar(_ body: RegexNode, greedy: Bool, mark: Int?, backward: Bool) {

@@ -63,7 +63,7 @@ struct ThreadStep: Sendable {
                 advance.volatile = true
                 if try context.holds(look, at: position) != program.looks[look].look.negated { stack.append(pc + 1) }
             case .match, .succeed: advance.accepts = true
-            case .groupStart, .groupEnd, .clear, .mark, .progress: stack.append(pc + 1)
+            case .state: stack.append(pc + 1)
             case .repeatSet, .backreference:
                 preconditionFailure("automaton programs have no stateful instructions")
             }

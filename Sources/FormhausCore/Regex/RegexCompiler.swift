@@ -102,9 +102,9 @@ struct RegexCompiler {
         case .alternation(let branches): emitAlternation(branches, backward: backward)
         case .group(let body, let capture):
             let recorded = automaton ? nil : capture
-            if let recorded { code.append(.groupStart(recorded)) }
+            if let recorded { code.append(.state(.groupStart(recorded))) }
             emit(body, backward: backward)
-            if let recorded { code.append(.groupEnd(recorded)) }
+            if let recorded { code.append(.state(.groupEnd(recorded))) }
         case .quantified(let body, let quantifier): emitQuantified(body, quantifier, backward: backward)
         case .assertion(let assertion): code.append(.assertion(assertion))
         case .look(_, let look): emitLook(look)
