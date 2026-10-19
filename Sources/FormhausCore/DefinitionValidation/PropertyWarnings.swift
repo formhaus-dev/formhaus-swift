@@ -1,21 +1,31 @@
 enum Properties {
-    static let form = "$schema formatVersion id lang title description messages labels i18n submit cancel fields steps"
-    static let step = "id title description fields show showAny routes next back skip i18n"
-    static let field =
-        "key type label placeholder helperText autoAdvance defaultValue source show showAny validation options layout optionsFrom optionsDependsOn accept rows mask inputMode props i18n"
-    static let section = "key type title description show showAny fields i18n"
-    static let group = "key type label helperText itemLabel addLabel removeLabel defaultItems show showAny validation fields i18n"
-    static let option = "value label i18n"
-    static let action = "label variant disabled i18n"
-    static let route = "to show showAny"
-    static let validation =
-        "required minLength minLengthMessage maxLength maxLengthMessage min minMessage max maxMessage pattern patternMessage matchField matchFieldMessage validator i18n"
+    static let form: [String] = [
+        "$schema", "formatVersion", "id", "lang", "title", "description", "messages", "labels", "i18n", "submit", "cancel", "fields",
+        "steps",
+    ]
+    static let step: [String] = ["id", "title", "description", "fields", "show", "showAny", "routes", "next", "back", "skip", "i18n"]
+    static let field: [String] = [
+        "key", "type", "label", "placeholder", "helperText", "autoAdvance", "defaultValue", "source", "show", "showAny", "validation",
+        "options", "layout", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode", "props", "i18n",
+    ]
+    static let section: [String] = ["key", "type", "title", "description", "show", "showAny", "fields", "i18n"]
+    static let group: [String] = [
+        "key", "type", "label", "helperText", "itemLabel", "addLabel", "removeLabel", "defaultItems", "show", "showAny", "validation",
+        "fields", "i18n",
+    ]
+    static let option: [String] = ["value", "label", "i18n"]
+    static let action: [String] = ["label", "variant", "disabled", "i18n"]
+    static let route: [String] = ["to", "show", "showAny"]
+    static let validation: [String] = [
+        "required", "minLength", "minLengthMessage", "maxLength", "maxLengthMessage", "min", "minMessage", "max", "maxMessage", "pattern",
+        "patternMessage", "matchField", "matchFieldMessage", "validator", "i18n",
+    ]
 }
 
 private let labelHint = "Add a label so screen readers can name the input"
 
-private func unknown(_ value: JSONObject, _ path: String, _ list: String, hint: (String) -> String? = { _ in nil }) -> [DefinitionIssue] {
-    let known = list.split(separator: " ").map(String.init)
+private func unknown(_ value: JSONObject, _ path: String, _ known: [String], hint: (String) -> String? = { _ in nil }) -> [DefinitionIssue]
+{
     let absent = known.filter { !value.has($0) }
     return value.keys.filter { !known.containsText($0) }.map { key in
         let fix = closest(key, absent).map { "Did you mean \"\($0)\"?" } ?? hint(key)
@@ -40,7 +50,7 @@ private func action(_ value: JSONValue?, _ path: String, disables: Bool = true) 
 }
 
 private func misplaced(_ key: String) -> String? {
-    !sameText(key, "i18n") && Properties.validation.split(separator: " ").map(String.init).containsText(key)
+    !sameText(key, "i18n") && Properties.validation.containsText(key)
         ? "Move \"\(key)\" into \"validation\": { \"\(key)\": ... }" : nil
 }
 

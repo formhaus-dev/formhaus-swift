@@ -76,35 +76,57 @@ private func unit(_ scalar: Unicode.Scalar) -> UInt16 {
     UInt16(scalar.value)
 }
 
+private let repeaters = Set("*+{".utf16)
+private let quantifiers = Set("*+?|{".utf16)
+
+private struct GroupScan {
+    private var groups: [Bool] = []
+    private(set) var closed = false
+
+    mutating func consume(_ chars: [UInt16], at index: Int) -> Int {
+        closed = false
+        switch chars[index] {
+        case unit("\\"):
+            return index + 1
+        case unit("["):
+            return classEnd(chars, from: index + 1)
+        case unit("("):
+            groups.append(false)
+            return index + 1 < chars.count && chars[index + 1] == unit("?") ? index + 1 : index
+        case unit(")"):
+            closed = groups.popLast() ?? false
+            if closed { markInnermost() }
+            return index
+        case let char where quantifiers.contains(char):
+            markInnermost()
+            return index
+        default:
+            return index
+        }
+    }
+
+    private mutating func markInnermost() {
+        if !groups.isEmpty { groups[groups.count - 1] = true }
+    }
+
+    private func classEnd(_ chars: [UInt16], from start: Int) -> Int {
+        var index = start
+        while index < chars.count && chars[index] != unit("]") {
+            if chars[index] == unit("\\") { index += 1 }
+            index += 1
+        }
+        return index
+    }
+}
+
 func slowPattern(_ pattern: String) -> Bool {
     let chars = Array(pattern.utf16)
     guard chars.count <= 1000 else { return false }
-    let code = { (text: String) in Set(text.utf16) }
-    var groups: [Bool] = []
-    var closed = false
+    var scan = GroupScan()
     var index = 0
     while index < chars.count {
-        let char = chars[index]
-        if closed && code("*+{").contains(char) { return true }
-        closed = false
-        if char == unit("\\") {
-            index += 1
-        } else if char == unit("[") {
-            index += 1
-            while index < chars.count && chars[index] != unit("]") {
-                if chars[index] == unit("\\") { index += 1 }
-                index += 1
-            }
-        } else if char == unit("(") {
-            groups.append(false)
-            if index + 1 < chars.count && chars[index + 1] == unit("?") { index += 1 }
-        } else if char == unit(")") {
-            closed = groups.popLast() ?? false
-            if closed && !groups.isEmpty { groups[groups.count - 1] = true }
-        } else if !groups.isEmpty && code("*+?|{").contains(char) {
-            groups[groups.count - 1] = true
-        }
-        index += 1
+        if scan.closed && repeaters.contains(chars[index]) { return true }
+        index = scan.consume(chars, at: index) + 1
     }
     return false
 }
@@ -205,7 +227,8 @@ private func versionWarnings(_ context: CheckContext) -> [DefinitionIssue] {
     return [
         warning(
             "outdated-format-version", "/formatVersion", "\(container.path) is a \(container.node.type), which needs format 1.1",
-            "Set \"formatVersion\": \"1.1\", so that older versions of @formhaus/core reject the definition instead of skipping the fields inside"
+            "Set \"formatVersion\": \"1.1\", so that older versions of @formhaus/core "
+                + "reject the definition instead of skipping the fields inside"
         )
     ]
 }
