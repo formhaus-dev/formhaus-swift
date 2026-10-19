@@ -52,4 +52,13 @@ final class DefinitionIndex {
     func step(of field: FormField) -> FormStep? { stepOfField[field.ordinal] }
 
     func section(of field: FormField) -> FormSection? { sectionOfField[field.ordinal] }
+
+    func conditionSources(_ field: FormField) -> [String] {
+        field.conditionFields + (section(of: field)?.conditionFields ?? []) + (step(of: field)?.conditionFields ?? [])
+            + field.items.flatMap(\.conditionFields)
+    }
+
+    func isShared(_ key: String) -> Bool {
+        (fieldsByKey[key]?.count ?? 0) > 1
+    }
 }

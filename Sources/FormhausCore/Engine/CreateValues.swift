@@ -1,38 +1,43 @@
+func createItem(_ fields: [FormField], _ source: JSONObject? = nil) -> JSONObject {
+    createValues(fields, source.map { Values(fresh: $0) }).json
+}
+
 func createValues(
-    _ fields: [FormField], _ initialValues: JSONObject? = nil, pick: (String, JSONObject) -> FormField? = { _, _ in nil }
-) -> JSONObject {
+    _ fields: [FormField], _ initialValues: Values? = nil, pick: (String, JSONObject) -> FormField? = { _, _ in nil }
+) -> Values {
     var byKey = StringMap<[FormField]>()
     for field in fields { byKey[field.key, default: []].append(field) }
-    var values = JSONObject()
+    var values = Values()
     func fill(_ field: FormField) {
-        values.removeValue(forKey: field.key)
+        values.remove(field.key)
         if let value = field.defaultValue {
-            values[field.key] = value
+            values.set(field.key, ValueSlot(value, ref: Ref.preset(value, field.ordinal)))
         } else if field.isGroup, let count = field.defaultItems, count > 0 {
-            let item = JSONValue.object(createValues(field.items))
-            values[field.key] = .array(Array(repeating: item, count: Int(min(count, 1e6))))
+            let items = (0..<Int(min(count, 1e6))).map { _ in JSONValue.object(createItem(field.items)) }
+            values.set(field.key, .fresh(.array(items)))
         }
     }
-    let source = initialValues ?? JSONObject()
+    let source = initialValues ?? Values()
     for field in fields where byKey[field.key]?.last?.ordinal == field.ordinal { fill(field) }
-    for (key, value) in source where !sameText(key, "__proto__") { values[key] = value }
+    for key in source.keys where !sameText(key, "__proto__") { values.set(key, source.slot(key)) }
     var expanded = KeySet()
     for field in fields {
         let key = field.key
         let same = byKey[key]!
         let shared = same.count > 1
-        let chosen = (shared ? pick(key, values) : nil) ?? same[0]
-        let items = values[key]
+        let chosen = (shared ? pick(key, values.json) : nil) ?? same[0]
+        let items = values.slot(key)
         if !source.has(key) {
-            values.removeValue(forKey: key)
+            values.remove(key)
             if shared {
                 fill(chosen)
-            } else if let items {
-                values[key] = items
+            } else if items.value != nil {
+                values.set(key, items)
             }
-        } else if chosen.isGroup, !expanded.contains(key), let list = items?.arrayValue {
+        } else if chosen.isGroup, !expanded.contains(key), let list = items.value?.arrayValue {
             expanded.insert(key)
-            values[key] = .array(list.map { item in item.objectValue.map { .object(createValues(chosen.items, $0)) } ?? item })
+            let mapped = list.map { item in item.objectValue.map { JSONValue.object(createItem(chosen.items, $0)) } ?? item }
+            values.set(key, ValueSlot(.array(mapped), ref: Ref(token: freshToken(), items: list.map { _ in freshToken() })))
         }
     }
     return values

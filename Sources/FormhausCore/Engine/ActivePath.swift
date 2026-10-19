@@ -58,6 +58,7 @@ final class PathCache {
     private let definition: FormDefinition
     private var source: JSONObject?
     private var path = ActivePath(steps: [], values: JSONObject())
+    private var ordered: JSONObject?
 
     init(_ definition: FormDefinition) {
         self.definition = definition
@@ -67,13 +68,22 @@ final class PathCache {
         if source != values {
             source = values
             path = ActivePath.walk(definition, values)
+            ordered = nil
         }
         return path
     }
 
     func conditionValues(_ values: JSONObject) -> JSONObject {
-        path(values).ordered(definition)
+        let path = path(values)
+        if let ordered { return ordered }
+        let result = path.ordered(definition)
+        ordered = result
+        return result
     }
+}
+
+func activeSteps(_ definition: FormDefinition, _ values: JSONObject) -> [FormStep] {
+    ActivePath.walk(definition, values).steps
 }
 
 func reconcileStepIndex(_ previous: [FormStep], _ next: [FormStep], _ index: Int) -> Int {
