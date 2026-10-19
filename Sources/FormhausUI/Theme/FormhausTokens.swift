@@ -17,7 +17,7 @@ public struct FormhausTokens: Sendable {
         let scale = typeScale(typeSize)
         let grow = max(1, scale)
         let rhythm = 1 + (grow - 1) / 2
-        let palette = increasedContrast ? (dark ? theme.darkIncreased : theme.lightIncreased) : (dark ? theme.dark : theme.light)
+        let palette = theme.palette(dark: dark, increasedContrast: increasedContrast, environment: environment)
         colors = ResolvedPalette(palette, dark: dark, environment: environment)
         var typography = theme.typography
         typography.body *= scale

@@ -3,59 +3,58 @@ import Testing
 
 @testable import FormhausUI
 
-func luminance(_ color: Color) -> Double {
-    let resolved = color.resolve(in: EnvironmentValues())
-    func channel(_ value: Float) -> Double {
-        let value = Double(value)
-        return value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
-    }
-    return 0.2126 * channel(resolved.red) + 0.7152 * channel(resolved.green) + 0.0722 * channel(resolved.blue)
+func ratio(_ lhs: Color, _ rhs: Color) -> Double {
+    contrastRatio(lhs.resolve(in: EnvironmentValues()), rhs.resolve(in: EnvironmentValues()))
 }
 
-func contrast(_ lhs: Color, _ rhs: Color) -> Double {
-    let pair = [luminance(lhs), luminance(rhs)].sorted()
-    return (pair[1] + 0.05) / (pair[0] + 0.05)
-}
-
-struct PaletteCheck {
-    let name: String
-    let ratio: Double
-    let minimum: Double
-}
-
-func paletteChecks(_ palette: Palette, increased: Bool) -> [PaletteCheck] {
+func checkPalette(_ name: String, _ palette: Palette, increased: Bool) {
     let background = palette.background
-    var checks = [
-        PaletteCheck(name: "text", ratio: contrast(palette.text, background), minimum: increased ? 7 : 4.5),
-        PaletteCheck(name: "muted", ratio: contrast(palette.textMuted, background), minimum: 4.5),
-        PaletteCheck(name: "placeholder", ratio: contrast(palette.control, background), minimum: 4.5),
-        PaletteCheck(name: "error", ratio: contrast(palette.error, background), minimum: 4.5),
-        PaletteCheck(name: "primary", ratio: contrast(palette.primary, background), minimum: 3),
-        PaletteCheck(name: "onPrimary", ratio: contrast(palette.onPrimary, palette.primary), minimum: 4.5),
+    let checks: [(String, Double, Double)] = [
+        ("text", ratio(palette.text, background), increased ? 7 : 4.5),
+        ("muted", ratio(palette.textMuted, background), increased ? 7 : 4.5),
+        ("placeholder", ratio(palette.control, background), 4.5),
+        ("error", ratio(palette.error, background), 4.5),
+        ("primary", ratio(palette.primary, background), increased ? 4.5 : 3),
+        ("onPrimary", ratio(palette.onPrimary, palette.primary), 4.5),
     ]
-    if increased { checks.append(PaletteCheck(name: "border", ratio: contrast(palette.border, background), minimum: 3)) }
-    return checks
+    for (check, value, minimum) in checks {
+        #expect(value >= minimum, "\(name) \(check): \(value)")
+    }
+    if increased { #expect(ratio(palette.border, background) >= 3, "\(name) border") }
 }
+
+private let forest: FormhausTheme = {
+    var theme = FormhausTheme.standard
+    theme.light = Palette(
+        text: Color(hex: 0x1B2A1F), textMuted: Color(hex: 0x5B6B5F), border: Color(hex: 0xD6E2D9), control: Color(hex: 0x66766A),
+        background: Color(hex: 0xF7FBF8), primary: Color(hex: 0x1E7A44))
+    theme.dark = Palette(
+        text: Color(hex: 0xE6F2E9), textMuted: Color(hex: 0x9DB2A3), border: Color(hex: 0x2E3D33), control: Color(hex: 0x8AA092),
+        error: Color(hex: 0xFF8A80), background: Color(hex: 0x111A14), primary: Color(hex: 0x5BD08A), onPrimary: Color(hex: 0x0B1A10))
+    return theme
+}()
 
 @Suite("Contrast")
 struct ContrastTests {
-    @Test(
-        "palette text, errors and controls meet WCAG AA",
-        arguments: [
-            ("light", Palette.light, false), ("dark", Palette.dark, false), ("light increased", Palette.lightIncreased, true),
-            ("dark increased", Palette.darkIncreased, true),
-        ])
-    func palettes(name: String, palette: Palette, increased: Bool) {
-        for check in paletteChecks(palette, increased: increased) {
-            #expect(check.ratio >= check.minimum, "\(name) \(check.name): \(check.ratio)")
-        }
+    @Test("formhaus palettes meet WCAG AA, and Increase Contrast raises borders to 3:1", arguments: [ColorScheme.light, .dark])
+    func standard(scheme: ColorScheme) {
+        checkPalette("\(scheme)", FormhausTheme.standard.palette(for: scheme, contrast: .standard), increased: false)
+        checkPalette("\(scheme) increased", FormhausTheme.standard.palette(for: scheme, contrast: .increased), increased: true)
     }
 
-    @Test("Increase Contrast picks the increased palettes")
-    @MainActor
-    func increased() {
-        let tokens = FormhausTokens(theme: .standard, dark: false, typeSize: .large, reduceMotion: false, increasedContrast: true)
-        #expect(luminance(tokens.colors.border) == luminance(Palette.lightIncreased.border))
+    @Test("a custom theme keeps its own colours under Increase Contrast", arguments: [ColorScheme.light, .dark])
+    func custom(scheme: ColorScheme) {
+        let increased = forest.palette(for: scheme, contrast: .increased)
+        checkPalette("forest \(scheme) increased", increased, increased: true)
+        let primary = increased.primary.resolve(in: EnvironmentValues())
+        #expect(primary.green > primary.red && primary.green > primary.blue)
+    }
+
+    @Test("an explicit Increase Contrast palette wins over the derived one")
+    func explicit() {
+        var theme = forest
+        theme.lightIncreased = Palette(primary: Color(hex: 0x0B4D27))
+        #expect(ratio(theme.palette(for: .light, contrast: .increased).primary, Color(hex: 0x0B4D27)) < 1.01)
     }
 
     @Test("Reduce Motion turns animations off")

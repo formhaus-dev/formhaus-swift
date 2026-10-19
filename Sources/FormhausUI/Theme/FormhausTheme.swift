@@ -69,8 +69,8 @@ public struct Motion: Sendable {
 public struct FormhausTheme: Sendable {
     public var light: Palette
     public var dark: Palette
-    public var lightIncreased: Palette
-    public var darkIncreased: Palette
+    public var lightIncreased: Palette?
+    public var darkIncreased: Palette?
     public var typography: Typography
     public var spacing: Spacing
     public var radii: Radii
@@ -79,7 +79,7 @@ public struct FormhausTheme: Sendable {
 
     public init(
         light: Palette = .light, dark: Palette = .dark, typography: Typography, spacing: Spacing = Spacing(), radii: Radii = Radii(),
-        controls: Controls, motion: Motion = Motion(), lightIncreased: Palette = .lightIncreased, darkIncreased: Palette = .darkIncreased
+        controls: Controls, motion: Motion = Motion(), lightIncreased: Palette? = nil, darkIncreased: Palette? = nil
     ) {
         self.light = light
         self.dark = dark
