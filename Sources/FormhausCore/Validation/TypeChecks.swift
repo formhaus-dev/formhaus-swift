@@ -46,10 +46,10 @@ private enum Format {
 
     func matches(_ value: String) -> Bool {
         switch self {
-        case .email: emailPattern.test(value)
-        case .date: dateOnly.test(value) && isCalendarDate(value)
-        case .datetime: dateTime.test(value) && isCalendarDate(value)
-        case .time: timePattern.test(value)
+        case .email: emailPattern.test(value) == true
+        case .date: dateOnly.test(value) == true && isCalendarDate(value)
+        case .datetime: dateTime.test(value) == true && isCalendarDate(value)
+        case .time: timePattern.test(value) == true
         }
     }
 }
@@ -72,7 +72,7 @@ func normalizeValue(_ field: FormField, _ input: JSONValue?) -> JSONValue? {
     if let items = input?.arrayValue, items.isEmpty, field.type != "multiselect", builtInTypes.contains(field.type) { return nil }
     if field.isGroup { return normalizeItems(field, input) }
     let value = trimValue(field, input)
-    guard field.type == "number", case .string(let text)? = value, decimal.test(text) else { return value }
+    guard field.type == "number", case .string(let text)? = value, decimal.test(text) == true else { return value }
     let parsed = jsNumber(fromString: text)
     return parsed.isFinite ? .number(parsed) : value
 }

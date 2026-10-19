@@ -17,7 +17,9 @@ private func boundError(_ size: Double, _ rule: String, _ rules: FieldValidation
 private func patternError(_ value: JSONValue, _ rules: FieldValidation, _ message: () -> String) -> String? {
     guard let source = rules.pattern, let pattern = JSRegex(source) else { return nil }
     let text = jsString(value)
-    return text.jsLength <= maxStringLength && pattern.test(text) ? nil : rules.message("patternMessage") ?? message()
+    guard text.jsLength <= maxStringLength else { return rules.message("patternMessage") ?? message() }
+    guard let matched = pattern.test(text) else { return nil }
+    return matched ? nil : rules.message("patternMessage") ?? message()
 }
 
 private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: FormField, _ resolve: ResolveMessage) -> String? {

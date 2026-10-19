@@ -2,6 +2,8 @@ import Foundation
 
 public let formatVersion = "1.2"
 
+private let versionPattern = JSRegex("^[1-9]\\d*(\\.\\d+)?$")!
+
 func nestable(_ path: String) -> Bool {
     path.components(separatedBy: "/fields/").count <= 3
 }
@@ -149,7 +151,7 @@ private func step(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
 func formatIssues(_ input: JSONObject) -> [DefinitionIssue] {
     guard let version = input["formatVersion"] else { return [] }
     let text = version.stringValue
-    let valid = text.map { $0.range(of: "^[1-9][0-9]*(\\.[0-9]+)?$", options: .regularExpression) != nil } ?? false
+    let valid = text.map { versionPattern.test($0) == true } ?? false
     if valid, Double(text!.prefix { $0 != "." })! <= Double(formatVersion.prefix { $0 != "." })! { return [] }
     return [
         valid
