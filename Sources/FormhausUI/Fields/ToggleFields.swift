@@ -107,5 +107,6 @@ private struct SwitchRow: View {
                 .tint(tokens.colors.primary)
                 .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
         }
+        .frame(minHeight: tokens.controls.hitTarget)
     }
 }
