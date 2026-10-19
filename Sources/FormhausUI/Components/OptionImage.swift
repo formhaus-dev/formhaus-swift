@@ -22,7 +22,7 @@ struct OptionImage: View {
     }
 
     @ViewBuilder private var picture: some View {
-        if let image = InlineImages.shared.cached(source) {
+        if let image = isInline(source) ? InlineImages.shared.entry(source).image : nil {
             Image(decorative: image, scale: 1).resizable()
         } else if let url = URL(string: source), ["https", "http"].contains(url.scheme) {
             AsyncImage(url: url) { phase in
@@ -38,36 +38,88 @@ private func isInline(_ source: String) -> Bool {
     source.hasPrefix("data:image/")
 }
 
+struct ImageKey: Hashable, Sendable {
+    let source: String
+    private let digest: Int
+
+    init(_ source: String) {
+        self.source = source
+        var hasher = Hasher()
+        hasher.combine(source.utf8.count)
+        hasher.combine(source.prefix(96))
+        hasher.combine(source.suffix(96))
+        digest = hasher.finalize()
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(digest)
+    }
+
+    static func == (lhs: ImageKey, rhs: ImageKey) -> Bool {
+        lhs.digest == rhs.digest && lhs.source == rhs.source
+    }
+}
+
 @MainActor
 @Observable
+final class ImageEntry {
+    fileprivate(set) var image: CGImage?
+    @ObservationIgnored fileprivate var loading = false
+    @ObservationIgnored fileprivate var bytes = 0
+}
+
+@MainActor
 final class InlineImages {
     static let shared = InlineImages()
-    private var cache: [String: CGImage] = [:]
-    @ObservationIgnored private var order: [String] = []
-    @ObservationIgnored private var loading: Set<String> = []
+    private var entries: [ImageKey: ImageEntry] = [:]
+    private var order: [ImageKey] = []
+    private var bytes = 0
+    private let maxBytes = 48 * 1024 * 1024
+    private let maxCount = 256
 
-    func prefetch(_ sources: [String]) {
-        for source in sources where isInline(source) && cache[source] == nil && !loading.contains(source) {
-            loading.insert(source)
-            Task {
-                _ = await image(source)
-                loading.remove(source)
-            }
-        }
+    func entry(_ source: String) -> ImageEntry {
+        let key = ImageKey(source)
+        if let entry = entries[key] { return entry }
+        let entry = ImageEntry()
+        entries[key] = entry
+        return entry
     }
 
     func cached(_ source: String) -> CGImage? {
-        cache[source]
+        entries[ImageKey(source)]?.image
+    }
+
+    func prefetch(_ sources: [String]) {
+        for source in sources where isInline(source) { load(source, entry(source)) }
     }
 
     func image(_ source: String) async -> CGImage? {
-        if let hit = cache[source] { return hit }
-        let image = await Task.detached(priority: .userInitiated) { decodeInline(source) }.value
-        guard let image else { return nil }
-        cache[source] = image
-        order.append(source)
-        if order.count > 128 { cache[order.removeFirst()] = nil }
+        let entry = entry(source)
+        if let image = entry.image { return image }
+        guard let image = await Task.detached(priority: .userInitiated, operation: { decodeInline(source) }).value else { return nil }
+        store(image, ImageKey(source), entry)
         return image
+    }
+
+    private func load(_ source: String, _ entry: ImageEntry) {
+        guard entry.image == nil, !entry.loading else { return }
+        entry.loading = true
+        Task {
+            _ = await image(source)
+            entry.loading = false
+        }
+    }
+
+    private func store(_ image: CGImage, _ key: ImageKey, _ entry: ImageEntry) {
+        guard entry.image == nil else { return }
+        entry.image = image
+        entry.bytes = image.bytesPerRow * image.height
+        bytes += entry.bytes
+        order.append(key)
+        while order.count > maxCount || bytes > maxBytes, order.count > 1 {
+            let oldest = order.removeFirst()
+            if let evicted = entries.removeValue(forKey: oldest) { bytes -= evicted.bytes }
+        }
     }
 }
 

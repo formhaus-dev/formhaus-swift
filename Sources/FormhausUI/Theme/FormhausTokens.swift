@@ -99,7 +99,12 @@ private struct TokenResolver: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.self) private var environment
+
+    private var environment: EnvironmentValues {
+        var values = EnvironmentValues()
+        values.colorScheme = colorScheme
+        return values
+    }
 
     func body(content: Content) -> some View {
         let tokens = FormhausTokens(

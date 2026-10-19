@@ -74,6 +74,7 @@ public struct ResolvedPalette: Sendable {
     public let primaryHover: Color
     public let primarySoft: Color
     public let primaryOnSoft: Color
+    public let primaryDisabled: Color
     public let secondaryBorder: Color
     public let focus: Color
     public let scrim: Color
@@ -99,6 +100,7 @@ public struct ResolvedPalette: Sendable {
         primaryHover = palette.primaryHover ?? Color(mix(primary, dark ? .white : .black, dark ? 0.85 : 0.82))
         primarySoft = palette.primarySoft ?? Color(mix(primary, background, 0.09))
         primaryOnSoft = dark ? Color(mix(primary, .white, 0.6)) : palette.primary
+        primaryDisabled = Color(mix(primary, background, dark ? 0.3 : 0.1))
         secondaryBorder = palette.secondaryBorder
         focus = palette.focus ?? palette.primary
         scrim = palette.scrim
