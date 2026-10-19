@@ -2,9 +2,10 @@ import SwiftUI
 
 private struct FocusRequestReader: ViewModifier {
     let state: FieldState
+    let model: FormModel
     let disabled: Bool
     let perform: @MainActor () -> Void
-    @State private var waiting = false
+    @State private var waiting: Int?
 
     func body(content: Content) -> some View {
         content
@@ -14,14 +15,14 @@ private struct FocusRequestReader: ViewModifier {
     }
 
     private func receive() {
-        if state.takeFocusRequest() { waiting = true }
+        if let id = state.takeFocusRequest() { waiting = id }
         apply()
     }
 
     private func apply() {
-        guard waiting, !disabled else { return }
-        waiting = false
-        perform()
+        guard let id = waiting, !disabled else { return }
+        waiting = nil
+        if model.focusRequest?.id == id { perform() }
     }
 }
 
@@ -47,14 +48,14 @@ extension View {
     }
 
     public func onFormhausFocus(_ context: FieldContext, perform: @escaping @MainActor () -> Void) -> some View {
-        modifier(FocusRequestReader(state: context.state, disabled: context.isLocked, perform: perform))
+        modifier(FocusRequestReader(state: context.state, model: context.model, disabled: context.isLocked, perform: perform))
     }
 
     public func formhausScrollAnchor(_ context: FieldContext) -> some View {
         id(context.key)
     }
 
-    func onFormhausFocus(_ state: FieldState, disabled: Bool, perform: @escaping @MainActor () -> Void) -> some View {
-        modifier(FocusRequestReader(state: state, disabled: disabled, perform: perform))
+    func onFormhausFocus(_ state: FieldState, model: FormModel, disabled: Bool, perform: @escaping @MainActor () -> Void) -> some View {
+        modifier(FocusRequestReader(state: state, model: model, disabled: disabled, perform: perform))
     }
 }

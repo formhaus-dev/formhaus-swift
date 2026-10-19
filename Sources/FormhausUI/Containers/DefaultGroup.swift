@@ -10,7 +10,8 @@ struct DefaultGroup: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.s1) {
-            FieldLabel(text: context.label, required: context.group.isRequired).accessibilityAddTraits(.isHeader)
+            FieldLabel(text: context.label, required: context.group.isRequired, requiredLabel: context.model.text(forLabel: "required"))
+                .accessibilityAddTraits(.isHeader)
             if let helper = context.helperText, !helper.isEmpty {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
             }
@@ -31,7 +32,7 @@ struct DefaultGroup: View {
                     .buttonStyle(FormButtonStyle(.secondary))
                     .disabled(context.disabled)
                     .focused($focused)
-                    .onFormhausFocus(state, disabled: context.disabled) { focused = true }
+                    .onFormhausFocus(state, model: context.model, disabled: context.disabled) { focused = true }
                 }
             }
             .padding(.top, tokens.spacing.s7 - tokens.spacing.s1)
@@ -59,7 +60,7 @@ struct DefaultGroupItem: View {
                         .disabled(context.disabled)
                         .accessibilityLabel(context.removeName)
                         .focused($removeFocused)
-                        .onFormhausFocus(context.removeFocus, disabled: context.disabled) { removeFocused = true }
+                        .onFormhausFocus(context.removeFocus, model: context.model, disabled: context.disabled) { removeFocused = true }
                         .padding(.trailing, -tokens.spacing.s4)
                 }
             }

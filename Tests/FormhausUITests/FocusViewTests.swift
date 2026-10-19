@@ -11,6 +11,11 @@ final class FocusLog {
     var bodies: [String: Int] = [:]
 }
 
+@MainActor
+func focusProbes(_ log: FocusLog) -> FormComponents {
+    FormComponents.standard.field("probe") { FocusProbe(context: $0, log: log) }
+}
+
 private struct FocusProbe: View {
     let context: FieldContext
     let log: FocusLog

@@ -10,23 +10,23 @@ public final class FieldState {
     public private(set) var loading = false
     public private(set) var version = 0
     public private(set) var focusToken = 0
-    @ObservationIgnored private(set) var focusPending = false
+    @ObservationIgnored private var focusPending: Int?
 
     init(key: String) {
         self.key = key
     }
 
-    func requestFocus() {
-        focusPending = true
+    func requestFocus(_ id: Int) {
+        focusPending = id
         focusToken += 1
     }
 
     func dropFocusRequest() {
-        focusPending = false
+        focusPending = nil
     }
 
-    func takeFocusRequest() -> Bool {
-        defer { focusPending = false }
+    func takeFocusRequest() -> Int? {
+        defer { focusPending = nil }
         return focusPending
     }
 
@@ -53,15 +53,15 @@ public final class FieldState {
 public final class GroupState {
     public let key: String
     public private(set) var items: [GroupItem] = []
-    public private(set) var filled: [Bool] = []
+    public private(set) var hasContent: [Bool] = []
 
     init(key: String) {
         self.key = key
     }
 
-    func update(_ items: [GroupItem], filled: [Bool]) {
+    func update(_ items: [GroupItem], hasContent: [Bool]) {
         if self.items != items { self.items = items }
-        if self.filled != filled { self.filled = filled }
+        if self.hasContent != hasContent { self.hasContent = hasContent }
     }
 }
 
