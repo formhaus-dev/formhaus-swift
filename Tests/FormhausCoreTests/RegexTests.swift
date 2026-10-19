@@ -35,6 +35,9 @@ struct RegexTests {
         ("[(a+)]+", "+", true),
         ("[invalid(", "x", nil),
         ("(a", "a", nil),
+        ("(?i:b|[ab])", "A", true),
+        ("(?i:x|[a-c])", "A", true),
+        ("^(?i:\\u0178)$", "\u{FF}", true),
     ]
 
     @Test("pattern test results", arguments: 0..<matches.count)

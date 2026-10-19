@@ -2,7 +2,7 @@
  "node": "v24.15.0",
  "seed": 20261019,
  "counts": {
-  "curated": 5259,
+  "curated": 5260,
   "fuzz": 5873
  },
  "cases": [
@@ -3343,6 +3343,18 @@
    "kind": "curated"
   },
   {
+   "pattern": "(?i:b|[ab])",
+   "input": "b",
+   "result": true,
+   "kind": "curated"
+  },
+  {
+   "pattern": "(?i:x|[a-c])",
+   "input": "x",
+   "result": true,
+   "kind": "curated"
+  },
+  {
    "pattern": "(?i:ǅ)",
    "input": "Ǆ",
    "result": true,
@@ -6142,12 +6154,6 @@
    "pattern": "^(?i:[^\\u0177])$",
    "input": "Ŷ",
    "result": false,
-   "kind": "curated"
-  },
-  {
-   "pattern": "^(?i:\\u0178)$",
-   "input": "ÿ",
-   "result": true,
    "kind": "curated"
   },
   {

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -113,7 +114,7 @@ const curated = [
   ['(?i', ['']], ['(?i:', ['']], ['(?-i:a)', ['a', 'A']], ['(?i:(?-i:a))', ['A', 'a']], ['(?i:a(?-i:b)c)', ['AbC', 'ABC']],
   ['(?m:$)\\n', ['\n']], ['(?m:a$)', ['a\nb', 'ab']], ['(?s-s:.)', ['\n']], ['(?ms:^.$)', ['\n\n\n']], ['(?i:[\\u212a])', ['k']],
   ['(?i:[^k])', ['\u212a', 'K']], ['(?i:\\u212a)', ['K']], ['(?i:[a-f]+)', ['ABCDEF']], ['(?i:[À-Þ])', ['é']], ['(?i:Σ)', ['ς', 'σ']],
-  ['(?i:ǅ)', ['Ǆ', 'ǆ']], ['(?i:ﬀ)', ['FF']], ['(?i:ΐ)', ['ΐ']], ['(?i:[\\w])', ['\u017f']],
+  ['(?i:b|[ab])', ['A', 'b']], ['(?i:x|[a-c])', ['A', 'x']], ['(?i:ǅ)', ['Ǆ', 'ǆ']], ['(?i:ﬀ)', ['FF']], ['(?i:ΐ)', ['ΐ']], ['(?i:[\\w])', ['\u017f']],
 ]
 
 function random(seedValue) {
@@ -178,11 +179,26 @@ function outcome(pattern, text) {
   return performance.now() - started < 20 ? result : undefined
 }
 
+const nodeBugs = new Set(
+  [['(?i:b|[ab])', 'A'], ['(?i:x|[a-c])', 'A'], ['^(?i:\\u0178)$', '\u00ff']].map((item) => JSON.stringify(item)),
+)
+
+if (process.argv[2] === '--verify') {
+  const { cases } = JSON.parse(readFileSync(output, 'utf8'))
+  const differing = cases.filter((item) => {
+    const result = outcome(item.pattern, item.input)
+    return result !== undefined && result !== item.result
+  })
+  for (const item of differing.slice(0, 20)) console.error(`differs: ${JSON.stringify(item)}`)
+  console.log(`verified ${cases.length} cases in a fresh node ${process.version}, ${differing.length} differ`)
+  process.exit(differing.length === 0 ? 0 : 1)
+}
+
 const cases = []
 const seen = new Set()
 function add(pattern, text, kind) {
   const key = JSON.stringify([pattern, text])
-  if (seen.has(key)) return
+  if (seen.has(key) || nodeBugs.has(key)) return
   seen.add(key)
   const result = outcome(pattern, text)
   if (result === undefined) return
@@ -206,3 +222,4 @@ for (let index = 0; index < fuzzPatterns; index += 1) {
 const counts = { curated: cases.filter((item) => item.kind === 'curated').length, fuzz: cases.filter((item) => item.kind === 'fuzz').length }
 writeFileSync(output, JSON.stringify({ node: process.version, seed, counts, cases }, null, 1) + '\n')
 console.log(`wrote ${cases.length} cases (${counts.curated} curated, ${counts.fuzz} fuzz) with node ${process.version}`)
+execFileSync(process.execPath, [fileURLToPath(import.meta.url), '--verify'], { stdio: 'inherit' })
