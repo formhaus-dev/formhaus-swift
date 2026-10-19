@@ -3,17 +3,15 @@ struct UnitClasses: Sendable {
     private let latin: [UInt16]
 
     init(_ program: RegexProgram) {
-        var boundaries: Set<Int> = [0]
+        var boundaries = [0]
         let ranges = program.sets.flatMap(\.ranges) + CharSet.word.ranges + CharSet.lineTerminator.ranges
-        for range in ranges {
-            boundaries.insert(Int(range.lowerBound))
-            boundaries.insert(Int(range.upperBound) + 1)
+        for range in ranges { boundaries += [Int(range.lowerBound), Int(range.upperBound) + 1] }
+        for case .unit(let unit, _) in program.instructions { boundaries += [Int(unit), Int(unit) + 1] }
+        boundaries.sort()
+        var starts: [UInt16] = []
+        for boundary in boundaries where boundary <= Int(UInt16.max) && starts.last.map({ Int($0) != boundary }) ?? true {
+            starts.append(UInt16(boundary))
         }
-        for case .unit(let unit, _) in program.instructions {
-            boundaries.insert(Int(unit))
-            boundaries.insert(Int(unit) + 1)
-        }
-        let starts = boundaries.filter { $0 <= Int(UInt16.max) }.sorted().map { UInt16($0) }
         self.starts = starts
         var current = 0
         latin = (0..<256).map { unit in

@@ -71,37 +71,75 @@ final class AutomatonCache: Sendable {
 }
 
 final class PatternCache: Sendable {
-    private struct Entry {
-        let pattern: CompiledPattern?
-        var used: UInt64
-    }
-
-    private struct State {
-        var entries: [String: Entry] = [:]
-        var clock: UInt64 = 0
-    }
-
     static let shared = PatternCache()
     static let limit = 256
 
-    private let state = OSAllocatedUnfairLock(initialState: State())
+    private let state = OSAllocatedUnfairLock(initialState: RecentPatterns())
 
     func pattern(_ source: String) -> CompiledPattern? {
-        let cached = state.withLock { state -> CompiledPattern?? in
-            guard let entry = state.entries[source] else { return nil }
-            state.clock += 1
-            state.entries[source]?.used = state.clock
-            return .some(entry.pattern)
-        }
-        if let cached { return cached }
+        if let cached = state.withLock({ $0.lookup(source) }) { return cached }
         let compiled = try? CompiledPattern(source)
-        state.withLock { state in
-            if state.entries.count >= Self.limit, let oldest = state.entries.min(by: { $0.value.used < $1.value.used })?.key {
-                state.entries[oldest] = nil
-            }
-            state.clock += 1
-            state.entries[source] = Entry(pattern: compiled, used: state.clock)
-        }
+        state.withLock { $0.insert(source, compiled, limit: Self.limit) }
         return compiled
+    }
+}
+
+private struct RecentPatterns {
+    private struct Node {
+        var key: String
+        var pattern: CompiledPattern?
+        var newer = -1
+        var older = -1
+    }
+
+    private var nodes: [Node] = []
+    private var positions: [String: Int] = [:]
+    private var newest = -1
+    private var oldest = -1
+
+    mutating func lookup(_ key: String) -> CompiledPattern?? {
+        guard let position = positions[key] else { return nil }
+        promote(position)
+        return .some(nodes[position].pattern)
+    }
+
+    mutating func insert(_ key: String, _ pattern: CompiledPattern?, limit: Int) {
+        if let position = positions[key] {
+            nodes[position].pattern = pattern
+            promote(position)
+            return
+        }
+        let position: Int
+        if nodes.count < limit {
+            position = nodes.count
+            nodes.append(Node(key: key, pattern: pattern))
+        } else {
+            position = oldest
+            unlink(position)
+            positions[nodes[position].key] = nil
+            nodes[position] = Node(key: key, pattern: pattern)
+        }
+        positions[key] = position
+        link(position)
+    }
+
+    private mutating func promote(_ position: Int) {
+        guard position != newest else { return }
+        unlink(position)
+        link(position)
+    }
+
+    private mutating func unlink(_ position: Int) {
+        let node = nodes[position]
+        if node.newer >= 0 { nodes[node.newer].older = node.older } else { newest = node.older }
+        if node.older >= 0 { nodes[node.older].newer = node.newer } else { oldest = node.newer }
+    }
+
+    private mutating func link(_ position: Int) {
+        nodes[position].newer = -1
+        nodes[position].older = newest
+        if newest >= 0 { nodes[newest].newer = position }
+        newest = position
+        if oldest < 0 { oldest = position }
     }
 }
