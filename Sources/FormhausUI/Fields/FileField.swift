@@ -69,7 +69,7 @@ public struct FileField: View {
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(context.label)
+        .accessibilityLabel(context.accessibilityName)
         .accessibilityValue(fileName ?? "")
         .accessibilityAddTraits(.isButton)
     }

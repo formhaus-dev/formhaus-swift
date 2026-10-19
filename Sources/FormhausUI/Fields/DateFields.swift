@@ -62,6 +62,7 @@ public struct DateField: View {
     @Environment(\.formhausTokens) private var tokens
     @Environment(\.locale) private var locale
     @FocusState private var focused: Bool
+    @State private var picking = false
     let context: FieldContext
 
     public init(_ context: FieldContext) {
@@ -71,37 +72,33 @@ public struct DateField: View {
     public var body: some View {
         FieldShell(context) {
             HStack(spacing: tokens.spacing.s3) {
-                if let date {
-                    DatePicker(selection: binding(date), displayedComponents: kind.components) { Text(context.label) }
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    LoadingIndicator(visible: context.loading)
-                    if !context.isRequired, !context.isLocked {
-                        IconButton(systemName: "xmark.circle.fill", label: context.label("removeItem"), embedded: true) {
-                            context.setValue(.string(""))
-                        }
+                Button {
+                    picking = true
+                } label: {
+                    HStack(spacing: tokens.spacing.s3) {
+                        Text(display ?? context.field.placeholder ?? kind.pattern(locale))
+                            .formhausText(.body, colored: false)
+                            .foregroundStyle(
+                                display == nil ? tokens.colors.control : context.isLocked ? tokens.colors.textMuted : tokens.colors.text
+                            )
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Image(systemName: kind == .time ? "clock" : "calendar").foregroundStyle(tokens.colors.textMuted)
                     }
-                } else {
-                    Button {
-                        context.setValue(.string(kind.text(Date())))
-                    } label: {
-                        HStack {
-                            Text(context.field.placeholder ?? pattern)
-                                .formhausText(.body, colored: false)
-                                .foregroundStyle(tokens.colors.control)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            LoadingIndicator(visible: context.loading)
-                            Image(systemName: kind == .time ? "clock" : "calendar").foregroundStyle(tokens.colors.textMuted)
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(context.label)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(context.accessibilityName)
+                .accessibilityValue(display ?? "")
+                .datePickerPresentation(isPresented: $picking) {
+                    DatePickerPanel(kind: kind, initial: date ?? Date(), label: context.label) { picked in
+                        context.setValue(.string(kind.text(picked)))
+                        if kind == .date { picking = false }
+                    }
+                }
+                FieldAccessories(context: context, clearable: date != nil) { context.setValue(.string("")) }
             }
-            .padding(.horizontal, date == nil ? 0 : tokens.spacing.s4)
-            .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked, padded: date == nil)
+            .inputChrome(focused: focused || picking, invalid: context.isInvalid, disabled: context.isLocked)
             .disabled(context.isLocked)
             .formhausFocus(context, $focused)
             .accessibilityHint(context.helperText ?? "")
@@ -114,9 +111,74 @@ public struct DateField: View {
         context.text.isEmpty ? nil : kind.date(context.text)
     }
 
-    private var pattern: String { kind.pattern(locale) }
+    private var display: String? {
+        guard let date else { return nil }
+        switch kind {
+        case .date: return date.formatted(Date.FormatStyle(date: .long, time: .omitted, locale: locale))
+        case .time: return date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale))
+        case .datetime: return date.formatted(Date.FormatStyle(date: .long, time: .shortened, locale: locale))
+        }
+    }
+}
 
-    private func binding(_ current: Date) -> Binding<Date> {
-        Binding(get: { current }, set: { context.setValue(.string(kind.text($0))) })
+private struct DatePickerPanel: View {
+    @Environment(\.formhausTokens) private var tokens
+    @State private var draft: Date
+    let kind: DateKind
+    let label: String
+    let pick: (Date) -> Void
+
+    init(kind: DateKind, initial: Date, label: String, pick: @escaping (Date) -> Void) {
+        self.kind = kind
+        self.label = label
+        self.pick = pick
+        _draft = State(initialValue: initial)
+    }
+
+    var body: some View {
+        DatePicker(selection: selection, displayedComponents: kind.components) { Text(label) }
+            .labelsHidden()
+            .modifier(PickerStyleChoice(kind: kind))
+            .tint(tokens.colors.primary)
+            .padding(tokens.spacing.s7)
+    }
+
+    private var selection: Binding<Date> {
+        Binding(
+            get: { draft },
+            set: {
+                draft = $0
+                pick($0)
+            })
+    }
+}
+
+private struct PickerStyleChoice: ViewModifier {
+    let kind: DateKind
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+            if kind == .time {
+                content.datePickerStyle(.wheel)
+            } else {
+                content.datePickerStyle(.graphical)
+            }
+        #else
+            if kind == .time {
+                content.datePickerStyle(.stepperField)
+            } else {
+                content.datePickerStyle(.graphical)
+            }
+        #endif
+    }
+}
+
+extension View {
+    fileprivate func datePickerPresentation(isPresented: Binding<Bool>, @ViewBuilder content: @escaping () -> some View) -> some View {
+        #if os(iOS)
+            sheet(isPresented: isPresented) { content().presentationDetents([.medium, .large]) }
+        #else
+            popover(isPresented: isPresented, arrowEdge: .bottom, content: content)
+        #endif
     }
 }
