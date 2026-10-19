@@ -21,19 +21,9 @@ func lookup(_ overlay: JSONValue?, _ path: [String]) -> String? {
 
 func placeholders(_ text: String) -> [String] {
     var names = Set<String>()
-    let chars = Array(text)
-    var index = 0
-    while index < chars.count {
-        if chars[index] == "{" {
-            var end = index + 1
-            while end < chars.count, chars[end].isASCII, chars[end].isLetter || chars[end].isNumber || chars[end] == "_" { end += 1 }
-            if end > index + 1, end < chars.count, chars[end] == "}" {
-                names.insert(String(chars[(index + 1)..<end]))
-                index = end + 1
-                continue
-            }
-        }
-        index += 1
+    _ = replacePlaceholders(text) { name in
+        names.insert(name)
+        return nil
     }
     return names.sorted(by: codeUnitLess)
 }
@@ -82,7 +72,7 @@ private func strings(_ value: JSONValue?, _ path: String, _ what: String, nested
     guard let value else { return [] }
     guard let object = value.objectValue else { return [error("invalid-type", path, "must be an object of \(what)")] }
     return object.flatMap { key, item -> [DefinitionIssue] in
-        if nested.contains(key) { return strings(item, "\(path)/\(key)", what) }
+        if nested.containsText(key) { return strings(item, "\(path)/\(key)", what) }
         if let text = item.stringValue, !text.isBlankText { return [] }
         return [error("invalid-type", "\(path)/\(pointer(key))", "must be a non-empty string")]
     }

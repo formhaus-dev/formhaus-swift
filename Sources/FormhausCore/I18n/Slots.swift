@@ -25,8 +25,8 @@ private func catalogKeys(_ value: JSONValue?) -> [String] {
     value?.objectValue?.keys ?? []
 }
 
-private func usedMessages(_ definition: FormDefinition) -> Set<String> {
-    var keys = Set(catalogKeys(definition.messages) + catalogKeys(definition.i18n?["messages"]))
+private func usedMessages(_ definition: FormDefinition) -> KeySet {
+    var keys = KeySet(catalogKeys(definition.messages) + catalogKeys(definition.i18n?["messages"]))
     for field in definition.allFields.flatMap({ [$0] + $0.items }) {
         let rules = field.validation?.json ?? JSONObject()
         for rule in NodeKind.validation.slots where hasRule(rules, rule) && rules[rule == "required" ? rule : "\(rule)Message"]?.stringValue == nil {
@@ -61,7 +61,7 @@ private func nodeSlots(_ definition: FormDefinition, _ text: TextNode) -> [Slot]
     }
 }
 
-private func catalogSlots(_ definition: FormDefinition, _ name: String, _ used: Set<String>) -> [Slot] {
+private func catalogSlots(_ definition: FormDefinition, _ name: String, _ used: KeySet) -> [Slot] {
     let isMessages = name == "messages"
     let defaults = isMessages ? defaultMessages : defaultLabels
     let order = isMessages ? defaultMessageKeys : defaultLabelKeys
@@ -76,7 +76,7 @@ private func catalogSlots(_ definition: FormDefinition, _ name: String, _ used: 
 }
 
 func definitionSlots(_ definition: FormDefinition) -> [Slot] {
-    var labels: Set<String> = definition.isMultiStep ? ["continue", "back", "stepOf", "errorSummary"] : ["errorSummary"]
+    var labels = KeySet(definition.isMultiStep ? ["continue", "back", "stepOf", "errorSummary"] : ["errorSummary"])
     if definition.allFields.contains(where: \.isGroup) {
         labels.formUnion(["addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved", "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel"])
     }
