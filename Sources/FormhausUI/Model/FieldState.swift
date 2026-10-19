@@ -10,13 +10,24 @@ public final class FieldState {
     public private(set) var loading = false
     public private(set) var version = 0
     public private(set) var focusToken = 0
+    @ObservationIgnored private(set) var focusPending = false
 
     init(key: String) {
         self.key = key
     }
 
     func requestFocus() {
+        focusPending = true
         focusToken += 1
+    }
+
+    func dropFocusRequest() {
+        focusPending = false
+    }
+
+    func takeFocusRequest() -> Bool {
+        defer { focusPending = false }
+        return focusPending
     }
 
     func update(value: JSONValue?, error: String?, loading: Bool) {

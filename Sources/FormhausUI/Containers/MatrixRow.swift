@@ -31,7 +31,7 @@ struct MatrixRow: View {
         .overlay(alignment: .bottom) { if !last { tokens.colors.border.frame(height: 1) } }
         .onHover { hovered = $0 }
         .disabled(context.isLocked)
-        .fieldFocus(context, $focused)
+        .formhausFocus(context, $focused)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(context.label)
         .id(context.key)

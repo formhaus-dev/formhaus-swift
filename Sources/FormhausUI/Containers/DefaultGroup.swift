@@ -31,7 +31,7 @@ struct DefaultGroup: View {
                     .buttonStyle(FormButtonStyle(.secondary))
                     .disabled(context.disabled)
                     .focused($focused)
-                    .onChange(of: state.focusToken) { focused = true }
+                    .onFormhausFocus(state, disabled: context.disabled) { focused = true }
                 }
             }
             .padding(.top, tokens.spacing.s7 - tokens.spacing.s1)

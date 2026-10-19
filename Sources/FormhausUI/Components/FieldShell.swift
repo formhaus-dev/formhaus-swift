@@ -41,7 +41,7 @@ public struct FieldShell<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .contain)
-        .id(context.key)
+        .formhausScrollAnchor(context)
     }
 
     private var isInline: Bool { variant == .inline || variant == .row }

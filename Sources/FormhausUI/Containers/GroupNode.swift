@@ -45,7 +45,7 @@ struct GroupNode: View {
         return GroupContext(
             group: group, label: group.label ?? "", helperText: group.helperText, error: model.field(group.key).error, items: entries,
             canAdd: items.count < limits.max, addLabel: group.addLabel ?? model.label("addItem"), disabled: model.disabled,
-            add: { add(items.count) })
+            add: { model.addItem(toGroup: group.key) })
     }
 
     private func itemContext(_ item: GroupItem, _ index: Int, canRemove: Bool) -> GroupItemContext {
@@ -60,27 +60,16 @@ struct GroupNode: View {
     private var removeLabel: String { group.removeLabel ?? model.label("removeItem") }
 
     private func title(_ index: Int) -> String {
-        model.engine.itemTitle(group, index, model.options.labels)
+        model.itemTitle(index, inGroup: group.key)
     }
 
     private func removeName(_ index: Int) -> String {
         model.label("removeItemNamed", ["label": .string(removeLabel), "item": .string(title(index))])
     }
 
-    private func add(_ count: Int) {
-        guard model.changeItems(group.key, { model.engine.addItem(group.key) }) else { return }
-        if let first = model.group(group.key).items.last?.fields.first {
-            model.requestFocus("\(group.key).\(count).\(first.key)")
-        }
-        announce(model.label("itemAdded", ["item": .string(title(count))]))
-    }
-
     private func drop(_ index: Int) {
         confirming = nil
-        let name = title(index)
-        guard model.changeItems(group.key, { model.engine.removeItem(group.key, index) }) else { return }
-        model.requestFocus(group.key)
-        announce(model.label("itemRemoved", ["item": .string(name)]))
+        model.removeItem(index, fromGroup: group.key)
     }
 
     private func ask(_ index: Int) {
