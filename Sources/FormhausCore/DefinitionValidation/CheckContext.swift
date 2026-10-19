@@ -28,7 +28,7 @@ struct ConditionEntry {
 
 struct ScopedEntries {
     private(set) var keys: [String] = []
-    private var entries: [String: FieldEntry] = [:]
+    private var entries = StringMap<FieldEntry>()
 
     subscript(key: String) -> FieldEntry? { entries[key] }
 
@@ -46,9 +46,9 @@ struct CheckContext {
     let entries: [FieldEntry]
     let keys: ScopedEntries
     let scopeOrder: [String]
-    let scopes: [String: ScopedEntries]
+    let scopes: StringMap<ScopedEntries>
     let conditions: [ConditionEntry]
-    let validators: Set<String>?
+    let validators: KeySet?
 
     var keyList: [String] { keys.keys }
 
@@ -57,7 +57,7 @@ struct CheckContext {
         return keys[key]
     }
 
-    init(_ definition: FormDefinition, validators: Set<String>? = nil) {
+    init(_ definition: FormDefinition, validators: KeySet? = nil) {
         self.definition = definition
         self.validators = validators
         var nodes: [NodeEntry] = []
@@ -81,7 +81,7 @@ struct CheckContext {
             entry.node.field.map { FieldEntry(field: $0, path: entry.path, step: entry.step, group: entry.group) }
         }
         var keys = ScopedEntries()
-        var scopes: [String: ScopedEntries] = [:]
+        var scopes = StringMap<ScopedEntries>()
         var scopeOrder: [String] = []
         for entry in entries {
             if let group = entry.group {

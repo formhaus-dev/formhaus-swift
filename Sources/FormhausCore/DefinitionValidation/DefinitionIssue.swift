@@ -51,7 +51,7 @@ func warning(_ code: String, _ path: String, _ problem: String, _ hint: String? 
 }
 
 func pointer(_ key: String) -> String {
-    key.replacingOccurrences(of: "~", with: "~0").replacingOccurrences(of: "/", with: "~1")
+    key.replacingOccurrences(of: "~", with: "~0", options: .literal).replacingOccurrences(of: "/", with: "~1", options: .literal)
 }
 
 func oneOf(_ values: [String]) -> String {

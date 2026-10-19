@@ -1,6 +1,6 @@
 private func operatorIssues(_ condition: ShowCondition, _ path: String) -> [DefinitionIssue] {
-    let keys = condition.json.keys.filter { $0 != "field" }
-    let unknown = keys.filter { !conditionOperators.contains($0) }
+    let keys = condition.json.keys.filter { !sameText($0, "field") }
+    let unknown = keys.filter { !conditionOperators.containsText($0) }
     var issues = unknown.map {
         error("unknown-operator", "\(path)/\(pointer($0))", "\"\($0)\" is not a condition operator", suggest($0, conditionOperators))
     }
@@ -20,7 +20,7 @@ func missingTarget(_ context: CheckContext, _ name: String, _ path: String, grou
         return [error("group-scope", path, "\"\(name)\" is a field inside the group \"\(inner)\"", "Only fields of the same group can use it")]
     }
     let scoped = group.flatMap { context.scopes[$0]?.keys } ?? []
-    let candidates = (scoped + context.keyList).filter { $0 != key }
+    let candidates = (scoped + context.keyList).filter { key == nil || !sameText($0, key!) }
     return [error("unknown-field", path, "\"\(name)\" is not a field key", suggest(name, candidates))]
 }
 
