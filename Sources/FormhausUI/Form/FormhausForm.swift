@@ -75,11 +75,16 @@ public struct FormhausFormContent: View {
 
 private struct FormStack: View {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.formhausBehavior) private var behavior
     let model: FormModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.gap) {
+            FormProgress(model: model)
+            if behavior.errorSummary { FormErrorSummary(model: model) }
             FormFields(model: model)
+            FormTopLevelErrors(model: model)
+            FormActionsSlot(model: model)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
