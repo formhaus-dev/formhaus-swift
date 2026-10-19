@@ -45,7 +45,11 @@ struct SectionNode: View {
             if let description = section.description, !description.isEmpty {
                 Text(description).formhausText(.helper)
             }
-            if !fields.isEmpty {
+            if section.isMatrix, !fields.isEmpty {
+                MatrixRows(fields: fields, model: model)
+                    .padding(
+                        .top, section.description == nil ? tokens.spacing.s7 - tokens.spacing.s1 : tokens.spacing.s9 - tokens.spacing.s1)
+            } else if !fields.isEmpty {
                 VStack(alignment: .leading, spacing: tokens.spacing.gap) {
                     ForEach(fields, id: \.nodeID) { node in
                         FormNodeView(node: node, model: model)
