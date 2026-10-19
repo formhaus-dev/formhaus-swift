@@ -32,7 +32,7 @@ public struct SelectField: View {
     private var menu: some View {
         Menu {
             Picker(selection: selection) {
-                ForEach(context.options, id: \.self) { option in
+                ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
                     Text(option.label ?? option.value ?? "").tag(option.value ?? "")
                 }
             } label: {
@@ -116,7 +116,7 @@ private struct SuggestionList: View {
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(options, id: \.self) { option in
+            ForEach(Array(options.enumerated()), id: \.offset) { _, option in
                 Button {
                     pick(option.value ?? "")
                 } label: {

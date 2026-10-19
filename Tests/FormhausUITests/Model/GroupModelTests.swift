@@ -25,7 +25,7 @@ struct GroupModelTests {
         #expect(group.items.count == 1)
         #expect(fires({ _ = first.value }, when: { form.setValue("Ada", forKey: "people.0.name") }))
         #expect(!fires({ _ = group.items }, when: { form.setValue("Adam", forKey: "people.0.name") }))
-        #expect(fires({ _ = group.items }, when: { _ = form.changeItems(ofGroup: "people", using: { form.engine.addItem("people") }) }))
+        #expect(fires({ _ = group.items }, when: { form.addItem(toGroup: "people") }))
         #expect(group.items.count == 2)
         #expect(form.field("people.1.name").value == nil)
     }

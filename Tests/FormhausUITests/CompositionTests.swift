@@ -15,7 +15,7 @@ private struct ColorField: View {
             }
             .inputChrome(focused: false, invalid: context.isInvalid, disabled: context.isLocked)
             .overlay(FocusRing(visible: false, radius: 10))
-            FieldLabel(text: context.label, required: context.isRequired)
+            FieldLabel(context)
             FieldError(text: context.error ?? "")
             Button("Pick") { context.setValue("#000000") }
                 .buttonStyle(OptionCardStyle(selected: context.value != nil, invalid: context.isInvalid))

@@ -74,15 +74,15 @@ struct ChoiceList: View {
         let selected = Set(ChoiceSelection.values(context.value, multiple: shape == .checkbox))
         if options.contains(where: { $0.image?.isEmpty == false }) {
             LazyVGrid(columns: gridColumns, alignment: .leading, spacing: tokens.spacing.s5) {
-                ForEach(options, id: \.self) { option in card(option, selected: selected, picture: true) }
+                ForEach(Array(options.enumerated()), id: \.offset) { _, option in card(option, selected: selected, picture: true) }
             }
         } else if context.field.layout?.stringValue == "inline" {
             FlowLayout(spacing: tokens.spacing.s3) {
-                ForEach(options, id: \.self) { option in card(option, selected: selected, picture: false) }
+                ForEach(Array(options.enumerated()), id: \.offset) { _, option in card(option, selected: selected, picture: false) }
             }
         } else {
             LazyVStack(alignment: .leading, spacing: tokens.spacing.s3) {
-                ForEach(options, id: \.self) { option in card(option, selected: selected, picture: false) }
+                ForEach(Array(options.enumerated()), id: \.offset) { _, option in card(option, selected: selected, picture: false) }
             }
         }
     }

@@ -23,7 +23,12 @@ struct GroupNode: View {
     }
 
     private var confirmationShown: Binding<Bool> {
-        Binding(get: { confirming != nil }, set: { if !$0 { confirming = nil } })
+        Binding(
+            get: { confirming != nil },
+            set: { shown in
+                guard !shown, let index = pendingIndex(model.group(group.key).items) else { return }
+                keep(index)
+            })
     }
 
     private func confirmContext(_ items: [GroupItem]) -> ConfirmContext? {
@@ -44,16 +49,16 @@ struct GroupNode: View {
         return GroupContext(
             group: group, label: group.label ?? "", helperText: group.helperText, error: model.field(group.key).error, items: entries,
             canAdd: items.count < limits.max, addLabel: group.addLabel ?? model.text(forLabel: "addItem"), disabled: model.disabled,
-            add: { model.addItem(toGroup: group.key) })
+            add: { model.addItem(toGroup: group.key) }, model: model)
     }
 
     private func itemContext(_ item: GroupItem, _ index: Int, canRemove: Bool) -> GroupItemContext {
         let content = AnyView(GroupItemFields(group: group, item: item, index: index, model: model))
         let wrapped = GroupItemContext(
             id: item.id, index: index, title: title(index), canRemove: canRemove,
-            hasContent: model.group(group.key).filled.indices.contains(index) && model.group(group.key).filled[index],
+            hasContent: model.group(group.key).hasContent.indices.contains(index) && model.group(group.key).hasContent[index],
             removeLabel: removeLabel, removeName: removeName(index), disabled: model.disabled, content: content,
-            requestRemove: { ask(index) }, remove: { drop(index) }, removeFocus: model.field(removeKey(index)))
+            requestRemove: { ask(index) }, remove: { drop(index) }, removeFocus: model.field(removeKey(index)), model: model)
         return wrapped
     }
 

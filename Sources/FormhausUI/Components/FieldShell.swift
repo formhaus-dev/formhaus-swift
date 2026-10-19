@@ -23,7 +23,7 @@ public struct FieldShell<Content: View>: View {
         VStack(alignment: .leading, spacing: tokens.spacing.s3) {
             if !isInline, !context.label.isEmpty {
                 HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
-                    FieldLabel(text: context.label, required: context.isRequired, requiredLabel: context.text(forLabel: "required"))
+                    FieldLabel(context)
                         .accessibilityAddTraits(variant == .group ? .isHeader : [])
                     if variant == .group { LoadingIndicator(visible: context.loading) }
                 }
@@ -64,7 +64,11 @@ public struct FieldLabel: View {
     let required: Bool
     let requiredLabel: String
 
-    public init(text: String, required: Bool, requiredLabel: String = "required") {
+    public init(_ context: FieldContext) {
+        self.init(text: context.label, required: context.isRequired, requiredLabel: context.text(forLabel: "required"))
+    }
+
+    public init(text: String, required: Bool, requiredLabel: String) {
         self.text = text
         self.required = required
         self.requiredLabel = requiredLabel

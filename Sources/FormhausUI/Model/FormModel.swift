@@ -50,8 +50,12 @@ public final class FormModel {
     }
 
     deinit {
-        guard let unsubscribe else { return }
-        Task { @MainActor in unsubscribe() }
+        let owner = ObjectIdentifier(self)
+        let unsubscribe = unsubscribe
+        Task { @MainActor in
+            unsubscribe?()
+            UploadStore.release(owner: owner)
+        }
     }
 
     public convenience init(
@@ -64,7 +68,7 @@ public final class FormModel {
         self.hooks = hooks
     }
 
-    public func updateHandlers(
+    func updateHandlers(
         engineOptions: FormEngineOptions? = nil, options: FormRendererOptions? = nil, onSubmit: SubmitHandler? = nil
     ) {
         if let engineOptions { hooks?.current = engineOptions }
@@ -120,7 +124,14 @@ public final class FormModel {
         focusRequest = FocusRequest(key: key, id: focusCounter)
         if let previous = pendingFocusKey, previous != key { fieldStates[previous]?.dropFocusRequest() }
         pendingFocusKey = key
-        if let key { field(key).requestFocus() }
+        if let key { field(key).requestFocus(focusCounter) }
+    }
+
+    func dropFocusRequest() {
+        guard focusRequest != nil else { return }
+        focusRequest = nil
+        if let previous = pendingFocusKey { fieldStates[previous]?.dropFocusRequest() }
+        pendingFocusKey = nil
     }
 
     func noteInvalidAttempt() {
@@ -150,12 +161,20 @@ public final class FormModel {
         refreshStatus()
         if previousStep != structure.currentStep?.nodeID { requestFocus(engine.firstErrorKey()) }
         if valuesChanged || structureChanged { reloadOptions() }
-        if valuesChanged { emitValues() }
+        if valuesChanged {
+            emitValues()
+            pruneUploads(values)
+        }
+    }
+
+    private func pruneUploads(_ values: JSONObject) {
+        let files = Set(values.compactMap { $0.value.stringValue }.filter { $0.hasPrefix("file:") })
+        UploadStore.prune(owner: ObjectIdentifier(self), keeping: files)
     }
 
     private func refreshGroup(_ state: GroupState) {
         let items = engine.items(state.key)
-        state.update(items, filled: items.indices.map { engine.itemHasContent(state.key, $0) })
+        state.update(items, hasContent: items.indices.map { engine.itemHasContent(state.key, $0) })
     }
 
     private func refreshField(_ state: FieldState) {

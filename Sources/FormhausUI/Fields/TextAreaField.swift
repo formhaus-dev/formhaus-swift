@@ -12,15 +12,18 @@ public struct TextAreaField: View {
 
     public var body: some View {
         FieldShell(context) {
-            TextField(text: context.textBinding, prompt: Text(verbatim: ""), axis: .vertical) { Text(context.accessibilityName) }
-                .placeholder(context.field.placeholder, visible: context.text.isEmpty)
-                .textFieldStyle(.plain)
-                .lineLimit(rows...)
-                .frame(minHeight: minHeight, alignment: .topLeading)
-                .accessibilityHint(context.helperText ?? "")
-                .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
-                .disabled(context.isLocked)
-                .formhausFocus(context, $focused)
+            HStack(alignment: .top, spacing: tokens.spacing.s3) {
+                TextField(text: context.textBinding, prompt: Text(verbatim: ""), axis: .vertical) { Text(context.accessibilityName) }
+                    .placeholder(context.field.placeholder, visible: context.text.isEmpty)
+                    .textFieldStyle(.plain)
+                    .lineLimit(rows...)
+                    .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)
+                    .accessibilityHint(context.helperText ?? "")
+                LoadingIndicator(visible: context.loading)
+            }
+            .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
+            .disabled(context.isLocked)
+            .formhausFocus(context, $focused)
         }
     }
 

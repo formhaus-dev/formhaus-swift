@@ -75,7 +75,7 @@ private struct FormButtonBody: View {
 
     private var fill: Color {
         switch variant {
-        case .primary: enabled || busy ? (active ? tokens.colors.primaryHover : tokens.colors.primary) : tokens.colors.primarySoft
+        case .primary: enabled || busy ? (active ? tokens.colors.primaryHover : tokens.colors.primary) : tokens.colors.primaryDisabled
         case .secondary: active ? tokens.colors.backgroundHover : tokens.colors.background
         case .text: active ? tokens.colors.backgroundHover : .clear
         case .danger: active ? tokens.colors.errorSoft : .clear

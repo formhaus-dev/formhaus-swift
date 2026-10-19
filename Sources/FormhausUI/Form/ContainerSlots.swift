@@ -23,6 +23,7 @@ public struct GroupItemContext: Identifiable {
     public let requestRemove: @MainActor () -> Void
     public let remove: @MainActor () -> Void
     let removeFocus: FieldState
+    let model: FormModel
 }
 
 @MainActor
@@ -46,6 +47,7 @@ public struct GroupContext {
     public let addLabel: String
     public let disabled: Bool
     public let add: @MainActor () -> Void
+    let model: FormModel
 }
 
 public struct StepStatus: Sendable, Hashable, Identifiable {

@@ -4,6 +4,7 @@ import Foundation
 extension FormModel {
     public func setValue(_ value: JSONValue?, forKey key: String) {
         guard !disabled else { return }
+        dropFocusRequest()
         engine.setValue(key, value)
         options.onFieldChange?(key, value, engine.values)
     }
@@ -18,7 +19,7 @@ extension FormModel {
     }
 
     @discardableResult
-    public func changeItems(ofGroup key: String, using apply: () -> Bool) -> Bool {
+    func changeItems(ofGroup key: String, using apply: () -> Bool) -> Bool {
         guard !disabled, apply() else { return false }
         options.onFieldChange?(key, engine.values[key], engine.values)
         return true

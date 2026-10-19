@@ -29,7 +29,7 @@ private struct MatrixRowBody: View {
             if wide {
                 MatrixLine(count: columns.count) {
                     heading.padding(.vertical, tokens.spacing.s5).padding(.trailing, tokens.spacing.s5)
-                    ForEach(columns, id: \.self) { option in cell(option, caption: false) }
+                    ForEach(Array(columns.enumerated()), id: \.offset) { _, option in cell(option, caption: false) }
                 }
             } else {
                 VStack(alignment: .leading, spacing: tokens.spacing.s3) {
@@ -37,9 +37,9 @@ private struct MatrixRowBody: View {
                     ColumnGrid(
                         columns: max(1, columns.count), minimumWidth: 60 * max(1, tokens.scale), compactWidth: 0,
                         spacing: tokens.spacing.s1,
-                        fraction: 1
+                        fraction: 1, balanced: true
                     ) {
-                        ForEach(columns, id: \.self) { option in cell(option, caption: true) }
+                        ForEach(Array(columns.enumerated()), id: \.offset) { _, option in cell(option, caption: true) }
                     }
                 }
                 .padding(.bottom, tokens.spacing.s5)

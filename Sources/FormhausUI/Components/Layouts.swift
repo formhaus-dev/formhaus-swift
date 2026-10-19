@@ -58,6 +58,7 @@ struct ColumnGrid: Layout {
     let compactWidth: CGFloat
     let spacing: CGFloat
     var fraction: CGFloat = 0.7
+    var balanced = false
 
     func columnCount(_ width: CGFloat, _ count: Int) -> Int {
         let fitted = clampedInt((width + spacing) / max(1, minimumWidth + spacing), 1...12) ?? 1
@@ -65,6 +66,7 @@ struct ColumnGrid: Layout {
         let limited = width < compactWidth && columns != 1 ? min(chosen, 2) : chosen
         var result = max(1, min(limited, max(1, count)))
         while result > 1, cellWidth(width, result) < minimumWidth * fraction { result -= 1 }
+        while balanced, result > 2, result < count, count % result != 0, count % result * 2 < result { result -= 1 }
         return result
     }
 
