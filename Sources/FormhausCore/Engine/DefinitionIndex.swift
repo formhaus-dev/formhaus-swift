@@ -16,7 +16,6 @@ struct OrderedIndex<Value: NodeIdentity> {
 }
 
 final class DefinitionIndex {
-    let definition: FormDefinition
     let allFields: [FormField]
     private(set) var fieldsByKey = OrderedIndex<FormField>()
     private(set) var routeFields = KeySet()
@@ -26,7 +25,6 @@ final class DefinitionIndex {
     private var sectionOfField: [Int: FormSection] = [:]
 
     init(_ definition: FormDefinition) {
-        self.definition = definition
         allFields = definition.allFields
         for node in definition.topNodes {
             guard let section = node.section else { continue }

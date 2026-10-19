@@ -18,10 +18,6 @@ struct StartValues {
         }
     }
 
-    mutating func seed(_ values: Values) {
-        seeds.merge(values)
-    }
-
     mutating func resetStarts(_ values: Values, groups: [FormField]) {
         seeds = values
         memory = [:]

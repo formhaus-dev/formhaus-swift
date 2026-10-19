@@ -36,10 +36,6 @@ struct Ref: Sendable, Equatable {
         default: return nil
         }
     }
-
-    func replacing(_ items: [Int]) -> Ref {
-        Ref(token: freshToken(), items: items)
-    }
 }
 
 struct ValueSlot: Sendable {

@@ -39,7 +39,6 @@ struct CorpusCase {
 }
 
 struct CorpusFixture {
-    let name: String
     let issues: [IssueEntry]
     let warnings: [IssueEntry]?
     let definition: JSONValue
@@ -48,7 +47,6 @@ struct CorpusFixture {
     let cases: [CorpusCase]
 
     init(_ json: JSONValue) {
-        name = json["name"]?.stringValue ?? ""
         issues = IssueEntry.list(json["issues"]) ?? []
         warnings = IssueEntry.list(json["warnings"])
         definition = json["definition"] ?? .null

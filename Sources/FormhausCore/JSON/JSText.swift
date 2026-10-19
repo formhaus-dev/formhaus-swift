@@ -22,11 +22,6 @@ func codeUnitLess(_ lhs: String, _ rhs: String) -> Bool {
     lhs.utf16.lexicographicallyPrecedes(rhs.utf16)
 }
 
-func codeUnitCompare(_ lhs: String, _ rhs: String) -> Int {
-    if lhs.utf16.elementsEqual(rhs.utf16) { return 0 }
-    return codeUnitLess(lhs, rhs) ? -1 : 1
-}
-
 func jsNumberString(_ value: Double) -> String {
     if value.isNaN { return "NaN" }
     if value.isInfinite { return value < 0 ? "-Infinity" : "Infinity" }
