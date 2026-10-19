@@ -102,6 +102,7 @@ FormhausForm(definition: definition, renderer: FormRendererOptions(labels: .cata
 - `FormRendererOptions` holds `labels`, `optionsProviders`, `onCancel`, `onFieldChange`, `onValuesChange` and `onError`.
 - `FormhausForm(model:)` scrolls, moves focus to the first invalid field and scrolls to the top on a step change. `FormhausForm(definition:…)` builds a new model when the definition changes and always calls the latest handlers. An equal definition keeps the values and progress; to start over, give the form a new `.id()`. Pending actions are cancelled when the model is replaced or the form leaves the view tree, not when it is only hidden by navigation or a tab switch. `FormhausFormContent(model:)` is the same form without the scroll view. Inside an app's own `ScrollView` it scrolls to errors and to the top the same way. `FormFields`, `FormhausField`, `StepProgressView`, `FormActionsBar`, `FormErrorSummary` and `FormTopLevelErrors` are the building blocks.
 - `FormComponents` maps field types to views: `.standard.field("x-color") { ColorField($0) }`. A view gets a `FieldContext` with the field, value, error, options, `setValue` and `commitValue`. `FieldContext(field:key:model:)` builds one for previews and tests. Custom controls join focus-to-error with `.formhausFocus(context, $focused)` or `.onFormhausFocus(context) { … }`, and scrolling with `.formhausScrollAnchor(context)`; `FieldShell` does both. `.section`, `.group`, `.groupItem`, `.confirmDialog`, `.progress` and `.actions` replace the containers. `FormComponents.headless` has no built-in fields.
+- `FormComponents.system` renders the form as a native grouped `Form`, like a Settings screen. Put it in a `NavigationStack`. On iOS each step is a pushed screen with the step title and a "Step N" subtitle; Continue or Submit sits in the toolbar, Cancel only on the first step, and the back button or a swipe goes back a step. On macOS the step content swaps in place, with Cancel, Back and Continue in a bottom row. Text fields are labeled rows, select, radio and multiselect are navigation rows to a checklist on iOS and menus or checkboxes on macOS, checkbox and switch are toggles, dates expand inline on iOS, a scale is a segmented picker up to 7 points, and picture options, ratings and long text get their own section. Field errors are red section footers, and errors that belong to no field open an alert. The theme sets only the accent colour.
 - `FormhausTheme` holds the tokens of `style.css`: palettes for light and dark, type sizes, spacing, radii, control sizes and motion. `.pointer` follows the desktop values, `.touch` the coarse-pointer values, and `.standard` picks one per platform. Sizes follow Dynamic Type, and motion stops with Reduce Motion. Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and style text with `.formhausText(_:)`. `TextRole` is a struct, so apps can define their own roles.
 
 Differences from the web renderer:
@@ -113,9 +114,47 @@ Differences from the web renderer:
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - On a step change, VoiceOver moves to the step title. Keyboard focus moves only to an invalid field.
 
+## How to plug in your design system
+
+Register your own views per field type and container on top of a built-in set. Types you leave out keep the built-in views, styled by your theme. The demo's Kiln set in `Examples/FormhausDemo/FormhausDemo/Brand` uses only the public API:
+
+```swift
+extension FormComponents {
+    static let kiln = FormComponents.standard
+        .field("text") { KilnTextField(context: $0) }
+        .field("radio") { KilnChoiceField(context: $0) }
+        .field("scale") { KilnScaleField(context: $0) }
+        .progress { KilnStepHeader(context: $0) }
+        .actions { KilnActions(context: $0) }
+}
+
+struct KilnTextField: View {
+    @Environment(\.formhausTokens) private var tokens
+    @FocusState private var focused: Bool
+    let context: FieldContext
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(context.label).font(.system(.subheadline, design: .rounded).weight(.semibold))
+            TextField(context.accessibilityName, text: context.textBinding)
+                .overlay(alignment: .bottom) { Capsule().fill(focused ? tokens.colors.primary : tokens.colors.border).frame(height: 1.5) }
+                .formhausFocus(context, $focused)
+            if let error = context.error { Text(error).foregroundStyle(tokens.colors.error) }
+        }
+        .formhausScrollAnchor(context)
+    }
+}
+
+FormhausFormContent(model: model)
+    .formhausComponents(.kiln)
+    .formhausTheme(.kiln)
+```
+
+`.formhausFocus` joins focus-to-error, and `.formhausScrollAnchor` lets the form scroll to the field. Switching the components or theme of a running form keeps its values, step and errors, because they live in the `FormModel`.
+
 ## Demo
 
-`Examples/FormhausDemo` is a SwiftUI app for iPhone, iPad and Mac. It renders the project inquiry form in `FormhausDemo/Resources/project-inquiry.json`: three steps, a route that skips a step, conditional fields, picture options, a rating, a matrix, a scale, an error summary and a server error. The same file runs in the [playground](https://formhaus.dev/playground). The globe menu switches to the German overlay in `project-inquiry.de.json`.
+`Examples/FormhausDemo` is a SwiftUI app for iPhone, iPad and Mac. It renders the project inquiry form in `FormhausDemo/Resources/project-inquiry.json`: three steps, a route that skips a step, conditional fields, picture options, a rating, a matrix, a scale, an error summary and a server error. The same file runs in the [playground](https://formhaus.dev/playground). The options menu switches between the formhaus, native and Kiln component sets on the same `FormModel`, and to the German overlay in `project-inquiry.de.json`. On macOS the component sets are a segmented control in the window toolbar.
 
 Open `Examples/FormhausDemo/FormhausDemo.xcodeproj` in Xcode and run the `FormhausDemo` scheme, or build it from the command line:
 
@@ -130,6 +169,8 @@ The fake server takes about a second and rejects `ada@lovelace.dev` as already r
 Script mode plays a fixed interaction through the public `FormModel` API, for screen recordings. Pass the launch arguments in the scheme or to `xcrun simctl launch`:
 
 - `-demoScript tour` types, picks options, triggers and fixes an error, takes the landing page branch and comes back, gets the server error and submits. `-demoScript languages` switches to German and back.
+- `-demoScript styles` fills part of the form, then shows the same values and step with the native set, the Kiln brand set and formhaus again.
+- `-demoStyle system` or `-demoStyle brand` starts in another component set. `-demoStyle formhaus` is the default.
 - `-demoLanguage de` starts in German.
 - `-demoSpeed 2` plays twice as fast. `-demoStop <mark>` stops at a mark of the script, such as `error`, `branch`, `server` or `success`.
 
