@@ -33,6 +33,8 @@ targets: [
 ]
 ```
 
+Add `.product(name: "FormhausUI", package: "formhaus-swift")` for the SwiftUI renderer.
+
 No version is tagged yet, so depend on `branch: "main"`. After the first tag, switch to `from: "<version>"`.
 
 Requires Swift 6, iOS 17 or macOS 14. `FormhausCore` uses Foundation and `os`, so it builds for Apple platforms only. It has no JavaScript runtime.
@@ -78,6 +80,37 @@ if try await engine.next() {
 - Changes: `subscribe(_:)` calls the listener after every state change and returns a function that cancels the subscription. A listener added during a notification is called in it, and one removed before its turn is not.
 
 `FormEngineOptions` holds `onBeforeStepChange`, `onAfterStepChange`, `onBeforeSubmit`, `onAfterSubmit`, `onStepValidate`, `onFormEvent`, `onWarning`, `validators` and `messages`. Hooks are `@MainActor @Sendable` and `async throws`. A hook that returns `Bool?` cancels with `false`, and `nil` stands for `undefined`. A submit handler returns `SubmitResult?`: `.ok`, `.rejected(errors:formErrors:)` or `nil`. `SubmitResult(json:)` reads the `{ ok, errors, formErrors }` object that a TypeScript handler returns. An error thrown by `onAfterStepChange` or `onAfterSubmit` comes back as `FormLifecycleError` with its `phase` and `cause`. A `CancellationError` thrown by a hook or submit handler is never rethrown. The action clears `stepValidating` and `submitting` and returns `false`, or `true` when `onAfterStepChange` or `onAfterSubmit` threw it after the step change or submit.
+
+## SwiftUI renderer
+
+`FormhausUI` renders a definition with native controls on iOS and macOS. It follows `FormRenderer` and `HeadlessFormRenderer` of `@formhaus/react`.
+
+```swift
+import FormhausCore
+import FormhausUI
+
+FormhausForm(definition: definition, renderer: FormRendererOptions(labels: .catalog(labels))) { values, skippedSteps in
+    let reply = try await api.send(values)
+    return SubmitResult(json: reply)
+}
+.formhausBehavior(FormBehavior(errorSummary: true))
+.formhausTheme(.standard)
+```
+
+- `FormModel` owns a `FormEngine` and publishes Observation-tracked state. `field(key)` returns a `FieldState` with `value`, `error`, `loading` and `version` for one key or item path, so a keystroke re-renders only that field. `structure`, `actions`, `errorEntries`, `topLevelErrors` and `stepErrorCounts` change only when their content changes. `version`, `structureVersion` and `valuesVersion` count changes like `getSnapshot`, `getStructureSnapshot` and `subscribeValues`.
+- `FormModel` actions: `update`, `commit`, `next`, `back`, `skip`, `submit`, `primary`, `cancel`, `setErrors` and `show(key)`. `commit` runs auto-advance. `FormModel(localized:)` takes the result of `localize`.
+- `FormRendererOptions` holds `labels`, `optionsProviders`, `onCancel`, `onFieldChange`, `onValuesChange` and `onError`.
+- `FormhausForm(model:)` scrolls and moves focus to the first invalid field. `FormhausFormContent(model:)` is the same form without the scroll view. `FormFields`, `FormhausField`, `StepProgressView`, `FormActionsBar`, `FormErrorSummary` and `FormTopLevelErrors` are the building blocks.
+- `FormComponents` maps field types to views: `.standard.field("x-color") { ColorField($0) }`. A view gets a `FieldContext` with the field, value, error, options and `setValue` and `commit`. `.section`, `.group`, `.groupItem`, `.progress` and `.actions` replace the containers. `FormComponents.headless` has no built-in fields.
+- `FormhausTheme` holds the tokens of `style.css`: palettes for light and dark, type sizes, spacing, radii, control sizes and motion. `.pointer` follows the desktop values, `.touch` the coarse-pointer values, and `.standard` picks one per platform. Sizes follow Dynamic Type, and motion stops with Reduce Motion. Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and style text with `.formhausText(_:)`.
+
+Differences from the web renderer:
+
+- `switch` uses the native switch, with the label before it.
+- An empty `date`, `time` or `datetime` field shows the placeholder or the date format. Tapping it sets the current date, and a clear button empties optional fields.
+- `file` writes the file URL as a string. On iOS a field that accepts only images opens the photo picker.
+- Hidden field `source` values are not resolved. Pass them in the initial values.
+- On a step change, VoiceOver moves to the step title. Keyboard focus moves only to an invalid field.
 
 ## Status
 
