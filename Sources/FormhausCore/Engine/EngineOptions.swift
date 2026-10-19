@@ -1,3 +1,9 @@
+import Foundation
+
+func errorMessage(_ error: any Error) -> String {
+    (error as? LocalizedError)?.errorDescription ?? (error as NSError).localizedDescription
+}
+
 public enum StepChangeReason: String, Sendable {
     case next
     case back
@@ -45,9 +51,18 @@ public struct StepProgress: Sendable, Hashable {
     public let total: Int
 }
 
-public struct GroupItem: Sendable {
+public struct GroupItem: Sendable, Identifiable, Hashable {
     public let id: String
     public let fields: [FormField]
+
+    public static func == (lhs: GroupItem, rhs: GroupItem) -> Bool {
+        lhs.id == rhs.id && lhs.fields.map(\.ordinal) == rhs.fields.map(\.ordinal)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(fields.map(\.ordinal))
+    }
 }
 
 public enum SubmitFailureReason: String, Sendable {
@@ -96,7 +111,7 @@ public struct FormLifecycleError: Error, CustomStringConvertible {
     public let committed = true
 
     public var message: String {
-        "The action completed, but \(phase.rawValue) failed: \(String(describing: cause))"
+        "The action completed, but \(phase.rawValue) failed: \(errorMessage(cause))"
     }
 
     public var description: String { message }

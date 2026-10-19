@@ -1,9 +1,11 @@
+import Foundation
 import FormhausCore
 
-struct ScriptError: Error, CustomStringConvertible {
+struct ScriptError: LocalizedError, CustomStringConvertible {
     let message: String
 
     var description: String { message }
+    var errorDescription: String? { message }
 }
 
 @MainActor
