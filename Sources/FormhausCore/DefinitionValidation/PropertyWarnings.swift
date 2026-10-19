@@ -17,7 +17,7 @@ private let labelHint = "Add a label so screen readers can name the input"
 private func unknown(_ value: JSONObject, _ path: String, _ list: String, hint: (String) -> String? = { _ in nil }) -> [DefinitionIssue] {
     let known = list.split(separator: " ").map(String.init)
     let absent = known.filter { !value.has($0) }
-    return value.keys.filter { !known.contains($0) }.map { key in
+    return value.keys.filter { !known.containsText($0) }.map { key in
         let fix = closest(key, absent).map { "Did you mean \"\($0)\"?" } ?? hint(key)
         return warning("unknown-property", "\(path)/\(pointer(key))", "unknown property \"\(key)\"", fix)
     }
@@ -35,7 +35,7 @@ private func action(_ value: JSONValue?, _ path: String, disables: Bool = true) 
 }
 
 private func misplaced(_ key: String) -> String? {
-    key != "i18n" && Properties.validation.split(separator: " ").contains(Substring(key))
+    !sameText(key, "i18n") && Properties.validation.split(separator: " ").map(String.init).containsText(key)
         ? "Move \"\(key)\" into \"validation\": { \"\(key)\": ... }" : nil
 }
 

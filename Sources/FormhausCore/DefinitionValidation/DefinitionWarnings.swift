@@ -136,13 +136,13 @@ private func routeWarnings(_ context: CheckContext) -> [DefinitionIssue] {
         var issues: [DefinitionIssue] = []
         var targets: [String] = []
         for route in step.routes ?? [] {
-            if let to = route.to, !targets.contains(to) { targets.append(to) }
+            if let to = route.to, !targets.containsText(to) { targets.append(to) }
         }
         for target in targets {
-            let position = steps.firstIndex { $0.id == target } ?? -1
+            let position = steps.firstIndex { sameText($0.id, target) } ?? -1
             let sibling = steps.indices.contains(position + 1) ? steps[position + 1] : nil
             let exits = steps.indices.contains(position) && (steps[position].routes ?? []).contains { ($0.show ?? []).isEmpty && ($0.showAny ?? []).isEmpty }
-            guard let sibling, targets.contains(sibling.id), !exits else { continue }
+            guard let sibling, targets.containsText(sibling.id), !exits else { continue }
             issues.append(warning("route-fallthrough", "/steps/\(position)", "branch \"\(target)\" from \"\(step.id)\" continues into the sibling branch \"\(sibling.id)\"", "Add an unconditional route on \"\(target)\" to the step where the branches meet"))
         }
         if step.canSkip && (step.next == .hidden || steps.count < 2) {

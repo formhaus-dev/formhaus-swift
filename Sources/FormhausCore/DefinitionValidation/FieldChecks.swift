@@ -48,7 +48,7 @@ func sourceIssues(_ context: CheckContext) -> [DefinitionIssue] {
         guard let source = entry.field.source else { return [] }
         let at = "\(entry.path)/source"
         if let name = source.stringValue {
-            if sourceNames.contains(name) { return [] }
+            if sourceNames.containsText(name) { return [] }
             let hint = name == "query" ? queryHint : suggest(name, sourceNames) ?? oneOf(sourceNames)
             return [error("unknown-source", at, "\"\(name)\" is not a source", hint)]
         }
@@ -66,9 +66,9 @@ private func nodeId(_ entry: FieldEntry) -> String {
     entry.group.map { "\($0.key).\(entry.field.key)" } ?? entry.field.key
 }
 
-private func dependencyGraph(_ context: CheckContext) -> (keys: [String], edges: [String: [String]]) {
+private func dependencyGraph(_ context: CheckContext) -> (keys: [String], edges: StringMap<[String]>) {
     var keys: [String] = []
-    var edges: [String: [String]] = [:]
+    var edges = StringMap<[String]>()
     func link(_ owners: [String], _ source: Conditional, _ group: String? = nil) {
         let known = source.conditionFields.compactMap { context.target($0, group: group).map(nodeId) }
         guard !known.isEmpty else { return }
@@ -85,8 +85,8 @@ private func dependencyGraph(_ context: CheckContext) -> (keys: [String], edges:
     return (keys, edges)
 }
 
-private func findCycles(_ keys: [String], _ graph: [String: [String]]) -> [[String]] {
-    var visiting: [String: Bool] = [:]
+private func findCycles(_ keys: [String], _ graph: StringMap<[String]>) -> [[String]] {
+    var visiting = StringMap<Bool>()
     var cycles: [[String]] = []
     for start in keys where visiting[start] == nil {
         visiting[start] = true
@@ -102,7 +102,7 @@ private func findCycles(_ keys: [String], _ graph: [String: [String]]) -> [[Stri
             let neighbor = neighbors[frame.1]
             if visiting[neighbor] == true {
                 let nodes = stack.map(\.0)
-                cycles.append(Array(nodes[nodes.firstIndex(of: neighbor)!...]) + [neighbor])
+                cycles.append(Array(nodes[nodes.firstIndex { sameText($0, neighbor) }!...]) + [neighbor])
             } else if visiting[neighbor] == nil {
                 visiting[neighbor] = true
                 stack.append((neighbor, 0))
@@ -113,7 +113,7 @@ private func findCycles(_ keys: [String], _ graph: [String: [String]]) -> [[Stri
 }
 
 func graphIssues(_ context: CheckContext) -> [DefinitionIssue] {
-    var paths: [String: String] = [:]
+    var paths = StringMap<String>()
     for entry in context.entries { paths[nodeId(entry)] = entry.path }
     let (keys, edges) = dependencyGraph(context)
     return findCycles(keys, edges).map { cycle in

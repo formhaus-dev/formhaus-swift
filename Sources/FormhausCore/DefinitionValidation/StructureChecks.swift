@@ -1,13 +1,13 @@
-let reservedKeys: Set<String> = [
+let reservedKeys = KeySet([
     "constructor", "__defineGetter__", "__defineSetter__", "hasOwnProperty", "__lookupGetter__", "__lookupSetter__",
     "isPrototypeOf", "propertyIsEnumerable", "toString", "valueOf", "__proto__", "toLocaleString", "prototype",
-]
+])
 
 private func isConditional(_ source: Conditional) -> Bool {
     !(source.show ?? []).isEmpty || !(source.showAny ?? []).isEmpty
 }
 
-private func successors(_ steps: [FormStep], _ indexes: [String: Int], _ from: Int) -> [Int] {
+private func successors(_ steps: [FormStep], _ indexes: StringMap<Int>, _ from: Int) -> [Int] {
     var next: [Int] = []
     for route in steps[from].routes ?? [] {
         let target = route.endsForm ? nil : route.to.flatMap { indexes[$0] }
@@ -19,8 +19,8 @@ private func successors(_ steps: [FormStep], _ indexes: [String: Int], _ from: I
     return from + 1 < steps.count ? next + [from + 1] : next
 }
 
-func stepIndexes(_ steps: [FormStep]) -> [String: Int] {
-    var indexes: [String: Int] = [:]
+func stepIndexes(_ steps: [FormStep]) -> StringMap<Int> {
+    var indexes = StringMap<Int>()
     for (index, step) in steps.enumerated() { indexes[step.id] = index }
     return indexes
 }
@@ -43,7 +43,7 @@ func reachableSteps(_ steps: [FormStep]) -> [Set<Int>] {
 private func stepIssues(_ context: CheckContext) -> [DefinitionIssue] {
     var issues: [DefinitionIssue] = []
     let steps = context.definition.steps ?? []
-    var seen: [String: Int] = [:]
+    var seen = StringMap<Int>()
     for (index, step) in steps.enumerated() {
         if let first = seen[step.id] {
             issues.append(error("duplicate-step-id", "/steps/\(index)/id", "step id \"\(step.id)\" is already used by /steps/\(first)", "Give each step a unique id"))
@@ -72,10 +72,10 @@ private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
     }
     let outer = context.nodes.filter { $0.group == nil }
     let groups = outer.filter { $0.node.field?.isGroup == true }
-    var firstOuter: [String: NodeEntry] = [:]
+    var firstOuter = StringMap<NodeEntry>()
     for entry in outer where firstOuter[entry.node.key] == nil { firstOuter[entry.node.key] = entry }
-    var earlierOuter: [String: [NodeEntry]] = [:]
-    var earlierInner: [ObjectIdentifier: [String: NodeEntry]] = [:]
+    var earlierOuter = StringMap<[NodeEntry]>()
+    var earlierInner: [ObjectIdentifier: StringMap<NodeEntry>] = [:]
     var issues: [DefinitionIssue] = []
     for entry in context.nodes {
         let key = entry.node.key
@@ -88,7 +88,7 @@ private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
             clash = earlierOuter[key]?.first { !exclusive($0, entry) }
             earlierOuter[key, default: []].append(entry)
         }
-        let prefix = entry.group == nil ? groups.first { key.hasPrefix("\($0.node.key).") } : nil
+        let prefix = entry.group == nil ? groups.first { hasTextPrefix(key, "\($0.node.key).") } : nil
         if reservedKeys.contains(key) {
             issues.append(error("reserved-key", "\(entry.path)/key", "\"\(key)\" is a built-in object property name", "Rename the field key"))
         } else if let clash {
