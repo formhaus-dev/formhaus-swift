@@ -1,4 +1,4 @@
-public struct SubmissionOptions {
+public struct SubmissionOptions: Sendable {
     public var skippedSteps: JSONValue?
     public var validators: Validators
     public var messages: MessageSource?
@@ -38,12 +38,12 @@ private func ignoredValidators(_ fields: [FormField], _ given: Validators) -> Va
 }
 
 private struct Prepared {
-    let engine: FormEngine
+    let engine: EngineCore
     let skipped: [String]
     let check: () -> SubmissionResult
 }
 
-private func itemErrors(_ engine: FormEngine, _ invalid: KeySet, _ resolve: @escaping ResolveMessage) -> [(key: String, error: String)] {
+private func itemErrors(_ engine: EngineCore, _ invalid: KeySet, _ resolve: @escaping ResolveMessage) -> [(key: String, error: String)] {
     var errors: [(key: String, error: String)] = []
     for group in engine.visibility.groups where !invalid.contains(group.key) {
         guard let active = engine.visibility.activeField(group.key, engine.values), active.isGroup else { continue }
@@ -62,7 +62,7 @@ private func itemErrors(_ engine: FormEngine, _ invalid: KeySet, _ resolve: @esc
     return errors
 }
 
-private func dropUnchecked(_ engine: FormEngine, _ submitted: inout JSONObject, _ errors: inout FieldErrors, _ resolve: @escaping ResolveMessage) {
+private func dropUnchecked(_ engine: EngineCore, _ submitted: inout JSONObject, _ errors: inout FieldErrors, _ resolve: @escaping ResolveMessage) {
     let visibility = engine.visibility
     for key in submitted.keys {
         guard let field = visibility.activeField(key, engine.values), errors[key] == nil else { continue }
@@ -86,7 +86,7 @@ private func dropUnchecked(_ engine: FormEngine, _ submitted: inout JSONObject, 
     }
 }
 
-private func applySkips(_ engine: FormEngine, _ skippedSteps: JSONValue?) {
+private func applySkips(_ engine: EngineCore, _ skippedSteps: JSONValue?) {
     guard let requested = skippedSteps?.arrayValue else { return }
     var index = 0
     while index < engine.visibleSteps.count {
@@ -105,7 +105,7 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
     let invalid = typeErrors(resolved, resolve)
     let invalidKeys = KeySet(invalid.map(\.key))
     let engineOptions = FormEngineOptions(validators: ignoredValidators(fields, options.validators), messages: .function(messages))
-    let engine = FormEngine(definition: withoutRules(definition, invalidKeys), values: resolved.values, options: engineOptions)
+    let engine = EngineCore(definition: withoutRules(definition, invalidKeys), values: resolved.values, options: engineOptions)
     engine.loadSubmitted(resolved.values)
     let items = itemErrors(engine, invalidKeys, resolve)
     applySkips(engine, options.skippedSteps)

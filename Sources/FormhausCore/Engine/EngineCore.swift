@@ -1,29 +1,15 @@
-public struct FormEngineOptions {
-    public var validators: Validators
-    public var messages: MessageSource?
-
-    public init(validators: Validators = [:], messages: MessageSource? = nil) {
-        self.validators = validators
-        self.messages = messages
-    }
-}
-
-public final class FormEngine {
-    public let definition: FormDefinition
-    public internal(set) var values: JSONObject
-    public internal(set) var errors = FieldErrors()
-    public internal(set) var currentStepIndex = 0
+final class EngineCore {
+    let definition: FormDefinition
+    var values: JSONObject
+    var errors = FieldErrors()
+    var currentStepIndex = 0
     var serverErrors = FieldErrors()
     var skipped: [(id: String, keys: [String])] = []
     let validators: Validators
     let messages: ResolveMessage
     let visibility: VisibilityState
 
-    public convenience init(definition: JSONValue, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) throws(FormDefinitionError) {
-        self.init(definition: try FormDefinition(json: definition), values: values, options: options)
-    }
-
-    public init(definition: FormDefinition, values initialValues: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) {
+    init(definition: FormDefinition, values initialValues: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) {
         self.definition = definition
         validators = options.validators
         messages = messageResolver(options.messages, .catalog(definition.messages ?? .null))
@@ -33,30 +19,30 @@ public final class FormEngine {
         visibility.reconcileHidden(&values, &errors, initial: true)
     }
 
-    public var isMultiStep: Bool { definition.isMultiStep }
+    var isMultiStep: Bool { definition.isMultiStep }
 
-    public var visibleSteps: [FormStep] { visibility.visibleSteps(values) }
+    var visibleSteps: [FormStep] { visibility.visibleSteps(values) }
 
-    public var currentStep: FormStep? {
+    var currentStep: FormStep? {
         guard isMultiStep else { return nil }
         let steps = visibleSteps
         return steps.indices.contains(currentStepIndex) ? steps[currentStepIndex] : steps.last
     }
 
-    public var visibleFields: [FormField] {
+    var visibleFields: [FormField] {
         let source = isMultiStep ? currentStep?.fields ?? [] : definition.fields ?? []
         return shownFields(source, visibility.scope(values))
     }
 
-    public var isFirstStep: Bool { currentStepIndex == 0 }
+    var isFirstStep: Bool { currentStepIndex == 0 }
 
-    public var isLastStep: Bool { currentStepIndex >= visibleSteps.count - 1 }
+    var isLastStep: Bool { currentStepIndex >= visibleSteps.count - 1 }
 
-    public func isStepSkipped(_ stepId: String) -> Bool {
+    func isStepSkipped(_ stepId: String) -> Bool {
         skipped.contains { sameText($0.id, stepId) }
     }
 
-    public func getSubmitValues() -> JSONObject {
+    func getSubmitValues() -> JSONObject {
         var result = visibility.conditionValues(values)
         for key in skipped.flatMap(\.keys) { result.removeValue(forKey: key) }
         return result
@@ -68,7 +54,7 @@ public final class FormEngine {
     }
 
     @discardableResult
-    public func validate() -> FieldErrors {
+    func validate() -> FieldErrors {
         var result = FieldErrors()
         if isMultiStep {
             for step in visibleSteps where !isStepSkipped(step.id) {
@@ -90,7 +76,7 @@ public final class FormEngine {
     }
 
     @discardableResult
-    public func next() -> Bool {
+    func next() -> Bool {
         guard isMultiStep, !isLastStep else { return false }
         includeCurrentStep()
         if hasStepErrors() { return false }
