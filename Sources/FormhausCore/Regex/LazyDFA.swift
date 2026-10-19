@@ -41,6 +41,7 @@ struct LazyDFA: Sendable {
     }
 
     var bytes: Int { memory.used }
+    var pool: MemoryPool { memory.pool }
 
     mutating func release() {
         memory.release()

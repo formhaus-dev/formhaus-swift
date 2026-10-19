@@ -98,17 +98,20 @@ struct RegexRegressionTests {
         }
     }
 
-    @Test("a full memory pool reclaims states from automatons that sat idle")
-    func reclaimIdleAutomatons() throws {
-        let patterns = try (0..<50).map { try CompiledPattern("[^]*a[^]{\(300 - $0)}$") }
-        for (index, pattern) in patterns.enumerated() {
-            _ = pattern.test(randomText(1300, ["a", "b"], seed: UInt64(index + 1)))
-            #expect(AutomatonMemory.reservedTotal <= AutomatonMemory.globalLimit)
+    @Test("a full memory pool reclaims states from automatons that sat idle", arguments: 0..<3)
+    func reclaimIdleAutomatons(_ round: Int) throws {
+        try MemoryPool.$current.withValue(MemoryPool()) {
+            let letter = ["c", "d", "e"][round]
+            let patterns = try (0..<50).map { try CompiledPattern("[^]*\(letter)[^]{\(300 - $0)}$") }
+            for (index, pattern) in patterns.enumerated() {
+                _ = pattern.test(randomText(1300, [Character(letter), "b"], seed: UInt64(index + 1)))
+                #expect(AutomatonMemory.reservedTotal <= AutomatonMemory.globalLimit)
+            }
+            #expect(try #require(patterns.last?.automaton).bytes > AutomatonMemory.patternLimit / 2)
+            let fresh = try CompiledPattern("^[a-z]+@[a-z]+\\.\(letter)[a-z]{2,}$")
+            #expect(fresh.test("ada@example.\(letter)om") == true)
+            #expect(try #require(fresh.automaton).bytes > 0)
         }
-        #expect(try #require(patterns.last?.automaton).bytes > AutomatonMemory.patternLimit / 2)
-        let fresh = try CompiledPattern("^[a-z]+@[a-z]+\\.[a-z]{2,}$")
-        #expect(fresh.test("ada@example.com") == true)
-        #expect(try #require(fresh.automaton).bytes > 0)
     }
 
     @Test("threads share automatons without changing results")

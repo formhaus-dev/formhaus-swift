@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/formhaus-dev/formhaus-swift/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/formhaus-dev/formhaus-swift/ci.yml?branch=main&label=tests" alt="Tests"></a>
   <img src="https://img.shields.io/badge/Swift-6-blue" alt="Swift 6">
-  <img src="https://img.shields.io/badge/platforms-iOS%2016%20%7C%20macOS%2013-blue" alt="iOS 16, macOS 13">
+  <img src="https://img.shields.io/badge/platforms-iOS%2017%20%7C%20macOS%2014-blue" alt="iOS 17, macOS 14">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/formhaus-dev/formhaus-swift" alt="MIT license"></a>
 </p>
 
@@ -33,9 +33,11 @@ targets: [
 ]
 ```
 
+Add `.product(name: "FormhausUI", package: "formhaus-swift")` for the SwiftUI renderer.
+
 No version is tagged yet, so depend on `branch: "main"`. After the first tag, switch to `from: "<version>"`.
 
-Requires Swift 6, iOS 16 or macOS 13. `FormhausCore` uses Foundation and `os`, so it builds for Apple platforms only. It has no JavaScript runtime.
+Requires Swift 6, iOS 17 or macOS 14. `FormhausCore` uses Foundation and `os`, so it builds for Apple platforms only. It has no JavaScript runtime.
 
 ## Usage
 
@@ -78,6 +80,38 @@ if try await engine.next() {
 - Changes: `subscribe(_:)` calls the listener after every state change and returns a function that cancels the subscription. A listener added during a notification is called in it, and one removed before its turn is not.
 
 `FormEngineOptions` holds `onBeforeStepChange`, `onAfterStepChange`, `onBeforeSubmit`, `onAfterSubmit`, `onStepValidate`, `onFormEvent`, `onWarning`, `validators` and `messages`. Hooks are `@MainActor @Sendable` and `async throws`. A hook that returns `Bool?` cancels with `false`, and `nil` stands for `undefined`. A submit handler returns `SubmitResult?`: `.ok`, `.rejected(errors:formErrors:)` or `nil`. `SubmitResult(json:)` reads the `{ ok, errors, formErrors }` object that a TypeScript handler returns. An error thrown by `onAfterStepChange` or `onAfterSubmit` comes back as `FormLifecycleError` with its `phase` and `cause`. A `CancellationError` thrown by a hook or submit handler is never rethrown. The action clears `stepValidating` and `submitting` and returns `false`, or `true` when `onAfterStepChange` or `onAfterSubmit` threw it after the step change or submit.
+
+## SwiftUI renderer
+
+`FormhausUI` renders a definition with native controls on iOS and macOS. It follows `FormRenderer` and `HeadlessFormRenderer` of `@formhaus/react`.
+
+```swift
+import FormhausCore
+import FormhausUI
+
+FormhausForm(definition: definition, renderer: FormRendererOptions(labels: .catalog(labels))) { values, skippedSteps in
+    let reply = try await api.send(values)
+    return SubmitResult(json: reply)
+}
+.formhausBehavior(FormBehavior(errorSummary: true))
+.formhausTheme(.standard)
+```
+
+- `FormModel` owns a `FormEngine` and publishes Observation-tracked state. `field(key)` returns a `FieldState` with `value`, `error`, `loading` and `version` for one key or item path, so a keystroke re-renders only that field. `structure`, `actions`, `errorEntries`, `topLevelErrors` and `stepErrorCounts` change only when their content changes. `version`, `structureVersion` and `valuesVersion` count changes like `getSnapshot`, `getStructureSnapshot` and `subscribeValues`.
+- `FormModel` actions: `setValue(_:forKey:)`, `commitValue(_:forKey:)`, `next`, `back`, `skip`, `submit`, `performPrimaryAction`, `cancel`, `setErrors`, `focus(field:)`, `addItem(toGroup:)`, `removeItem(_:fromGroup:)` and `text(forLabel:_:)`. `commitValue` runs auto-advance. `focus(field:)` opens the step of the field and focuses it. `FormModel(localized:)` takes the result of `localize`.
+- `FormRendererOptions` holds `labels`, `optionsProviders`, `onCancel`, `onFieldChange`, `onValuesChange` and `onError`.
+- `FormhausForm(model:)` scrolls, moves focus to the first invalid field and scrolls to the top on a step change. `FormhausForm(definition:…)` builds a new model when the definition changes and always calls the latest handlers. An equal definition keeps the values and progress; to start over, give the form a new `.id()`. Pending actions are cancelled when the model is replaced or the form leaves the view tree, not when it is only hidden by navigation or a tab switch. `FormhausFormContent(model:)` is the same form without the scroll view. Inside an app's own `ScrollView` it scrolls to errors and to the top the same way. `FormFields`, `FormhausField`, `StepProgressView`, `FormActionsBar`, `FormErrorSummary` and `FormTopLevelErrors` are the building blocks.
+- `FormComponents` maps field types to views: `.standard.field("x-color") { ColorField($0) }`. A view gets a `FieldContext` with the field, value, error, options, `setValue` and `commitValue`. `FieldContext(field:key:model:)` builds one for previews and tests. Custom controls join focus-to-error with `.formhausFocus(context, $focused)` or `.onFormhausFocus(context) { … }`, and scrolling with `.formhausScrollAnchor(context)`; `FieldShell` does both. `.section`, `.group`, `.groupItem`, `.confirmDialog`, `.progress` and `.actions` replace the containers. `FormComponents.headless` has no built-in fields.
+- `FormhausTheme` holds the tokens of `style.css`: palettes for light and dark, type sizes, spacing, radii, control sizes and motion. `.pointer` follows the desktop values, `.touch` the coarse-pointer values, and `.standard` picks one per platform. Sizes follow Dynamic Type, and motion stops with Reduce Motion. Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and style text with `.formhausText(_:)`. `TextRole` is a struct, so apps can define their own roles.
+
+Differences from the web renderer:
+
+- `switch` uses the native switch, with the label before it.
+- `date`, `time` and `datetime` show the value as text and open the system picker in a popover on macOS and a sheet on iOS. A date is written when a day is tapped or Done is pressed; a time or date and time only on Done. Closing the picker any other way keeps the old value. Optional fields have a clear button.
+- `file` writes a file URL as a string. The renderer copies the picked file, with its security scope, into `formhaus-uploads` in the temporary directory, so the URL stays readable after the picker closes. It deletes the copy when the field is cleared, another file is picked, the form is reset or the model goes away, and it only ever deletes folders it created. Move the file before the app exits if it must outlive the session. On iOS a field that accepts only images opens the photo picker.
+- The labels `clear`, `chooseFile`, `done`, `required`, `skip`, `submit`, `stepTitle` and `stepErrors` of the 0.20 catalog are available now. Catalogs and overlays set them like any other label.
+- Hidden field `source` values are not resolved. Pass them in the initial values.
+- On a step change, VoiceOver moves to the step title. Keyboard focus moves only to an invalid field.
 
 ## Status
 

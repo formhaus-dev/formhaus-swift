@@ -22,6 +22,7 @@ jobs:
       - run: swift --version
       - run: swift build --build-tests -Xswiftc -warnings-as-errors
       - run: swift test --skip-build
+      - run: xcodebuild build -scheme FormhausUI -destination 'generic/platform=iOS' -derivedDataPath .build/xcode -quiet SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
 
   lint:
     runs-on: macos-26
