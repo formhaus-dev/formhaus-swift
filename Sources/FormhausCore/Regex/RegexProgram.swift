@@ -9,22 +9,11 @@ enum Instruction: Sendable {
     case clear(ClosedRange<Int>)
     case mark(Int)
     case progress(Int)
-    case counterStart(Int)
     case repeatSet(RepeatSet)
-    case counterLoop(CounterLoop)
-    case counterNext(CounterNext)
     case backreference(Int)
     case look(Int)
     case succeed
     case match
-}
-
-struct CounterLoop: Sendable {
-    let register: Int
-    let min: Int
-    let max: Int?
-    let greedy: Bool
-    let exit: Int
 }
 
 struct RepeatSet: Sendable {
@@ -33,13 +22,6 @@ struct RepeatSet: Sendable {
     let max: Int?
     let greedy: Bool
     let backward: Bool
-}
-
-struct CounterNext: Sendable {
-    let register: Int
-    let mark: Int?
-    let min: Int
-    let loop: Int
 }
 
 struct Backreference: Sendable {
@@ -58,6 +40,7 @@ struct RegexProgram: Sendable {
     let sets: [CharSet]
     let looks: [LookBody]
     let scans: [RegexProgram?]
+    let size: Int
     let references: [Backreference]
     let captureCount: Int
     let registerCount: Int

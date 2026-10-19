@@ -46,7 +46,7 @@ struct Backtracker {
 
     mutating func search(_ prefilter: Prefilter) throws(BudgetExceeded) -> Bool {
         let text = input.text
-        for start in 0...text.count {
+        for start in 0...(text.count - prefilter.minimumLength) {
             if prefilter.anchored && start > 0 { return false }
             if let first = prefilter.first, start == text.count || !first.contains(text[start]) { continue }
             if try run(0, start) { return true }
@@ -117,10 +117,6 @@ struct Backtracker {
             offset = next
         case .succeed, .match:
             return .success
-        case .counterLoop(let loop):
-            return enterLoop(loop, &pc, offset)
-        case .counterNext(let next):
-            return continueLoop(next, &pc, offset)
         case .repeatSet(let repeated):
             guard let next = try enterRepeat(repeated, pc, offset) else { return .failure }
             offset = next

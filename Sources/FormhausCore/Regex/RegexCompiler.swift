@@ -6,13 +6,11 @@ struct PatternAnalysis {
     }
 
     let captureCount: Int
-    let expand: Bool
     let automaton: Bool
     let looks: [LookInfo]
 
     init(_ parsed: ParsedPattern) {
         captureCount = parsed.captureCount
-        let expand = parsed.root.expandedSize <= RegexCompiler.expansionLimit
         var referenced: Set<Int> = []
         var bodies: [(RegexNode, Look)] = []
         _ = parsed.root.contains { node in
@@ -20,13 +18,11 @@ struct PatternAnalysis {
             if case .look(let body, let look) = node { bodies.append((body, look)) }
             return false
         }
-        self.expand = expand
-        automaton = referenced.isEmpty && (expand || !parsed.root.contains(where: \.isCounted))
+        automaton = referenced.isEmpty
         looks = bodies.map { body, look in
             let captures = body.captureRange
             let impure = body.contains { node in
-                if case .backreference = node { return true }
-                return !expand && node.isCounted
+                if case .backreference = node { true } else { false }
             }
             return LookInfo(body: body, look: look, pure: !impure && !referenced.contains { captures?.contains($0) == true })
         }
@@ -34,7 +30,6 @@ struct PatternAnalysis {
 }
 
 struct RegexCompiler {
-    static let expansionLimit: Double = 20000
     static let instructionLimit = 32768
 
     var code: [Instruction] = []
@@ -57,7 +52,7 @@ struct RegexCompiler {
         inline = Array(repeating: nil, count: analysis.looks.count)
     }
 
-    var expand: Bool { analysis.expand }
+    var oversized: Bool { code.count > Self.instructionLimit }
 
     static func compile(_ parsed: ParsedPattern) -> RegexProgram {
         let analysis = PatternAnalysis(parsed)
@@ -67,8 +62,14 @@ struct RegexCompiler {
         compiler.code.append(.match)
         compiler.inMain = false
         compiler.emitInlineLooks()
-        let scans = analysis.looks.map { info in info.pure ? scanner(info, analysis) : nil }
-        return compiler.program(mainEnd: mainEnd, scans: scans)
+        var size = compiler.code.count
+        let scans = analysis.looks.map { info -> RegexProgram? in
+            guard info.pure, size <= instructionLimit else { return nil }
+            let scan = scanner(info, analysis)
+            size += scan.size
+            return scan
+        }
+        return compiler.program(mainEnd: mainEnd, scans: scans, size: size)
     }
 
     private static func scanner(_ info: PatternAnalysis.LookInfo, _ analysis: PatternAnalysis) -> RegexProgram {
@@ -77,13 +78,13 @@ struct RegexCompiler {
         compiler.emit(info.body, backward: !info.look.behind)
         let end = compiler.code.count
         compiler.code.append(.match)
-        return compiler.program(mainEnd: end, scans: [])
+        return compiler.program(mainEnd: end, scans: [], size: compiler.code.count)
     }
 
-    private func program(mainEnd: Int, scans: [RegexProgram?]) -> RegexProgram {
+    private func program(mainEnd: Int, scans: [RegexProgram?], size: Int) -> RegexProgram {
         RegexProgram(
             instructions: code, sets: sets, looks: analysis.looks.map { LookBody(look: $0.look, start: inline[$0.look.index]) },
-            scans: scans, references: references, captureCount: analysis.captureCount, registerCount: registers,
+            scans: scans, size: size, references: references, captureCount: analysis.captureCount, registerCount: registers,
             mainEnd: mainEnd, memoFrom: dependentEnd, automaton: automaton)
     }
 
@@ -100,9 +101,10 @@ struct RegexCompiler {
             for child in backward ? nodes.reversed() : nodes { emit(child, backward: backward) }
         case .alternation(let branches): emitAlternation(branches, backward: backward)
         case .group(let body, let capture):
-            if let capture { code.append(.groupStart(capture)) }
+            let recorded = automaton ? nil : capture
+            if let recorded { code.append(.groupStart(recorded)) }
             emit(body, backward: backward)
-            if let capture { code.append(.groupEnd(capture)) }
+            if let recorded { code.append(.groupEnd(recorded)) }
         case .quantified(let body, let quantifier): emitQuantified(body, quantifier, backward: backward)
         case .assertion(let assertion): code.append(.assertion(assertion))
         case .look(_, let look): emitLook(look)

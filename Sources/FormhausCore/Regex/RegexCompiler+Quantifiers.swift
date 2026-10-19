@@ -7,12 +7,12 @@ extension RegexCompiler {
                     RepeatSet(set: set, min: quantifier.min, max: quantifier.max, greedy: quantifier.greedy, backward: backward)))
             return
         }
-        let mark = body.canBeEmpty ? newRegister() : nil
-        if !expand && RegexNode.quantified(body, quantifier).isCounted {
-            emitCounter(body, quantifier, mark: mark, backward: backward)
-            return
+        let mark = body.canBeEmpty && !automaton ? newRegister() : nil
+        var count = 0
+        while count < quantifier.min, !oversized {
+            emitIteration(body, mark: nil, backward: backward)
+            count += 1
         }
-        for _ in 0..<quantifier.min { emitIteration(body, mark: nil, backward: backward) }
         if let max = quantifier.max {
             emitOptional(body, count: max - quantifier.min, greedy: quantifier.greedy, mark: mark, backward: backward)
         } else {
@@ -29,7 +29,7 @@ extension RegexCompiler {
     }
 
     private mutating func emitIteration(_ body: RegexNode, mark: Int?, backward: Bool) {
-        if let captures = body.captureRange { code.append(.clear(captures)) }
+        if !automaton, let captures = body.captureRange { code.append(.clear(captures)) }
         if let mark { code.append(.mark(mark)) }
         emit(body, backward: backward)
         if let mark { code.append(.progress(mark)) }
@@ -46,26 +46,12 @@ extension RegexCompiler {
 
     private mutating func emitOptional(_ body: RegexNode, count: Int, greedy: Bool, mark: Int?, backward: Bool) {
         var splits: [Int] = []
-        for _ in 0..<count {
+        while splits.count < count, !oversized {
             splits.append(code.count)
             code.append(.succeed)
             emitIteration(body, mark: mark, backward: backward)
         }
         let end = code.count
         for split in splits { code[split] = greedy ? .split(split + 1, end) : .split(end, split + 1) }
-    }
-
-    private mutating func emitCounter(_ body: RegexNode, _ quantifier: Quantifier, mark: Int?, backward: Bool) {
-        let counter = newRegister()
-        code.append(.counterStart(counter))
-        let loop = code.count
-        code.append(.succeed)
-        if let captures = body.captureRange { code.append(.clear(captures)) }
-        if let mark { code.append(.mark(mark)) }
-        emit(body, backward: backward)
-        code.append(.counterNext(CounterNext(register: counter, mark: mark, min: quantifier.min, loop: loop)))
-        code[loop] = .counterLoop(
-            CounterLoop(register: counter, min: quantifier.min, max: quantifier.max, greedy: quantifier.greedy, exit: code.count))
-        markDependent()
     }
 }

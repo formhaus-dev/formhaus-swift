@@ -20,34 +20,9 @@ extension Backtracker {
             try context.spend(groups.count)
             for group in groups { setCapture(group, -1, -1) }
         case .progress(let register): return memoized(pc) || registers[register] != offset
-        case .counterStart(let register): setRegister(register, 0)
         default: break
         }
         return true
-    }
-
-    mutating func enterLoop(_ loop: CounterLoop, _ pc: inout Int, _ offset: Int) -> Outcome {
-        let count = registers[loop.register]
-        if count < loop.min {
-            pc += 1
-        } else if let max = loop.max, count >= max {
-            pc = loop.exit
-        } else if loop.greedy {
-            stack.append(.resume(loop.exit, offset))
-            pc += 1
-        } else {
-            stack.append(.resume(pc + 1, offset))
-            pc = loop.exit
-        }
-        return .proceed
-    }
-
-    mutating func continueLoop(_ next: CounterNext, _ pc: inout Int, _ offset: Int) -> Outcome {
-        let count = registers[next.register]
-        if let mark = next.mark, count >= next.min, registers[mark] == offset { return .failure }
-        setRegister(next.register, count + 1)
-        pc = next.loop
-        return .proceed
     }
 
     mutating func matchReference(_ reference: Backreference, _ offset: Int) throws(BudgetExceeded) -> Int? {
