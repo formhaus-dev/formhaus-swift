@@ -125,7 +125,7 @@ extension FormEngine {
             try await suspended { try await afterCommit(.afterStepChange) { try await lifecycle.onAfterStepChange?(context) } }
             return true
         } catch is CancellationError {
-            return false
+            return committed
         } catch {
             if !committed && stale() { return false }
             throw error

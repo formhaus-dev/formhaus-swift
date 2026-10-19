@@ -50,10 +50,18 @@ struct CancellationTests {
         #expect(events.last == .formSubmitFailed(reason: .error))
     }
 
-    @Test("submit returns false when onAfterSubmit throws CancellationError")
+    @Test("submit returns true when onAfterSubmit throws CancellationError after the submit")
     func afterSubmitCancelled() async throws {
         let engine = try FormEngine(definition: Self.flat, options: FormEngineOptions(onAfterSubmit: { _, _ in throw CancellationError() }))
-        #expect(try await engine.submit { _, _ in .ok } == false)
+        #expect(try await engine.submit { _, _ in .ok })
         #expect(!engine.submitting)
+    }
+
+    @Test("next returns true when onAfterStepChange throws CancellationError after the move")
+    func afterStepChangeCancelled() async throws {
+        let engine = try FormEngine(definition: Self.steps, options: FormEngineOptions(onAfterStepChange: { _ in throw CancellationError() }))
+        #expect(try await engine.next())
+        #expect(engine.currentStep?.id == "two")
+        #expect(!engine.stepValidating)
     }
 }

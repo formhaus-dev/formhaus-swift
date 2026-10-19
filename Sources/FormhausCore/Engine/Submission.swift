@@ -28,6 +28,7 @@ extension FormEngine {
         if !keepSkipped { core.includeCurrentStep() }
         let lifecycle = options
         var dispatched = false
+        var succeeded = false
         let epoch = core.validationEpoch
         core.operationEpoch += 1
         let operation = core.operationEpoch
@@ -75,10 +76,11 @@ extension FormEngine {
             }
             if core.serverErrorsGeneration == serverErrors { core.applyValidationErrors(FieldErrors(), server: true) }
             let submitted = values
+            succeeded = true
             try await suspended { try await afterCommit(.afterSubmit) { try await lifecycle.onAfterSubmit?(submitted, skippedSteps) } }
             return true
         } catch is CancellationError {
-            return false
+            return succeeded
         } catch {
             if !dispatched && stale() { return false }
             throw error
