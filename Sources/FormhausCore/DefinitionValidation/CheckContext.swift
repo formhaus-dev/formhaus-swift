@@ -28,7 +28,7 @@ struct ConditionEntry {
 
 struct ScopedEntries {
     private(set) var keys: [String] = []
-    private var entries = StringMap<FieldEntry>()
+    private var entries = StringMap<FieldEntry>(insertionOrder: true)
 
     subscript(key: String) -> FieldEntry? { entries[key] }
 
@@ -81,7 +81,7 @@ struct CheckContext {
             entry.node.field.map { FieldEntry(field: $0, path: entry.path, step: entry.step, group: entry.group) }
         }
         var keys = ScopedEntries()
-        var scopes = StringMap<ScopedEntries>()
+        var scopes = StringMap<ScopedEntries>(insertionOrder: true)
         var scopeOrder: [String] = []
         for entry in entries {
             if let group = entry.group {

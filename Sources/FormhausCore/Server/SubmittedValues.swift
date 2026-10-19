@@ -8,7 +8,7 @@ struct ActiveValues {
 }
 
 func activeValues(_ visibility: VisibilityState, _ fields: [FormField], _ source: JSONObject) -> ActiveValues {
-    var first = StringMap<FormField>()
+    var first = StringMap<FormField>(insertionOrder: true)
     for field in fields.reversed() { first[field.key] = field }
     let keys = OrderedKeys(fields.map(\.key)).keys.filter { source.has($0) }
     var result = ActiveValues()

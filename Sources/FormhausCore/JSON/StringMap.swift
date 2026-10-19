@@ -1,11 +1,25 @@
 public typealias JSONObject = StringMap<JSONValue>
 public typealias FieldErrors = StringMap<String>
 
+func arrayIndex(_ key: String) -> UInt32? {
+    let digits = Array(key.utf8)
+    guard !digits.isEmpty, digits.count <= 10, digits.allSatisfy({ $0 >= 48 && $0 <= 57 }) else { return nil }
+    guard digits.count == 1 || digits[0] != 48 else { return nil }
+    guard let number = UInt64(key), number < UInt64(UInt32.max) else { return nil }
+    return UInt32(number)
+}
+
 public struct StringMap<Value>: Sequence, ExpressibleByDictionaryLiteral {
     public private(set) var keys: [String] = []
     private var storage: [JSKey: Value] = [:]
+    private var indexCount = 0
+    private var insertionOrder = false
 
     public init() {}
+
+    init(insertionOrder: Bool) {
+        self.insertionOrder = insertionOrder
+    }
 
     public init(dictionaryLiteral elements: (String, Value)...) {
         for (key, value) in elements { self[key] = value }
@@ -21,8 +35,23 @@ public struct StringMap<Value>: Sequence, ExpressibleByDictionaryLiteral {
                 removeValue(forKey: key)
                 return
             }
-            if storage.updateValue(newValue, forKey: JSKey(key)) == nil { keys.append(key) }
+            if storage.updateValue(newValue, forKey: JSKey(key)) == nil { insertKey(key) }
         }
+    }
+
+    private mutating func insertKey(_ key: String) {
+        guard !insertionOrder, let index = arrayIndex(key) else {
+            keys.append(key)
+            return
+        }
+        var low = 0
+        var high = indexCount
+        while low < high {
+            let middle = (low + high) / 2
+            if arrayIndex(keys[middle])! < index { low = middle + 1 } else { high = middle }
+        }
+        keys.insert(key, at: low)
+        indexCount += 1
     }
 
     subscript(key: String, default fallback: @autoclosure () -> Value) -> Value {
@@ -38,6 +67,7 @@ public struct StringMap<Value>: Sequence, ExpressibleByDictionaryLiteral {
     public mutating func removeValue(forKey key: String) -> Value? {
         guard let value = storage.removeValue(forKey: JSKey(key)) else { return nil }
         keys.removeAll { sameText($0, key) }
+        if !insertionOrder && arrayIndex(key) != nil { indexCount -= 1 }
         return value
     }
 

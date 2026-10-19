@@ -46,18 +46,18 @@ private struct Prepared {
 private func itemErrors(_ engine: EngineCore, _ invalid: KeySet, _ resolve: @escaping ResolveMessage) -> [(key: String, error: String)] {
     var errors: [(key: String, error: String)] = []
     for group in engine.visibility.groups where !invalid.contains(group.key) {
-        guard let active = engine.visibility.activeField(group.key, engine.values), active.isGroup else { continue }
+        guard let active = engine.visibility.activeField(group.key, engine.values.json), active.isGroup else { continue }
         let items = itemsOf(engine.values[group.key])
         let next = items.enumerated().map { index, item -> JSONValue in
             guard var entry = item.objectValue else { return item }
-            for field in engine.visibility.itemFields(active, item, engine.values) {
+            for field in engine.visibility.itemFields(active, item, engine.values.json) {
                 guard let error = typeError(field, entry[field.key], resolve) else { continue }
                 errors.append((itemPath(group.key, index, field.key), error))
                 entry.removeValue(forKey: field.key)
             }
             return .object(entry)
         }
-        if next != items { engine.writeValue(group.key, .array(next)) }
+        if next != items { engine.writeValue(group.key, .fresh(.array(next)), own: false) }
     }
     return errors
 }
@@ -65,7 +65,7 @@ private func itemErrors(_ engine: EngineCore, _ invalid: KeySet, _ resolve: @esc
 private func dropUnchecked(_ engine: EngineCore, _ submitted: inout JSONObject, _ errors: inout FieldErrors, _ resolve: @escaping ResolveMessage) {
     let visibility = engine.visibility
     for key in submitted.keys {
-        guard let field = visibility.activeField(key, engine.values), errors[key] == nil else { continue }
+        guard let field = visibility.activeField(key, engine.values.json), errors[key] == nil else { continue }
         if let error = typeError(field, submitted[key], resolve) {
             setError(visibility, &errors, key, error)
             submitted.removeValue(forKey: key)
@@ -75,7 +75,7 @@ private func dropUnchecked(_ engine: EngineCore, _ submitted: inout JSONObject, 
         let items = itemsOf(submitted[key])
         let next = items.enumerated().map { index, item -> JSONValue in
             guard var entry = item.objectValue else { return item }
-            for itemField in visibility.itemFields(field, item, engine.values) {
+            for itemField in visibility.itemFields(field, item, engine.values.json) {
                 guard let error = typeError(itemField, entry[itemField.key], resolve) else { continue }
                 errors[itemPath(key, index, itemField.key)] = error
                 entry.removeValue(forKey: itemField.key)
@@ -104,8 +104,9 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
     let resolved = groups.resolved
     let invalid = typeErrors(resolved, resolve)
     let invalidKeys = KeySet(invalid.map(\.key))
-    let engineOptions = FormEngineOptions(validators: ignoredValidators(fields, options.validators), messages: .function(messages))
-    let engine = EngineCore(definition: withoutRules(definition, invalidKeys), values: resolved.values, options: engineOptions)
+    let engine = EngineCore(
+        definition: withoutRules(definition, invalidKeys), values: resolved.values,
+        validators: ignoredValidators(fields, options.validators), messages: .function(messages))
     engine.loadSubmitted(resolved.values)
     let items = itemErrors(engine, invalidKeys, resolve)
     applySkips(engine, options.skippedSteps)
@@ -119,11 +120,11 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
             submitted[key] = resolved.values[key]
         }
         for (key, value) in groups.rejected {
-            guard let field = visibility.activeField(key, engine.values), !skipped.containsText(key) else { continue }
+            guard let field = visibility.activeField(key, engine.values.json), !skipped.containsText(key) else { continue }
             setError(visibility, &errors, key, typeError(field, value, resolve) ?? resolve("value", [:], field))
             submitted.removeValue(forKey: key)
         }
-        for (key, error) in items where submitted.has(visibility.owner(key)) && visibility.activeItem(key, engine.values) != nil {
+        for (key, error) in items where submitted.has(visibility.owner(key)) && visibility.activeItem(key, engine.values.json) != nil {
             errors[key] = error
         }
         dropUnchecked(engine, &submitted, &errors, resolve)

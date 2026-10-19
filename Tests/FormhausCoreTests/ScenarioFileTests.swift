@@ -6,19 +6,6 @@ struct ScenarioFileTests {
     static let directory = Corpus.directory.appendingPathComponent("scenarios")
     static let files = Corpus.jsonFiles(in: directory).filter { $0 != "scenario.schema" }
 
-    static let pendingEngineScenarios = [
-        "active-projection", "async-step-validation", "conditions", "defaults", "definition-messages", "engine-validation",
-        "field-validation", "form-events", "form-events-visibility", "groups", "hidden-fields", "hidden-visibility",
-        "item-defaults", "last-values", "lifecycle", "lifecycle-values", "messages", "reset", "routes", "skip-guards",
-        "skip-steps", "spec-rules", "step-consistency", "step-validation", "steps", "submit-edge-cases", "submit-payload",
-        "submit-results", "submit-server-errors", "trimming", "type-formats", "visibility",
-    ]
-
-    @Test("every scenario file is listed as pending until the engine runner exists")
-    func pendingListMatchesFiles() {
-        #expect(Self.files == Self.pendingEngineScenarios.sorted())
-    }
-
     @Test("scenario file loads", arguments: files)
     func scenarioFileLoads(name: String) throws {
         let file = Corpus.load(Self.directory.appendingPathComponent("\(name).json"))

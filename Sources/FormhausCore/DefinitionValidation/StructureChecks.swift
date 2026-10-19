@@ -20,7 +20,7 @@ private func successors(_ steps: [FormStep], _ indexes: StringMap<Int>, _ from: 
 }
 
 func stepIndexes(_ steps: [FormStep]) -> StringMap<Int> {
-    var indexes = StringMap<Int>()
+    var indexes = StringMap<Int>(insertionOrder: true)
     for (index, step) in steps.enumerated() { indexes[step.id] = index }
     return indexes
 }
@@ -43,7 +43,7 @@ func reachableSteps(_ steps: [FormStep]) -> [Set<Int>] {
 private func stepIssues(_ context: CheckContext) -> [DefinitionIssue] {
     var issues: [DefinitionIssue] = []
     let steps = context.definition.steps ?? []
-    var seen = StringMap<Int>()
+    var seen = StringMap<Int>(insertionOrder: true)
     for (index, step) in steps.enumerated() {
         if let first = seen[step.id] {
             issues.append(error("duplicate-step-id", "/steps/\(index)/id", "step id \"\(step.id)\" is already used by /steps/\(first)", "Give each step a unique id"))
@@ -72,9 +72,9 @@ private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
     }
     let outer = context.nodes.filter { $0.group == nil }
     let groups = outer.filter { $0.node.field?.isGroup == true }
-    var firstOuter = StringMap<NodeEntry>()
+    var firstOuter = StringMap<NodeEntry>(insertionOrder: true)
     for entry in outer where firstOuter[entry.node.key] == nil { firstOuter[entry.node.key] = entry }
-    var earlierOuter = StringMap<[NodeEntry]>()
+    var earlierOuter = StringMap<[NodeEntry]>(insertionOrder: true)
     var earlierInner: [Int: StringMap<NodeEntry>] = [:]
     var issues: [DefinitionIssue] = []
     for entry in context.nodes {

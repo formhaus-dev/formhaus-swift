@@ -78,7 +78,7 @@ public struct FormSection: Sendable, Conditional, NodeIdentity {
     public let key: String
     public let show: [ShowCondition]?
     public let showAny: [ShowCondition]?
-    public let fields: [FormNode]
+    public internal(set) var fields: [FormNode]
 
     init(json: JSONObject, ordinals: inout Int) {
         self.json = json
