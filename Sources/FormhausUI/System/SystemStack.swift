@@ -13,7 +13,16 @@
     final class StepStore {
         private(set) var history: [String] = []
         private(set) var snapshots: [String: StepSnapshot] = [:]
+        let token = UUID()
         @ObservationIgnored private var owner: ObjectIdentifier?
+        @ObservationIgnored private var target: Int?
+
+        isolated deinit {
+            let token = token
+            Task { @MainActor in
+                NotificationCenter.default.post(name: .formhausStepsReleased, object: nil, userInfo: ["owner": token])
+            }
+        }
 
         func sync(_ model: FormModel) {
             if owner != ObjectIdentifier(model) {
@@ -23,12 +32,25 @@
             let structure = model.structure
             let ids = path(structure)
             if let current = ids.last { snapshots[current] = StepSnapshot(nodes: structure.nodes, step: structure.currentStep) }
-            if history != ids { history = ids }
+            if target == nil, history != ids { history = ids }
         }
 
-        func pop(to level: Int) {
+        func pop(to level: Int, _ model: FormModel) {
             guard history.count > level + 1 else { return }
             history.removeSubrange((level + 1)...)
+            if let target, target <= level { return }
+            let running = target != nil
+            target = level
+            guard !running else { return }
+            Task {
+                while let target, model.structure.stepIndex > target {
+                    let from = model.structure.stepIndex
+                    await model.back()
+                    if model.structure.stepIndex >= from { break }
+                }
+                target = nil
+                sync(model)
+            }
         }
 
         func snapshot(_ level: Int, _ structure: FormStructure) -> StepSnapshot {

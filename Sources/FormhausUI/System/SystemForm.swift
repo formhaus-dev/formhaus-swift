@@ -9,8 +9,7 @@ struct SystemForm: View {
 
     var body: some View {
         #if os(iOS)
-            SystemStepPage(model: model, level: 0, owner: ObjectIdentifier(store), store: store)
-                .background { StackClaim(model: ObjectIdentifier(model), owner: ObjectIdentifier(store)) }
+            SystemStepPage(model: model, level: 0, owner: store.token, store: store)
                 .onAppear { store.sync(model) }
                 .onChange(of: model.structure) { store.sync(model) }
                 .onChange(of: ObjectIdentifier(model)) { store.sync(model) }
@@ -30,11 +29,11 @@ struct SystemForm: View {
         @Environment(\.locale) private var locale
         let model: FormModel
         let level: Int
-        let owner: ObjectIdentifier
+        let owner: UUID
         weak var store: StepStore?
 
         var body: some View {
-            page.background { if level > 0 { StackReleaser(model: ObjectIdentifier(model), owner: owner) } }
+            page.background { if level > 0 { StackReleaser(owner: owner, level: level) } }
         }
 
         @ViewBuilder private var page: some View {
@@ -61,11 +60,7 @@ struct SystemForm: View {
                 get: { [weak store] in (store?.history.count ?? 0) > level + 1 },
                 set: { [weak store] shown in
                     guard !shown, let store, store.history.count > level + 1 else { return }
-                    store.pop(to: level)
-                    Task {
-                        await model.back()
-                        store.sync(model)
-                    }
+                    store.pop(to: level, model)
                 })
         }
     }
@@ -85,6 +80,12 @@ struct SystemPage: View {
         ScrollViewReader { proxy in
             Form {
                 if current, components.slots.progress != nil { Section { FormProgress(model: model).listRowBackground(Color.clear) } }
+                if let description = step?.description, !description.isEmpty {
+                    Section {
+                    } header: {
+                        Text(description).font(.body).textCase(nil).systemSecondaryText()
+                    }
+                }
                 SystemNodes(nodes: nodes.filter { $0.type != "hidden" }, model: model)
                 if current { SystemSkip(model: model) }
                 if current, let custom = components.slots.actions {
