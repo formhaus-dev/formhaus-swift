@@ -40,6 +40,8 @@ struct BuiltInField: View {
         case "switch": SwitchField(context)
         case "date", "time", "datetime": DateField(context)
         case "file": FileField(context)
+        case "scale": ScaleField(context)
+        case "rating": RatingField(context)
         case "hidden": EmptyView()
         default: UnsupportedField(type: context.field.type)
         }
