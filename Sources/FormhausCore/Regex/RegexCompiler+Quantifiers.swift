@@ -1,7 +1,7 @@
 extension RegexCompiler {
     mutating func emitQuantified(_ body: RegexNode, _ quantifier: Quantifier, backward: Bool) {
         guard quantifier.max != 0 else { return }
-        if !automaton, !inPureLook, let set = singleSet(body) {
+        if !automaton, let set = singleSet(body) {
             code.append(
                 .repeatSet(
                     RepeatSet(set: set, min: quantifier.min, max: quantifier.max, greedy: quantifier.greedy, backward: backward)))

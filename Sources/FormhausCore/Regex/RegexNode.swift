@@ -19,6 +19,7 @@ struct Quantifier: Sendable {
 struct Look: Sendable, Hashable {
     let behind: Bool
     let negated: Bool
+    let index: Int
 }
 
 enum RegexAssertion: Sendable, Hashable {

@@ -29,21 +29,19 @@ struct Backtracker {
     var registers: [Int]
     var stack: [Frame] = []
     var saved: [[Int]] = []
-    var budget: StepBudget
+    let context: MatchContext
     var memo: Bitset?
-    var pureLooks: MemoSearch?
     let width: Int
 
-    init(_ program: RegexProgram, _ input: MatchInput, budget: StepBudget) {
+    init(_ program: RegexProgram, _ context: MatchContext) {
         self.program = program
-        self.input = input
-        self.budget = budget
+        input = MatchInput(text: context.text)
+        self.context = context
         width = input.text.count + 1
         slots = Array(repeating: -1, count: 2 * (program.captureCount + 1))
         registers = Array(repeating: -1, count: program.registerCount)
         let region = program.mainEnd - program.memoFrom
         memo = region > 0 && region * width <= Self.memoLimit ? Bitset(count: region * width) : nil
-        pureLooks = MemoSearch(program, input)
     }
 
     mutating func search(_ prefilter: Prefilter) throws(BudgetExceeded) -> Bool {
@@ -61,7 +59,7 @@ struct Backtracker {
         var pc = entry
         var offset = position
         while true {
-            try budget.spend(1)
+            try context.spend(1)
             switch try execute(&pc, &offset) {
             case .proceed: continue
             case .success: return true

@@ -28,6 +28,7 @@ struct RegexParser {
     var index = 0
     var modifiers = RegexModifiers()
     var captures = 0
+    var looks = 0
     var depth = 0
     var scope = NameScope(start: 0)
     var named: [NamedGroup] = []

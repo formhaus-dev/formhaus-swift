@@ -49,10 +49,8 @@ struct Backreference: Sendable {
 }
 
 struct LookBody: Sendable {
-    let start: Int
-    let end: Int
     let look: Look
-    let pure: Bool
+    let start: Int?
 }
 
 struct RegexProgram: Sendable {

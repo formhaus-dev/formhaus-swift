@@ -1,11 +1,39 @@
-struct RegexCompiler {
-    private struct PendingLook {
+struct PatternAnalysis {
+    struct LookInfo {
         let body: RegexNode
-        let index: Int
         let look: Look
         let pure: Bool
     }
 
+    let captureCount: Int
+    let expand: Bool
+    let automaton: Bool
+    let looks: [LookInfo]
+
+    init(_ parsed: ParsedPattern) {
+        captureCount = parsed.captureCount
+        let expand = parsed.root.expandedSize <= RegexCompiler.expansionLimit
+        var referenced: Set<Int> = []
+        var bodies: [(RegexNode, Look)] = []
+        _ = parsed.root.contains { node in
+            if case .backreference(let groups, _) = node { referenced.formUnion(groups) }
+            if case .look(let body, let look) = node { bodies.append((body, look)) }
+            return false
+        }
+        self.expand = expand
+        automaton = referenced.isEmpty && (expand || !parsed.root.contains(where: \.isCounted))
+        looks = bodies.map { body, look in
+            let captures = body.captureRange
+            let impure = body.contains { node in
+                if case .backreference = node { return true }
+                return !expand && node.isCounted
+            }
+            return LookInfo(body: body, look: look, pure: !impure && !referenced.contains { captures?.contains($0) == true })
+        }
+    }
+}
+
+struct RegexCompiler {
     static let expansionLimit: Double = 20000
     static let instructionLimit = 32768
 
@@ -13,44 +41,50 @@ struct RegexCompiler {
     var registers: Int
     var dependentEnd = 0
     var inMain = true
-    var inPureLook = false
-    let expand: Bool
+    let analysis: PatternAnalysis
     let automaton: Bool
-    private let referenced: Set<Int>
     private var sets: [CharSet] = []
     private var setIndex: [CharSet: Int] = [:]
-    private var looks: [LookBody] = []
     private var references: [Backreference] = []
-    private var pending: [PendingLook] = []
+    private var inline: [Int?]
+    private var pending: [Int] = []
+    private var queued: Set<Int> = []
 
-    private var scans: [RegexProgram?] = []
-    private let captureCount: Int
-
-    private init(_ parsed: ParsedPattern) {
-        captureCount = parsed.captureCount
-        registers = parsed.captureCount + 1
-        let expand = parsed.root.expandedSize <= Self.expansionLimit
-        var referenced: Set<Int> = []
-        _ = parsed.root.contains { node in
-            if case .backreference(let groups, _) = node { referenced.formUnion(groups) }
-            return false
-        }
-        self.expand = expand
-        self.referenced = referenced
-        automaton = referenced.isEmpty && (expand || !parsed.root.contains(where: \.isCounted))
+    private init(_ analysis: PatternAnalysis, automaton: Bool) {
+        self.analysis = analysis
+        self.automaton = automaton
+        registers = analysis.captureCount + 1
+        inline = Array(repeating: nil, count: analysis.looks.count)
     }
 
-    static func compile(_ parsed: ParsedPattern, backward: Bool = false) -> RegexProgram {
-        var compiler = RegexCompiler(parsed)
-        compiler.emit(parsed.root, backward: backward)
+    var expand: Bool { analysis.expand }
+
+    static func compile(_ parsed: ParsedPattern) -> RegexProgram {
+        let analysis = PatternAnalysis(parsed)
+        var compiler = RegexCompiler(analysis, automaton: analysis.automaton)
+        compiler.emit(parsed.root, backward: false)
         let mainEnd = compiler.code.count
         compiler.code.append(.match)
         compiler.inMain = false
-        compiler.emitLooks()
-        return RegexProgram(
-            instructions: compiler.code, sets: compiler.sets, looks: compiler.looks, scans: compiler.scans, references: compiler.references,
-            captureCount: parsed.captureCount,
-            registerCount: compiler.registers, mainEnd: mainEnd, memoFrom: compiler.dependentEnd, automaton: compiler.automaton)
+        compiler.emitInlineLooks()
+        let scans = analysis.looks.map { info in info.pure ? scanner(info, analysis) : nil }
+        return compiler.program(mainEnd: mainEnd, scans: scans)
+    }
+
+    private static func scanner(_ info: PatternAnalysis.LookInfo, _ analysis: PatternAnalysis) -> RegexProgram {
+        var compiler = RegexCompiler(analysis, automaton: true)
+        compiler.inMain = false
+        compiler.emit(info.body, backward: !info.look.behind)
+        let end = compiler.code.count
+        compiler.code.append(.match)
+        return compiler.program(mainEnd: end, scans: [])
+    }
+
+    private func program(mainEnd: Int, scans: [RegexProgram?]) -> RegexProgram {
+        RegexProgram(
+            instructions: code, sets: sets, looks: analysis.looks.map { LookBody(look: $0.look, start: inline[$0.look.index]) },
+            scans: scans, references: references, captureCount: analysis.captureCount, registerCount: registers,
+            mainEnd: mainEnd, memoFrom: dependentEnd, automaton: automaton)
     }
 
     mutating func newRegister() -> Int {
@@ -71,7 +105,7 @@ struct RegexCompiler {
             if let capture { code.append(.groupEnd(capture)) }
         case .quantified(let body, let quantifier): emitQuantified(body, quantifier, backward: backward)
         case .assertion(let assertion): code.append(.assertion(assertion))
-        case .look(let body, let look): emitLook(body, look)
+        case .look(_, let look): emitLook(look)
         case .backreference(let groups, let ignoreCase):
             references.append(Backreference(groups: groups, backward: backward, ignoreCase: ignoreCase))
             code.append(.backreference(references.count - 1))
@@ -104,30 +138,19 @@ struct RegexCompiler {
         for exit in exits { code[exit] = .jump(code.count) }
     }
 
-    private mutating func emitLook(_ body: RegexNode, _ look: Look) {
-        let captures = body.captureRange
-        let pure = !body.contains(where: isImpure) && !referenced.contains { captures?.contains($0) == true }
-        pending.append(PendingLook(body: body, index: looks.count, look: look, pure: pure))
-        let leaf = automaton && !body.contains { if case .look = $0 { true } else { false } }
-        scans.append(leaf ? Self.compile(ParsedPattern(root: body, captureCount: captureCount), backward: !look.behind) : nil)
-        looks.append(LookBody(start: 0, end: 0, look: look, pure: pure))
-        code.append(.look(looks.count - 1))
-        if !pure { markDependent() }
+    private mutating func emitLook(_ look: Look) {
+        code.append(.look(look.index))
+        guard !analysis.looks[look.index].pure else { return }
+        if queued.insert(look.index).inserted { pending.append(look.index) }
+        markDependent()
     }
 
-    private func isImpure(_ node: RegexNode) -> Bool {
-        if case .backreference = node { return true }
-        return !expand && node.isCounted
-    }
-
-    private mutating func emitLooks() {
+    private mutating func emitInlineLooks() {
         var next = 0
         while next < pending.count {
-            let item = pending[next]
-            let start = code.count
-            inPureLook = item.pure
-            emit(item.body, backward: item.look.behind)
-            looks[item.index] = LookBody(start: start, end: code.count, look: item.look, pure: item.pure)
+            let info = analysis.looks[pending[next]]
+            inline[info.look.index] = code.count
+            emit(info.body, backward: info.look.behind)
             code.append(.succeed)
             next += 1
         }

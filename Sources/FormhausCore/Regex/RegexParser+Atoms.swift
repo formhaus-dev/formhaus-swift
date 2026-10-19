@@ -31,14 +31,16 @@ extension RegexParser {
         guard consume("?") else { return try parseCapture(name: nil) }
         if consume(":") { return Atom(node: .group(try parseGroupBody(), capture: nil), quantifiable: true) }
         if at("=") || at("!") {
-            let negated = at("!")
+            let look = Look(behind: false, negated: at("!"), index: looks)
+            looks += 1
             index += 1
-            return Atom(node: .look(try parseGroupBody(), Look(behind: false, negated: negated)), quantifiable: true)
+            return Atom(node: .look(try parseGroupBody(), look), quantifiable: true)
         }
         if at("<"), at("=", 1) || at("!", 1) {
-            let negated = at("!", 1)
+            let look = Look(behind: true, negated: at("!", 1), index: looks)
+            looks += 1
             index += 2
-            return Atom(node: .look(try parseGroupBody(), Look(behind: true, negated: negated)), quantifiable: false)
+            return Atom(node: .look(try parseGroupBody(), look), quantifiable: false)
         }
         if at("<") {
             guard let name = parseGroupName(units, from: index + 1) else { throw RegexSyntaxError() }

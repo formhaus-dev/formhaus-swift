@@ -45,9 +45,7 @@ struct LazyDFA: Sendable {
 
     private static let start = Key(pcs: [0], context: .edge)
 
-    mutating func matches(
-        _ text: [UInt16], first: CharSet?, looks: inout LookOracle?, budget: inout StepBudget
-    ) throws(BudgetExceeded) -> Bool {
+    mutating func matches(_ text: [UInt16], first: CharSet?, context: MatchContext) throws(BudgetExceeded) -> Bool {
         var state: Int32 = 0
         var position = 0
         while position < text.count {
@@ -60,12 +58,12 @@ struct LazyDFA: Sendable {
                     state = intern(Key(pcs: [0], context: UnitContext(text[next - 1])))
                 }
             }
-            let move = try step(state, text[position], position, &looks, &budget)
+            let move = try step(state, text[position], position, context)
             if move.target < 0 { return move.accepts }
             state = move.target
             position += 1
         }
-        return try step(state, nil, position, &looks, &budget).accepts
+        return try step(state, nil, position, context).accepts
     }
 
     private func fastForward(_ text: [UInt16], _ state: inout Int32, _ position: inout Int, skipping: Bool) {
@@ -81,14 +79,13 @@ struct LazyDFA: Sendable {
         }
     }
 
-    mutating func acceptance(_ text: [UInt16], budget: inout StepBudget) throws(BudgetExceeded) -> [Bool] {
+    mutating func acceptance(_ text: [UInt16], context: MatchContext) throws(BudgetExceeded) -> [Bool] {
         var accepted = Array(repeating: false, count: text.count + 1)
         var state: Int32 = 0
-        var none: LookOracle?
         for offset in 0...text.count {
             let position = backward ? text.count - offset : offset
             let unit = backward ? (position > 0 ? text[position - 1] : nil) : (position < text.count ? text[position] : nil)
-            let move = try step(state, unit, position, &none, &budget)
+            let move = try step(state, unit, position, context)
             accepted[position] = move.accepts
             state = move.target
         }
@@ -100,7 +97,7 @@ struct LazyDFA: Sendable {
     }
 
     private mutating func step(
-        _ state: Int32, _ unit: UInt16?, _ position: Int, _ looks: inout LookOracle?, _ budget: inout StepBudget
+        _ state: Int32, _ unit: UInt16?, _ position: Int, _ context: MatchContext
     ) throws(BudgetExceeded) -> Move {
         let slot = Int(state) * width + column(unit)
         let target = table[slot]
@@ -108,12 +105,10 @@ struct LazyDFA: Sendable {
         if keys.count >= Self.stateLimit || table.count >= Self.tableLimit {
             let key = keys[Int(state)]
             reset()
-            return try step(intern(key), unit, position, &looks, &budget)
+            return try step(intern(key), unit, position, context)
         }
-        let move = try transition(state, unit) { index throws(BudgetExceeded) in
-            try looks?.evaluate(index, at: position, budget: &budget) ?? false
-        }
-        try budget.spend(move.cost)
+        let move = try transition(state, unit) { index throws(BudgetExceeded) in try context.holds(index, at: position) }
+        try context.spend(move.cost)
         return move
     }
 
