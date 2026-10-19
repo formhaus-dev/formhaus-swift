@@ -1,0 +1,99 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "trimming",
+  "definition": {
+    "id": "trim",
+    "title": "trim",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email"
+      },
+      {
+        "key": "notes",
+        "type": "textarea",
+        "label": "Notes"
+      },
+      {
+        "key": "secret",
+        "type": "password",
+        "label": "Secret"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "trims submit values and keeps the typed values",
+      "values": {
+        "email": "  a@b.co ",
+        "notes": " a\n b ",
+        "secret": " p "
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "email": "a@b.co",
+              "notes": "a\n b",
+              "secret": " p "
+            },
+            "values": {
+              "email": "  a@b.co ",
+              "notes": " a\n b ",
+              "secret": " p "
+            }
+          }
+        },
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    },
+    {
+      "name": "passes trimmed values to the submit handler",
+      "values": {
+        "email": "  a@b.co ",
+        "notes": " a\n b ",
+        "secret": " p "
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 3
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "email": "a@b.co",
+                  "notes": "a\n b",
+                  "secret": " p "
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

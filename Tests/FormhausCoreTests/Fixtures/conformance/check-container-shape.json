@@ -1,0 +1,45 @@
+{
+  "name": "check-container-shape",
+  "covers": ["checks the shape of containers"],
+  "issues": [
+    {
+      "code": "missing-property",
+      "path": "/fields/0"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/1/label"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/1/defaultItems"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/1/fields"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "s2",
+        "type": "section",
+        "title": "S"
+      },
+      {
+        "key": "g2",
+        "type": "group",
+        "label": 1,
+        "fields": "x",
+        "defaultItems": "two"
+      }
+    ],
+    "formatVersion": "1.1"
+  }
+}

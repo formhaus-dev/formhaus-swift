@@ -1,0 +1,812 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "defaults",
+  "definition": {
+    "id": "rsvp",
+    "title": "rsvp",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "reply",
+        "title": "Reply",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "attending",
+            "type": "radio",
+            "label": "Coming?",
+            "options": [
+              {
+                "value": "yes",
+                "label": "yes"
+              },
+              {
+                "value": "no",
+                "label": "no"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "details",
+        "title": "Details",
+        "show": [
+          {
+            "field": "attending",
+            "eq": "yes"
+          }
+        ],
+        "fields": [
+          {
+            "key": "partySize",
+            "type": "number",
+            "label": "Party size",
+            "defaultValue": 1,
+            "validation": {
+              "required": true,
+              "min": 1
+            }
+          },
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "gives a field on a step shown later its defaultValue and submits it",
+      "steps": [
+        {
+          "expect": {
+            "values": {}
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "do": "setValue",
+          "key": "attending",
+          "value": "yes"
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "Ada",
+              "attending": "yes",
+              "partySize": 1
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "details"
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 3
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada",
+                  "attending": "yes",
+                  "partySize": 1
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "restores the default after the step is hidden and shown again",
+      "values": {
+        "attending": "yes"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "attending",
+          "value": "no"
+        },
+        {
+          "expect": {
+            "values": {
+              "attending": "no"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "attending",
+          "value": "yes"
+        },
+        {
+          "expect": {
+            "values": {
+              "attending": "yes",
+              "partySize": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives a field shown again its last value",
+      "values": {
+        "attending": "yes"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "partySize",
+          "value": 3
+        },
+        {
+          "do": "setValue",
+          "key": "attending",
+          "value": "no"
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "attending": "no"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "attending",
+          "value": "yes"
+        },
+        {
+          "expect": {
+            "values": {
+              "attending": "yes",
+              "partySize": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps an unchecked checkbox unchecked",
+      "definition": {
+        "id": "toggled",
+        "title": "toggled",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "terms",
+            "type": "checkbox",
+            "label": "Terms",
+            "defaultValue": true,
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "terms",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "expect": {
+            "values": {
+              "on": false
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "on": true,
+              "terms": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives back an initial value of a field hidden at load",
+      "values": {
+        "attending": "no",
+        "partySize": 4,
+        "note": "vegan"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "attending": "no"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "attending",
+          "value": "yes"
+        },
+        {
+          "expect": {
+            "values": {
+              "attending": "yes",
+              "partySize": 4,
+              "note": "vegan"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not fall back from an empty initial value to the default",
+      "values": {
+        "attending": "no",
+        "partySize": null
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "attending",
+          "value": "yes"
+        },
+        {
+          "expect": {
+            "values": {
+              "attending": "yes",
+              "partySize": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops a server error of a field whose default comes back",
+      "definition": {
+        "id": "toggled",
+        "title": "toggled",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "code",
+            "type": "text",
+            "label": "Code",
+            "defaultValue": "A1",
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "code": "Taken"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "code": "A1"
+            },
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "resets a skipped step to its defaults and forgets its last values",
+      "definition": {
+        "id": "skippable",
+        "title": "skippable",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "plan",
+            "title": "Plan",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "radio",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "free",
+                    "label": "free"
+                  },
+                  {
+                    "value": "pro",
+                    "label": "pro"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "seats",
+            "title": "Seats",
+            "skip": {
+              "label": "Later"
+            },
+            "fields": [
+              {
+                "key": "seats",
+                "type": "number",
+                "label": "Seats",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "plan",
+                    "eq": "pro"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "end",
+            "title": "End",
+            "fields": [
+              {
+                "key": "end",
+                "type": "text",
+                "label": "End"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "pro",
+        "seats": 5
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "seats",
+          "value": 7
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "seats": 1
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "free"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "seats": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "restores last values when a final-step Skip is rejected",
+      "definition": {
+        "id": "skippable",
+        "title": "skippable",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "plan",
+            "title": "Plan",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "radio",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "free",
+                    "label": "free"
+                  },
+                  {
+                    "value": "pro",
+                    "label": "pro"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "seats",
+            "title": "Seats",
+            "skip": {
+              "label": "Later"
+            },
+            "fields": [
+              {
+                "key": "seats",
+                "type": "number",
+                "label": "Seats",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "plan",
+                    "eq": "pro"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "pro",
+        "seats": 5
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "seats",
+          "value": 7
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "seats": 7
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "free"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "seats": 7
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "restores the draft value after a rejected final-step Skip of an untouched step",
+      "definition": {
+        "id": "skippable",
+        "title": "skippable",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "plan",
+            "title": "Plan",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "radio",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "free",
+                    "label": "free"
+                  },
+                  {
+                    "value": "pro",
+                    "label": "pro"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "seats",
+            "title": "Seats",
+            "skip": {
+              "label": "Later"
+            },
+            "fields": [
+              {
+                "key": "seats",
+                "type": "number",
+                "label": "Seats",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "plan",
+                    "eq": "pro"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "pro",
+        "seats": 5
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "seats": 5
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "free"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "seats": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "restores defaults on a step that a restored route makes reachable",
+      "definition": {
+        "id": "reach",
+        "title": "reach",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "s1",
+            "title": "One",
+            "fields": [
+              {
+                "key": "x",
+                "type": "checkbox",
+                "label": "X"
+              }
+            ]
+          },
+          {
+            "id": "s2",
+            "title": "Two",
+            "show": [
+              {
+                "field": "x",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "a",
+                "type": "checkbox",
+                "label": "A",
+                "defaultValue": true
+              }
+            ],
+            "routes": [
+              {
+                "to": "s3",
+                "show": [
+                  {
+                    "field": "a",
+                    "eq": true
+                  }
+                ]
+              },
+              {
+                "to": "s4"
+              }
+            ]
+          },
+          {
+            "id": "s3",
+            "title": "Three",
+            "fields": [
+              {
+                "key": "c",
+                "type": "number",
+                "label": "C",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "x",
+                    "eq": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s4",
+            "title": "Four",
+            "fields": [
+              {
+                "key": "d",
+                "type": "text",
+                "label": "D"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "x",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "x": true,
+              "a": true,
+              "c": 1
+            },
+            "submitValues": {
+              "x": true,
+              "a": true,
+              "c": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

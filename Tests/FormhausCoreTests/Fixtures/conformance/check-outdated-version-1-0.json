@@ -1,0 +1,33 @@
+{
+  "name": "check-outdated-version-1-0",
+  "covers": ["warns when a definition with containers does not declare format 1.1"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    }
+  ],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "s",
+        "type": "section",
+        "title": "s",
+        "fields": [
+          {
+            "key": "a",
+            "type": "text",
+            "label": "a"
+          }
+        ]
+      }
+    ],
+    "formatVersion": "1.0"
+  }
+}

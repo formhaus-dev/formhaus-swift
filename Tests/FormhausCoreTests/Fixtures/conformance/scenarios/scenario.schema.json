@@ -1,0 +1,697 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://formhaus.dev/conformance/scenario.schema.json",
+  "title": "Formhaus engine conformance scenarios",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "definition", "scenarios"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "definition": {
+      "type": "object"
+    },
+    "overlay": {
+      "type": "object"
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/scenario"
+      }
+    }
+  },
+  "$defs": {
+    "values": {
+      "type": "object"
+    },
+    "reply": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "return": {},
+        "throw": {
+          "type": "string"
+        },
+        "defer": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "not": {
+        "required": ["return", "throw"]
+      }
+    },
+    "replies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reply"
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "steps"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "definition": {
+          "type": "object"
+        },
+        "values": {
+          "$ref": "#/$defs/values"
+        },
+        "hooks": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "onBeforeStepChange": {
+              "$ref": "#/$defs/replies"
+            },
+            "onAfterStepChange": {
+              "$ref": "#/$defs/replies"
+            },
+            "onBeforeSubmit": {
+              "$ref": "#/$defs/replies"
+            },
+            "onAfterSubmit": {
+              "$ref": "#/$defs/replies"
+            },
+            "onStepValidate": {
+              "$ref": "#/$defs/replies"
+            }
+          }
+        },
+        "validators": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reject", "error"],
+            "properties": {
+              "reject": {
+                "type": "array"
+              },
+              "error": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "messages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "throws": {
+          "type": "string"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/expectStep"
+              },
+              {
+                "$ref": "#/$defs/action"
+              }
+            ]
+          }
+        }
+      },
+      "if": {
+        "required": ["throws"]
+      },
+      "then": {
+        "properties": {
+          "steps": {
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": ["hooks"]
+            },
+            {
+              "required": ["validators"]
+            },
+            {
+              "required": ["messages"]
+            }
+          ]
+        }
+      },
+      "else": {
+        "properties": {
+          "steps": {
+            "minItems": 1,
+            "type": "array"
+          }
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["do"],
+      "oneOf": [
+        {
+          "$ref": "#/$defs/do-start"
+        },
+        {
+          "$ref": "#/$defs/do-setValue"
+        },
+        {
+          "$ref": "#/$defs/do-setItemValue"
+        },
+        {
+          "$ref": "#/$defs/do-addItem"
+        },
+        {
+          "$ref": "#/$defs/do-removeItem"
+        },
+        {
+          "$ref": "#/$defs/do-setErrors"
+        },
+        {
+          "$ref": "#/$defs/do-setFieldLoading"
+        },
+        {
+          "$ref": "#/$defs/do-cancelPendingActions"
+        },
+        {
+          "$ref": "#/$defs/do-next"
+        },
+        {
+          "$ref": "#/$defs/do-back"
+        },
+        {
+          "$ref": "#/$defs/do-skip"
+        },
+        {
+          "$ref": "#/$defs/do-submit"
+        },
+        {
+          "$ref": "#/$defs/do-validate"
+        },
+        {
+          "$ref": "#/$defs/do-validateField"
+        },
+        {
+          "$ref": "#/$defs/do-goToStepWithField"
+        },
+        {
+          "$ref": "#/$defs/do-reset"
+        },
+        {
+          "$ref": "#/$defs/do-resolve"
+        },
+        {
+          "$ref": "#/$defs/do-settle"
+        }
+      ],
+      "not": {
+        "required": ["returns", "throws"]
+      }
+    },
+    "expectStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expect"],
+      "properties": {
+        "expect": {
+          "$ref": "#/$defs/expectation"
+        }
+      }
+    },
+    "expectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "values": {
+          "$ref": "#/$defs/values"
+        },
+        "submitValues": {
+          "$ref": "#/$defs/values"
+        },
+        "errors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "topLevelErrors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stepErrors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "step": {
+          "type": ["string", "null"]
+        },
+        "stepIndex": {
+          "type": "integer"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skipped": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "isFirstStep": {
+          "type": "boolean"
+        },
+        "isLastStep": {
+          "type": "boolean"
+        },
+        "canGoNext": {
+          "type": "boolean"
+        },
+        "progress": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["current", "total"],
+          "properties": {
+            "current": {
+              "type": "integer"
+            },
+            "total": {
+              "type": "integer"
+            }
+          }
+        },
+        "submitting": {
+          "type": "boolean"
+        },
+        "stepValidating": {
+          "type": "boolean"
+        },
+        "fieldLoading": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "log": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/logEntry"
+          }
+        }
+      }
+    },
+    "logEntry": {
+      "type": "object",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "required": ["event"],
+          "properties": {
+            "event": {
+              "type": "object",
+              "required": ["type"],
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["warning"],
+          "properties": {
+            "warning": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["code", "path"],
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["call"],
+          "properties": {
+            "call": {
+              "enum": ["onBeforeStepChange", "onAfterStepChange", "onBeforeSubmit", "onAfterSubmit", "onStepValidate", "submit"]
+            },
+            "context": {
+              "type": "object"
+            },
+            "values": {
+              "type": "object"
+            },
+            "skippedSteps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "stepId": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "throws": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "await": {
+      "type": "boolean"
+    },
+    "do-start": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "start"
+        }
+      }
+    },
+    "do-setValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "value"],
+      "properties": {
+        "do": {
+          "const": "setValue"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {}
+      }
+    },
+    "do-setItemValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "index", "field", "value"],
+      "properties": {
+        "do": {
+          "const": "setItemValue"
+        },
+        "key": {
+          "type": "string"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "field": {
+          "type": "string"
+        },
+        "value": {}
+      }
+    },
+    "do-addItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "do": {
+          "const": "addItem"
+        },
+        "key": {
+          "type": "string"
+        },
+        "returns": {
+          "type": "boolean"
+        }
+      }
+    },
+    "do-removeItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "index"],
+      "properties": {
+        "do": {
+          "const": "removeItem"
+        },
+        "key": {
+          "type": "string"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "returns": {
+          "type": "boolean"
+        }
+      }
+    },
+    "do-setErrors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["errors"],
+      "properties": {
+        "do": {
+          "const": "setErrors"
+        },
+        "errors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "do-setFieldLoading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "loading"],
+      "properties": {
+        "do": {
+          "const": "setFieldLoading"
+        },
+        "key": {
+          "type": "string"
+        },
+        "loading": {
+          "type": "boolean"
+        }
+      }
+    },
+    "do-cancelPendingActions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "cancelPendingActions"
+        }
+      }
+    },
+    "do-next": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "next"
+        },
+        "returns": {
+          "type": "boolean"
+        },
+        "throws": {
+          "$ref": "#/$defs/throws"
+        },
+        "await": {
+          "$ref": "#/$defs/await"
+        }
+      }
+    },
+    "do-back": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "back"
+        },
+        "returns": {
+          "type": "boolean"
+        },
+        "throws": {
+          "$ref": "#/$defs/throws"
+        },
+        "await": {
+          "$ref": "#/$defs/await"
+        }
+      }
+    },
+    "do-skip": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "skip"
+        },
+        "handler": {
+          "$ref": "#/$defs/replies"
+        },
+        "returns": {
+          "type": "boolean"
+        },
+        "throws": {
+          "$ref": "#/$defs/throws"
+        },
+        "await": {
+          "$ref": "#/$defs/await"
+        }
+      }
+    },
+    "do-submit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "submit"
+        },
+        "handler": {
+          "$ref": "#/$defs/replies"
+        },
+        "returns": {
+          "type": "boolean"
+        },
+        "throws": {
+          "$ref": "#/$defs/throws"
+        },
+        "await": {
+          "$ref": "#/$defs/await"
+        }
+      }
+    },
+    "do-validate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "validate"
+        },
+        "returns": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "do-validateField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "do": {
+          "const": "validateField"
+        },
+        "key": {
+          "type": "string"
+        },
+        "returns": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "do-goToStepWithField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key"],
+      "properties": {
+        "do": {
+          "const": "goToStepWithField"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "do-reset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "reset"
+        },
+        "values": {
+          "$ref": "#/$defs/values"
+        }
+      }
+    },
+    "do-resolve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deferred"],
+      "properties": {
+        "do": {
+          "const": "resolve"
+        },
+        "deferred": {
+          "type": "string"
+        }
+      }
+    },
+    "do-settle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "do": {
+          "const": "settle"
+        }
+      }
+    }
+  }
+}

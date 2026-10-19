@@ -1,0 +1,172 @@
+{
+  "name": "check-field-rules",
+  "covers": [
+    "rejects an invalid regex pattern",
+    "rejects impossible ranges",
+    "warns about rules that do not apply to the field type",
+    "rejects matchField and warns about optionsDependsOn on unknown keys",
+    "warns about a choice field without options",
+    "warns about a default value that is not an option"
+  ],
+  "issues": [
+    {
+      "code": "invalid-pattern",
+      "path": "/fields/0/validation/pattern"
+    },
+    {
+      "code": "invalid-range",
+      "path": "/fields/1/validation/minLength"
+    },
+    {
+      "code": "invalid-range",
+      "path": "/fields/2/validation/min"
+    },
+    {
+      "code": "unknown-field",
+      "path": "/fields/6/validation/matchField"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "rule-not-applicable",
+      "path": "/fields/3/validation/min"
+    },
+    {
+      "code": "rule-not-applicable",
+      "path": "/fields/4/validation/maxLength"
+    },
+    {
+      "code": "unknown-field",
+      "path": "/fields/7/optionsDependsOn/1"
+    },
+    {
+      "code": "missing-options",
+      "path": "/fields/8/options"
+    },
+    {
+      "code": "default-not-in-options",
+      "path": "/fields/10/defaultValue"
+    },
+    {
+      "code": "default-not-in-options",
+      "path": "/fields/11/defaultValue"
+    }
+  ],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "a0",
+        "type": "text",
+        "label": "a0",
+        "validation": {
+          "pattern": "[invalid("
+        }
+      },
+      {
+        "key": "a1",
+        "type": "text",
+        "label": "a1",
+        "validation": {
+          "minLength": 5,
+          "maxLength": 3
+        }
+      },
+      {
+        "key": "a2",
+        "type": "number",
+        "label": "a2",
+        "validation": {
+          "min": 9,
+          "max": 1
+        }
+      },
+      {
+        "key": "a3",
+        "type": "text",
+        "label": "a3",
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "key": "a4",
+        "type": "number",
+        "label": "a4",
+        "validation": {
+          "maxLength": 3
+        }
+      },
+      {
+        "key": "a5",
+        "type": "x-slider",
+        "label": "a5",
+        "validation": {
+          "min": 1
+        }
+      },
+      {
+        "key": "a6",
+        "type": "text",
+        "label": "a6",
+        "validation": {
+          "matchField": "nope"
+        }
+      },
+      {
+        "key": "a7",
+        "type": "select",
+        "label": "a7",
+        "optionsFrom": "x",
+        "optionsDependsOn": ["a0", "zzz"]
+      },
+      {
+        "key": "a8",
+        "type": "select",
+        "label": "a8"
+      },
+      {
+        "key": "a9",
+        "type": "radio",
+        "label": "a9",
+        "optionsFrom": "cities"
+      },
+      {
+        "key": "a10",
+        "type": "select",
+        "label": "a10",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ],
+        "defaultValue": "c"
+      },
+      {
+        "key": "a11",
+        "type": "multiselect",
+        "label": "a11",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ],
+        "defaultValue": ["a", "z"]
+      }
+    ]
+  }
+}

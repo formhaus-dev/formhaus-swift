@@ -1,0 +1,141 @@
+{
+  "name": "check-container-nesting",
+  "covers": [
+    "rejects nested containers and file or hidden fields in a group",
+    "reports defaultItems above maxLength",
+    "warns about min and max on a group"
+  ],
+  "issues": [
+    {
+      "code": "invalid-nesting",
+      "path": "/fields/0/fields/0/type"
+    },
+    {
+      "code": "invalid-nesting",
+      "path": "/fields/1/fields/0/type"
+    },
+    {
+      "code": "invalid-nesting",
+      "path": "/fields/1/fields/1/type"
+    },
+    {
+      "code": "invalid-nesting",
+      "path": "/fields/1/fields/2/type"
+    },
+    {
+      "code": "invalid-nesting",
+      "path": "/fields/1/fields/3/type"
+    },
+    {
+      "code": "invalid-range",
+      "path": "/fields/2/defaultItems"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "rule-not-applicable",
+      "path": "/fields/3/validation/min"
+    }
+  ],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "outer",
+        "type": "section",
+        "title": "outer",
+        "fields": [
+          {
+            "key": "inner",
+            "type": "section",
+            "title": "inner",
+            "fields": [
+              {
+                "key": "a",
+                "type": "text",
+                "label": "a"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "g",
+        "type": "group",
+        "label": "g",
+        "fields": [
+          {
+            "key": "h",
+            "type": "group",
+            "label": "h",
+            "fields": [
+              {
+                "key": "b",
+                "type": "text",
+                "label": "b"
+              }
+            ]
+          },
+          {
+            "key": "f",
+            "type": "file",
+            "label": "f"
+          },
+          {
+            "key": "secret",
+            "type": "hidden",
+            "label": "secret"
+          },
+          {
+            "key": "s",
+            "type": "section",
+            "title": "s",
+            "fields": [
+              {
+                "key": "c",
+                "type": "text",
+                "label": "c"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "g3",
+        "type": "group",
+        "label": "g3",
+        "fields": [
+          {
+            "key": "d",
+            "type": "text",
+            "label": "d"
+          }
+        ],
+        "defaultItems": 3,
+        "validation": {
+          "maxLength": 2
+        }
+      },
+      {
+        "key": "g4",
+        "type": "group",
+        "label": "g4",
+        "fields": [
+          {
+            "key": "e",
+            "type": "text",
+            "label": "e"
+          }
+        ],
+        "validation": {
+          "min": 1
+        }
+      }
+    ],
+    "formatVersion": "1.1"
+  }
+}

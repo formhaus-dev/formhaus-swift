@@ -1,0 +1,91 @@
+{
+  "name": "invalid-messages",
+  "issues": [
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/validation/required"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/validation/minLengthMessage"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/validation/maxLengthMessage"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/validation/patternMessage"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/1/validation/required"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/1/validation/minMessage"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/1/validation/maxMessage"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/2/validation/matchFieldMessage"
+    }
+  ],
+  "definition": {
+    "id": "messages",
+    "title": "Messages",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "validation": {
+          "required": {
+            "text": "Required"
+          },
+          "minLength": 2,
+          "minLengthMessage": {
+            "text": "Too short"
+          },
+          "maxLength": 5,
+          "maxLengthMessage": ["x"],
+          "pattern": "^a",
+          "patternMessage": 5
+        }
+      },
+      {
+        "key": "age",
+        "type": "number",
+        "label": "Age",
+        "validation": {
+          "required": 1,
+          "min": 1,
+          "minMessage": true,
+          "max": 9,
+          "maxMessage": {
+            "text": "Too big"
+          }
+        }
+      },
+      {
+        "key": "confirm",
+        "type": "text",
+        "label": "Confirm",
+        "validation": {
+          "required": "Confirm it",
+          "matchField": "name",
+          "matchFieldMessage": {
+            "text": "No match"
+          }
+        }
+      }
+    ]
+  },
+  "cases": []
+}

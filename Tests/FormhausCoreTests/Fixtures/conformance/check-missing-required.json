@@ -1,0 +1,34 @@
+{
+  "name": "check-missing-required",
+  "covers": ["reports a missing submit action, id and condition field"],
+  "issues": [
+    {
+      "code": "missing-property",
+      "path": ""
+    },
+    {
+      "code": "missing-property",
+      "path": ""
+    },
+    {
+      "code": "missing-property",
+      "path": "/fields/0/show/0"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "title": "A",
+    "fields": [
+      {
+        "key": "x",
+        "type": "text",
+        "label": "x",
+        "show": [
+          {
+            "eq": "y"
+          }
+        ]
+      }
+    ]
+  }
+}

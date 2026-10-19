@@ -1,0 +1,698 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "last values",
+  "definition": {
+    "id": "toggled",
+    "title": "toggled",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "on",
+        "type": "checkbox",
+        "label": "On"
+      },
+      {
+        "key": "code",
+        "type": "text",
+        "label": "Code",
+        "defaultValue": "A1",
+        "show": [
+          {
+            "field": "on",
+            "eq": true
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "gives back a typed value",
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "B2"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "on": false
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "on": true,
+              "code": "B2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives back an explicit clear instead of the default",
+      "definition": {
+        "id": "toggled",
+        "title": "toggled",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "code",
+            "type": "text",
+            "label": "Code",
+            "defaultValue": "A1",
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          },
+          {
+            "key": "size",
+            "type": "number",
+            "label": "Size",
+            "defaultValue": 2,
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": ""
+        },
+        {
+          "do": "setValue",
+          "key": "size",
+          "value": null
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "code": "",
+              "size": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives back the last value after several edits",
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "B2"
+        },
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "A1"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "C3"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "code": "C3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "remembers a value set while the field is hidden",
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "B2"
+        },
+        {
+          "expect": {
+            "values": {}
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "code": "B2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives an item field its last value inside a group shown again",
+      "definition": {
+        "id": "crew",
+        "title": "crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind"
+              },
+              {
+                "key": "count",
+                "type": "number",
+                "label": "Count",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true,
+        "crew": [
+          {
+            "kind": "x"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "crew.0.count",
+          "value": 4
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "y"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 4
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "brings back the value from before Skip when a pending Skip edit hides the field again",
+      "definition": {
+        "id": "final-skip",
+        "title": "final-skip",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "start",
+            "title": "Start",
+            "fields": [
+              {
+                "key": "on",
+                "type": "checkbox",
+                "label": "On"
+              }
+            ]
+          },
+          {
+            "id": "extra",
+            "title": "Extra",
+            "skip": {
+              "label": "Later"
+            },
+            "fields": [
+              {
+                "key": "a",
+                "type": "checkbox",
+                "label": "A",
+                "defaultValue": true
+              },
+              {
+                "key": "d",
+                "type": "text",
+                "label": "D",
+                "defaultValue": "d0",
+                "show": [
+                  {
+                    "field": "a",
+                    "eq": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "d",
+          "value": "hello"
+        },
+        {
+          "do": "setValue",
+          "key": "a",
+          "value": false
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "defer": "skip",
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "a": true,
+              "d": "d0"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "a",
+          "value": false
+        },
+        {
+          "do": "resolve",
+          "deferred": "skip"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "a": false
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "a",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "a": true,
+              "d": "hello"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "forgets a removed item",
+      "definition": {
+        "id": "crew",
+        "title": "crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind"
+              },
+              {
+                "key": "count",
+                "type": "number",
+                "label": "Count",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true,
+        "crew": [
+          {
+            "kind": "x"
+          },
+          {
+            "kind": "x"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "crew.0.count",
+          "value": 4
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "y"
+        },
+        {
+          "do": "removeItem",
+          "key": "crew",
+          "index": 0,
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "y"
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "forgets everything on reset",
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "B2"
+        },
+        {
+          "do": "reset",
+          "values": {
+            "on": true
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "code": "A1"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "C3"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "code": "A1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "starts fresh from initialValues in a new engine - first engine",
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "code",
+          "value": "B2"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "on": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "starts fresh from initialValues in a new engine - new engine",
+      "values": {
+        "on": false
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "code": "A1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the start value of a hidden-type field",
+      "definition": {
+        "id": "toggled",
+        "title": "toggled",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "source",
+            "type": "hidden",
+            "defaultValue": "ad",
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "source",
+          "value": "other"
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "source": "ad"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

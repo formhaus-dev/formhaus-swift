@@ -1,0 +1,19 @@
+{
+  "name": "check-escaped-property",
+  "covers": ["escapes property names in the path"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "unknown-property",
+      "path": "/a~1b"
+    }
+  ],
+  "definition": {
+    "id": "a",
+    "title": "A",
+    "submit": {
+      "label": "Go"
+    },
+    "a/b": 1
+  }
+}

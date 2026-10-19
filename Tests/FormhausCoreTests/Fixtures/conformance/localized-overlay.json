@@ -1,0 +1,167 @@
+{
+  "name": "localized-overlay",
+  "issues": [],
+  "definition": {
+    "id": "signup",
+    "lang": "en",
+    "title": "Sign up",
+    "submit": {
+      "label": "Create account",
+      "i18n": {
+        "label": "signup.submit"
+      }
+    },
+    "fields": [
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email",
+        "i18n": {
+          "label": "signup.email"
+        },
+        "validation": {
+          "required": "Enter your email"
+        }
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password",
+        "validation": {
+          "required": true,
+          "minLength": 8,
+          "minLengthMessage": "At least 8 characters"
+        }
+      },
+      {
+        "key": "plan",
+        "type": "radio",
+        "label": "Plan",
+        "options": [
+          {
+            "value": "free",
+            "label": "Free"
+          },
+          {
+            "value": "pro",
+            "label": "Pro"
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "code",
+        "type": "text",
+        "label": "Code",
+        "validation": {
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    ]
+  },
+  "overlay": {
+    "title": "Регистрация",
+    "submit": {
+      "label": "Создать аккаунт"
+    },
+    "messages": {
+      "required": "Обязательное поле",
+      "pattern": "Неверный формат",
+      "email": "Введите корректный email"
+    },
+    "fields": {
+      "email": {
+        "label": "Почта",
+        "validation": {
+          "required": "Укажите почту"
+        }
+      },
+      "password": {
+        "label": "Пароль",
+        "validation": {
+          "minLength": "Не менее {min} символов"
+        }
+      },
+      "plan": {
+        "label": "Тариф",
+        "options": {
+          "free": "Бесплатный",
+          "pro": "Про"
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "reports overlay messages",
+      "input": {
+        "values": {
+          "email": "",
+          "password": "abc",
+          "code": "ab"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "",
+          "password": "abc",
+          "code": "ab"
+        },
+        "errors": {
+          "email": "Укажите почту",
+          "password": "Не менее 8 символов",
+          "plan": "Обязательное поле",
+          "code": "Неверный формат"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "reports a catalog format error",
+      "input": {
+        "values": {
+          "email": "nope",
+          "password": "secret123",
+          "plan": "pro"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "nope",
+          "password": "secret123",
+          "plan": "pro"
+        },
+        "errors": {
+          "email": "Введите корректный email"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "accepts valid answers",
+      "input": {
+        "values": {
+          "email": "a@example.com",
+          "password": "secret123",
+          "plan": "free",
+          "code": "ABC"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "a@example.com",
+          "password": "secret123",
+          "plan": "free",
+          "code": "ABC"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

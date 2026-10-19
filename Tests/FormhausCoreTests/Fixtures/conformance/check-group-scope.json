@@ -1,0 +1,74 @@
+{
+  "name": "check-group-scope",
+  "covers": ["throws from the engine on scope errors"],
+  "issues": [
+    {
+      "code": "group-scope",
+      "path": "/fields/2/fields/0/show/0/field"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "country",
+        "type": "text",
+        "label": "country"
+      },
+      {
+        "key": "a",
+        "type": "group",
+        "label": "a",
+        "fields": [
+          {
+            "key": "x",
+            "type": "text",
+            "label": "x"
+          },
+          {
+            "key": "y",
+            "type": "text",
+            "label": "y",
+            "show": [
+              {
+                "field": "x",
+                "notEmpty": true
+              },
+              {
+                "field": "country",
+                "eq": "NL"
+              }
+            ],
+            "validation": {
+              "matchField": "x"
+            }
+          }
+        ]
+      },
+      {
+        "key": "b",
+        "type": "group",
+        "label": "b",
+        "fields": [
+          {
+            "key": "z",
+            "type": "text",
+            "label": "z",
+            "show": [
+              {
+                "field": "x",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "formatVersion": "1.1"
+  }
+}

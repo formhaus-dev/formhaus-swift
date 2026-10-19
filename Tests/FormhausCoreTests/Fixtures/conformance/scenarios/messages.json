@@ -1,0 +1,212 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "messages",
+  "definition": {
+    "id": "messages",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "password",
+        "type": "password",
+        "label": "password",
+        "validation": {
+          "required": true,
+          "minLength": 8
+        }
+      },
+      {
+        "key": "topics",
+        "type": "multiselect",
+        "label": "topics",
+        "validation": {
+          "minLength": 2
+        },
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ]
+      },
+      {
+        "key": "literal",
+        "type": "password",
+        "label": "literal",
+        "validation": {
+          "required": "Enter a password",
+          "minLength": 8,
+          "minLengthMessage": "Too short"
+        }
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "email"
+      },
+      {
+        "key": "day",
+        "type": "date",
+        "label": "day",
+        "validation": {
+          "maxLength": 3
+        }
+      },
+      {
+        "key": "name",
+        "type": "text",
+        "label": "name",
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "formats catalog templates with the rule params",
+      "values": {
+        "password": "short",
+        "topics": ["a"]
+      },
+      "messages": {
+        "minLength": "Минимум {min} символов",
+        "minItems": "Выберите {min}"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "password",
+          "returns": "Минимум 8 символов"
+        },
+        {
+          "do": "validateField",
+          "key": "topics",
+          "returns": "Выберите 2"
+        }
+      ]
+    },
+    {
+      "name": "keeps field literals ahead of every catalog",
+      "values": {
+        "literal": ""
+      },
+      "messages": {
+        "required": "Обязательно",
+        "minLength": "Минимум {min}"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "literal",
+          "returns": "Enter a password"
+        },
+        {
+          "do": "setValue",
+          "key": "literal",
+          "value": "abc"
+        },
+        {
+          "do": "validateField",
+          "key": "literal",
+          "returns": "Too short"
+        }
+      ]
+    },
+    {
+      "name": "falls back to English for missing entries",
+      "values": {
+        "password": ""
+      },
+      "messages": {
+        "minLength": "x"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "password",
+          "returns": "This field is required"
+        }
+      ]
+    },
+    {
+      "name": "falls back to English for empty entries",
+      "values": {
+        "password": "abc"
+      },
+      "messages": {
+        "minLength": ""
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "password",
+          "returns": "Must be at least 8 characters"
+        }
+      ]
+    },
+    {
+      "name": "translates type checks and the length limit of text fields",
+      "values": {
+        "email": "nope",
+        "day": "2024-01-01"
+      },
+      "messages": {
+        "email": "Неверный email",
+        "maxLength": "Не длиннее {max}"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "email",
+          "returns": "Неверный email"
+        },
+        {
+          "do": "validateField",
+          "key": "day",
+          "returns": "Не длиннее 3"
+        }
+      ]
+    },
+    {
+      "name": "leaves unknown placeholders intact",
+      "values": {
+        "password": "abc"
+      },
+      "messages": {
+        "minLength": "{min} of {unknown}"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "password",
+          "returns": "8 of {unknown}"
+        }
+      ]
+    },
+    {
+      "name": "does not change forms without catalogs",
+      "values": {
+        "password": "abc"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "password",
+          "returns": "Must be at least 8 characters"
+        },
+        {
+          "do": "validateField",
+          "key": "name",
+          "returns": "This field is required"
+        }
+      ]
+    }
+  ]
+}

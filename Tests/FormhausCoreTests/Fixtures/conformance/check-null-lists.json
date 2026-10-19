@@ -1,0 +1,45 @@
+{
+  "name": "check-null-lists",
+  "covers": ["accepts null for optional lists", "accepts $schema in a typed definition"],
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "id": "a",
+    "title": "A",
+    "submit": {
+      "label": "Go"
+    },
+    "$schema": "https://formhaus.dev/schema/form-definition.json",
+    "fields": null,
+    "steps": [
+      {
+        "id": "s",
+        "title": "S",
+        "show": null,
+        "routes": null,
+        "fields": [
+          {
+            "key": "x",
+            "type": "text",
+            "label": "x",
+            "showAny": null
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "empty",
+      "input": {
+        "values": {},
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

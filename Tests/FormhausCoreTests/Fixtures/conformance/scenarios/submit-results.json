@@ -1,0 +1,944 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "submit results",
+  "definition": {
+    "id": "flat-api",
+    "title": "Open an account",
+    "submit": {
+      "label": "Open account"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About you",
+        "fields": [
+          {
+            "key": "firstName",
+            "type": "text",
+            "label": "First name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "lastName",
+            "type": "text",
+            "label": "Last name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "account",
+        "title": "Account",
+        "fields": [
+          {
+            "key": "accountType",
+            "type": "radio",
+            "label": "Account type",
+            "validation": {
+              "required": true
+            },
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          },
+          {
+            "key": "companyName",
+            "type": "text",
+            "label": "Company name",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "accountType",
+                "eq": "business"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "address",
+        "title": "Address",
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "Street",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "postcode",
+            "type": "text",
+            "label": "Postcode",
+            "validation": {
+              "required": true,
+              "pattern": "^[0-9]{5}$",
+              "patternMessage": "Enter 5 digits"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "treats a handler that returns nothing as a success",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              },
+              {
+                "call": "onAfterSubmit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "runs the after-hook exactly once for { ok: true } and clears earlier server errors",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "email": "Taken"
+                },
+                "formErrors": ["Try later"]
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "Taken"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": true
+              }
+            }
+          ],
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {},
+            "topLevelErrors": [],
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              },
+              {
+                "call": "onAfterSubmit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "applies errors from the first and the last step at once and opens the earliest step",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "postcode": "Unknown postcode",
+                  "firstName": "Use your legal name"
+                }
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "postcode": "Unknown postcode",
+              "firstName": "Use your legal name"
+            },
+            "step": "about",
+            "values": {
+              "firstName": "Ada",
+              "lastName": "Lovelace",
+              "email": "ada@example.com",
+              "accountType": "personal",
+              "street": "1 Main St",
+              "postcode": "10115"
+            },
+            "submitting": false,
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "postcode",
+                  "error": "Unknown postcode"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "firstName",
+                  "error": "Use your legal name"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "opens the earliest step for setErrors() whatever the key order",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "postcode": "Bad",
+            "accountType": "Not available",
+            "firstName": "Bad"
+          }
+        },
+        {
+          "expect": {
+            "step": "about",
+            "stepErrors": {
+              "about": ["firstName"],
+              "account": ["accountType"],
+              "address": ["postcode"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "shows unknown keys, hidden fields and formErrors as form-level errors",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "account_status": "Account is locked",
+                  "companyName": "Company not found",
+                  "street": "No such street"
+                },
+                "formErrors": ["Something went wrong"]
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "errors": {
+              "street": "No such street"
+            },
+            "topLevelErrors": ["Something went wrong", "Account is locked", "Company not found"],
+            "step": "address"
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps values and server errors when the handler throws",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "email": "Taken"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "throw": "Failed to fetch"
+            }
+          ],
+          "throws": {
+            "name": "Error",
+            "message": "Failed to fetch"
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "Taken"
+            },
+            "values": {
+              "firstName": "Ada",
+              "lastName": "Lovelace",
+              "email": "ada@example.com",
+              "accountType": "personal",
+              "street": "1 Main St",
+              "postcode": "10115"
+            },
+            "submitting": false,
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "Taken"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "error"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "rejects { ok: false } without messages",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "sends a new submission while server errors are still shown and replaces them with the new response",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "email": "Taken",
+                  "postcode": "Unknown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "postcode": "Still unknown"
+                }
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "postcode": "Still unknown"
+            },
+            "step": "address",
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "postcode",
+                  "error": "Still unknown"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "passes the skipped steps and restores a skipped step after a rejection",
+      "definition": {
+        "id": "flat-api",
+        "title": "Open an account",
+        "submit": {
+          "label": "Open account"
+        },
+        "steps": [
+          {
+            "id": "about",
+            "title": "About you",
+            "fields": [
+              {
+                "key": "firstName",
+                "type": "text",
+                "label": "First name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "lastName",
+                "type": "text",
+                "label": "Last name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "email",
+                "type": "email",
+                "label": "Email",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "account",
+            "title": "Account",
+            "fields": [
+              {
+                "key": "accountType",
+                "type": "radio",
+                "label": "Account type",
+                "validation": {
+                  "required": true
+                },
+                "options": [
+                  {
+                    "value": "personal",
+                    "label": "Personal"
+                  },
+                  {
+                    "value": "business",
+                    "label": "Business"
+                  }
+                ]
+              },
+              {
+                "key": "companyName",
+                "type": "text",
+                "label": "Company name",
+                "validation": {
+                  "required": true
+                },
+                "show": [
+                  {
+                    "field": "accountType",
+                    "eq": "business"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "address",
+            "title": "Address",
+            "fields": [
+              {
+                "key": "street",
+                "type": "text",
+                "label": "Street",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "postcode",
+                "type": "text",
+                "label": "Postcode",
+                "validation": {
+                  "required": true,
+                  "pattern": "^[0-9]{5}$",
+                  "patternMessage": "Enter 5 digits"
+                }
+              }
+            ],
+            "skip": {
+              "label": "Later"
+            }
+          }
+        ]
+      },
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "email": "Taken"
+                }
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "skipped": [],
+            "values": {
+              "firstName": "Ada",
+              "lastName": "Lovelace",
+              "email": "ada@example.com",
+              "accountType": "personal",
+              "street": "1 Main St",
+              "postcode": "10115"
+            },
+            "errors": {
+              "email": "Taken"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "address"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 4
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal"
+                },
+                "skippedSteps": ["address"]
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "Taken"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

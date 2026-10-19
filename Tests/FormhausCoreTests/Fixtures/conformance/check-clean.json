@@ -1,0 +1,111 @@
+{
+  "name": "check-clean",
+  "covers": [
+    "returns no issues for a valid definition",
+    "accepts props on a field",
+    "skips option checks when options load from a provider",
+    "accepts comparisons on numbers and numeric radio options",
+    "accepts a hidden field without a label"
+  ],
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "name"
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "email"
+      },
+      {
+        "key": "rating",
+        "type": "x-rating",
+        "label": "rating",
+        "props": {
+          "stars": 5,
+          "palette": {
+            "on": "gold"
+          }
+        }
+      },
+      {
+        "key": "city",
+        "type": "select",
+        "label": "city",
+        "optionsFrom": "cities",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ],
+        "defaultValue": "paris"
+      },
+      {
+        "key": "cityNote",
+        "type": "text",
+        "label": "cityNote",
+        "show": [
+          {
+            "field": "city",
+            "eq": "rome"
+          }
+        ]
+      },
+      {
+        "key": "score",
+        "type": "radio",
+        "label": "score",
+        "options": [
+          {
+            "value": "0",
+            "label": "0"
+          },
+          {
+            "value": "10",
+            "label": "10"
+          }
+        ]
+      },
+      {
+        "key": "why",
+        "type": "text",
+        "label": "why",
+        "show": [
+          {
+            "field": "score",
+            "lte": 6
+          }
+        ]
+      },
+      {
+        "key": "count",
+        "type": "number",
+        "label": "count",
+        "show": [
+          {
+            "field": "score",
+            "gt": 1
+          }
+        ]
+      },
+      {
+        "key": "utm",
+        "type": "hidden"
+      }
+    ]
+  }
+}

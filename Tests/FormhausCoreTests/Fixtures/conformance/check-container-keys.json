@@ -1,0 +1,117 @@
+{
+  "name": "check-container-keys",
+  "covers": ["keeps item keys unique and apart from outer keys and group paths"],
+  "issues": [
+    {
+      "code": "duplicate-key",
+      "path": "/fields/1/key"
+    },
+    {
+      "code": "duplicate-key",
+      "path": "/fields/1/fields/0/key"
+    },
+    {
+      "code": "duplicate-key",
+      "path": "/fields/2/fields/0/key"
+    },
+    {
+      "code": "duplicate-key",
+      "path": "/fields/2/fields/2/key"
+    },
+    {
+      "code": "duplicate-key",
+      "path": "/fields/4/key"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "name"
+      },
+      {
+        "key": "people.0",
+        "type": "section",
+        "title": "people.0",
+        "fields": [
+          {
+            "key": "people.1.x",
+            "type": "text",
+            "label": "people.1.x"
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "people",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "name"
+          },
+          {
+            "key": "a",
+            "type": "text",
+            "label": "a"
+          },
+          {
+            "key": "a",
+            "type": "text",
+            "label": "a"
+          }
+        ]
+      },
+      {
+        "key": "dup",
+        "type": "section",
+        "title": "dup",
+        "fields": [
+          {
+            "key": "sx",
+            "type": "text",
+            "label": "sx"
+          }
+        ]
+      },
+      {
+        "key": "dup",
+        "type": "text",
+        "label": "dup"
+      },
+      {
+        "key": "ga",
+        "type": "group",
+        "label": "ga",
+        "fields": [
+          {
+            "key": "x",
+            "type": "text",
+            "label": "x"
+          }
+        ]
+      },
+      {
+        "key": "gb",
+        "type": "group",
+        "label": "gb",
+        "fields": [
+          {
+            "key": "x",
+            "type": "text",
+            "label": "x"
+          }
+        ]
+      }
+    ],
+    "formatVersion": "1.1"
+  }
+}

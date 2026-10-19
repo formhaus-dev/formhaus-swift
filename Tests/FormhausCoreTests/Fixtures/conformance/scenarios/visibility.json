@@ -1,0 +1,247 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "visibility",
+  "definition": {
+    "id": "visibility",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "country",
+        "type": "text",
+        "label": "country"
+      },
+      {
+        "key": "method",
+        "type": "text",
+        "label": "method"
+      },
+      {
+        "key": "always",
+        "type": "text",
+        "label": "always"
+      },
+      {
+        "key": "all",
+        "type": "text",
+        "label": "all",
+        "show": [
+          {
+            "field": "country",
+            "eq": "MX"
+          },
+          {
+            "field": "method",
+            "eq": "bank"
+          }
+        ]
+      },
+      {
+        "key": "any",
+        "type": "text",
+        "label": "any",
+        "showAny": [
+          {
+            "field": "method",
+            "eq": "bank"
+          },
+          {
+            "field": "method",
+            "eq": "clabe"
+          }
+        ]
+      },
+      {
+        "key": "both",
+        "type": "text",
+        "label": "both",
+        "show": [
+          {
+            "field": "country",
+            "eq": "MX"
+          }
+        ],
+        "showAny": [
+          {
+            "field": "method",
+            "eq": "bank"
+          },
+          {
+            "field": "method",
+            "eq": "clabe"
+          }
+        ]
+      },
+      {
+        "key": "emptyShow",
+        "type": "text",
+        "label": "emptyShow",
+        "show": []
+      },
+      {
+        "key": "emptyShowAny",
+        "type": "text",
+        "label": "emptyShowAny",
+        "showAny": []
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "returns true when no conditions",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "emptyShow", "emptyShowAny"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "show: AND logic - all conditions must pass",
+      "values": {
+        "country": "MX",
+        "method": "bank"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "all", "any", "both", "emptyShow", "emptyShowAny"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "method",
+          "value": "cash"
+        },
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "emptyShow", "emptyShowAny"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "US"
+        },
+        {
+          "do": "setValue",
+          "key": "method",
+          "value": "bank"
+        },
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "any", "emptyShow", "emptyShowAny"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "showAny: OR logic - any condition passes",
+      "values": {
+        "method": "bank"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "any", "emptyShow", "emptyShowAny"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "method",
+          "value": "clabe"
+        },
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "any", "emptyShow", "emptyShowAny"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "method",
+          "value": "cash"
+        },
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "emptyShow", "emptyShowAny"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "show + showAny combined: both groups must pass",
+      "values": {
+        "country": "MX",
+        "method": "bank"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "all", "any", "both", "emptyShow", "emptyShowAny"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "method",
+          "value": "clabe"
+        },
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "any", "both", "emptyShow", "emptyShowAny"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "method",
+          "value": "cash"
+        },
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "emptyShow", "emptyShowAny"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "US"
+        },
+        {
+          "do": "setValue",
+          "key": "method",
+          "value": "bank"
+        },
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "any", "emptyShow", "emptyShowAny"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "empty show array means always visible (AND of nothing = true)",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "emptyShow", "emptyShowAny"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "empty showAny array means always visible (OR of nothing = true)",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "method", "always", "emptyShow", "emptyShowAny"]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,658 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "submit server errors",
+  "definition": {
+    "id": "flat-api",
+    "title": "Open an account",
+    "submit": {
+      "label": "Open account"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About you",
+        "fields": [
+          {
+            "key": "firstName",
+            "type": "text",
+            "label": "First name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "lastName",
+            "type": "text",
+            "label": "Last name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "account",
+        "title": "Account",
+        "fields": [
+          {
+            "key": "accountType",
+            "type": "radio",
+            "label": "Account type",
+            "validation": {
+              "required": true
+            },
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          },
+          {
+            "key": "companyName",
+            "type": "text",
+            "label": "Company name",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "accountType",
+                "eq": "business"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "address",
+        "title": "Address",
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "Street",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "postcode",
+            "type": "text",
+            "label": "Postcode",
+            "validation": {
+              "required": true,
+              "pattern": "^[0-9]{5}$",
+              "patternMessage": "Enter 5 digits"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "clears only the edited field",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "firstName": "Bad",
+                  "email": "Taken",
+                  "postcode": "Unknown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "do": "setValue",
+          "key": "firstName",
+          "value": "Ada Augusta"
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "Taken",
+              "postcode": "Unknown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the error when the same value is written again",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "email": "Taken"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "do": "setValue",
+          "key": "email",
+          "value": "ada@example.com"
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "Taken"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps server errors while moving back and forward",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "firstName": "Bad",
+                  "postcode": "Unknown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "address"
+          }
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {
+              "firstName": "Bad",
+              "postcode": "Unknown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps server errors through client validation of other fields",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "postcode": "Unknown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "lastName"
+        },
+        {
+          "do": "setValue",
+          "key": "lastName",
+          "value": ""
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "lastName": "This field is required",
+              "postcode": "Unknown"
+            }
+          }
+        },
+        {
+          "do": "validate",
+          "returns": {
+            "lastName": "This field is required"
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "lastName": "This field is required",
+              "postcode": "Unknown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "shows the client error over a server error on the same field and falls back to it",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "postcode": "Unknown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "setValue",
+          "key": "street",
+          "value": ""
+        },
+        {
+          "do": "setValue",
+          "key": "street",
+          "value": "1 Main St"
+        },
+        {
+          "expect": {
+            "errors": {
+              "postcode": "Unknown"
+            }
+          }
+        },
+        {
+          "do": "validateField",
+          "key": "postcode",
+          "returns": null
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps server errors and form errors when onStepValidate reports errors",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": {
+              "email": "Unreachable",
+              "other": "Check failed"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "email": "Taken",
+                  "postcode": "Unknown"
+                },
+                "formErrors": ["Rate limited"]
+              }
+            }
+          ]
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "Unreachable",
+              "postcode": "Unknown"
+            },
+            "topLevelErrors": ["Rate limited", "Check failed"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops the error of a field that a later answer hides",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "business",
+        "street": "1 Main St",
+        "postcode": "10115",
+        "companyName": "Engines"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "companyName": "Not registered",
+                  "postcode": "Unknown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "step": "account"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "errors": {
+              "postcode": "Unknown"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "business"
+        },
+        {
+          "expect": {
+            "errors": {
+              "postcode": "Unknown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears everything on reset()",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "firstName": "Bad",
+                  "other": "Locked"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "errors": {},
+            "topLevelErrors": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops errors of a step that leaves the route and shows errors for off-route keys as form errors",
+      "definition": {
+        "id": "routed",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "start",
+            "title": "Start",
+            "fields": [
+              {
+                "key": "plan",
+                "type": "radio",
+                "label": "Plan",
+                "options": [
+                  {
+                    "value": "free",
+                    "label": "Free"
+                  },
+                  {
+                    "value": "paid",
+                    "label": "Paid"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "show": [
+                  {
+                    "field": "plan",
+                    "eq": "free"
+                  }
+                ],
+                "to": "done"
+              }
+            ]
+          },
+          {
+            "id": "billing",
+            "title": "Billing",
+            "fields": [
+              {
+                "key": "card",
+                "type": "text",
+                "label": "Card"
+              }
+            ]
+          },
+          {
+            "id": "done",
+            "title": "Done",
+            "fields": [
+              {
+                "key": "note",
+                "type": "text",
+                "label": "Note"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "paid",
+        "card": "4242"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "note"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "note": "Too short",
+                  "card": "Declined"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "step": "billing"
+          }
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "plan"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "free"
+        },
+        {
+          "expect": {
+            "errors": {
+              "note": "Too short"
+            },
+            "stepErrors": {
+              "done": ["note"]
+            }
+          }
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "card": "Declined"
+          }
+        },
+        {
+          "expect": {
+            "errors": {},
+            "topLevelErrors": ["Declined"]
+          }
+        }
+      ]
+    }
+  ]
+}

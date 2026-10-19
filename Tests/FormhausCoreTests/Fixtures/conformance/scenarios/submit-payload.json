@@ -1,0 +1,349 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "submit payload",
+  "definition": {
+    "id": "event",
+    "title": "event",
+    "submit": {
+      "label": "Send"
+    },
+    "formatVersion": "1.1",
+    "fields": [
+      {
+        "key": "company",
+        "type": "checkbox",
+        "label": "Company"
+      },
+      {
+        "key": "billing",
+        "type": "section",
+        "title": "Billing",
+        "show": [
+          {
+            "field": "company",
+            "eq": true
+          }
+        ],
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "Street",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "itemLabel": "Person {index}",
+        "defaultItems": 1,
+        "validation": {
+          "required": true,
+          "maxLength": 3
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email"
+          },
+          {
+            "key": "confirm",
+            "type": "email",
+            "label": "Confirm",
+            "validation": {
+              "matchField": "email"
+            }
+          },
+          {
+            "key": "diet",
+            "type": "select",
+            "label": "Diet",
+            "defaultValue": "none",
+            "options": [
+              {
+                "value": "none",
+                "label": "none"
+              },
+              {
+                "value": "other",
+                "label": "other"
+              }
+            ]
+          },
+          {
+            "key": "dietNote",
+            "type": "text",
+            "label": "Details",
+            "show": [
+              {
+                "field": "diet",
+                "eq": "other"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "vat",
+            "type": "text",
+            "label": "VAT",
+            "show": [
+              {
+                "field": "company",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "summary",
+        "type": "text",
+        "label": "Summary",
+        "show": [
+          {
+            "field": "people",
+            "notEmpty": true
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "validates and submits section fields as flat keys",
+      "values": {
+        "company": true,
+        "people": [
+          {
+            "name": "Ada"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "street": "This field is required"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "street",
+          "value": " Main "
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 3
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "company": true,
+                  "street": "Main",
+                  "people": [
+                    {
+                      "name": "Ada",
+                      "diet": "none"
+                    }
+                  ]
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "submits cleaned and trimmed item objects",
+      "values": {
+        "people": [
+          {
+            "name": " Ada ",
+            "diet": "none",
+            "extra": 1
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "people": [
+                    {
+                      "name": "Ada",
+                      "diet": "none"
+                    }
+                  ]
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ],
+            "values": {
+              "people": [
+                {
+                  "name": " Ada ",
+                  "diet": "none",
+                  "extra": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "maps server errors back onto the field with the same key",
+      "definition": {
+        "id": "keys",
+        "title": "keys",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "contact.email",
+            "type": "text",
+            "label": "Label contact.email",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "first-name",
+            "type": "text",
+            "label": "Label first-name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "last_name",
+            "type": "text",
+            "label": "Label last_name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "field2",
+            "type": "text",
+            "label": "Label field2",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "camelCase",
+            "type": "text",
+            "label": "Label camelCase",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "имя",
+            "type": "text",
+            "label": "Label имя",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "Größe",
+            "type": "text",
+            "label": "Label Größe",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "a.b.c",
+            "type": "text",
+            "label": "Label a.b.c",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      "values": {
+        "contact.email": "value of contact.email",
+        "first-name": "value of first-name",
+        "last_name": "value of last_name",
+        "field2": "value of field2",
+        "camelCase": "value of camelCase",
+        "имя": "value of имя",
+        "Größe": "value of Größe",
+        "a.b.c": "value of a.b.c"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "contact.email": "Already registered",
+            "имя": "Too short"
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "contact.email": "Already registered",
+              "имя": "Too short"
+            },
+            "topLevelErrors": []
+          }
+        }
+      ]
+    }
+  ]
+}

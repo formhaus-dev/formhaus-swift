@@ -1,0 +1,161 @@
+{
+  "name": "check-conditions",
+  "covers": [
+    "rejects a condition without an operator or with two",
+    "checks conditions on actions",
+    "warns when a condition value can never match the field"
+  ],
+  "issues": [
+    {
+      "code": "condition-operator-count",
+      "path": "/fields/6/show/0"
+    },
+    {
+      "code": "condition-operator-count",
+      "path": "/fields/7/show/0"
+    },
+    {
+      "code": "unknown-field",
+      "path": "/submit/disabled/0/field"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "condition-value-mismatch",
+      "path": "/fields/4/showAny/0/eq"
+    },
+    {
+      "code": "condition-value-mismatch",
+      "path": "/fields/4/showAny/1/in"
+    },
+    {
+      "code": "condition-value-mismatch",
+      "path": "/fields/4/showAny/2/eq"
+    },
+    {
+      "code": "condition-value-mismatch",
+      "path": "/fields/4/showAny/3/eq"
+    },
+    {
+      "code": "condition-value-mismatch",
+      "path": "/fields/4/showAny/4/in"
+    }
+  ],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Go",
+      "disabled": [
+        {
+          "field": "nope",
+          "eq": "x"
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "choice",
+        "type": "select",
+        "label": "choice",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ]
+      },
+      {
+        "key": "count",
+        "type": "number",
+        "label": "count"
+      },
+      {
+        "key": "agree",
+        "type": "checkbox",
+        "label": "agree"
+      },
+      {
+        "key": "tags",
+        "type": "multiselect",
+        "label": "tags",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ]
+      },
+      {
+        "key": "x",
+        "type": "text",
+        "label": "x",
+        "showAny": [
+          {
+            "field": "choice",
+            "eq": 1
+          },
+          {
+            "field": "choice",
+            "in": ["a", "c"]
+          },
+          {
+            "field": "count",
+            "eq": "5"
+          },
+          {
+            "field": "agree",
+            "eq": "true"
+          },
+          {
+            "field": "tags",
+            "in": ["a"]
+          },
+          {
+            "field": "tags",
+            "notEmpty": true
+          },
+          {
+            "field": "choice",
+            "neq": "b"
+          }
+        ]
+      },
+      {
+        "key": "a",
+        "type": "text",
+        "label": "a"
+      },
+      {
+        "key": "b",
+        "type": "text",
+        "label": "b",
+        "show": [
+          {
+            "field": "a"
+          }
+        ]
+      },
+      {
+        "key": "c",
+        "type": "text",
+        "label": "c",
+        "show": [
+          {
+            "field": "a",
+            "eq": "x",
+            "notEmpty": true
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,276 @@
+{
+  "name": "trimmed-conditions",
+  "issues": [],
+  "definition": {
+    "id": "trimmed-conditions",
+    "title": "Trimmed conditions",
+    "submit": {
+      "label": "Send",
+      "disabled": [
+        {
+          "field": "why",
+          "eq": "never"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "start",
+        "title": "Start",
+        "next": {
+          "label": "Continue",
+          "disabled": [
+            {
+              "field": "code",
+              "eq": "stop"
+            }
+          ]
+        },
+        "routes": [
+          {
+            "to": "yes",
+            "show": [
+              {
+                "field": "answer",
+                "eq": "yes"
+              }
+            ]
+          },
+          {
+            "to": "no"
+          }
+        ],
+        "fields": [
+          {
+            "key": "answer",
+            "type": "text",
+            "label": "Answer",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "code",
+            "type": "text",
+            "label": "Code"
+          },
+          {
+            "key": "extra",
+            "type": "text",
+            "label": "Extra",
+            "show": [
+              {
+                "field": "code",
+                "notEmpty": true
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "yes",
+        "title": "Yes",
+        "routes": [
+          {
+            "to": null
+          }
+        ],
+        "fields": [
+          {
+            "key": "detail",
+            "type": "text",
+            "label": "Detail",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "no",
+        "title": "No",
+        "show": [
+          {
+            "field": "answer",
+            "neq": "yes"
+          }
+        ],
+        "fields": [
+          {
+            "key": "why",
+            "type": "text",
+            "label": "Why",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "exact value routes to yes",
+      "input": {
+        "values": {
+          "answer": "yes",
+          "detail": "D",
+          "why": "x"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "yes",
+          "detail": "D"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "surrounding spaces route to yes",
+      "input": {
+        "values": {
+          "answer": " yes ",
+          "detail": " D ",
+          "why": "x"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "yes",
+          "detail": "D"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "whitespace-only answer is empty and routes to no",
+      "input": {
+        "values": {
+          "answer": "   ",
+          "detail": "D",
+          "why": "x"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "",
+          "why": "x"
+        },
+        "errors": {
+          "answer": "This field is required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "other answer routes to no",
+      "input": {
+        "values": {
+          "answer": " no ",
+          "why": " x "
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "no",
+          "why": "x"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "notEmpty shows a field for a padded value",
+      "input": {
+        "values": {
+          "answer": "yes",
+          "code": " go ",
+          "extra": " e ",
+          "detail": "D"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "yes",
+          "code": "go",
+          "extra": "e",
+          "detail": "D"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "notEmpty hides a field for a whitespace-only value",
+      "input": {
+        "values": {
+          "answer": "yes",
+          "code": "   ",
+          "extra": "e",
+          "detail": "D"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "yes",
+          "code": "",
+          "detail": "D"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "padded value disables next",
+      "input": {
+        "values": {
+          "answer": "yes",
+          "code": " stop ",
+          "extra": "e",
+          "detail": "D"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "yes",
+          "code": "stop",
+          "extra": "e",
+          "detail": "D"
+        },
+        "errors": {}
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "padded value disables submit",
+      "input": {
+        "values": {
+          "answer": "no",
+          "why": " never "
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "answer": "no",
+          "why": "never"
+        },
+        "errors": {}
+      },
+      "canSubmit": false
+    }
+  ]
+}

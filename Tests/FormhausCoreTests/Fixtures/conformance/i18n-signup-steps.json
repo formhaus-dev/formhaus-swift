@@ -1,0 +1,258 @@
+{
+  "name": "i18n-signup-steps",
+  "covers": ["writes field messages as literals with static params", "validates the same in the browser engine and on the server"],
+  "issues": [],
+  "definition": {
+    "formatVersion": "1.0",
+    "id": "signup",
+    "lang": "en",
+    "title": "Create your account",
+    "i18n": {
+      "title": "signup.title",
+      "messages": {
+        "required": "errors.required"
+      },
+      "labels": {
+        "continue": "common.next"
+      }
+    },
+    "submit": {
+      "label": "Create account",
+      "i18n": {
+        "label": "signup.submit"
+      }
+    },
+    "steps": [
+      {
+        "id": "kind",
+        "title": "Account",
+        "fields": [
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "placeholder": "you@example.com",
+            "i18n": {
+              "label": "signup.email.label"
+            },
+            "validation": {
+              "required": "Enter your email",
+              "i18n": {
+                "required": "errors.emailRequired"
+              }
+            }
+          },
+          {
+            "key": "password",
+            "type": "password",
+            "label": "Password",
+            "validation": {
+              "required": true,
+              "minLength": 8,
+              "minLengthMessage": "At least 8 characters",
+              "i18n": {
+                "minLength": "errors.password.tooShort"
+              }
+            }
+          },
+          {
+            "key": "kind",
+            "type": "radio",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "business",
+                "label": "Business",
+                "i18n": {
+                  "label": "plans.business"
+                }
+              },
+              {
+                "value": "home",
+                "label": "Home"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          }
+        ],
+        "routes": [
+          {
+            "to": "business",
+            "show": [
+              {
+                "field": "kind",
+                "eq": "business"
+              }
+            ]
+          },
+          {
+            "to": "home"
+          }
+        ]
+      },
+      {
+        "id": "business",
+        "title": "Company",
+        "fields": [
+          {
+            "key": "address",
+            "type": "text",
+            "label": "Company address",
+            "validation": {
+              "required": true
+            }
+          }
+        ],
+        "routes": [
+          {
+            "to": null
+          }
+        ]
+      },
+      {
+        "id": "home",
+        "title": "Home",
+        "fields": [
+          {
+            "key": "address",
+            "type": "text",
+            "label": "Home address",
+            "validation": {
+              "minLength": 5
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "overlay": {
+    "title": "Создайте аккаунт",
+    "submit": {
+      "label": "Создать аккаунт"
+    },
+    "messages": {
+      "required": "Обязательное поле",
+      "minLength": "Минимум {min} символов"
+    },
+    "labels": {
+      "continue": "Далее",
+      "stepOf": "Шаг {current} из {total}"
+    },
+    "steps": {
+      "kind": {
+        "title": "Аккаунт",
+        "fields": {
+          "email": {
+            "label": "Почта",
+            "validation": {
+              "required": "Укажите почту"
+            }
+          },
+          "password": {
+            "label": "Пароль",
+            "validation": {
+              "minLength": "Пароль: не менее {min} символов"
+            }
+          },
+          "kind": {
+            "label": "Тариф",
+            "options": {
+              "business": "Бизнес",
+              "home": ""
+            }
+          }
+        }
+      },
+      "business": {
+        "fields": {
+          "address": {
+            "label": "Адрес компании"
+          }
+        }
+      },
+      "home": {
+        "fields": {
+          "address": {
+            "label": "Домашний адрес"
+          }
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "translates field messages and fills static params",
+      "input": {
+        "values": {
+          "email": "",
+          "password": "abc",
+          "kind": "home",
+          "address": "abc"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "",
+          "password": "abc",
+          "kind": "home",
+          "address": "abc"
+        },
+        "errors": {
+          "email": "Укажите почту",
+          "password": "Пароль: не менее 8 символов",
+          "address": "Минимум 5 символов"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "keeps a required rule without a literal on the catalog message",
+      "input": {
+        "values": {
+          "email": "a@b.co",
+          "password": "",
+          "kind": "home",
+          "address": "abcde"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "a@b.co",
+          "password": "",
+          "kind": "home",
+          "address": "abcde"
+        },
+        "errors": {
+          "password": "Обязательное поле"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "accepts valid answers",
+      "input": {
+        "values": {
+          "email": "a@b.co",
+          "password": "secret123",
+          "kind": "home",
+          "address": "abcde"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "a@b.co",
+          "password": "secret123",
+          "kind": "home",
+          "address": "abcde"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

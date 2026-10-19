@@ -1,0 +1,1355 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "item defaults",
+  "definition": {
+    "id": "crew",
+    "title": "crew",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "crew",
+        "type": "group",
+        "label": "Crew",
+        "fields": [
+          {
+            "key": "kind",
+            "type": "select",
+            "label": "Kind",
+            "options": [
+              {
+                "value": "x",
+                "label": "x"
+              },
+              {
+                "value": "y",
+                "label": "y"
+              }
+            ]
+          },
+          {
+            "key": "count",
+            "type": "number",
+            "label": "Count",
+            "defaultValue": 1,
+            "show": [
+              {
+                "field": "kind",
+                "eq": "x"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "gives an item field its default when its item condition matches",
+      "steps": [
+        {
+          "do": "addItem",
+          "key": "crew",
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "crew": [{}]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "y"
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives an item field its last value when its item condition matches again",
+      "values": {
+        "crew": [
+          {
+            "kind": "x",
+            "count": 2
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "crew.0.count",
+          "value": 5
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "y"
+        },
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "y"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 5
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "remembers item values by item, not by position",
+      "values": {
+        "crew": [
+          {
+            "kind": "x",
+            "count": 2
+          },
+          {
+            "kind": "x",
+            "count": 3
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "crew.0.count",
+          "value": 5
+        },
+        {
+          "do": "removeItem",
+          "key": "crew",
+          "index": 0,
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "y"
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 3
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives item fields of initial items their defaults like top-level fields - top-level default",
+      "definition": {
+        "id": "crew",
+        "title": "crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "partySize",
+            "type": "number",
+            "label": "Party",
+            "defaultValue": 1,
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          },
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind"
+              },
+              {
+                "key": "count",
+                "type": "number",
+                "label": "Count",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": false,
+        "crew": [
+          {
+            "kind": "y"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "partySize": 1,
+              "crew": [
+                {
+                  "kind": "y"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "crew.0.kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "partySize": 1,
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives item fields of initial items their defaults like top-level fields - item without count",
+      "definition": {
+        "id": "crew",
+        "title": "crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "partySize",
+            "type": "number",
+            "label": "Party",
+            "defaultValue": 1,
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          },
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind"
+              },
+              {
+                "key": "count",
+                "type": "number",
+                "label": "Count",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "crew": [
+          {
+            "kind": "x"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives item fields of initial items their defaults like top-level fields - item with count",
+      "definition": {
+        "id": "crew",
+        "title": "crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "partySize",
+            "type": "number",
+            "label": "Party",
+            "defaultValue": 1,
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          },
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind"
+              },
+              {
+                "key": "count",
+                "type": "number",
+                "label": "Count",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "crew": [
+          {
+            "kind": "x",
+            "count": 3
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 3
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives item fields of reset items their defaults",
+      "definition": {
+        "id": "crew",
+        "title": "crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "partySize",
+            "type": "number",
+            "label": "Party",
+            "defaultValue": 1,
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ]
+          },
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind"
+              },
+              {
+                "key": "count",
+                "type": "number",
+                "label": "Count",
+                "defaultValue": 1,
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "reset",
+          "values": {
+            "crew": [
+              {
+                "kind": "x"
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "crew": [
+                {
+                  "kind": "x",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "fills initial items with the item defaults of the active route - route b",
+      "definition": {
+        "id": "branches",
+        "title": "branches",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "pick",
+            "title": "Pick",
+            "fields": [
+              {
+                "key": "route",
+                "type": "radio",
+                "label": "Route",
+                "options": [
+                  {
+                    "value": "a",
+                    "label": "a"
+                  },
+                  {
+                    "value": "b",
+                    "label": "b"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "route",
+                    "eq": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 1,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 1
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 2,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "route": "b",
+        "g": [{}]
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "route": "b",
+              "g": [
+                {
+                  "n": 2
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "fills initial items with the item defaults of the active route - route a",
+      "definition": {
+        "id": "branches",
+        "title": "branches",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "pick",
+            "title": "Pick",
+            "fields": [
+              {
+                "key": "route",
+                "type": "radio",
+                "label": "Route",
+                "options": [
+                  {
+                    "value": "a",
+                    "label": "a"
+                  },
+                  {
+                    "value": "b",
+                    "label": "b"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "route",
+                    "eq": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 1,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 1
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 2,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "route": "a",
+        "g": [{}]
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "route": "a",
+              "g": [
+                {
+                  "n": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "fills reset items with the item defaults of the active route",
+      "definition": {
+        "id": "branches",
+        "title": "branches",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "pick",
+            "title": "Pick",
+            "fields": [
+              {
+                "key": "route",
+                "type": "radio",
+                "label": "Route",
+                "options": [
+                  {
+                    "value": "a",
+                    "label": "a"
+                  },
+                  {
+                    "value": "b",
+                    "label": "b"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "route",
+                    "eq": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 1,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 1
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 2,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "reset",
+          "values": {
+            "route": "b",
+            "g": [
+              {},
+              {
+                "n": 5
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "route": "b",
+              "g": [
+                {
+                  "n": 2
+                },
+                {
+                  "n": 5
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "takes the default and the default items of the active route - default, route a",
+      "definition": {
+        "id": "branches",
+        "title": "branches",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "pick",
+            "title": "Pick",
+            "fields": [
+              {
+                "key": "route",
+                "type": "radio",
+                "label": "Route",
+                "options": [
+                  {
+                    "value": "a",
+                    "label": "a"
+                  },
+                  {
+                    "value": "b",
+                    "label": "b"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "route",
+                    "eq": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "fields": [
+              {
+                "key": "n",
+                "type": "number",
+                "label": "N",
+                "defaultValue": 1
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "fields": [
+              {
+                "key": "n",
+                "type": "number",
+                "label": "N",
+                "defaultValue": 2
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "route": "a"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "route": "a",
+              "n": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "takes the default and the default items of the active route - default, route b",
+      "definition": {
+        "id": "branches",
+        "title": "branches",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "pick",
+            "title": "Pick",
+            "fields": [
+              {
+                "key": "route",
+                "type": "radio",
+                "label": "Route",
+                "options": [
+                  {
+                    "value": "a",
+                    "label": "a"
+                  },
+                  {
+                    "value": "b",
+                    "label": "b"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "route",
+                    "eq": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "fields": [
+              {
+                "key": "n",
+                "type": "number",
+                "label": "N",
+                "defaultValue": 1
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "fields": [
+              {
+                "key": "n",
+                "type": "number",
+                "label": "N",
+                "defaultValue": 2
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "route": "b"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "route": "b",
+              "n": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "takes the default and the default items of the active route - default items, route a",
+      "definition": {
+        "id": "branches",
+        "title": "branches",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "pick",
+            "title": "Pick",
+            "fields": [
+              {
+                "key": "route",
+                "type": "radio",
+                "label": "Route",
+                "options": [
+                  {
+                    "value": "a",
+                    "label": "a"
+                  },
+                  {
+                    "value": "b",
+                    "label": "b"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "route",
+                    "eq": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 1,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 1
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "fields": [
+              {
+                "key": "g",
+                "type": "group",
+                "label": "G",
+                "defaultItems": 2,
+                "fields": [
+                  {
+                    "key": "n",
+                    "type": "number",
+                    "label": "N",
+                    "defaultValue": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "route": "a"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "route": "a",
+              "g": [
+                {
+                  "n": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the value of the active step when the other step is hidden - flag toggled",
+      "definition": {
+        "id": "exclusive",
+        "title": "exclusive",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "start",
+            "title": "Start",
+            "fields": [
+              {
+                "key": "flag",
+                "type": "checkbox",
+                "label": "Flag",
+                "defaultValue": true
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "flag",
+                    "eq": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "show": [
+              {
+                "field": "flag",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "x",
+                "type": "text",
+                "label": "X",
+                "defaultValue": "saved"
+              }
+            ],
+            "routes": [
+              {
+                "to": null,
+                "show": [
+                  {
+                    "field": "x",
+                    "eq": "saved"
+                  }
+                ]
+              },
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "show": [
+              {
+                "field": "flag",
+                "eq": false
+              }
+            ],
+            "fields": [
+              {
+                "key": "x",
+                "type": "text",
+                "label": "X"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "flag": true,
+              "x": "saved"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "flag",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "x",
+          "value": "typed"
+        },
+        {
+          "do": "setValue",
+          "key": "flag",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "flag": true,
+              "x": "typed"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the value of the active step when the other step is hidden - flag unchecked at load",
+      "definition": {
+        "id": "exclusive",
+        "title": "exclusive",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "start",
+            "title": "Start",
+            "fields": [
+              {
+                "key": "flag",
+                "type": "checkbox",
+                "label": "Flag",
+                "defaultValue": true
+              }
+            ],
+            "routes": [
+              {
+                "to": "b",
+                "show": [
+                  {
+                    "field": "flag",
+                    "eq": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "a",
+            "title": "A",
+            "show": [
+              {
+                "field": "flag",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "x",
+                "type": "text",
+                "label": "X",
+                "defaultValue": "saved"
+              }
+            ],
+            "routes": [
+              {
+                "to": null,
+                "show": [
+                  {
+                    "field": "x",
+                    "eq": "saved"
+                  }
+                ]
+              },
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "b",
+            "title": "B",
+            "show": [
+              {
+                "field": "flag",
+                "eq": false
+              }
+            ],
+            "fields": [
+              {
+                "key": "x",
+                "type": "text",
+                "label": "X"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "flag": false
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "flag": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

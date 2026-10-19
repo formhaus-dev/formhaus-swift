@@ -1,0 +1,54 @@
+{
+  "name": "format-version",
+  "issues": [],
+  "definition": {
+    "formatVersion": "1.0",
+    "id": "format-version",
+    "title": "Format version",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email",
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "answered",
+      "input": {
+        "values": {
+          "email": "a@b.co"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "a@b.co"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "empty",
+      "input": {
+        "values": {},
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "email": "This field is required"
+        }
+      },
+      "canSubmit": false
+    }
+  ]
+}

@@ -1,0 +1,600 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "hidden-fields",
+  "definition": {
+    "id": "signup",
+    "title": "Sign up",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About",
+        "fields": [
+          {
+            "key": "source",
+            "type": "hidden",
+            "label": "Source",
+            "defaultValue": "direct",
+            "validation": {
+              "pattern": "^[a-z]+$",
+              "patternMessage": "Unknown source"
+            }
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          }
+        ]
+      },
+      {
+        "id": "contact",
+        "title": "Contact",
+        "fields": [
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "submits the default value and lets initial values override it - default",
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "source": "direct"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "submits the default value and lets initial values override it - initial value",
+      "values": {
+        "source": "newsletter"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "source": "newsletter"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports a client error on a hidden field at form level",
+      "values": {
+        "source": "News Letter"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "source": "Unknown source"
+            },
+            "topLevelErrors": ["Unknown source"],
+            "stepErrors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "turns a server error on a hidden field into a form-level error without moving steps",
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "source": "Expired campaign"
+          }
+        },
+        {
+          "expect": {
+            "topLevelErrors": ["Expired campaign"],
+            "stepErrors": {},
+            "step": "contact"
+          }
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "source": "Expired campaign",
+            "name": "Taken"
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "source": "Expired campaign",
+              "name": "Taken"
+            },
+            "topLevelErrors": ["Expired campaign"],
+            "step": "about"
+          }
+        }
+      ]
+    },
+    {
+      "name": "gets its default value back when its conditions match again",
+      "definition": {
+        "id": "f",
+        "title": "F",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "free",
+                "label": "Free"
+              },
+              {
+                "value": "pro",
+                "label": "Pro"
+              }
+            ]
+          },
+          {
+            "key": "campaign",
+            "type": "hidden",
+            "label": "Campaign",
+            "defaultValue": "spring",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          },
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note",
+            "defaultValue": "hi",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {}
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "plan": "pro",
+              "campaign": "spring",
+              "note": "hi"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "free"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "free"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "campaign": "spring",
+              "note": "hi"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives an edited field its last value when its conditions match again, unlike a hidden field",
+      "definition": {
+        "id": "f",
+        "title": "F",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "free",
+                "label": "Free"
+              },
+              {
+                "value": "pro",
+                "label": "Pro"
+              }
+            ]
+          },
+          {
+            "key": "campaign",
+            "type": "hidden",
+            "label": "Campaign",
+            "defaultValue": "spring",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          },
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note",
+            "defaultValue": "hi",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "do": "setValue",
+          "key": "note",
+          "value": ""
+        },
+        {
+          "do": "setValue",
+          "key": "campaign",
+          "value": "summer"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "free"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "campaign": "spring",
+              "note": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "prefers the initial value and follows reset",
+      "definition": {
+        "id": "f",
+        "title": "F",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "free",
+                "label": "Free"
+              },
+              {
+                "value": "pro",
+                "label": "Pro"
+              }
+            ]
+          },
+          {
+            "key": "campaign",
+            "type": "hidden",
+            "label": "Campaign",
+            "defaultValue": "spring",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          },
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note",
+            "defaultValue": "hi",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "campaign": "from-url"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "campaign": "from-url",
+              "note": "hi"
+            }
+          }
+        },
+        {
+          "do": "reset",
+          "values": {
+            "campaign": "other"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "values": {
+              "plan": "pro",
+              "campaign": "other",
+              "note": "hi"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps an active visible field error out of the form-level errors when a hidden field on another branch shares its key - manual branch",
+      "definition": {
+        "id": "ref",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "start",
+            "title": "Start",
+            "fields": [
+              {
+                "key": "mode",
+                "type": "radio",
+                "label": "Mode",
+                "options": [
+                  {
+                    "value": "link",
+                    "label": "Link"
+                  },
+                  {
+                    "value": "manual",
+                    "label": "Manual"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "link",
+                "show": [
+                  {
+                    "field": "mode",
+                    "eq": "link"
+                  }
+                ]
+              },
+              {
+                "to": "manual"
+              }
+            ]
+          },
+          {
+            "id": "link",
+            "title": "Link",
+            "fields": [
+              {
+                "key": "ref",
+                "type": "hidden",
+                "label": "Ref"
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "manual",
+            "title": "Manual",
+            "fields": [
+              {
+                "key": "ref",
+                "type": "text",
+                "label": "Referral code",
+                "validation": {
+                  "required": "Enter the code"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "mode": "manual"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "ref": "Enter the code"
+            },
+            "topLevelErrors": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps an active visible field error out of the form-level errors when a hidden field on another branch shares its key - link branch",
+      "definition": {
+        "id": "ref",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "start",
+            "title": "Start",
+            "fields": [
+              {
+                "key": "mode",
+                "type": "radio",
+                "label": "Mode",
+                "options": [
+                  {
+                    "value": "link",
+                    "label": "Link"
+                  },
+                  {
+                    "value": "manual",
+                    "label": "Manual"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "link",
+                "show": [
+                  {
+                    "field": "mode",
+                    "eq": "link"
+                  }
+                ]
+              },
+              {
+                "to": "manual"
+              }
+            ]
+          },
+          {
+            "id": "link",
+            "title": "Link",
+            "fields": [
+              {
+                "key": "ref",
+                "type": "hidden",
+                "label": "Ref"
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "manual",
+            "title": "Manual",
+            "fields": [
+              {
+                "key": "ref",
+                "type": "text",
+                "label": "Referral code",
+                "validation": {
+                  "required": "Enter the code"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "mode": "link"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "ref": "Expired link"
+          }
+        },
+        {
+          "expect": {
+            "topLevelErrors": ["Expired link"]
+          }
+        }
+      ]
+    }
+  ]
+}

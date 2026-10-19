@@ -1,0 +1,232 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "step-validation",
+  "definition": {
+    "id": "step-validation",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "contact",
+        "title": "Contact",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "clabe",
+            "type": "text",
+            "label": "clabe",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "country",
+                "eq": "MX"
+              }
+            ]
+          },
+          {
+            "key": "country",
+            "type": "text",
+            "label": "country"
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "email"
+          },
+          {
+            "key": "never",
+            "type": "text",
+            "label": "never"
+          }
+        ]
+      },
+      {
+        "id": "empty",
+        "title": "Empty",
+        "fields": []
+      },
+      {
+        "id": "hidden",
+        "title": "Hidden",
+        "fields": [
+          {
+            "key": "secret",
+            "type": "text",
+            "label": "secret",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "never",
+                "eq": "match"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "last",
+        "title": "Last",
+        "fields": [
+          {
+            "key": "note",
+            "type": "text",
+            "label": "note"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "validates only visible fields",
+      "values": {
+        "country": "US"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "This field is required"
+            },
+            "step": "contact"
+          }
+        }
+      ]
+    },
+    {
+      "name": "validates hidden field when it becomes visible",
+      "values": {
+        "country": "MX",
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "clabe": "This field is required"
+            },
+            "step": "contact"
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns empty object when all fields pass",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "blocks Continue on an invalid email in the engine",
+      "values": {
+        "name": "John",
+        "email": "user@localhost"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "Enter a valid email"
+            },
+            "step": "contact"
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns empty object when step has no fields",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "empty"
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {},
+            "step": "hidden"
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns empty when all fields are hidden",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "hidden",
+            "fields": []
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {},
+            "step": "last"
+          }
+        }
+      ]
+    }
+  ]
+}

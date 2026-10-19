@@ -1,0 +1,35 @@
+{
+  "name": "i18n-empty-overlay",
+  "covers": ["reads own properties only"],
+  "issues": [],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "S"
+    },
+    "fields": [
+      {
+        "key": "pick",
+        "type": "select",
+        "label": "Pick",
+        "options": [
+          {
+            "value": "constructor",
+            "label": "C"
+          },
+          {
+            "value": "__proto__",
+            "label": "P"
+          }
+        ]
+      }
+    ]
+  },
+  "overlay": {},
+  "texts": {
+    "fields.pick.options.constructor": "C",
+    "fields.pick.options.__proto__": "P"
+  },
+  "cases": []
+}

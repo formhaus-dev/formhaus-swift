@@ -1,0 +1,557 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "async-step-validation",
+  "definition": {
+    "id": "multi",
+    "title": "Multi-Step",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "personal",
+        "title": "Personal Info",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "accountType",
+            "type": "radio",
+            "label": "Account",
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "business",
+        "title": "Business Info",
+        "fields": [
+          {
+            "key": "company",
+            "type": "text",
+            "label": "Company"
+          }
+        ],
+        "show": [
+          {
+            "field": "accountType",
+            "eq": "business"
+          }
+        ]
+      },
+      {
+        "id": "payment",
+        "title": "Payment",
+        "fields": [
+          {
+            "key": "method",
+            "type": "select",
+            "label": "Method",
+            "options": [
+              {
+                "value": "bank",
+                "label": "Bank"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "works without an async validator",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "payment",
+            "steps": ["personal", "payment"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "runs sync validation before the async validator",
+      "hooks": {
+        "onStepValidate": []
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "This field is required"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "This field is required"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "calls the async validator with the step and values",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "payment",
+            "log": [
+              {
+                "call": "onStepValidate",
+                "stepId": "personal",
+                "values": {
+                  "name": "John"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "personal"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "blocks the transition when the async validator returns errors",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": {
+              "name": "Already taken"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "errors": {
+              "name": "Already taken"
+            },
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "allows the transition for a missing result",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [{}]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "payment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "publishes validating state during the request",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "defer": "check",
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": true
+        },
+        {
+          "expect": {
+            "stepValidating": true,
+            "step": "personal"
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "stepValidating": false,
+            "step": "payment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "rejects concurrent calls while validating",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "defer": "check",
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "payment",
+            "log": [
+              {
+                "call": "onStepValidate",
+                "stepId": "personal",
+                "values": {
+                  "name": "John"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "personal"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "resets validating state when validation rejects",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "throw": "Network failure"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "throws": {
+            "name": "Error",
+            "message": "Network failure"
+          }
+        },
+        {
+          "expect": {
+            "stepValidating": false,
+            "step": "personal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards a result after the current step changes",
+      "values": {
+        "name": "John",
+        "accountType": "business"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": null
+          },
+          {
+            "defer": "second",
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "business"
+          }
+        },
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "name"
+        },
+        {
+          "do": "resolve",
+          "deferred": "second"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards a result after the form is reset",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "defer": "check",
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "reset",
+          "values": {
+            "name": "Reset name"
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "stepValidating": false,
+            "values": {
+              "name": "Reset name"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "routes errors for unknown fields to top-level errors",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": {
+              "name": "Server error",
+              "nonexistent": "Unknown field error"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "Server error"
+            },
+            "topLevelErrors": ["Unknown field error"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns false on the last step",
+      "values": {
+        "name": "John"
+      },
+      "hooks": {
+        "onStepValidate": []
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "payment",
+            "isLastStep": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards a rejected stale step guard",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard",
+            "throw": "Old failure"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "submitting": false,
+            "stepValidating": false,
+            "step": "personal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards a rejected stale submit guard",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeSubmit": [
+          {
+            "defer": "guard",
+            "throw": "Old failure"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "submitting": false,
+            "stepValidating": false
+          }
+        }
+      ]
+    }
+  ]
+}

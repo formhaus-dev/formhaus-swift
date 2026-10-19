@@ -1,0 +1,182 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "step-consistency",
+  "definition": {
+    "id": "country",
+    "title": "",
+    "submit": {
+      "label": "Save"
+    },
+    "steps": [
+      {
+        "id": "A",
+        "title": "",
+        "fields": [
+          {
+            "key": "country",
+            "type": "text",
+            "label": "Country"
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "title": "",
+        "show": [
+          {
+            "field": "country",
+            "eq": "US"
+          }
+        ],
+        "fields": [
+          {
+            "key": "state",
+            "type": "text",
+            "label": "State"
+          }
+        ]
+      },
+      {
+        "id": "C",
+        "title": "",
+        "fields": [
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "keeps the current step when an earlier answer reveals a step before it",
+      "values": {
+        "country": "DE"
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "step": "C"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "US"
+        },
+        {
+          "expect": {
+            "step": "C",
+            "steps": ["A", "B", "C"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns to the nearest earlier step when the current step is hidden",
+      "values": {
+        "country": "US"
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "step": "B"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "DE"
+        },
+        {
+          "expect": {
+            "step": "A"
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears a cross-field error once the referenced field fixes it",
+      "definition": {
+        "id": "passwords",
+        "title": "",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "s1",
+            "title": "",
+            "fields": [
+              {
+                "key": "password",
+                "type": "password",
+                "label": "Password"
+              },
+              {
+                "key": "confirm",
+                "type": "password",
+                "label": "Confirm",
+                "validation": {
+                  "matchField": "password"
+                }
+              }
+            ]
+          },
+          {
+            "id": "s2",
+            "title": "",
+            "fields": []
+          }
+        ]
+      },
+      "values": {
+        "password": "a",
+        "confirm": "b"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "confirm": "Fields must match"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "password",
+          "value": "b"
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "back"
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    }
+  ]
+}

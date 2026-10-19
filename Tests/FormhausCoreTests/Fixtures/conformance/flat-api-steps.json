@@ -1,0 +1,217 @@
+{
+  "name": "flat-api-steps",
+  "issues": [],
+  "definition": {
+    "id": "flat-api",
+    "title": "Open an account",
+    "submit": {
+      "label": "Open account"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About you",
+        "fields": [
+          {
+            "key": "firstName",
+            "type": "text",
+            "label": "First name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "lastName",
+            "type": "text",
+            "label": "Last name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "account",
+        "title": "Account",
+        "fields": [
+          {
+            "key": "accountType",
+            "type": "radio",
+            "label": "Account type",
+            "validation": {
+              "required": true
+            },
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          },
+          {
+            "key": "companyName",
+            "type": "text",
+            "label": "Company name",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "accountType",
+                "eq": "business"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "address",
+        "title": "Address",
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "Street",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "postcode",
+            "type": "text",
+            "label": "Postcode",
+            "validation": {
+              "required": true,
+              "pattern": "^[0-9]{5}$",
+              "patternMessage": "Enter 5 digits"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "a personal account sends one flat object",
+      "input": {
+        "values": {
+          "firstName": "Ada",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "personal",
+          "street": "1 Main St",
+          "postcode": "10115"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "firstName": "Ada",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "personal",
+          "street": "1 Main St",
+          "postcode": "10115"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "a business account needs a company name",
+      "input": {
+        "values": {
+          "firstName": "Ada",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "business",
+          "street": "1 Main St",
+          "postcode": "10115"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "firstName": "Ada",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "business",
+          "street": "1 Main St",
+          "postcode": "10115"
+        },
+        "errors": {
+          "companyName": "This field is required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "errors on the first and the last step together",
+      "input": {
+        "values": {
+          "firstName": "",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "personal",
+          "street": "1 Main St",
+          "postcode": "1011"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "firstName": "",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "personal",
+          "street": "1 Main St",
+          "postcode": "1011"
+        },
+        "errors": {
+          "firstName": "This field is required",
+          "postcode": "Enter 5 digits"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "a hidden company name is not sent",
+      "input": {
+        "values": {
+          "firstName": "Ada",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "personal",
+          "street": "1 Main St",
+          "postcode": "10115",
+          "companyName": "Analytical Engines"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "firstName": "Ada",
+          "lastName": "Lovelace",
+          "email": "ada@example.com",
+          "accountType": "personal",
+          "street": "1 Main St",
+          "postcode": "10115"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

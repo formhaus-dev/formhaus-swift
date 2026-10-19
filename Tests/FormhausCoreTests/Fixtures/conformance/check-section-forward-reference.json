@@ -1,0 +1,56 @@
+{
+  "name": "check-section-forward-reference",
+  "covers": ["applies the step rules to section conditions"],
+  "issues": [
+    {
+      "code": "forward-reference",
+      "path": "/steps/0/fields/0/show/0/field"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.1",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Go"
+    },
+    "steps": [
+      {
+        "id": "one",
+        "title": "One",
+        "fields": [
+          {
+            "key": "billing",
+            "type": "section",
+            "title": "billing",
+            "fields": [
+              {
+                "key": "street",
+                "type": "text",
+                "label": "street"
+              }
+            ],
+            "show": [
+              {
+                "field": "later",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "two",
+        "title": "Two",
+        "fields": [
+          {
+            "key": "later",
+            "type": "text",
+            "label": "later"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "proto-keys",
+  "issues": [],
+  "definition": {
+    "id": "proto",
+    "title": "Proto",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "__proto__ next to a field",
+      "input": {
+        "values": {
+          "name": "Ada",
+          "__proto__": {
+            "polluted": true,
+            "name": "Eve"
+          }
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "Ada"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "__proto__ only",
+      "input": {
+        "values": {
+          "__proto__": {
+            "name": "Eve"
+          }
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "name": "This field is required"
+        }
+      },
+      "canSubmit": false
+    }
+  ]
+}

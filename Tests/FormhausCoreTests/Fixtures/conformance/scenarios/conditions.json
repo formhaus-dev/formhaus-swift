@@ -1,0 +1,787 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "conditions",
+  "definition": {
+    "id": "conditions",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "country",
+        "type": "text",
+        "label": "country"
+      },
+      {
+        "key": "agree",
+        "type": "checkbox",
+        "label": "agree"
+      },
+      {
+        "key": "name",
+        "type": "text",
+        "label": "name"
+      },
+      {
+        "key": "amount",
+        "type": "number",
+        "label": "amount"
+      },
+      {
+        "key": "missing",
+        "type": "text",
+        "label": "missing"
+      },
+      {
+        "key": "xGt",
+        "type": "number",
+        "label": "xGt"
+      },
+      {
+        "key": "xGte",
+        "type": "number",
+        "label": "xGte"
+      },
+      {
+        "key": "xLt",
+        "type": "number",
+        "label": "xLt"
+      },
+      {
+        "key": "xLte",
+        "type": "number",
+        "label": "xLte"
+      },
+      {
+        "key": "xNever",
+        "type": "text",
+        "label": "xNever"
+      },
+      {
+        "key": "eqMX",
+        "type": "text",
+        "label": "eqMX",
+        "show": [
+          {
+            "field": "country",
+            "eq": "MX"
+          }
+        ]
+      },
+      {
+        "key": "eqAgree",
+        "type": "text",
+        "label": "eqAgree",
+        "show": [
+          {
+            "field": "agree",
+            "eq": true
+          }
+        ]
+      },
+      {
+        "key": "neqMX",
+        "type": "text",
+        "label": "neqMX",
+        "show": [
+          {
+            "field": "country",
+            "neq": "MX"
+          }
+        ]
+      },
+      {
+        "key": "inThree",
+        "type": "text",
+        "label": "inThree",
+        "show": [
+          {
+            "field": "country",
+            "in": ["MX", "US", "CA"]
+          }
+        ]
+      },
+      {
+        "key": "inTwo",
+        "type": "text",
+        "label": "inTwo",
+        "show": [
+          {
+            "field": "country",
+            "in": ["MX", "US"]
+          }
+        ]
+      },
+      {
+        "key": "notInTwo",
+        "type": "text",
+        "label": "notInTwo",
+        "show": [
+          {
+            "field": "country",
+            "notIn": ["MX", "US"]
+          }
+        ]
+      },
+      {
+        "key": "nameNotEmpty",
+        "type": "text",
+        "label": "nameNotEmpty",
+        "show": [
+          {
+            "field": "name",
+            "notEmpty": true
+          }
+        ]
+      },
+      {
+        "key": "amountNotEmpty",
+        "type": "text",
+        "label": "amountNotEmpty",
+        "show": [
+          {
+            "field": "amount",
+            "notEmpty": true
+          }
+        ]
+      },
+      {
+        "key": "eqMissing",
+        "type": "text",
+        "label": "eqMissing",
+        "show": [
+          {
+            "field": "missing",
+            "eq": "MX"
+          }
+        ]
+      },
+      {
+        "key": "gt5",
+        "type": "text",
+        "label": "gt5",
+        "show": [
+          {
+            "field": "xGt",
+            "gt": 5
+          }
+        ]
+      },
+      {
+        "key": "gte9",
+        "type": "text",
+        "label": "gte9",
+        "show": [
+          {
+            "field": "xGte",
+            "gte": 9
+          }
+        ]
+      },
+      {
+        "key": "lt7",
+        "type": "text",
+        "label": "lt7",
+        "show": [
+          {
+            "field": "xLt",
+            "lt": 7
+          }
+        ]
+      },
+      {
+        "key": "lte6",
+        "type": "text",
+        "label": "lte6",
+        "show": [
+          {
+            "field": "xLte",
+            "lte": 6
+          }
+        ]
+      },
+      {
+        "key": "gte0",
+        "type": "text",
+        "label": "gte0",
+        "show": [
+          {
+            "field": "xNever",
+            "gte": 0
+          }
+        ]
+      },
+      {
+        "key": "lt1e9",
+        "type": "text",
+        "label": "lt1e9",
+        "show": [
+          {
+            "field": "xNever",
+            "lt": 1000000000
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "eq: returns true when value matches",
+      "values": {
+        "country": "MX"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "eqMX", "inThree", "inTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "eq: returns false when value differs",
+      "values": {
+        "country": "US"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "inThree", "inTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "eq: handles boolean values",
+      "values": {
+        "agree": true
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": [
+              "country",
+              "agree",
+              "name",
+              "amount",
+              "missing",
+              "xGt",
+              "xGte",
+              "xLt",
+              "xLte",
+              "xNever",
+              "eqAgree",
+              "neqMX",
+              "notInTwo"
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "agree",
+          "value": false
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "neq: returns true when value differs",
+      "values": {
+        "country": "US"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "inThree", "inTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "neq: returns false when value matches",
+      "values": {
+        "country": "MX"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "eqMX", "inThree", "inTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "in: returns true when value is in list",
+      "values": {
+        "country": "US"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "inThree", "inTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "in: returns false when value is not in list",
+      "values": {
+        "country": "BR"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notIn: returns true when value is not in list",
+      "values": {
+        "country": "BR"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notIn: returns false when value is in list",
+      "values": {
+        "country": "MX"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "eqMX", "inThree", "inTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notEmpty: returns true for non-empty string",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": [
+              "country",
+              "agree",
+              "name",
+              "amount",
+              "missing",
+              "xGt",
+              "xGte",
+              "xLt",
+              "xLte",
+              "xNever",
+              "neqMX",
+              "notInTwo",
+              "nameNotEmpty"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notEmpty: returns false for empty string",
+      "values": {
+        "name": ""
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notEmpty: returns false for null",
+      "values": {
+        "name": null
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notEmpty: returns false for undefined (missing key)",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "notEmpty: returns true for 0 (number zero is non-empty)",
+      "values": {
+        "amount": 0
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": [
+              "country",
+              "agree",
+              "name",
+              "amount",
+              "missing",
+              "xGt",
+              "xGte",
+              "xLt",
+              "xLte",
+              "xNever",
+              "neqMX",
+              "notInTwo",
+              "amountNotEmpty"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "eq: returns false for non-existent field (undefined !== value)",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "{\"gt\":5} compares numbers and numeric strings",
+      "values": {
+        "xGt": 6
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "gt5"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGt",
+          "value": "6"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "gt5"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGt",
+          "value": "5.5"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "gt5"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGt",
+          "value": 5
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGt",
+          "value": "5"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGt",
+          "value": 4
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "{\"gte\":9} compares numbers and numeric strings",
+      "values": {
+        "xGte": 9
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "gte9"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGte",
+          "value": "9"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "gte9"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGte",
+          "value": 10
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "gte9"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGte",
+          "value": 8
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xGte",
+          "value": "8.99"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "{\"lt\":7} compares numbers and numeric strings",
+      "values": {
+        "xLt": 6
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "lt7"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xLt",
+          "value": "0"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "lt7"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xLt",
+          "value": -1
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "lt7"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xLt",
+          "value": 7
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xLt",
+          "value": "7"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "{\"lte\":6} compares numbers and numeric strings",
+      "values": {
+        "xLte": 6
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "lte6"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xLte",
+          "value": "-0.5"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo", "lte6"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xLte",
+          "value": 6.01
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "xLte",
+          "value": "7"
+        },
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches undefined",
+      "values": {},
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches null",
+      "values": {
+        "xNever": null
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches \"\"",
+      "values": {
+        "xNever": ""
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches \" \"",
+      "values": {
+        "xNever": " "
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches \"abc\"",
+      "values": {
+        "xNever": "abc"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches true",
+      "values": {
+        "xNever": true
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches []",
+      "values": {
+        "xNever": []
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "never matches [9]",
+      "values": {
+        "xNever": [9]
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "agree", "name", "amount", "missing", "xGt", "xGte", "xLt", "xLte", "xNever", "neqMX", "notInTwo"]
+          }
+        }
+      ]
+    }
+  ]
+}

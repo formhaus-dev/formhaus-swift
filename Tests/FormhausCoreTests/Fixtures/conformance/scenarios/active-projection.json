@@ -1,0 +1,470 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "active projection",
+  "definition": {
+    "id": "p",
+    "title": "p",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "one",
+        "title": "One",
+        "fields": [
+          {
+            "key": "a",
+            "type": "radio",
+            "label": "a",
+            "options": [
+              {
+                "value": "yes",
+                "label": "yes"
+              },
+              {
+                "value": "no",
+                "label": "no"
+              }
+            ]
+          },
+          {
+            "key": "x",
+            "type": "text",
+            "label": "x",
+            "show": [
+              {
+                "field": "a",
+                "eq": "yes"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "two",
+        "title": "Two",
+        "fields": [
+          {
+            "key": "y",
+            "type": "text",
+            "label": "y"
+          }
+        ]
+      },
+      {
+        "id": "three",
+        "title": "Three",
+        "fields": [
+          {
+            "key": "z",
+            "type": "text",
+            "label": "z"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "keeps the payload when an unrelated route is added - without routes",
+      "values": {
+        "a": "yes",
+        "x": "kept",
+        "y": "b",
+        "z": "c"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "a": "yes",
+              "x": "kept",
+              "y": "b",
+              "z": "c"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the payload when an unrelated route is added - with a route",
+      "definition": {
+        "id": "p",
+        "title": "p",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "a",
+                "type": "radio",
+                "label": "a",
+                "options": [
+                  {
+                    "value": "yes",
+                    "label": "yes"
+                  },
+                  {
+                    "value": "no",
+                    "label": "no"
+                  }
+                ]
+              },
+              {
+                "key": "x",
+                "type": "text",
+                "label": "x",
+                "show": [
+                  {
+                    "field": "a",
+                    "eq": "yes"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "fields": [
+              {
+                "key": "y",
+                "type": "text",
+                "label": "y"
+              }
+            ],
+            "routes": [
+              {
+                "to": "three"
+              }
+            ]
+          },
+          {
+            "id": "three",
+            "title": "Three",
+            "fields": [
+              {
+                "key": "z",
+                "type": "text",
+                "label": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "a": "yes",
+        "x": "kept",
+        "y": "b",
+        "z": "c"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "a": "yes",
+              "x": "kept",
+              "y": "b",
+              "z": "c"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears a value written to a hidden field at once, without routes",
+      "definition": {
+        "id": "s",
+        "title": "s",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "a",
+            "type": "radio",
+            "label": "a",
+            "options": [
+              {
+                "value": "yes",
+                "label": "yes"
+              },
+              {
+                "value": "no",
+                "label": "no"
+              }
+            ]
+          },
+          {
+            "key": "b",
+            "type": "text",
+            "label": "b",
+            "show": [
+              {
+                "field": "a",
+                "eq": "yes"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "a": "no"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "b",
+          "value": "hidden write"
+        },
+        {
+          "expect": {
+            "values": {
+              "a": "no"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not let initial values for unknown keys select conditions",
+      "definition": {
+        "id": "s",
+        "title": "s",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "b",
+            "type": "text",
+            "label": "b"
+          }
+        ]
+      },
+      "values": {
+        "plan": "pro"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "plan": "pro"
+            },
+            "submitValues": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears the values of a step hidden by its condition",
+      "definition": {
+        "id": "p",
+        "title": "p",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "kind",
+                "options": [
+                  {
+                    "value": "biz",
+                    "label": "biz"
+                  },
+                  {
+                    "value": "me",
+                    "label": "me"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "biz",
+            "title": "Biz",
+            "show": [
+              {
+                "field": "kind",
+                "eq": "biz"
+              }
+            ],
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "company"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "kind": "biz",
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "me"
+        },
+        {
+          "expect": {
+            "values": {
+              "kind": "me"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "validates the declaration on the active branch",
+      "definition": {
+        "id": "p",
+        "title": "p",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "kind",
+                "options": [
+                  {
+                    "value": "biz",
+                    "label": "biz"
+                  },
+                  {
+                    "value": "me",
+                    "label": "me"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "biz",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "biz"
+                  }
+                ]
+              },
+              {
+                "to": "me"
+              }
+            ]
+          },
+          {
+            "id": "biz",
+            "title": "Biz",
+            "routes": [
+              {
+                "to": "end"
+              }
+            ],
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": "Company name"
+                }
+              }
+            ]
+          },
+          {
+            "id": "me",
+            "title": "Me",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Your name",
+                "validation": {
+                  "minLength": 3
+                }
+              }
+            ]
+          },
+          {
+            "id": "end",
+            "title": "End",
+            "fields": [
+              {
+                "key": "note",
+                "type": "text",
+                "label": "note"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "kind": "me",
+        "name": "Al"
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "step": "me"
+          }
+        },
+        {
+          "do": "validateField",
+          "key": "name",
+          "returns": "Must be at least 3 characters"
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "biz"
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": ""
+        },
+        {
+          "expect": {
+            "step": "kind"
+          }
+        },
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "step": "biz"
+          }
+        },
+        {
+          "do": "validateField",
+          "key": "name",
+          "returns": "Company name"
+        }
+      ]
+    }
+  ]
+}

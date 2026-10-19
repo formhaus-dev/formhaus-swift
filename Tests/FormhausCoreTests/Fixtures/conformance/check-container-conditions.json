@@ -1,0 +1,54 @@
+{
+  "name": "check-container-conditions",
+  "covers": ["reports a condition on a section key as unknown-field", "reports a section condition on its own field as a cycle"],
+  "issues": [
+    {
+      "code": "condition-cycle",
+      "path": "/fields/0/fields/0"
+    },
+    {
+      "code": "unknown-field",
+      "path": "/fields/1/show/0/field"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "billing",
+        "type": "section",
+        "title": "billing",
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "street"
+          }
+        ],
+        "show": [
+          {
+            "field": "street",
+            "notEmpty": true
+          }
+        ]
+      },
+      {
+        "key": "b",
+        "type": "text",
+        "label": "b",
+        "show": [
+          {
+            "field": "billing",
+            "notEmpty": true
+          }
+        ]
+      }
+    ],
+    "formatVersion": "1.1"
+  }
+}

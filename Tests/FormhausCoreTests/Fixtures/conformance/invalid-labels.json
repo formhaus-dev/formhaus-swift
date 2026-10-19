@@ -1,0 +1,87 @@
+{
+  "name": "invalid-labels",
+  "issues": [
+    {
+      "code": "invalid-type",
+      "path": "/steps/0/title"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/steps/0/description"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/steps/0/fields/0/label"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/steps/0/fields/0/placeholder"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/steps/0/fields/0/helperText"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/steps/0/fields/0/options/0/label"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/steps/0/next/label"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/submit/label"
+    }
+  ],
+  "definition": {
+    "id": "labels",
+    "title": "Labels",
+    "submit": {
+      "label": true
+    },
+    "steps": [
+      {
+        "id": "one",
+        "title": 5,
+        "description": ["x"],
+        "next": {
+          "label": {
+            "text": "Go"
+          }
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "select",
+            "label": {
+              "text": "Plan"
+            },
+            "placeholder": 1,
+            "helperText": {
+              "text": "Pick"
+            },
+            "options": [
+              {
+                "value": "a",
+                "label": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "two",
+        "title": "Two",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": []
+}

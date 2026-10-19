@@ -1,0 +1,476 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "steps",
+  "definition": {
+    "id": "multi",
+    "title": "Multi-Step",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "personal",
+        "title": "Personal Info",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "accountType",
+            "type": "radio",
+            "label": "Account",
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "business",
+        "title": "Business Info",
+        "fields": [
+          {
+            "key": "company",
+            "type": "text",
+            "label": "Company"
+          }
+        ],
+        "show": [
+          {
+            "field": "accountType",
+            "eq": "business"
+          }
+        ]
+      },
+      {
+        "id": "payment",
+        "title": "Payment",
+        "fields": [
+          {
+            "key": "method",
+            "type": "select",
+            "label": "Method",
+            "options": [
+              {
+                "value": "bank",
+                "label": "Bank"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "starts on step 0",
+      "steps": [
+        {
+          "expect": {
+            "stepIndex": 0,
+            "isFirstStep": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "nextStep validates before advancing",
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "stepIndex": 0,
+            "errors": {
+              "name": "This field is required"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "nextStep advances when valid",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "payment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "prevStep goes back",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "back"
+        },
+        {
+          "expect": {
+            "step": "personal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "prevStep on first step is a no-op",
+      "steps": [
+        {
+          "do": "back"
+        },
+        {
+          "expect": {
+            "stepIndex": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "nextStep on last step is a no-op",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "do": "next",
+          "returns": false
+        }
+      ]
+    },
+    {
+      "name": "hides steps based on show conditions",
+      "steps": [
+        {
+          "expect": {
+            "steps": ["personal", "payment"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "shows step when condition is met",
+      "values": {
+        "accountType": "business"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["personal", "business", "payment"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns fields of current step only",
+      "steps": [
+        {
+          "expect": {
+            "fields": ["name", "accountType"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports correct progress",
+      "steps": [
+        {
+          "expect": {
+            "progress": {
+              "current": 1,
+              "total": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "updates when step becomes visible",
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "business"
+        },
+        {
+          "expect": {
+            "progress": {
+              "current": 1,
+              "total": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "navigates to step containing field",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "method"
+        },
+        {
+          "expect": {
+            "step": "payment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "no-op when field is in hidden step",
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "company"
+        },
+        {
+          "expect": {
+            "stepIndex": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "no-op when field does not exist",
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "nonexistent"
+        },
+        {
+          "expect": {
+            "stepIndex": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns all visible fields across all steps",
+      "values": {
+        "name": "John",
+        "method": "bank"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "name": "John",
+              "method": "bank"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "includes fields from conditionally shown step",
+      "values": {
+        "name": "John",
+        "accountType": "business",
+        "company": "Acme",
+        "method": "bank"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "name": "John",
+              "accountType": "business",
+              "company": "Acme",
+              "method": "bank"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "navigates to step containing first errored field",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "Server error on name"
+          }
+        },
+        {
+          "expect": {
+            "step": "personal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears field values when their step becomes hidden",
+      "values": {
+        "accountType": "business",
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "accountType": "business",
+              "company": "Acme"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "values": {
+              "accountType": "personal"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "passes values and skipped step ids to onAfterSubmit",
+      "values": {
+        "name": "Ada",
+        "accountType": "personal"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "step": "payment"
+          }
+        },
+        {
+          "do": "submit",
+          "handler": []
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 2
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada",
+                  "accountType": "personal"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              },
+              {
+                "call": "onAfterSubmit",
+                "values": {
+                  "name": "Ada",
+                  "accountType": "personal"
+                },
+                "skippedSteps": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "lets onBeforeStepChange cancel back",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "return": true
+          },
+          {
+            "return": false
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "payment"
+          }
+        },
+        {
+          "do": "back",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "payment",
+            "log": [
+              {
+                "call": "onBeforeStepChange",
+                "context": {
+                  "fromStepId": "payment",
+                  "toStepId": "personal",
+                  "reason": "back",
+                  "values": {
+                    "name": "Ada"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

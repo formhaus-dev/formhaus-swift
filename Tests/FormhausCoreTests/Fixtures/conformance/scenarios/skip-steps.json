@@ -1,0 +1,970 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "skip steps",
+  "definition": {
+    "id": "skip",
+    "title": "Skip",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "name",
+        "title": "Name",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "extras",
+        "title": "Extras",
+        "skip": {
+          "label": "Not now"
+        },
+        "fields": [
+          {
+            "key": "phone",
+            "type": "text",
+            "label": "Phone",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "plan",
+            "type": "text",
+            "label": "Plan",
+            "defaultValue": "free"
+          },
+          {
+            "key": "promo",
+            "type": "text",
+            "label": "Promo",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "notes",
+        "title": "Notes",
+        "skip": {
+          "label": "Skip"
+        },
+        "fields": [
+          {
+            "key": "notes",
+            "type": "text",
+            "label": "Notes",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "advances without validating and without running onStepValidate",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": null
+          },
+          {
+            "return": {
+              "phone": "Taken"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "notes",
+            "errors": {},
+            "skipped": ["extras"],
+            "log": [
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "extras"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "resets the step to defaults, clears its errors and hides dependents",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "do": "setValue",
+          "key": "promo",
+          "value": "SAVE"
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "phone": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "Ada",
+              "plan": "free"
+            },
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "excludes skipped steps from submit validation and values",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "notes",
+          "value": "Hi"
+        },
+        {
+          "expect": {
+            "step": "notes"
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 2
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada",
+                  "notes": "Hi"
+                },
+                "skippedSteps": ["extras"]
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "un-skips a step when Next is pressed on it again",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "skipped": [],
+            "errors": {
+              "phone": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "phone",
+          "value": "555"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "name": "Ada",
+              "phone": "555",
+              "plan": "free"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "submits without the last step when it is skipped",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "phone",
+          "value": "555"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "notes",
+          "value": "draft"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "skip",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "skipped": ["notes"],
+            "log": [
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "notes"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 3
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada",
+                  "phone": "555",
+                  "plan": "free"
+                },
+                "skippedSteps": ["notes"]
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "un-skips the last step when Submit is pressed on it",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "phone",
+          "value": "555"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": false
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "throw": "offline"
+            }
+          ],
+          "throws": {
+            "name": "Error",
+            "message": "offline"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "notes",
+          "value": "Hi"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 4
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada",
+                  "phone": "555",
+                  "plan": "free",
+                  "notes": "Hi"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "follows routes recomputed from the reset values",
+      "definition": {
+        "id": "routed-skip",
+        "title": "Routed",
+        "submit": {
+          "label": "Submit"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind",
+                "defaultValue": "personal"
+              }
+            ],
+            "routes": [
+              {
+                "to": "business",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "business"
+                  }
+                ]
+              },
+              {
+                "to": "personal"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company"
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "personal",
+            "title": "Personal",
+            "fields": [
+              {
+                "key": "nickname",
+                "type": "text",
+                "label": "Nickname"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "kind": "business"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["kind", "business"]
+          }
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "steps": ["kind", "personal"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "passes the skip reason to onBeforeStepChange",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": []
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onBeforeStepChange",
+                "context": {
+                  "fromStepId": "extras",
+                  "toStepId": "notes",
+                  "reason": "skip",
+                  "values": {
+                    "name": "Ada",
+                    "plan": "free"
+                  }
+                }
+              },
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "extras"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops a stale skip when inputs change during the guard",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {},
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "await": false,
+          "returns": false
+        },
+        {
+          "expect": {
+            "stepValidating": true
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "extras"
+          }
+        }
+      ]
+    },
+    {
+      "name": "forgets skipped steps on reset",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "skipped": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports the skipped last step before the submit",
+      "definition": {
+        "id": "events",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "plan",
+                "type": "text",
+                "label": "Plan"
+              }
+            ]
+          },
+          {
+            "id": "three",
+            "title": "Three",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "city",
+                "type": "text",
+                "label": "City"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "do": "next"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "skip",
+          "handler": []
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "three"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": ["three"]
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "passes skipped step ids to the submit function",
+      "definition": {
+        "id": "wizard",
+        "title": "Wizard",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "bio",
+                "type": "text",
+                "label": "Bio"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "skip",
+          "handler": []
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "two"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": ["two"]
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not report a visited empty step as skipped",
+      "definition": {
+        "id": "wizard",
+        "title": "Wizard",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "bio",
+                "type": "text",
+                "label": "Bio"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": []
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validates fields that the defaults of a skipped step show",
+      "definition": {
+        "id": "skip-rules",
+        "title": "Skip rules",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "s1",
+            "title": "One",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "a",
+                "type": "text",
+                "label": "A",
+                "defaultValue": "show"
+              }
+            ]
+          },
+          {
+            "id": "s2",
+            "title": "Two",
+            "fields": [
+              {
+                "key": "n",
+                "type": "number",
+                "label": "N",
+                "show": [
+                  {
+                    "field": "a",
+                    "eq": "show"
+                  }
+                ],
+                "validation": {
+                  "min": 10
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "skip"
+        },
+        {
+          "do": "setValue",
+          "key": "n",
+          "value": 1
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "n": "Must be at least 10"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "n",
+                  "error": "Must be at least 10"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

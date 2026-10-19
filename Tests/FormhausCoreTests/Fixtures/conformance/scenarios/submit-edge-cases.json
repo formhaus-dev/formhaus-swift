@@ -1,0 +1,1216 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "submit edge cases",
+  "definition": {
+    "id": "flat-api",
+    "title": "Open an account",
+    "submit": {
+      "label": "Open account"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About you",
+        "fields": [
+          {
+            "key": "firstName",
+            "type": "text",
+            "label": "First name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "lastName",
+            "type": "text",
+            "label": "Last name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "account",
+        "title": "Account",
+        "fields": [
+          {
+            "key": "accountType",
+            "type": "radio",
+            "label": "Account type",
+            "validation": {
+              "required": true
+            },
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          },
+          {
+            "key": "companyName",
+            "type": "text",
+            "label": "Company name",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "accountType",
+                "eq": "business"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "address",
+        "title": "Address",
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "Street",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "postcode",
+            "type": "text",
+            "label": "Postcode",
+            "validation": {
+              "required": true,
+              "pattern": "^[0-9]{5}$",
+              "patternMessage": "Enter 5 digits"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "ignores a second submit while the first one is pending",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": true
+              }
+            }
+          ],
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ignores a response that arrives after reset",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false,
+                "errors": {
+                  "firstName": "Old"
+                }
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "reset",
+          "values": {
+            "firstName": "Grace"
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "errors": {},
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ignores a response that arrives after cancel",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false,
+                "errors": {
+                  "firstName": "Old"
+                }
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "errors": {},
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ignores a stale success after reset to the same values",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response"
+            }
+          ],
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "reset",
+          "values": {
+            "firstName": "Ada",
+            "lastName": "Lovelace",
+            "email": "ada@example.com",
+            "accountType": "personal",
+            "street": "1 Main St",
+            "postcode": "10115"
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ignores a stale success after cancelPendingActions()",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response"
+            }
+          ],
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops errors for fields edited while the request was running",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false,
+                "errors": {
+                  "postcode": "Unknown",
+                  "email": "Taken"
+                }
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "postcode",
+          "value": "10117"
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "Taken"
+            },
+            "values": {
+              "firstName": "Ada",
+              "lastName": "Lovelace",
+              "email": "ada@example.com",
+              "accountType": "personal",
+              "street": "1 Main St",
+              "postcode": "10117"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps a success when a field changes during the request",
+      "values": {
+        "firstName": "Ada",
+        "lastName": "Lovelace",
+        "email": "ada@example.com",
+        "accountType": "personal",
+        "street": "1 Main St",
+        "postcode": "10115"
+      },
+      "hooks": {
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "postcode"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "response"
+            }
+          ],
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "street",
+          "value": "2 Main St"
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 6
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              },
+              {
+                "call": "onAfterSubmit",
+                "values": {
+                  "firstName": "Ada",
+                  "lastName": "Lovelace",
+                  "email": "ada@example.com",
+                  "accountType": "personal",
+                  "street": "1 Main St",
+                  "postcode": "10115"
+                },
+                "skippedSteps": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps a newer rejection when a cancelled skip settles late",
+      "definition": {
+        "id": "stale-skip",
+        "title": "Stale skip",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "profile",
+            "title": "Profile",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "details",
+            "title": "Details",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "bio",
+                "type": "text",
+                "label": "Bio"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada",
+        "bio": "Draft"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "bio": "Old"
+          }
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false,
+                "errors": {
+                  "name": "Stale"
+                }
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "name": "Fresh"
+                }
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "Ada"
+            }
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "Ada"
+            },
+            "errors": {
+              "name": "Fresh"
+            }
+          }
+        },
+        {
+          "do": "validate"
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "Fresh"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps a newer success when a cancelled skip settles late",
+      "definition": {
+        "id": "stale-skip",
+        "title": "Stale skip",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "profile",
+            "title": "Profile",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "details",
+            "title": "Details",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "bio",
+                "type": "text",
+                "label": "Bio"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada",
+        "bio": "Draft"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "bio": "Old"
+          }
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false,
+                "errors": {
+                  "name": "Stale"
+                }
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": true
+              }
+            }
+          ],
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "Ada"
+            }
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "Ada"
+            },
+            "errors": {}
+          }
+        },
+        {
+          "do": "validate"
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps an answer typed into a cleared field when a cancelled skip is rejected late",
+      "definition": {
+        "id": "late-skip",
+        "title": "Late skip",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "note",
+            "title": "Note",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "note",
+                "type": "text",
+                "label": "Note"
+              },
+              {
+                "key": "more",
+                "type": "text",
+                "label": "More",
+                "show": [
+                  {
+                    "field": "note",
+                    "eq": "more"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "note": "hello"
+      },
+      "steps": [
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "setValue",
+          "key": "note",
+          "value": "more"
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "more": "Required"
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "values": {
+              "note": "more"
+            },
+            "errors": {
+              "more": "Required"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "restores a cancelled skip whose rejection arrives after an answer on another step changed",
+      "definition": {
+        "id": "other-step",
+        "title": "Other step",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "profile",
+            "title": "Profile",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "details",
+            "title": "Details",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "bio",
+                "type": "text",
+                "label": "Bio"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada",
+        "bio": "Draft"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "bio"
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "bio": "Old"
+          }
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "skipped": [],
+            "values": {
+              "name": "Grace",
+              "bio": "Draft"
+            },
+            "submitValues": {
+              "name": "Grace",
+              "bio": "Draft"
+            },
+            "errors": {
+              "bio": "Old"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "restores a current skip whose rejection arrives after an answer on another step changed",
+      "definition": {
+        "id": "other-step",
+        "title": "Other step",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "profile",
+            "title": "Profile",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "details",
+            "title": "Details",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "bio",
+                "type": "text",
+                "label": "Bio"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada",
+        "bio": "Draft"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "bio"
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "bio": "Old"
+          }
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "skipped": [],
+            "values": {
+              "name": "Grace",
+              "bio": "Draft"
+            },
+            "submitValues": {
+              "name": "Grace",
+              "bio": "Draft"
+            },
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "restores the other answers of a skipped step edited before its late rejection",
+      "definition": {
+        "id": "same-step",
+        "title": "Same step",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "profile",
+            "title": "Profile",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "details",
+            "title": "Details",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "bio",
+                "type": "text",
+                "label": "Bio"
+              },
+              {
+                "key": "site",
+                "type": "text",
+                "label": "Site"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada",
+        "bio": "Draft",
+        "site": "ada.dev"
+      },
+      "steps": [
+        {
+          "do": "goToStepWithField",
+          "key": "bio"
+        },
+        {
+          "do": "skip",
+          "handler": [
+            {
+              "defer": "response",
+              "return": {
+                "ok": false
+              }
+            }
+          ],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "cancelPendingActions"
+        },
+        {
+          "do": "setValue",
+          "key": "bio",
+          "value": "New"
+        },
+        {
+          "do": "resolve",
+          "deferred": "response"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "skipped": [],
+            "values": {
+              "name": "Ada",
+              "bio": "New",
+              "site": "ada.dev"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

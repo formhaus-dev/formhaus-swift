@@ -1,0 +1,209 @@
+{
+  "name": "shared-key-branches",
+  "issues": [],
+  "definition": {
+    "id": "shared-key",
+    "title": "Shared key",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "kind",
+        "title": "Kind",
+        "routes": [
+          {
+            "to": "exact",
+            "show": [
+              {
+                "field": "kind",
+                "eq": "exact"
+              }
+            ]
+          },
+          {
+            "to": "range"
+          }
+        ],
+        "fields": [
+          {
+            "key": "kind",
+            "type": "radio",
+            "label": "Kind",
+            "validation": {
+              "required": true
+            },
+            "options": [
+              {
+                "value": "exact",
+                "label": "Exact"
+              },
+              {
+                "value": "range",
+                "label": "Range"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "exact",
+        "title": "Exact",
+        "routes": [
+          {
+            "to": null
+          }
+        ],
+        "fields": [
+          {
+            "key": "amount",
+            "type": "number",
+            "label": "Amount",
+            "validation": {
+              "required": true,
+              "min": 1
+            }
+          },
+          {
+            "key": "urgent",
+            "type": "checkbox",
+            "label": "Urgent"
+          }
+        ]
+      },
+      {
+        "id": "range",
+        "title": "Range",
+        "fields": [
+          {
+            "key": "amount",
+            "type": "select",
+            "label": "Amount",
+            "validation": {
+              "required": true
+            },
+            "options": [
+              {
+                "value": "low",
+                "label": "Low"
+              },
+              {
+                "value": "high",
+                "label": "High"
+              }
+            ]
+          },
+          {
+            "key": "urgent",
+            "type": "text",
+            "label": "Why urgent"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "number on the exact branch",
+      "input": {
+        "values": {
+          "kind": "exact",
+          "amount": 5,
+          "urgent": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "kind": "exact",
+          "amount": 5,
+          "urgent": true
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "option on the range branch",
+      "input": {
+        "values": {
+          "kind": "range",
+          "amount": "low",
+          "urgent": "Deadline"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "kind": "range",
+          "amount": "low",
+          "urgent": "Deadline"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "option on the exact branch",
+      "input": {
+        "values": {
+          "kind": "exact",
+          "amount": "low"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "kind": "exact",
+          "amount": "low"
+        },
+        "errors": {
+          "amount": "Enter a number"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "number on the range branch",
+      "input": {
+        "values": {
+          "kind": "range",
+          "amount": 5
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "kind": "range",
+          "amount": 5
+        },
+        "errors": {
+          "amount": "Select one of the available options"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "boolean for the text field on the range branch",
+      "input": {
+        "values": {
+          "kind": "range",
+          "amount": "high",
+          "urgent": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "kind": "range",
+          "amount": "high",
+          "urgent": true
+        },
+        "errors": {
+          "urgent": "Must be text"
+        }
+      },
+      "canSubmit": false
+    }
+  ]
+}

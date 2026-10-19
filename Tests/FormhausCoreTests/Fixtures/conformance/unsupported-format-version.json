@@ -1,0 +1,25 @@
+{
+  "name": "unsupported-format-version",
+  "issues": [
+    {
+      "code": "unsupported-format-version",
+      "path": "/formatVersion"
+    }
+  ],
+  "definition": {
+    "formatVersion": "2.0",
+    "id": "future",
+    "title": "Future",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email"
+      }
+    ]
+  },
+  "cases": []
+}

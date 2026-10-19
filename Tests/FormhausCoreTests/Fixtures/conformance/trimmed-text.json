@@ -1,0 +1,134 @@
+{
+  "name": "trimmed-text",
+  "issues": [],
+  "definition": {
+    "id": "trim",
+    "title": "Trim",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "validation": {
+          "required": true,
+          "minLength": 3
+        }
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email",
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "notes",
+        "type": "textarea",
+        "label": "Notes"
+      },
+      {
+        "key": "secret",
+        "type": "password",
+        "label": "Secret",
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "surrounding spaces are trimmed",
+      "input": {
+        "values": {
+          "name": "  Ann ",
+          "email": "  a@b.co ",
+          "notes": "  one\n\ntwo  ",
+          "secret": "  pass  "
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "Ann",
+          "email": "a@b.co",
+          "notes": "one\n\ntwo",
+          "secret": "  pass  "
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "whitespace-only required text is empty",
+      "input": {
+        "values": {
+          "name": "   ",
+          "email": " \t ",
+          "notes": "  ",
+          "secret": "x"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "",
+          "email": "",
+          "notes": "",
+          "secret": "x"
+        },
+        "errors": {
+          "name": "This field is required",
+          "email": "This field is required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "length runs on the trimmed value",
+      "input": {
+        "values": {
+          "name": "  ab  ",
+          "email": "a@b.co",
+          "secret": "x"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "ab",
+          "email": "a@b.co",
+          "secret": "x"
+        },
+        "errors": {
+          "name": "Must be at least 3 characters"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "whitespace-only password is kept",
+      "input": {
+        "values": {
+          "name": "Ann",
+          "email": "a@b.co",
+          "secret": "   "
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "Ann",
+          "email": "a@b.co",
+          "secret": "   "
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

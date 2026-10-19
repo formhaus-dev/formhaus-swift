@@ -1,0 +1,429 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "reset",
+  "definition": {
+    "id": "basic",
+    "title": "Basic Form",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "resets values and errors to field defaults",
+      "definition": {
+        "id": "reset",
+        "title": "Reset",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "defaultValue": "default"
+          }
+        ]
+      },
+      "values": {
+        "name": "modified"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "error"
+          }
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "default"
+            },
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "resets to provided values",
+      "values": {
+        "name": "modified"
+      },
+      "steps": [
+        {
+          "do": "reset",
+          "values": {
+            "name": "new"
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "new"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears values for fields hidden by the reset values until they are shown",
+      "definition": {
+        "id": "conditional",
+        "title": "Conditional",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "country",
+            "type": "select",
+            "label": "Country",
+            "options": [
+              {
+                "value": "MX",
+                "label": "Mexico"
+              },
+              {
+                "value": "US",
+                "label": "US"
+              }
+            ]
+          },
+          {
+            "key": "clabe",
+            "type": "text",
+            "label": "CLABE",
+            "show": [
+              {
+                "field": "country",
+                "eq": "MX"
+              }
+            ]
+          },
+          {
+            "key": "routing",
+            "type": "text",
+            "label": "Routing",
+            "show": [
+              {
+                "field": "country",
+                "eq": "US"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "reset",
+          "values": {
+            "country": "MX",
+            "routing": "KEPT"
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "country": "MX"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "US"
+        },
+        {
+          "expect": {
+            "values": {
+              "country": "US",
+              "routing": "KEPT"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears values for fields hidden by the initial values until they are shown",
+      "definition": {
+        "id": "conditional",
+        "title": "Conditional",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "country",
+            "type": "select",
+            "label": "Country",
+            "options": [
+              {
+                "value": "MX",
+                "label": "Mexico"
+              },
+              {
+                "value": "US",
+                "label": "US"
+              }
+            ]
+          },
+          {
+            "key": "clabe",
+            "type": "text",
+            "label": "CLABE",
+            "show": [
+              {
+                "field": "country",
+                "eq": "MX"
+              }
+            ]
+          },
+          {
+            "key": "routing",
+            "type": "text",
+            "label": "Routing",
+            "show": [
+              {
+                "field": "country",
+                "eq": "US"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "country": "MX",
+        "routing": "KEPT"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "country": "MX"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "US"
+        },
+        {
+          "expect": {
+            "values": {
+              "country": "US",
+              "routing": "KEPT"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "forgets edits on reset",
+      "definition": {
+        "id": "conditional",
+        "title": "Conditional",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "country",
+            "type": "select",
+            "label": "Country",
+            "options": [
+              {
+                "value": "MX",
+                "label": "Mexico"
+              },
+              {
+                "value": "US",
+                "label": "US"
+              }
+            ]
+          },
+          {
+            "key": "clabe",
+            "type": "text",
+            "label": "CLABE",
+            "show": [
+              {
+                "field": "country",
+                "eq": "MX"
+              }
+            ]
+          },
+          {
+            "key": "routing",
+            "type": "text",
+            "label": "Routing",
+            "show": [
+              {
+                "field": "country",
+                "eq": "US"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "country": "US",
+        "routing": "KEPT"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "routing",
+          "value": "mine"
+        },
+        {
+          "do": "reset",
+          "values": {
+            "country": "MX",
+            "routing": "KEPT"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "US"
+        },
+        {
+          "expect": {
+            "values": {
+              "country": "US",
+              "routing": "KEPT"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears values in steps hidden by the reset values",
+      "definition": {
+        "id": "hidden-step-reset",
+        "title": "Hidden step reset",
+        "submit": {
+          "label": "Submit"
+        },
+        "steps": [
+          {
+            "id": "main",
+            "title": "Main",
+            "fields": [
+              {
+                "key": "accountType",
+                "type": "text",
+                "label": "Type"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "taxId",
+                "type": "text",
+                "label": "Tax ID"
+              },
+              {
+                "key": "vat",
+                "type": "text",
+                "label": "VAT"
+              }
+            ],
+            "show": [
+              {
+                "field": "accountType",
+                "eq": "business"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "reset",
+          "values": {
+            "accountType": "personal",
+            "taxId": "STALE",
+            "vat": "STALE"
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "accountType": "personal"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sets and clears field loading state",
+      "steps": [
+        {
+          "do": "setFieldLoading",
+          "key": "name",
+          "loading": true
+        },
+        {
+          "expect": {
+            "fieldLoading": {
+              "name": true
+            }
+          }
+        },
+        {
+          "do": "setFieldLoading",
+          "key": "name",
+          "loading": false
+        },
+        {
+          "expect": {
+            "fieldLoading": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears field loading state on reset",
+      "steps": [
+        {
+          "do": "setFieldLoading",
+          "key": "name",
+          "loading": true
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "fieldLoading": {}
+          }
+        }
+      ]
+    }
+  ]
+}

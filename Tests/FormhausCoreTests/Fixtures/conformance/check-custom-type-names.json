@@ -1,0 +1,60 @@
+{
+  "name": "check-custom-type-names",
+  "covers": ["checks custom type names inside sections, groups and steps"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "custom-type-name",
+      "path": "/steps/0/fields/0/fields/0/type"
+    },
+    {
+      "code": "custom-type-name",
+      "path": "/steps/0/fields/1/fields/0/type"
+    }
+  ],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "formatVersion": "1.1",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "s",
+        "title": "S",
+        "fields": [
+          {
+            "key": "sec",
+            "type": "section",
+            "title": "sec",
+            "fields": [
+              {
+                "key": "a",
+                "type": "stars",
+                "label": "a"
+              }
+            ]
+          },
+          {
+            "key": "list",
+            "type": "group",
+            "label": "list",
+            "fields": [
+              {
+                "key": "b",
+                "type": "signature",
+                "label": "b"
+              },
+              {
+                "key": "c",
+                "type": "x-sign",
+                "label": "c"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

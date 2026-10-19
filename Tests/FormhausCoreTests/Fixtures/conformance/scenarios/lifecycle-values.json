@@ -1,0 +1,1247 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "lifecycle values",
+  "definition": {
+    "id": "basic",
+    "title": "Basic Form",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "applies initialValues",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "name": "John"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "applies field defaultValue",
+      "definition": {
+        "id": "defaults",
+        "title": "Defaults",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "country",
+            "type": "select",
+            "label": "Country",
+            "defaultValue": "US"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "country": "US"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialValues override defaultValue",
+      "definition": {
+        "id": "defaults",
+        "title": "Defaults",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "country",
+            "type": "select",
+            "label": "Country",
+            "defaultValue": "US"
+          }
+        ]
+      },
+      "values": {
+        "country": "MX"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "country": "MX"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sets a value and clears field error",
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "Required"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "John"
+        },
+        {
+          "expect": {
+            "values": {
+              "name": "John"
+            },
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears hidden fields on cascade",
+      "definition": {
+        "id": "conditional",
+        "title": "Conditional",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "country",
+            "type": "select",
+            "label": "Country",
+            "options": [
+              {
+                "value": "MX",
+                "label": "Mexico"
+              },
+              {
+                "value": "US",
+                "label": "US"
+              }
+            ]
+          },
+          {
+            "key": "clabe",
+            "type": "text",
+            "label": "CLABE",
+            "show": [
+              {
+                "field": "country",
+                "eq": "MX"
+              }
+            ]
+          },
+          {
+            "key": "routing",
+            "type": "text",
+            "label": "Routing",
+            "show": [
+              {
+                "field": "country",
+                "eq": "US"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "country": "MX",
+        "clabe": "123"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "country": "MX",
+              "clabe": "123"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "country",
+          "value": "US"
+        },
+        {
+          "expect": {
+            "values": {
+              "country": "US"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "cascade: field A hides field B which hides field C",
+      "definition": {
+        "id": "cascade",
+        "title": "Cascade",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "a",
+            "type": "select",
+            "label": "A"
+          },
+          {
+            "key": "b",
+            "type": "text",
+            "label": "B",
+            "show": [
+              {
+                "field": "a",
+                "eq": "show"
+              }
+            ]
+          },
+          {
+            "key": "c",
+            "type": "text",
+            "label": "C",
+            "show": [
+              {
+                "field": "b",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "a": "show",
+        "b": "hello",
+        "c": "world"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "a": "show",
+              "b": "hello",
+              "c": "world"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "a",
+          "value": "hide"
+        },
+        {
+          "expect": {
+            "values": {
+              "a": "hide"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears visibility dependency chains longer than the old pass limit",
+      "definition": {
+        "id": "long-cascade",
+        "title": "Long cascade",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "field-0",
+            "type": "text",
+            "label": "Field 0",
+            "show": [
+              {
+                "field": "field-1",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-1",
+            "type": "text",
+            "label": "Field 1",
+            "show": [
+              {
+                "field": "field-2",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-2",
+            "type": "text",
+            "label": "Field 2",
+            "show": [
+              {
+                "field": "field-3",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-3",
+            "type": "text",
+            "label": "Field 3",
+            "show": [
+              {
+                "field": "field-4",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-4",
+            "type": "text",
+            "label": "Field 4",
+            "show": [
+              {
+                "field": "field-5",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-5",
+            "type": "text",
+            "label": "Field 5",
+            "show": [
+              {
+                "field": "field-6",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-6",
+            "type": "text",
+            "label": "Field 6",
+            "show": [
+              {
+                "field": "field-7",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-7",
+            "type": "text",
+            "label": "Field 7",
+            "show": [
+              {
+                "field": "field-8",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-8",
+            "type": "text",
+            "label": "Field 8",
+            "show": [
+              {
+                "field": "field-9",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-9",
+            "type": "text",
+            "label": "Field 9",
+            "show": [
+              {
+                "field": "field-10",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-10",
+            "type": "text",
+            "label": "Field 10",
+            "show": [
+              {
+                "field": "field-11",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-11",
+            "type": "text",
+            "label": "Field 11",
+            "show": [
+              {
+                "field": "field-12",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-12",
+            "type": "text",
+            "label": "Field 12",
+            "show": [
+              {
+                "field": "field-13",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-13",
+            "type": "text",
+            "label": "Field 13",
+            "show": [
+              {
+                "field": "field-14",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-14",
+            "type": "text",
+            "label": "Field 14",
+            "show": [
+              {
+                "field": "field-15",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-15",
+            "type": "text",
+            "label": "Field 15",
+            "show": [
+              {
+                "field": "field-16",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-16",
+            "type": "text",
+            "label": "Field 16",
+            "show": [
+              {
+                "field": "field-17",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-17",
+            "type": "text",
+            "label": "Field 17",
+            "show": [
+              {
+                "field": "field-18",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-18",
+            "type": "text",
+            "label": "Field 18",
+            "show": [
+              {
+                "field": "field-19",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-19",
+            "type": "text",
+            "label": "Field 19",
+            "show": [
+              {
+                "field": "field-20",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-20",
+            "type": "text",
+            "label": "Field 20",
+            "show": [
+              {
+                "field": "field-21",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-21",
+            "type": "text",
+            "label": "Field 21",
+            "show": [
+              {
+                "field": "field-22",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-22",
+            "type": "text",
+            "label": "Field 22",
+            "show": [
+              {
+                "field": "field-23",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-23",
+            "type": "text",
+            "label": "Field 23",
+            "show": [
+              {
+                "field": "field-24",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-24",
+            "type": "text",
+            "label": "Field 24",
+            "show": [
+              {
+                "field": "field-25",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-25",
+            "type": "text",
+            "label": "Field 25",
+            "show": [
+              {
+                "field": "field-26",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-26",
+            "type": "text",
+            "label": "Field 26",
+            "show": [
+              {
+                "field": "field-27",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-27",
+            "type": "text",
+            "label": "Field 27",
+            "show": [
+              {
+                "field": "field-28",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-28",
+            "type": "text",
+            "label": "Field 28",
+            "show": [
+              {
+                "field": "field-29",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-29",
+            "type": "text",
+            "label": "Field 29",
+            "show": [
+              {
+                "field": "field-30",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-30",
+            "type": "text",
+            "label": "Field 30",
+            "show": [
+              {
+                "field": "field-31",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-31",
+            "type": "text",
+            "label": "Field 31",
+            "show": [
+              {
+                "field": "field-32",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-32",
+            "type": "text",
+            "label": "Field 32",
+            "show": [
+              {
+                "field": "field-33",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-33",
+            "type": "text",
+            "label": "Field 33",
+            "show": [
+              {
+                "field": "field-34",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-34",
+            "type": "text",
+            "label": "Field 34",
+            "show": [
+              {
+                "field": "field-35",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-35",
+            "type": "text",
+            "label": "Field 35",
+            "show": [
+              {
+                "field": "field-36",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-36",
+            "type": "text",
+            "label": "Field 36",
+            "show": [
+              {
+                "field": "field-37",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-37",
+            "type": "text",
+            "label": "Field 37",
+            "show": [
+              {
+                "field": "field-38",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-38",
+            "type": "text",
+            "label": "Field 38",
+            "show": [
+              {
+                "field": "field-39",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-39",
+            "type": "text",
+            "label": "Field 39",
+            "show": [
+              {
+                "field": "field-40",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-40",
+            "type": "text",
+            "label": "Field 40",
+            "show": [
+              {
+                "field": "field-41",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-41",
+            "type": "text",
+            "label": "Field 41",
+            "show": [
+              {
+                "field": "field-42",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-42",
+            "type": "text",
+            "label": "Field 42",
+            "show": [
+              {
+                "field": "field-43",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-43",
+            "type": "text",
+            "label": "Field 43",
+            "show": [
+              {
+                "field": "field-44",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-44",
+            "type": "text",
+            "label": "Field 44",
+            "show": [
+              {
+                "field": "field-45",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-45",
+            "type": "text",
+            "label": "Field 45",
+            "show": [
+              {
+                "field": "field-46",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-46",
+            "type": "text",
+            "label": "Field 46",
+            "show": [
+              {
+                "field": "field-47",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-47",
+            "type": "text",
+            "label": "Field 47",
+            "show": [
+              {
+                "field": "field-48",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-48",
+            "type": "text",
+            "label": "Field 48",
+            "show": [
+              {
+                "field": "field-49",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-49",
+            "type": "text",
+            "label": "Field 49",
+            "show": [
+              {
+                "field": "field-50",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-50",
+            "type": "text",
+            "label": "Field 50",
+            "show": [
+              {
+                "field": "field-51",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-51",
+            "type": "text",
+            "label": "Field 51",
+            "show": [
+              {
+                "field": "field-52",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-52",
+            "type": "text",
+            "label": "Field 52",
+            "show": [
+              {
+                "field": "field-53",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-53",
+            "type": "text",
+            "label": "Field 53",
+            "show": [
+              {
+                "field": "field-54",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-54",
+            "type": "text",
+            "label": "Field 54",
+            "show": [
+              {
+                "field": "field-55",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-55",
+            "type": "text",
+            "label": "Field 55",
+            "show": [
+              {
+                "field": "field-56",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-56",
+            "type": "text",
+            "label": "Field 56",
+            "show": [
+              {
+                "field": "field-57",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-57",
+            "type": "text",
+            "label": "Field 57",
+            "show": [
+              {
+                "field": "field-58",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-58",
+            "type": "text",
+            "label": "Field 58",
+            "show": [
+              {
+                "field": "field-59",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-59",
+            "type": "text",
+            "label": "Field 59",
+            "show": [
+              {
+                "field": "field-60",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-60",
+            "type": "text",
+            "label": "Field 60",
+            "show": [
+              {
+                "field": "field-61",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-61",
+            "type": "text",
+            "label": "Field 61",
+            "show": [
+              {
+                "field": "field-62",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-62",
+            "type": "text",
+            "label": "Field 62",
+            "show": [
+              {
+                "field": "field-63",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-63",
+            "type": "text",
+            "label": "Field 63",
+            "show": [
+              {
+                "field": "field-64",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-64",
+            "type": "text",
+            "label": "Field 64",
+            "show": [
+              {
+                "field": "field-65",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-65",
+            "type": "text",
+            "label": "Field 65",
+            "show": [
+              {
+                "field": "field-66",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-66",
+            "type": "text",
+            "label": "Field 66",
+            "show": [
+              {
+                "field": "field-67",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-67",
+            "type": "text",
+            "label": "Field 67",
+            "show": [
+              {
+                "field": "field-68",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-68",
+            "type": "text",
+            "label": "Field 68",
+            "show": [
+              {
+                "field": "field-69",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-69",
+            "type": "text",
+            "label": "Field 69",
+            "show": [
+              {
+                "field": "field-70",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-70",
+            "type": "text",
+            "label": "Field 70",
+            "show": [
+              {
+                "field": "field-71",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-71",
+            "type": "text",
+            "label": "Field 71",
+            "show": [
+              {
+                "field": "field-72",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-72",
+            "type": "text",
+            "label": "Field 72",
+            "show": [
+              {
+                "field": "field-73",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-73",
+            "type": "text",
+            "label": "Field 73",
+            "show": [
+              {
+                "field": "field-74",
+                "eq": "visible"
+              }
+            ]
+          },
+          {
+            "key": "field-74",
+            "type": "text",
+            "label": "Field 74"
+          }
+        ]
+      },
+      "values": {
+        "field-0": "visible",
+        "field-1": "visible",
+        "field-2": "visible",
+        "field-3": "visible",
+        "field-4": "visible",
+        "field-5": "visible",
+        "field-6": "visible",
+        "field-7": "visible",
+        "field-8": "visible",
+        "field-9": "visible",
+        "field-10": "visible",
+        "field-11": "visible",
+        "field-12": "visible",
+        "field-13": "visible",
+        "field-14": "visible",
+        "field-15": "visible",
+        "field-16": "visible",
+        "field-17": "visible",
+        "field-18": "visible",
+        "field-19": "visible",
+        "field-20": "visible",
+        "field-21": "visible",
+        "field-22": "visible",
+        "field-23": "visible",
+        "field-24": "visible",
+        "field-25": "visible",
+        "field-26": "visible",
+        "field-27": "visible",
+        "field-28": "visible",
+        "field-29": "visible",
+        "field-30": "visible",
+        "field-31": "visible",
+        "field-32": "visible",
+        "field-33": "visible",
+        "field-34": "visible",
+        "field-35": "visible",
+        "field-36": "visible",
+        "field-37": "visible",
+        "field-38": "visible",
+        "field-39": "visible",
+        "field-40": "visible",
+        "field-41": "visible",
+        "field-42": "visible",
+        "field-43": "visible",
+        "field-44": "visible",
+        "field-45": "visible",
+        "field-46": "visible",
+        "field-47": "visible",
+        "field-48": "visible",
+        "field-49": "visible",
+        "field-50": "visible",
+        "field-51": "visible",
+        "field-52": "visible",
+        "field-53": "visible",
+        "field-54": "visible",
+        "field-55": "visible",
+        "field-56": "visible",
+        "field-57": "visible",
+        "field-58": "visible",
+        "field-59": "visible",
+        "field-60": "visible",
+        "field-61": "visible",
+        "field-62": "visible",
+        "field-63": "visible",
+        "field-64": "visible",
+        "field-65": "visible",
+        "field-66": "visible",
+        "field-67": "visible",
+        "field-68": "visible",
+        "field-69": "visible",
+        "field-70": "visible",
+        "field-71": "visible",
+        "field-72": "visible",
+        "field-73": "visible",
+        "field-74": "visible"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "field-74",
+          "value": "hidden"
+        },
+        {
+          "expect": {
+            "values": {
+              "field-74": "hidden"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns only visible fields",
+      "definition": {
+        "id": "conditional",
+        "title": "Conditional",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "country",
+            "type": "select",
+            "label": "Country",
+            "options": [
+              {
+                "value": "MX",
+                "label": "Mexico"
+              },
+              {
+                "value": "US",
+                "label": "US"
+              }
+            ]
+          },
+          {
+            "key": "clabe",
+            "type": "text",
+            "label": "CLABE",
+            "show": [
+              {
+                "field": "country",
+                "eq": "MX"
+              }
+            ]
+          },
+          {
+            "key": "routing",
+            "type": "text",
+            "label": "Routing",
+            "show": [
+              {
+                "field": "country",
+                "eq": "US"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "country": "MX"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["country", "clabe"]
+          }
+        }
+      ]
+    }
+  ]
+}

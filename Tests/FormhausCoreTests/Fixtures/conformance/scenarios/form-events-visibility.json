@@ -1,0 +1,570 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "form events visibility",
+  "definition": {
+    "id": "visibility",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "one",
+        "title": "One",
+        "fields": [
+          {
+            "key": "company",
+            "type": "checkbox",
+            "label": "Company"
+          },
+          {
+            "key": "vat",
+            "type": "text",
+            "label": "VAT",
+            "show": [
+              {
+                "field": "company",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "two",
+        "title": "Two",
+        "fields": [
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "fields": [
+              {
+                "key": "role",
+                "type": "text",
+                "label": "Role"
+              },
+              {
+                "key": "email",
+                "type": "text",
+                "label": "Email",
+                "show": [
+                  {
+                    "field": "role",
+                    "eq": "lead"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "reports a field when its condition result changes",
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": true
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": true
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": false
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "vat"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "vat"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports nothing for a step change",
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "people"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "one"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "two",
+                  "stepIndex": 1
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "one",
+                  "stepIndex": 0
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "two",
+                  "stepIndex": 1
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports group item fields by path and ignores added and removed items",
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "addItem",
+          "key": "people"
+        },
+        {
+          "do": "addItem",
+          "key": "people"
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 1,
+          "field": "role",
+          "value": "lead"
+        },
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 0
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "role",
+          "value": "dev"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "people.1.email"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "people.0.email"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports nothing before start",
+      "steps": [
+        {
+          "expect": {
+            "log": [
+              {
+                "warning": {
+                  "code": "outdated-format-version",
+                  "path": "/formatVersion"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": true
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "log": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports fields shown and hidden by show, showAny and section conditions",
+      "definition": {
+        "id": "forms",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "text",
+            "label": "Plan"
+          },
+          {
+            "key": "seats",
+            "type": "number",
+            "label": "Seats",
+            "showAny": [
+              {
+                "field": "plan",
+                "eq": "team"
+              },
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          },
+          {
+            "key": "billing",
+            "type": "section",
+            "title": "Billing",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ],
+            "fields": [
+              {
+                "key": "iban",
+                "type": "text",
+                "label": "IBAN"
+              }
+            ]
+          },
+          {
+            "key": "admin",
+            "type": "section",
+            "title": "Admin",
+            "showAny": [
+              {
+                "field": "plan",
+                "eq": "team"
+              }
+            ],
+            "fields": [
+              {
+                "key": "owner",
+                "type": "text",
+                "label": "Owner"
+              }
+            ]
+          },
+          {
+            "key": "members",
+            "type": "group",
+            "label": "Members",
+            "showAny": [
+              {
+                "field": "plan",
+                "eq": "team"
+              }
+            ],
+            "fields": [
+              {
+                "key": "role",
+                "type": "text",
+                "label": "Role"
+              },
+              {
+                "key": "phone",
+                "type": "text",
+                "label": "Phone",
+                "showAny": [
+                  {
+                    "field": "role",
+                    "eq": "lead"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "team"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": ""
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "seats"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "owner"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "members"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "iban"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "owner"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "members"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "seats"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "iban"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports group item fields with showAny",
+      "definition": {
+        "id": "forms",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "text",
+            "label": "Plan"
+          },
+          {
+            "key": "seats",
+            "type": "number",
+            "label": "Seats",
+            "showAny": [
+              {
+                "field": "plan",
+                "eq": "team"
+              },
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          },
+          {
+            "key": "billing",
+            "type": "section",
+            "title": "Billing",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ],
+            "fields": [
+              {
+                "key": "iban",
+                "type": "text",
+                "label": "IBAN"
+              }
+            ]
+          },
+          {
+            "key": "admin",
+            "type": "section",
+            "title": "Admin",
+            "showAny": [
+              {
+                "field": "plan",
+                "eq": "team"
+              }
+            ],
+            "fields": [
+              {
+                "key": "owner",
+                "type": "text",
+                "label": "Owner"
+              }
+            ]
+          },
+          {
+            "key": "members",
+            "type": "group",
+            "label": "Members",
+            "showAny": [
+              {
+                "field": "plan",
+                "eq": "team"
+              }
+            ],
+            "fields": [
+              {
+                "key": "role",
+                "type": "text",
+                "label": "Role"
+              },
+              {
+                "key": "phone",
+                "type": "text",
+                "label": "Phone",
+                "showAny": [
+                  {
+                    "field": "role",
+                    "eq": "lead"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "plan": "team"
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "do": "addItem",
+          "key": "members"
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "role",
+          "value": "lead"
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "role",
+          "value": "dev"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "members.0.phone"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_hidden",
+                  "fieldKey": "members.0.phone"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

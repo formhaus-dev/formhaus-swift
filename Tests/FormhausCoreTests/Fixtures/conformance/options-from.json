@@ -1,0 +1,87 @@
+{
+  "name": "options-from",
+  "issues": [],
+  "definition": {
+    "id": "options-from",
+    "title": "Remote options",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "country",
+        "type": "select",
+        "label": "Country",
+        "optionsFrom": "countries",
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "topics",
+        "type": "multiselect",
+        "label": "Topics",
+        "optionsFrom": "topics"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "loaded option values",
+      "input": {
+        "values": {
+          "country": "fr",
+          "topics": ["billing", "api"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "country": "fr",
+          "topics": ["billing", "api"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "missing required value",
+      "input": {
+        "values": {
+          "topics": []
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "topics": []
+        },
+        "errors": {
+          "country": "This field is required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "wrong value types",
+      "input": {
+        "values": {
+          "country": 7,
+          "topics": "api"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "country": 7,
+          "topics": "api"
+        },
+        "errors": {
+          "country": "Select one of the available options",
+          "topics": "Must be a list of available options"
+        }
+      },
+      "canSubmit": false
+    }
+  ]
+}

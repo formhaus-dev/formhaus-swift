@@ -1,0 +1,106 @@
+{
+  "name": "disabled-actions",
+  "issues": [],
+  "definition": {
+    "id": "disabled-actions",
+    "title": "Disabled actions",
+    "submit": {
+      "label": "Send",
+      "disabled": [
+        {
+          "field": "confirm",
+          "neq": true
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "terms",
+        "title": "Terms",
+        "next": {
+          "label": "Continue",
+          "disabled": [
+            {
+              "field": "agree",
+              "neq": true
+            }
+          ]
+        },
+        "fields": [
+          {
+            "key": "agree",
+            "type": "checkbox",
+            "label": "I agree"
+          }
+        ]
+      },
+      {
+        "id": "confirm",
+        "title": "Confirm",
+        "fields": [
+          {
+            "key": "confirm",
+            "type": "checkbox",
+            "label": "Everything is correct"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "next disabled",
+      "input": {
+        "values": {
+          "agree": false,
+          "confirm": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "agree": false,
+          "confirm": true
+        },
+        "errors": {}
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "submit disabled",
+      "input": {
+        "values": {
+          "agree": true,
+          "confirm": false
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "agree": true,
+          "confirm": false
+        },
+        "errors": {}
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "both enabled",
+      "input": {
+        "values": {
+          "agree": true,
+          "confirm": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "agree": true,
+          "confirm": true
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

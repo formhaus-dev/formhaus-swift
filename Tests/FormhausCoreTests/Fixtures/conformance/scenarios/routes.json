@@ -1,0 +1,1339 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "routes",
+  "definition": {
+    "id": "routes",
+    "title": "Account",
+    "submit": {
+      "label": "Save"
+    },
+    "steps": [
+      {
+        "id": "kind",
+        "title": "Kind",
+        "fields": [
+          {
+            "key": "kind",
+            "type": "radio",
+            "label": "Kind",
+            "validation": {
+              "required": true
+            },
+            "autoAdvance": true
+          },
+          {
+            "key": "enabled",
+            "type": "checkbox",
+            "label": "Enabled"
+          }
+        ],
+        "routes": [
+          {
+            "to": "business",
+            "show": [
+              {
+                "field": "kind",
+                "eq": "business"
+              }
+            ]
+          },
+          {
+            "to": "personal"
+          }
+        ]
+      },
+      {
+        "id": "business",
+        "title": "Business",
+        "fields": [
+          {
+            "key": "company",
+            "type": "text",
+            "label": "Company",
+            "validation": {
+              "required": true
+            }
+          }
+        ],
+        "routes": [
+          {
+            "to": "review"
+          }
+        ]
+      },
+      {
+        "id": "personal",
+        "title": "Personal",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ],
+        "routes": [
+          {
+            "to": "review"
+          }
+        ]
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "fields": []
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "uses ordered predicates, fallback and explicit convergence for progress and Back",
+      "values": {
+        "kind": "business",
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["kind", "business", "review"],
+            "progress": {
+              "current": 1,
+              "total": 3
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "business"
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "review"
+          }
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "business"
+          }
+        },
+        {
+          "do": "back"
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "personal"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "personal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "retains skipped answers but omits them from validation, hooks and payload",
+      "values": {
+        "kind": "business",
+        "company": "Acme",
+        "name": ""
+      },
+      "hooks": {
+        "onBeforeStepChange": []
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {}
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "kind": "business",
+              "company": "Acme"
+            }
+          }
+        },
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onBeforeStepChange",
+                "context": {
+                  "fromStepId": "kind",
+                  "toStepId": "business",
+                  "reason": "next",
+                  "values": {
+                    "kind": "business",
+                    "company": "Acme"
+                  }
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "kind"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "submit",
+          "handler": []
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 2
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "kind": "business",
+                  "company": "Acme"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "step": "kind",
+            "values": {
+              "kind": "personal",
+              "company": "Acme",
+              "name": ""
+            }
+          }
+        },
+        {
+          "do": "validate",
+          "returns": {
+            "name": "This field is required"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "business"
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "kind": "business",
+              "company": "Acme"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "reconciles from an obsolete branch to the nearest common predecessor",
+      "values": {
+        "kind": "business",
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "step": "kind",
+            "stepIndex": 0
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "personal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops pending validation when changing an answer changes the path",
+      "values": {
+        "kind": "business"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "gate"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "personal"
+        },
+        {
+          "do": "resolve",
+          "deferred": "gate"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "kind",
+            "steps": ["kind", "personal", "review"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards a pending submission when a route answer switches branches",
+      "values": {
+        "kind": "personal",
+        "name": "Ada",
+        "company": "Retained"
+      },
+      "hooks": {
+        "onBeforeSubmit": [
+          {
+            "defer": "allow"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "step": "kind"
+          }
+        },
+        {
+          "do": "submit",
+          "await": false,
+          "handler": [],
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "business"
+        },
+        {
+          "do": "resolve",
+          "deferred": "allow"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onBeforeSubmit",
+                "values": {
+                  "kind": "personal",
+                  "name": "Ada"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "skips invisible targets and reevaluates when their visibility changes",
+      "definition": {
+        "id": "routes",
+        "title": "Account",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "Kind",
+                "validation": {
+                  "required": true
+                },
+                "autoAdvance": true
+              },
+              {
+                "key": "enabled",
+                "type": "checkbox",
+                "label": "Enabled"
+              }
+            ],
+            "routes": [
+              {
+                "to": "business",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "business"
+                  }
+                ]
+              },
+              {
+                "to": "personal"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ],
+            "show": [
+              {
+                "field": "enabled",
+                "eq": true
+              }
+            ]
+          },
+          {
+            "id": "personal",
+            "title": "Personal",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": []
+          }
+        ]
+      },
+      "values": {
+        "kind": "business",
+        "enabled": true,
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "enabled",
+          "value": false
+        },
+        {
+          "expect": {
+            "steps": ["kind", "personal", "review"],
+            "step": "kind",
+            "values": {
+              "kind": "business",
+              "enabled": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "supports showAny, default-next when no route matches, and explicit terminal steps",
+      "definition": {
+        "id": "routes",
+        "title": "Account",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "Kind",
+                "validation": {
+                  "required": true
+                },
+                "autoAdvance": true
+              },
+              {
+                "key": "enabled",
+                "type": "checkbox",
+                "label": "Enabled"
+              }
+            ],
+            "routes": [
+              {
+                "to": "personal",
+                "showAny": [
+                  {
+                    "field": "kind",
+                    "eq": "personal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": null
+              }
+            ]
+          },
+          {
+            "id": "personal",
+            "title": "Personal",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": []
+          }
+        ]
+      },
+      "values": {
+        "kind": "business",
+        "company": "Acme"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["kind", "business"]
+          }
+        },
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "isLastStep": true
+          }
+        },
+        {
+          "do": "next",
+          "returns": false
+        }
+      ]
+    },
+    {
+      "name": "does not let retained answers from skipped branches select routes",
+      "definition": {
+        "id": "routes",
+        "title": "Account",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "Kind",
+                "validation": {
+                  "required": true
+                },
+                "autoAdvance": true
+              },
+              {
+                "key": "enabled",
+                "type": "checkbox",
+                "label": "Enabled"
+              }
+            ],
+            "routes": [
+              {
+                "to": "business",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "business"
+                  }
+                ]
+              },
+              {
+                "to": "personal"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "personal",
+            "title": "Personal",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": null,
+                "show": [
+                  {
+                    "field": "company",
+                    "eq": "Old company"
+                  }
+                ]
+              },
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": []
+          }
+        ]
+      },
+      "values": {
+        "kind": "personal",
+        "company": "Old company"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["kind", "personal", "review"],
+            "values": {
+              "kind": "personal",
+              "company": "Old company"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not let a retained inactive answer hide a target through show conditions",
+      "definition": {
+        "id": "routes",
+        "title": "Account",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "Kind",
+                "validation": {
+                  "required": true
+                },
+                "autoAdvance": true
+              },
+              {
+                "key": "enabled",
+                "type": "checkbox",
+                "label": "Enabled"
+              }
+            ],
+            "routes": [
+              {
+                "to": "business",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "business"
+                  }
+                ]
+              },
+              {
+                "to": "personal"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "personal",
+            "title": "Personal",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": [],
+            "show": [
+              {
+                "field": "company",
+                "neq": "Retained"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "kind": "personal",
+        "company": "Retained"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["kind", "personal", "review"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "uses one scoped view for displayed fields, field errors and navigation validation",
+      "definition": {
+        "id": "routes",
+        "title": "Account",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "Kind",
+                "validation": {
+                  "required": true
+                },
+                "autoAdvance": true
+              },
+              {
+                "key": "enabled",
+                "type": "checkbox",
+                "label": "Enabled"
+              }
+            ],
+            "routes": [
+              {
+                "to": "business",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "business"
+                  }
+                ]
+              },
+              {
+                "to": "personal"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "personal",
+            "title": "Personal",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                },
+                "show": [
+                  {
+                    "field": "company",
+                    "neq": "Retained"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": []
+          }
+        ]
+      },
+      "values": {
+        "kind": "personal",
+        "company": "Retained",
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "expect": {
+            "fields": ["name"],
+            "values": {
+              "kind": "personal",
+              "company": "Retained",
+              "name": "Ada"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": ""
+        },
+        {
+          "expect": {
+            "canGoNext": false
+          }
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "Server rejected name"
+          }
+        },
+        {
+          "expect": {
+            "topLevelErrors": [],
+            "errors": {
+              "name": "Server rejected name"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "preserves conditional answers inside an inactive restored branch until it becomes active",
+      "definition": {
+        "id": "routes",
+        "title": "Account",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "kind",
+            "title": "Kind",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "Kind",
+                "validation": {
+                  "required": true
+                },
+                "autoAdvance": true
+              },
+              {
+                "key": "enabled",
+                "type": "checkbox",
+                "label": "Enabled"
+              }
+            ],
+            "routes": [
+              {
+                "to": "business",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "business"
+                  }
+                ]
+              },
+              {
+                "to": "personal"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "companyType",
+                "type": "text",
+                "label": "Type"
+              },
+              {
+                "key": "taxId",
+                "type": "text",
+                "label": "Tax ID",
+                "show": [
+                  {
+                    "field": "companyType",
+                    "eq": "llc"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "personal",
+            "title": "Personal",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "routes": [
+              {
+                "to": "review"
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": []
+          }
+        ]
+      },
+      "values": {
+        "kind": "personal",
+        "companyType": "llc",
+        "taxId": "ABC-123"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "kind": "personal",
+              "companyType": "llc",
+              "taxId": "ABC-123"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "kind",
+          "value": "business"
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "kind": "business",
+              "companyType": "llc",
+              "taxId": "ABC-123"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "companyType",
+          "value": "sole"
+        },
+        {
+          "expect": {
+            "values": {
+              "kind": "business",
+              "companyType": "sole"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "reconciles to the nearest earlier step, not the first",
+      "definition": {
+        "id": "nearest",
+        "title": "nearest",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "a",
+                "type": "text",
+                "label": "a"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "fields": [
+              {
+                "key": "gate",
+                "type": "text",
+                "label": "gate"
+              }
+            ],
+            "routes": [
+              {
+                "to": "three",
+                "show": [
+                  {
+                    "field": "gate",
+                    "eq": "go"
+                  }
+                ]
+              },
+              {
+                "to": "four"
+              }
+            ]
+          },
+          {
+            "id": "three",
+            "title": "Three",
+            "fields": [
+              {
+                "key": "extra",
+                "type": "text",
+                "label": "extra"
+              }
+            ]
+          },
+          {
+            "id": "four",
+            "title": "Four",
+            "fields": [
+              {
+                "key": "last",
+                "type": "text",
+                "label": "last"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "gate": "go"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "three",
+            "stepIndex": 2,
+            "steps": ["one", "two", "three", "four"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "gate",
+          "value": "stop"
+        },
+        {
+          "expect": {
+            "step": "two",
+            "stepIndex": 1,
+            "steps": ["one", "two", "four"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "skips a hidden route target",
+      "definition": {
+        "id": "hidden-target",
+        "title": "hidden-target",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "start",
+            "title": "Start",
+            "fields": [
+              {
+                "key": "detour",
+                "type": "checkbox",
+                "label": "Detour"
+              }
+            ],
+            "routes": [
+              {
+                "to": "detour"
+              }
+            ]
+          },
+          {
+            "id": "middle",
+            "title": "Middle",
+            "fields": [
+              {
+                "key": "note",
+                "type": "text",
+                "label": "note"
+              }
+            ]
+          },
+          {
+            "id": "detour",
+            "title": "Detour",
+            "show": [
+              {
+                "field": "detour",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "reason",
+                "type": "text",
+                "label": "reason"
+              }
+            ]
+          },
+          {
+            "id": "end",
+            "title": "End",
+            "fields": [
+              {
+                "key": "comment",
+                "type": "text",
+                "label": "comment"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["start", "middle", "end"]
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "middle",
+            "stepIndex": 1
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "end",
+            "stepIndex": 2
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "detour",
+          "value": true
+        },
+        {
+          "expect": {
+            "step": "end",
+            "steps": ["start", "detour", "end"]
+          }
+        }
+      ]
+    }
+  ]
+}

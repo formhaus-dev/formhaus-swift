@@ -1,0 +1,147 @@
+{
+  "name": "localized-catalog",
+  "issues": [],
+  "definition": {
+    "id": "anketa",
+    "lang": "ru",
+    "title": "Анкета",
+    "submit": {
+      "label": "Отправить"
+    },
+    "messages": {
+      "required": "Обязательное поле",
+      "minLength": "Минимум {min} символов",
+      "maxItems": "Не более {max}",
+      "email": "Введите корректный email",
+      "min": "Не меньше {min}"
+    },
+    "i18n": {
+      "messages": {
+        "required": "errors.required"
+      }
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Имя",
+        "i18n": {
+          "label": "form.name"
+        },
+        "validation": {
+          "required": true,
+          "minLength": 2
+        }
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email",
+        "validation": {
+          "required": "Укажите email"
+        }
+      },
+      {
+        "key": "age",
+        "type": "number",
+        "label": "Возраст",
+        "validation": {
+          "min": 18
+        }
+      },
+      {
+        "key": "topics",
+        "type": "multiselect",
+        "label": "Темы",
+        "options": [
+          {
+            "value": "news",
+            "label": "Новости"
+          },
+          {
+            "value": "events",
+            "label": "События"
+          },
+          {
+            "value": "jobs",
+            "label": "Вакансии"
+          }
+        ],
+        "validation": {
+          "maxLength": 2
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "reports catalog messages with params",
+      "input": {
+        "values": {
+          "name": "А",
+          "email": "",
+          "age": 16,
+          "topics": ["news", "events", "jobs"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "А",
+          "email": "",
+          "age": 16,
+          "topics": ["news", "events", "jobs"]
+        },
+        "errors": {
+          "name": "Минимум 2 символов",
+          "email": "Укажите email",
+          "age": "Не меньше 18",
+          "topics": "Не более 2"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "reports a format error from the catalog",
+      "input": {
+        "values": {
+          "name": "Аня",
+          "email": "nope"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "Аня",
+          "email": "nope"
+        },
+        "errors": {
+          "email": "Введите корректный email"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "accepts valid answers",
+      "input": {
+        "values": {
+          "name": "Аня",
+          "email": "anya@example.com",
+          "age": 30,
+          "topics": ["news"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "Аня",
+          "email": "anya@example.com",
+          "age": 30,
+          "topics": ["news"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

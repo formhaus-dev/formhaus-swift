@@ -1,0 +1,107 @@
+{
+  "name": "check-container-scope",
+  "covers": ["lets item fields use sibling fields and outer fields, but not fields of another group", "reports cycles inside an item"],
+  "issues": [
+    {
+      "code": "group-scope",
+      "path": "/fields/2/fields/0/show/0/field"
+    },
+    {
+      "code": "condition-cycle",
+      "path": "/fields/3/fields/0"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "country",
+        "type": "text",
+        "label": "country"
+      },
+      {
+        "key": "a",
+        "type": "group",
+        "label": "a",
+        "fields": [
+          {
+            "key": "x",
+            "type": "text",
+            "label": "x"
+          },
+          {
+            "key": "y",
+            "type": "text",
+            "label": "y",
+            "show": [
+              {
+                "field": "x",
+                "notEmpty": true
+              },
+              {
+                "field": "country",
+                "eq": "NL"
+              }
+            ],
+            "validation": {
+              "matchField": "x"
+            }
+          }
+        ]
+      },
+      {
+        "key": "b",
+        "type": "group",
+        "label": "b",
+        "fields": [
+          {
+            "key": "z",
+            "type": "text",
+            "label": "z",
+            "show": [
+              {
+                "field": "x",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "c",
+        "type": "group",
+        "label": "c",
+        "fields": [
+          {
+            "key": "p",
+            "type": "text",
+            "label": "p",
+            "show": [
+              {
+                "field": "q",
+                "notEmpty": true
+              }
+            ]
+          },
+          {
+            "key": "q",
+            "type": "text",
+            "label": "q",
+            "show": [
+              {
+                "field": "p",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "formatVersion": "1.1"
+  }
+}

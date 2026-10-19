@@ -1,0 +1,52 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "definition-messages",
+  "definition": {
+    "id": "signup",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "lang": "ru",
+    "messages": {
+      "required": "Обязательное поле",
+      "minLength": "Минимум {min}"
+    },
+    "fields": [
+      {
+        "key": "password",
+        "type": "password",
+        "label": "password",
+        "validation": {
+          "required": true,
+          "minLength": 8
+        }
+      },
+      {
+        "key": "name",
+        "type": "text",
+        "label": "name",
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "uses the definition catalog",
+      "values": {
+        "password": "abc"
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "password": "Минимум 8",
+            "name": "Обязательное поле"
+          }
+        }
+      ]
+    }
+  ]
+}

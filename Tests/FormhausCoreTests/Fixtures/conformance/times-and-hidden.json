@@ -1,0 +1,137 @@
+{
+  "name": "times-and-hidden",
+  "issues": [],
+  "definition": {
+    "id": "booking",
+    "title": "Booking",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "at",
+        "type": "time",
+        "label": "At"
+      },
+      {
+        "key": "until",
+        "type": "time",
+        "label": "Until"
+      },
+      {
+        "key": "source",
+        "type": "hidden",
+        "label": "Source"
+      },
+      {
+        "key": "ref",
+        "type": "hidden",
+        "label": "Referral",
+        "show": [
+          {
+            "field": "at",
+            "notEmpty": true
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "real times and hidden text",
+      "input": {
+        "values": {
+          "at": "00:00",
+          "until": "23:59:59",
+          "source": " newsletter ",
+          "ref": "friend"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "at": "00:00",
+          "until": "23:59:59",
+          "source": "newsletter",
+          "ref": "friend"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "hour 24 and minute 60",
+      "input": {
+        "values": {
+          "at": "24:00",
+          "until": "12:60"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "at": "24:00",
+          "until": "12:60"
+        },
+        "errors": {
+          "at": "Enter a valid time",
+          "until": "Enter a valid time"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "12-hour, single-digit and fractional times",
+      "input": {
+        "values": {
+          "at": "9:30 PM",
+          "until": "09:30:00.5"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "at": "9:30 PM",
+          "until": "09:30:00.5"
+        },
+        "errors": {
+          "at": "Enter a valid time",
+          "until": "Enter a valid time"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "hidden value that is not text",
+      "input": {
+        "values": {
+          "source": 42
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "source": 42
+        },
+        "errors": {
+          "source": "Source: Must be text"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "hidden field behind a condition that fails",
+      "input": {
+        "values": {
+          "ref": "friend"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

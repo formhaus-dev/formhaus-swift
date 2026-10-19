@@ -1,0 +1,240 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "hidden-visibility",
+  "definition": {
+    "id": "conditional",
+    "title": "Conditional",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "country",
+        "type": "select",
+        "label": "Country",
+        "options": [
+          {
+            "value": "MX",
+            "label": "Mexico"
+          },
+          {
+            "value": "US",
+            "label": "US"
+          }
+        ]
+      },
+      {
+        "key": "clabe",
+        "type": "text",
+        "label": "CLABE",
+        "show": [
+          {
+            "field": "country",
+            "eq": "MX"
+          }
+        ]
+      },
+      {
+        "key": "routing",
+        "type": "text",
+        "label": "Routing",
+        "show": [
+          {
+            "field": "country",
+            "eq": "US"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "returns only visible field values for submission",
+      "values": {
+        "country": "MX",
+        "clabe": "123",
+        "routing": "456"
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "country": "MX",
+              "clabe": "123"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "surfaces errors on hidden fields as top-level errors",
+      "values": {
+        "country": "US"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "clabe": "Invalid CLABE"
+          }
+        },
+        {
+          "expect": {
+            "errors": {},
+            "topLevelErrors": ["Invalid CLABE"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not validate hidden fields",
+      "definition": {
+        "id": "hidden-validation",
+        "title": "Hidden",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "x",
+            "type": "text",
+            "label": "X"
+          },
+          {
+            "key": "hidden",
+            "type": "text",
+            "label": "Hidden",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "x",
+                "eq": "y"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    },
+    {
+      "name": "does not validate a field whose containing step is hidden",
+      "definition": {
+        "id": "hidden-step",
+        "title": "Hidden step",
+        "submit": {
+          "label": "Submit"
+        },
+        "steps": [
+          {
+            "id": "main",
+            "title": "Main",
+            "fields": [
+              {
+                "key": "accountType",
+                "type": "text",
+                "label": "Account type"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "fields": [
+              {
+                "key": "taxId",
+                "type": "text",
+                "label": "Tax ID",
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "show": [
+              {
+                "field": "accountType",
+                "eq": "business"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "taxId",
+          "returns": null
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "surfaces errors from hidden steps as top-level errors",
+      "definition": {
+        "id": "hidden-step-errors",
+        "title": "Hidden step errors",
+        "submit": {
+          "label": "Submit"
+        },
+        "steps": [
+          {
+            "id": "main",
+            "title": "Main",
+            "fields": [
+              {
+                "key": "kind",
+                "type": "text",
+                "label": "Kind"
+              }
+            ]
+          },
+          {
+            "id": "business",
+            "title": "Business",
+            "show": [
+              {
+                "field": "kind",
+                "eq": "business"
+              }
+            ],
+            "fields": [
+              {
+                "key": "company",
+                "type": "text",
+                "label": "Company"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "kind": "personal"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "company": "Invalid company"
+          }
+        },
+        {
+          "expect": {
+            "errors": {},
+            "topLevelErrors": ["Invalid company"],
+            "step": "main"
+          }
+        }
+      ]
+    }
+  ]
+}

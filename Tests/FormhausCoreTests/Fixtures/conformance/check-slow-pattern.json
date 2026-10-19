@@ -1,0 +1,140 @@
+{
+  "name": "check-slow-pattern",
+  "covers": ["warns about a pattern that repeats a group with a quantifier or alternation"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "slow-pattern",
+      "path": "/fields/0/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/1/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/2/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/3/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/4/validation/pattern"
+    }
+  ],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "code0",
+        "type": "text",
+        "label": "code0",
+        "validation": {
+          "pattern": "^(a+)+$"
+        }
+      },
+      {
+        "key": "code1",
+        "type": "text",
+        "label": "code1",
+        "validation": {
+          "pattern": "(a*)*"
+        }
+      },
+      {
+        "key": "code2",
+        "type": "text",
+        "label": "code2",
+        "validation": {
+          "pattern": "(a|aa)+"
+        }
+      },
+      {
+        "key": "code3",
+        "type": "text",
+        "label": "code3",
+        "validation": {
+          "pattern": "(\\w+\\s?)+"
+        }
+      },
+      {
+        "key": "code4",
+        "type": "text",
+        "label": "code4",
+        "validation": {
+          "pattern": "(?:[a-z]+\\.){2,}"
+        }
+      },
+      {
+        "key": "code5",
+        "type": "text",
+        "label": "code5",
+        "validation": {
+          "pattern": "^[0-9]{5}$"
+        }
+      },
+      {
+        "key": "code6",
+        "type": "text",
+        "label": "code6",
+        "validation": {
+          "pattern": "^(\\+\\d{1,3})?$"
+        }
+      },
+      {
+        "key": "code7",
+        "type": "text",
+        "label": "code7",
+        "validation": {
+          "pattern": "(?=.*[A-Z])(?=.*[0-9])"
+        }
+      },
+      {
+        "key": "code8",
+        "type": "text",
+        "label": "code8",
+        "validation": {
+          "pattern": "(ab)+"
+        }
+      },
+      {
+        "key": "code9",
+        "type": "text",
+        "label": "code9",
+        "validation": {
+          "pattern": "[(a+)]+"
+        }
+      },
+      {
+        "key": "code10",
+        "type": "text",
+        "label": "code10",
+        "validation": {
+          "pattern": "\\(a+\\)+"
+        }
+      },
+      {
+        "key": "code11",
+        "type": "text",
+        "label": "code11",
+        "validation": {
+          "pattern": "(?:ab)+"
+        }
+      },
+      {
+        "key": "code12",
+        "type": "text",
+        "label": "code12",
+        "validation": {
+          "pattern": "(a)+"
+        }
+      }
+    ]
+  }
+}

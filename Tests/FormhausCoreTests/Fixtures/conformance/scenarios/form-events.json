@@ -1,0 +1,462 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "form-events",
+  "definition": {
+    "id": "events",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "one",
+        "title": "One",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "two",
+        "title": "Two",
+        "skip": {
+          "label": "Skip"
+        },
+        "fields": [
+          {
+            "key": "plan",
+            "type": "text",
+            "label": "Plan"
+          }
+        ]
+      },
+      {
+        "id": "three",
+        "title": "Three",
+        "fields": [
+          {
+            "key": "city",
+            "type": "text",
+            "label": "City"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "reports the form and first step once on start",
+      "steps": [
+        {
+          "expect": {
+            "log": []
+          }
+        },
+        {
+          "do": "start"
+        },
+        {
+          "do": "start"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_viewed"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "one",
+                  "stepIndex": 0
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports every step change in order",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "expect": {
+            "step": "one"
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "name"
+        },
+        {
+          "expect": {
+            "step": "one",
+            "log": [
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "one"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "two",
+                  "stepIndex": 1
+                }
+              },
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "two"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "three",
+                  "stepIndex": 2
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "two",
+                  "stepIndex": 1
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "one",
+                  "stepIndex": 0
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports field errors when a step fails validation",
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "This field is required"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "This field is required"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports submit start and result",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "formErrors": ["Closed"]
+              }
+            }
+          ],
+          "returns": false
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "throw": "Offline"
+            }
+          ],
+          "throws": {
+            "name": "Error",
+            "message": "Offline"
+          }
+        },
+        {
+          "do": "submit",
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "rejected"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "error"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports a reset and the current step again",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {}
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "step": "one",
+            "log": [
+              {
+                "event": {
+                  "type": "form_reset"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "one",
+                  "stepIndex": 0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_reset"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "one",
+                  "stepIndex": 0
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not report the form again when started after a reset",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_viewed"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "one",
+                  "stepIndex": 0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_reset"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "one",
+                  "stepIndex": 0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "start"
+        },
+        {
+          "expect": {
+            "log": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not report a single-step form again when started after a reset",
+      "definition": {
+        "id": "single",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "do": "start"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_viewed"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "do": "start"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "form_reset"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

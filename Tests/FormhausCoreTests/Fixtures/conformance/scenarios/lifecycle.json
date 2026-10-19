@@ -1,0 +1,841 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "lifecycle",
+  "definition": {
+    "id": "multi",
+    "title": "Multi-Step",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "personal",
+        "title": "Personal Info",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "accountType",
+            "type": "radio",
+            "label": "Account",
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "business",
+        "title": "Business Info",
+        "fields": [
+          {
+            "key": "company",
+            "type": "text",
+            "label": "Company"
+          }
+        ],
+        "show": [
+          {
+            "field": "accountType",
+            "eq": "business"
+          }
+        ]
+      },
+      {
+        "id": "payment",
+        "title": "Payment",
+        "fields": [
+          {
+            "key": "method",
+            "type": "select",
+            "label": "Method",
+            "options": [
+              {
+                "value": "bank",
+                "label": "Bank"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "validates, allows cancellation, and reports the completed transition",
+      "hooks": {
+        "onStepValidate": [],
+        "onBeforeStepChange": [
+          {
+            "return": false
+          },
+          {
+            "return": true
+          },
+          {
+            "return": true
+          }
+        ],
+        "onAfterStepChange": []
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "This field is required"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "log": [
+              {
+                "call": "onStepValidate",
+                "stepId": "personal",
+                "values": {
+                  "name": "Ada"
+                }
+              },
+              {
+                "call": "onBeforeStepChange",
+                "context": {
+                  "fromStepId": "personal",
+                  "toStepId": "payment",
+                  "reason": "next",
+                  "values": {
+                    "name": "Ada"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onStepValidate",
+                "stepId": "personal",
+                "values": {
+                  "name": "Ada"
+                }
+              },
+              {
+                "call": "onBeforeStepChange",
+                "context": {
+                  "fromStepId": "personal",
+                  "toStepId": "payment",
+                  "reason": "next",
+                  "values": {
+                    "name": "Ada"
+                  }
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "personal"
+                }
+              },
+              {
+                "call": "onAfterStepChange",
+                "context": {
+                  "fromStepId": "personal",
+                  "toStepId": "payment",
+                  "reason": "next",
+                  "values": {
+                    "name": "Ada"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onBeforeStepChange",
+                "context": {
+                  "fromStepId": "payment",
+                  "toStepId": "personal",
+                  "reason": "back",
+                  "values": {
+                    "name": "Ada"
+                  }
+                }
+              },
+              {
+                "call": "onAfterStepChange",
+                "context": {
+                  "fromStepId": "payment",
+                  "toStepId": "personal",
+                  "reason": "back",
+                  "values": {
+                    "name": "Ada"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "holds the lock through async after hooks and ignores repeated actions",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onAfterStepChange": [
+          {
+            "defer": "after"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "do": "back",
+          "returns": false
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "do": "resolve",
+          "deferred": "after"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "payment",
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards stale before-hook work after invalid edit",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": ""
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards stale before-hook work after path change",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "business"
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards stale before-hook work after reset",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "reset",
+          "values": {
+            "name": "Reset"
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards stale before-hook work after jump",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "goToStepWithField",
+          "key": "method"
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards stale before-hook work after reset to the same values",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "defer": "guard"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "reset",
+          "values": {
+            "name": "Ada"
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "guard"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "stepValidating": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "rejects hook errors and releases the lock for retry",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeStepChange": [
+          {
+            "throw": "Offline"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "throws": {
+            "name": "Error",
+            "message": "Offline"
+          }
+        },
+        {
+          "expect": {
+            "step": "personal",
+            "stepValidating": false
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        }
+      ]
+    },
+    {
+      "name": "validates and awaits before, submit and after in order",
+      "definition": {
+        "id": "one",
+        "title": "",
+        "submit": {
+          "label": "Save"
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      "hooks": {
+        "onBeforeSubmit": [{}],
+        "onAfterSubmit": [{}]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "This field is required"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "send"
+            }
+          ],
+          "await": false,
+          "returns": true
+        },
+        {
+          "expect": {
+            "submitting": true,
+            "log": [
+              {
+                "call": "onBeforeSubmit",
+                "values": {
+                  "name": "Ada"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              }
+            ]
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "do": "resolve",
+          "deferred": "send"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "submitting": false,
+            "log": [
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              },
+              {
+                "call": "onAfterSubmit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "cancels before submit and does not run after on a failed submission",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeSubmit": [
+          {
+            "return": false
+          },
+          {
+            "return": true
+          }
+        ],
+        "onAfterSubmit": []
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onBeforeSubmit",
+                "values": {
+                  "name": "Ada"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "throw": "Unavailable"
+            }
+          ],
+          "throws": {
+            "name": "Error",
+            "message": "Unavailable"
+          }
+        },
+        {
+          "expect": {
+            "submitting": false,
+            "log": [
+              {
+                "call": "onBeforeSubmit",
+                "values": {
+                  "name": "Ada"
+                }
+              },
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "error"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "marks after-hook failures as committed, so they cannot be mistaken for failed actions",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onAfterStepChange": [
+          {
+            "throw": "Analytics unavailable"
+          }
+        ],
+        "onAfterSubmit": [
+          {
+            "throw": "Receipt unavailable"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "throws": {
+            "name": "FormLifecycleError",
+            "phase": "afterStepChange"
+          }
+        },
+        {
+          "expect": {
+            "step": "payment"
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "throws": {
+            "name": "FormLifecycleError",
+            "phase": "afterSubmit"
+          }
+        },
+        {
+          "expect": {
+            "submitting": false,
+            "log": [
+              {
+                "event": {
+                  "type": "form_submitted",
+                  "fieldCount": 1
+                }
+              },
+              {
+                "call": "submit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              },
+              {
+                "event": {
+                  "type": "form_submit_succeeded"
+                }
+              },
+              {
+                "call": "onAfterSubmit",
+                "values": {
+                  "name": "Ada"
+                },
+                "skippedSteps": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not let a pending server check approve a different answer",
+      "values": {
+        "name": "allowed"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "defer": "check"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "blocked"
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "step": "personal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "discards a pending submission when the active path changes",
+      "values": {
+        "name": "Ada"
+      },
+      "hooks": {
+        "onBeforeSubmit": [
+          {
+            "defer": "allow"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [],
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "setValue",
+          "key": "accountType",
+          "value": "business"
+        },
+        {
+          "do": "resolve",
+          "deferred": "allow"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onBeforeSubmit",
+                "values": {
+                  "name": "Ada"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "name": "check-disabled-not-applicable",
+  "covers": ["warns about disabled on Back, Skip and Cancel only"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "disabled-not-applicable",
+      "path": "/cancel/disabled"
+    },
+    {
+      "code": "disabled-not-applicable",
+      "path": "/steps/1/back/disabled"
+    },
+    {
+      "code": "disabled-not-applicable",
+      "path": "/steps/1/skip/disabled"
+    }
+  ],
+  "definition": {
+    "id": "f",
+    "title": "F",
+    "cancel": {
+      "label": "Cancel",
+      "disabled": [
+        {
+          "field": "a",
+          "eq": "x"
+        }
+      ]
+    },
+    "submit": {
+      "label": "Submit",
+      "disabled": [
+        {
+          "field": "a",
+          "eq": "x"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "id": "s1",
+        "title": "S1",
+        "fields": [
+          {
+            "key": "a",
+            "type": "text",
+            "label": "a"
+          }
+        ],
+        "next": {
+          "label": "Next",
+          "disabled": [
+            {
+              "field": "a",
+              "eq": "x"
+            }
+          ]
+        }
+      },
+      {
+        "id": "s2",
+        "title": "S2",
+        "fields": [
+          {
+            "key": "b",
+            "type": "text",
+            "label": "b"
+          }
+        ],
+        "back": {
+          "label": "Back",
+          "disabled": [
+            {
+              "field": "a",
+              "eq": "x"
+            }
+          ]
+        },
+        "skip": {
+          "label": "Skip",
+          "disabled": [
+            {
+              "field": "a",
+              "eq": "x"
+            }
+          ]
+        }
+      },
+      {
+        "id": "s3",
+        "title": "S3",
+        "fields": [
+          {
+            "key": "c",
+            "type": "text",
+            "label": "c"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,240 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "type-formats",
+  "definition": {
+    "id": "type-formats",
+    "title": "",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "email",
+        "type": "email",
+        "label": "email"
+      },
+      {
+        "key": "emailRules",
+        "type": "email",
+        "label": "emailRules",
+        "validation": {
+          "minLength": 50,
+          "pattern": "^z"
+        }
+      },
+      {
+        "key": "datetime",
+        "type": "datetime",
+        "label": "datetime"
+      },
+      {
+        "key": "date",
+        "type": "date",
+        "label": "date"
+      },
+      {
+        "key": "time",
+        "type": "time",
+        "label": "time"
+      },
+      {
+        "key": "hidden",
+        "type": "hidden",
+        "label": "hidden"
+      },
+      {
+        "key": "number",
+        "type": "number",
+        "label": "number"
+      },
+      {
+        "key": "file",
+        "type": "file",
+        "label": "file"
+      },
+      {
+        "key": "rating",
+        "type": "rating",
+        "label": "rating"
+      },
+      {
+        "key": "static",
+        "type": "select",
+        "label": "static",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          }
+        ]
+      },
+      {
+        "key": "provided",
+        "type": "select",
+        "label": "provided",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          }
+        ],
+        "optionsFrom": "cities"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "accepts email \"ada@example.com\"",
+      "values": {
+        "email": "ada@example.com"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "email",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts datetime \"2026-01-01T12:00\"",
+      "values": {
+        "datetime": "2026-01-01T12:00"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "datetime",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts date \"2026-01-01\"",
+      "values": {
+        "date": "2026-01-01"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "date",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts time \"07:05\"",
+      "values": {
+        "time": "07:05"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "time",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts time \"23:59:59\"",
+      "values": {
+        "time": "23:59:59"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "time",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts hidden \"newsletter\"",
+      "values": {
+        "hidden": "newsletter"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "hidden",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts number 0",
+      "values": {
+        "number": 0
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "number",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts file {\"name\":\"cv.pdf\"}",
+      "values": {
+        "file": {
+          "name": "cv.pdf"
+        }
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "file",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "accepts rating {\"stars\":4}",
+      "values": {
+        "rating": {
+          "stars": 4
+        }
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "rating",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "checks static options but not options loaded from a provider",
+      "values": {
+        "static": "z",
+        "provided": "z"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "static",
+          "returns": "Select one of the available options"
+        },
+        {
+          "do": "validateField",
+          "key": "provided",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "runs the type check before size and pattern rules",
+      "values": {
+        "emailRules": "a@b"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "emailRules",
+          "returns": "Enter a valid email"
+        }
+      ]
+    }
+  ]
+}

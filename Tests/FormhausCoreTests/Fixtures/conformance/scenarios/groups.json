@@ -1,0 +1,1442 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "groups",
+  "definition": {
+    "id": "event",
+    "title": "event",
+    "submit": {
+      "label": "Send"
+    },
+    "formatVersion": "1.1",
+    "fields": [
+      {
+        "key": "company",
+        "type": "checkbox",
+        "label": "Company"
+      },
+      {
+        "key": "billing",
+        "type": "section",
+        "title": "Billing",
+        "show": [
+          {
+            "field": "company",
+            "eq": true
+          }
+        ],
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "Street",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "itemLabel": "Person {index}",
+        "defaultItems": 1,
+        "validation": {
+          "required": true,
+          "maxLength": 3
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email"
+          },
+          {
+            "key": "confirm",
+            "type": "email",
+            "label": "Confirm",
+            "validation": {
+              "matchField": "email"
+            }
+          },
+          {
+            "key": "diet",
+            "type": "select",
+            "label": "Diet",
+            "defaultValue": "none",
+            "options": [
+              {
+                "value": "none",
+                "label": "none"
+              },
+              {
+                "value": "other",
+                "label": "other"
+              }
+            ]
+          },
+          {
+            "key": "dietNote",
+            "type": "text",
+            "label": "Details",
+            "show": [
+              {
+                "field": "diet",
+                "eq": "other"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "vat",
+            "type": "text",
+            "label": "VAT",
+            "show": [
+              {
+                "field": "company",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "summary",
+        "type": "text",
+        "label": "Summary",
+        "show": [
+          {
+            "field": "people",
+            "notEmpty": true
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "adds and removes items within the limits",
+      "steps": [
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 0,
+          "returns": false
+        },
+        {
+          "do": "addItem",
+          "key": "people",
+          "returns": true
+        },
+        {
+          "do": "addItem",
+          "key": "people",
+          "returns": true
+        },
+        {
+          "do": "addItem",
+          "key": "people",
+          "returns": false
+        },
+        {
+          "expect": {
+            "items": {
+              "people": 3
+            },
+            "values": {
+              "people": [
+                {
+                  "diet": "none"
+                },
+                {
+                  "diet": "none"
+                },
+                {
+                  "diet": "none"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 5,
+          "returns": false
+        },
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 1,
+          "returns": true
+        },
+        {
+          "expect": {
+            "items": {
+              "people": 2
+            },
+            "values": {
+              "people": [
+                {
+                  "diet": "none"
+                },
+                {
+                  "diet": "none"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "addItem",
+          "key": "missing",
+          "returns": false
+        }
+      ]
+    },
+    {
+      "name": "validates every item and reports errors by path",
+      "values": {
+        "people": [
+          {
+            "name": "Ada",
+            "email": "a@x.io",
+            "confirm": "b@x.io"
+          },
+          {
+            "diet": "other"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "people.0.confirm": "Fields must match",
+            "people.1.name": "This field is required",
+            "people.1.dietNote": "This field is required"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "people.0.email",
+          "value": "b@x.io"
+        },
+        {
+          "expect": {
+            "errors": {
+              "people.1.name": "This field is required",
+              "people.1.dietNote": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "validateField",
+          "key": "people.1.name",
+          "returns": "This field is required"
+        },
+        {
+          "do": "validateField",
+          "key": "people.1.vat",
+          "returns": null
+        }
+      ]
+    },
+    {
+      "name": "reports count rules under the group key - minLength",
+      "definition": {
+        "id": "event",
+        "title": "event",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "itemLabel": "Person {index}",
+            "defaultItems": 0,
+            "validation": {
+              "minLength": 2,
+              "maxLength": 3
+            },
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "email",
+                "type": "email",
+                "label": "Email"
+              },
+              {
+                "key": "confirm",
+                "type": "email",
+                "label": "Confirm",
+                "validation": {
+                  "matchField": "email"
+                }
+              },
+              {
+                "key": "diet",
+                "type": "select",
+                "label": "Diet",
+                "defaultValue": "none",
+                "options": [
+                  {
+                    "value": "none",
+                    "label": "none"
+                  },
+                  {
+                    "value": "other",
+                    "label": "other"
+                  }
+                ]
+              },
+              {
+                "key": "dietNote",
+                "type": "text",
+                "label": "Details",
+                "show": [
+                  {
+                    "field": "diet",
+                    "eq": "other"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "people": [
+          {
+            "name": "A"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "people": "Must be at least 2 items"
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports count rules under the group key - required",
+      "definition": {
+        "id": "event",
+        "title": "event",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "itemLabel": "Person {index}",
+            "defaultItems": 0,
+            "validation": {
+              "required": true,
+              "maxLength": 3
+            },
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "email",
+                "type": "email",
+                "label": "Email"
+              },
+              {
+                "key": "confirm",
+                "type": "email",
+                "label": "Confirm",
+                "validation": {
+                  "matchField": "email"
+                }
+              },
+              {
+                "key": "diet",
+                "type": "select",
+                "label": "Diet",
+                "defaultValue": "none",
+                "options": [
+                  {
+                    "value": "none",
+                    "label": "none"
+                  },
+                  {
+                    "value": "other",
+                    "label": "other"
+                  }
+                ]
+              },
+              {
+                "key": "dietNote",
+                "type": "text",
+                "label": "Details",
+                "show": [
+                  {
+                    "field": "diet",
+                    "eq": "other"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "people": "This field is required"
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears hidden item fields and their errors",
+      "values": {
+        "people": [
+          {
+            "name": "A",
+            "diet": "other"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate"
+        },
+        {
+          "expect": {
+            "errors": {
+              "people.0.dietNote": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "dietNote",
+          "value": "Vegan"
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "diet",
+          "value": "none"
+        },
+        {
+          "expect": {
+            "values": {
+              "people": [
+                {
+                  "name": "A",
+                  "diet": "none"
+                }
+              ]
+            },
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "lets outer conditions test the group with notEmpty",
+      "definition": {
+        "id": "event",
+        "title": "event",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "itemLabel": "Person {index}",
+            "defaultItems": 0,
+            "validation": {},
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "email",
+                "type": "email",
+                "label": "Email"
+              },
+              {
+                "key": "confirm",
+                "type": "email",
+                "label": "Confirm",
+                "validation": {
+                  "matchField": "email"
+                }
+              },
+              {
+                "key": "diet",
+                "type": "select",
+                "label": "Diet",
+                "defaultValue": "none",
+                "options": [
+                  {
+                    "value": "none",
+                    "label": "none"
+                  },
+                  {
+                    "value": "other",
+                    "label": "other"
+                  }
+                ]
+              },
+              {
+                "key": "dietNote",
+                "type": "text",
+                "label": "Details",
+                "show": [
+                  {
+                    "field": "diet",
+                    "eq": "other"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          },
+          {
+            "key": "summary",
+            "type": "text",
+            "label": "Summary",
+            "show": [
+              {
+                "field": "people",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["people"]
+          }
+        },
+        {
+          "do": "addItem",
+          "key": "people",
+          "returns": true
+        },
+        {
+          "expect": {
+            "fields": ["people", "summary"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears a hidden group and its item errors",
+      "definition": {
+        "id": "event",
+        "title": "event",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "company",
+            "type": "checkbox",
+            "label": "Company"
+          },
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "itemLabel": "Person {index}",
+            "defaultItems": 1,
+            "validation": {
+              "required": true,
+              "maxLength": 3
+            },
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "email",
+                "type": "email",
+                "label": "Email"
+              },
+              {
+                "key": "confirm",
+                "type": "email",
+                "label": "Confirm",
+                "validation": {
+                  "matchField": "email"
+                }
+              },
+              {
+                "key": "diet",
+                "type": "select",
+                "label": "Diet",
+                "defaultValue": "none",
+                "options": [
+                  {
+                    "value": "none",
+                    "label": "none"
+                  },
+                  {
+                    "value": "other",
+                    "label": "other"
+                  }
+                ]
+              },
+              {
+                "key": "dietNote",
+                "type": "text",
+                "label": "Details",
+                "show": [
+                  {
+                    "field": "diet",
+                    "eq": "other"
+                  }
+                ],
+                "validation": {
+                  "required": true
+                }
+              }
+            ],
+            "show": [
+              {
+                "field": "company",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "company": true,
+        "people": [{}]
+      },
+      "steps": [
+        {
+          "do": "validate"
+        },
+        {
+          "expect": {
+            "errors": {
+              "people.0.name": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": false
+        },
+        {
+          "expect": {
+            "values": {
+              "company": false
+            },
+            "errors": {},
+            "items": {
+              "people": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "maps server errors to items and keeps them until the item field changes",
+      "values": {
+        "people": [
+          {
+            "name": "A"
+          },
+          {
+            "name": "B"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "return": {
+                "ok": false,
+                "errors": {
+                  "people.1.name": "Taken",
+                  "people.7.name": "Gone",
+                  "people": "Too many"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "expect": {
+            "errors": {
+              "people.1.name": "Taken",
+              "people": "Too many"
+            },
+            "topLevelErrors": ["Gone"]
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "name",
+          "value": "A2"
+        },
+        {
+          "expect": {
+            "errors": {
+              "people.1.name": "Taken",
+              "people": "Too many"
+            }
+          }
+        },
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 0,
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {
+              "people.0.name": "Taken"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "people.0.name",
+          "value": "C"
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "accepts paths in setErrors and opens the step with the item error",
+      "definition": {
+        "id": "wizard",
+        "title": "wizard",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "title",
+                "type": "text",
+                "label": "Title"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "people",
+                "type": "group",
+                "label": "People",
+                "itemLabel": "Person {index}",
+                "defaultItems": 2,
+                "validation": {
+                  "required": true,
+                  "maxLength": 3
+                },
+                "fields": [
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "email",
+                    "type": "email",
+                    "label": "Email"
+                  },
+                  {
+                    "key": "confirm",
+                    "type": "email",
+                    "label": "Confirm",
+                    "validation": {
+                      "matchField": "email"
+                    }
+                  },
+                  {
+                    "key": "diet",
+                    "type": "select",
+                    "label": "Diet",
+                    "defaultValue": "none",
+                    "options": [
+                      {
+                        "value": "none",
+                        "label": "none"
+                      },
+                      {
+                        "value": "other",
+                        "label": "other"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "dietNote",
+                    "type": "text",
+                    "label": "Details",
+                    "show": [
+                      {
+                        "field": "diet",
+                        "eq": "other"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "title": "T",
+        "people": [
+          {
+            "name": "A"
+          },
+          {
+            "name": "B"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "people.1.name": "Taken"
+          }
+        },
+        {
+          "expect": {
+            "step": "two",
+            "stepErrors": {
+              "two": ["people.1.name"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "orders step errors by item and field",
+      "definition": {
+        "id": "wizard",
+        "title": "wizard",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "title",
+                "type": "text",
+                "label": "Title"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "people",
+                "type": "group",
+                "label": "People",
+                "itemLabel": "Person {index}",
+                "defaultItems": 2,
+                "validation": {
+                  "required": true,
+                  "maxLength": 3
+                },
+                "fields": [
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "email",
+                    "type": "email",
+                    "label": "Email"
+                  },
+                  {
+                    "key": "confirm",
+                    "type": "email",
+                    "label": "Confirm",
+                    "validation": {
+                      "matchField": "email"
+                    }
+                  },
+                  {
+                    "key": "diet",
+                    "type": "select",
+                    "label": "Diet",
+                    "defaultValue": "none",
+                    "options": [
+                      {
+                        "value": "none",
+                        "label": "none"
+                      },
+                      {
+                        "value": "other",
+                        "label": "other"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "dietNote",
+                    "type": "text",
+                    "label": "Details",
+                    "show": [
+                      {
+                        "field": "diet",
+                        "eq": "other"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "title": "T",
+        "people": [
+          {
+            "diet": "other"
+          },
+          {}
+        ]
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "people.1.name": "x",
+            "people.0.dietNote": "y",
+            "people.0.name": "z",
+            "people": "w"
+          }
+        },
+        {
+          "expect": {
+            "stepErrors": {
+              "two": ["people", "people.0.name", "people.0.dietNote", "people.1.name"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ignores writes to missing items, unknown item fields and inactive groups",
+      "steps": [
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 4,
+          "field": "name",
+          "value": "A"
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "nope",
+          "value": "A"
+        },
+        {
+          "do": "setValue",
+          "key": "people.9.name",
+          "value": "A"
+        },
+        {
+          "expect": {
+            "values": {
+              "people": [
+                {
+                  "diet": "none"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "flags a group value that is not a list of objects",
+      "values": {
+        "people": "Ada"
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "people": "Invalid value"
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears an item match error when the outer field changes to match",
+      "definition": {
+        "id": "edge",
+        "title": "edge",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "company",
+            "type": "checkbox",
+            "label": "Company"
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email"
+          },
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "fields": [
+              {
+                "key": "diet",
+                "type": "select",
+                "label": "Diet",
+                "options": [
+                  {
+                    "value": "none",
+                    "label": "none"
+                  },
+                  {
+                    "value": "other",
+                    "label": "other"
+                  }
+                ]
+              },
+              {
+                "key": "note",
+                "type": "text",
+                "label": "Note",
+                "show": [
+                  {
+                    "field": "diet",
+                    "eq": "other"
+                  }
+                ]
+              },
+              {
+                "key": "vat",
+                "type": "text",
+                "label": "VAT",
+                "show": [
+                  {
+                    "field": "company",
+                    "eq": true
+                  }
+                ]
+              },
+              {
+                "key": "confirm",
+                "type": "email",
+                "label": "Confirm",
+                "validation": {
+                  "matchField": "email"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "email": "a@x.io",
+        "people": [
+          {
+            "confirm": "b@x.io"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "people.0.confirm": "Fields must match"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "email",
+          "value": "b@x.io"
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "moves loading flags with their items",
+      "definition": {
+        "id": "edge",
+        "title": "edge",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "company",
+            "type": "checkbox",
+            "label": "Company"
+          },
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email"
+          },
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "fields": [
+              {
+                "key": "diet",
+                "type": "select",
+                "label": "Diet",
+                "options": [
+                  {
+                    "value": "none",
+                    "label": "none"
+                  },
+                  {
+                    "value": "other",
+                    "label": "other"
+                  }
+                ]
+              },
+              {
+                "key": "note",
+                "type": "text",
+                "label": "Note",
+                "show": [
+                  {
+                    "field": "diet",
+                    "eq": "other"
+                  }
+                ]
+              },
+              {
+                "key": "vat",
+                "type": "text",
+                "label": "VAT",
+                "show": [
+                  {
+                    "field": "company",
+                    "eq": true
+                  }
+                ]
+              },
+              {
+                "key": "confirm",
+                "type": "email",
+                "label": "Confirm",
+                "validation": {
+                  "matchField": "email"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "people": [{}, {}]
+      },
+      "steps": [
+        {
+          "do": "setFieldLoading",
+          "key": "people.1.diet",
+          "loading": true
+        },
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 0,
+          "returns": true
+        },
+        {
+          "expect": {
+            "fieldLoading": {
+              "people.0.diet": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives an untouched group shown again its initial items",
+      "definition": {
+        "id": "edge",
+        "title": "edge",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "company",
+            "type": "checkbox",
+            "label": "Company"
+          },
+          {
+            "key": "guests",
+            "type": "group",
+            "label": "Guests",
+            "defaultItems": 1,
+            "show": [
+              {
+                "field": "company",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "defaultValue": "x"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "company": true,
+        "guests": [
+          {
+            "name": "Ada"
+          },
+          {
+            "name": "Bo"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "company": true,
+              "guests": [
+                {
+                  "name": "Ada"
+                },
+                {
+                  "name": "Bo"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives an edited group shown again its last items",
+      "definition": {
+        "id": "edge",
+        "title": "edge",
+        "submit": {
+          "label": "Send"
+        },
+        "formatVersion": "1.1",
+        "fields": [
+          {
+            "key": "company",
+            "type": "checkbox",
+            "label": "Company"
+          },
+          {
+            "key": "guests",
+            "type": "group",
+            "label": "Guests",
+            "defaultItems": 1,
+            "show": [
+              {
+                "field": "company",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "defaultValue": "x"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "company": true,
+        "guests": [
+          {
+            "name": "Ada"
+          },
+          {
+            "name": "Bo"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "guests.1.name",
+          "value": "Cy"
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": false
+        },
+        {
+          "expect": {
+            "values": {
+              "company": false
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "company": true,
+              "guests": [
+                {
+                  "name": "Ada"
+                },
+                {
+                  "name": "Cy"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

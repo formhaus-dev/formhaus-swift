@@ -1,0 +1,211 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "engine-validation",
+  "definition": {
+    "id": "basic",
+    "title": "Basic Form",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "returns errors for invalid visible fields",
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "name": "This field is required"
+          }
+        }
+      ]
+    },
+    {
+      "name": "validates a single field and updates errors",
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "name",
+          "returns": "This field is required"
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "This field is required"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears a field error when the field is valid",
+      "values": {
+        "name": "John"
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "old error"
+          }
+        },
+        {
+          "do": "validateField",
+          "key": "name",
+          "returns": null
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "sets errors on visible fields",
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "Server says no"
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "Server says no"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "replaces previous errors instead of merging",
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "name": "First error"
+          }
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "email": "Second error"
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "Second error"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "uses validators passed to the constructor",
+      "definition": {
+        "id": "custom",
+        "title": "Custom",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "code",
+            "type": "text",
+            "label": "Code",
+            "validation": {
+              "validator": "checkCode"
+            }
+          }
+        ]
+      },
+      "values": {
+        "code": "bad"
+      },
+      "validators": {
+        "checkCode": {
+          "reject": ["bad"],
+          "error": "Invalid code"
+        }
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "code": "Invalid code"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stays on the last step when its own field is invalid",
+      "definition": {
+        "id": "last-step-error",
+        "title": "Last step error",
+        "submit": {
+          "label": "Submit"
+        },
+        "steps": [
+          {
+            "id": "s1",
+            "title": "One",
+            "fields": [
+              {
+                "key": "a",
+                "type": "text",
+                "label": "A"
+              }
+            ]
+          },
+          {
+            "id": "s2",
+            "title": "Two",
+            "fields": [
+              {
+                "key": "b",
+                "type": "text",
+                "label": "B",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next"
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "s2"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,428 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "spec-rules",
+  "definition": {
+    "id": "s",
+    "title": "S",
+    "submit": {
+      "label": "Go"
+    },
+    "fields": [
+      {
+        "key": "show",
+        "type": "checkbox",
+        "label": "show"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "gives an untouched re-shown field its defaultValue back",
+      "definition": {
+        "id": "s",
+        "title": "S",
+        "submit": {
+          "label": "Go"
+        },
+        "fields": [
+          {
+            "key": "show",
+            "type": "checkbox",
+            "label": "show"
+          },
+          {
+            "key": "detail",
+            "type": "text",
+            "label": "detail",
+            "show": [
+              {
+                "field": "show",
+                "eq": true
+              }
+            ],
+            "defaultValue": "preset"
+          }
+        ]
+      },
+      "values": {
+        "show": true
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "show": true,
+              "detail": "preset"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "show",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "show",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "show": true,
+              "detail": "preset"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives an edited re-shown field its last value",
+      "definition": {
+        "id": "s",
+        "title": "S",
+        "submit": {
+          "label": "Go"
+        },
+        "fields": [
+          {
+            "key": "show",
+            "type": "checkbox",
+            "label": "show"
+          },
+          {
+            "key": "detail",
+            "type": "text",
+            "label": "detail",
+            "show": [
+              {
+                "field": "show",
+                "eq": true
+              }
+            ],
+            "defaultValue": "preset"
+          }
+        ]
+      },
+      "values": {
+        "show": true
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "detail",
+          "value": "mine"
+        },
+        {
+          "do": "setValue",
+          "key": "show",
+          "value": false
+        },
+        {
+          "do": "setValue",
+          "key": "show",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "show": true,
+              "detail": "mine"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "removes the error of a field when it becomes hidden",
+      "definition": {
+        "id": "s",
+        "title": "S",
+        "submit": {
+          "label": "Go"
+        },
+        "fields": [
+          {
+            "key": "show",
+            "type": "checkbox",
+            "label": "show"
+          },
+          {
+            "key": "detail",
+            "type": "text",
+            "label": "detail",
+            "show": [
+              {
+                "field": "show",
+                "eq": true
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      "values": {
+        "show": true
+      },
+      "steps": [
+        {
+          "do": "validate"
+        },
+        {
+          "expect": {
+            "errors": {
+              "detail": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "show",
+          "value": false
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps null, empty string, false and empty arrays without conversion",
+      "definition": {
+        "id": "s",
+        "title": "S",
+        "submit": {
+          "label": "Go"
+        },
+        "fields": [
+          {
+            "key": "a",
+            "type": "text",
+            "label": "a"
+          },
+          {
+            "key": "b",
+            "type": "text",
+            "label": "b"
+          },
+          {
+            "key": "c",
+            "type": "checkbox",
+            "label": "c"
+          },
+          {
+            "key": "d",
+            "type": "multiselect",
+            "label": "d",
+            "options": [
+              {
+                "value": "x",
+                "label": "X"
+              }
+            ]
+          },
+          {
+            "key": "e",
+            "type": "number",
+            "label": "e"
+          }
+        ]
+      },
+      "values": {
+        "a": null,
+        "b": "",
+        "c": false,
+        "d": [],
+        "e": 0
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "a": null,
+              "b": "",
+              "c": false,
+              "d": [],
+              "e": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not validate on setValue, only on Continue and Submit",
+      "definition": {
+        "id": "s",
+        "title": "S",
+        "submit": {
+          "label": "Go"
+        },
+        "fields": [
+          {
+            "key": "x",
+            "type": "text",
+            "label": "x",
+            "validation": {
+              "required": true,
+              "minLength": 3
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "x",
+          "value": "a"
+        },
+        {
+          "expect": {
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "passes reason skip to onAfterStepChange",
+      "definition": {
+        "id": "m",
+        "title": "M",
+        "submit": {
+          "label": "Go"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "a",
+                "type": "text",
+                "label": "a"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "b",
+                "type": "text",
+                "label": "b",
+                "defaultValue": "d"
+              }
+            ]
+          },
+          {
+            "id": "three",
+            "title": "Three",
+            "fields": []
+          }
+        ]
+      },
+      "hooks": {
+        "onAfterStepChange": []
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "two"
+          }
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "three",
+            "log": [
+              {
+                "event": {
+                  "type": "step_skipped",
+                  "stepId": "two"
+                }
+              },
+              {
+                "call": "onAfterStepChange",
+                "context": {
+                  "fromStepId": "two",
+                  "toStepId": "three",
+                  "reason": "skip",
+                  "values": {
+                    "b": "d"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "skips only steps that have a skip action",
+      "definition": {
+        "id": "m",
+        "title": "M",
+        "submit": {
+          "label": "Go"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "a",
+                "type": "text",
+                "label": "a"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "b",
+                "type": "text",
+                "label": "b",
+                "defaultValue": "d"
+              }
+            ]
+          },
+          {
+            "id": "three",
+            "title": "Three",
+            "fields": []
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "skip",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "one"
+          }
+        }
+      ]
+    }
+  ]
+}
