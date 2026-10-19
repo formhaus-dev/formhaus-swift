@@ -154,7 +154,7 @@ func formatIssues(_ input: JSONObject) -> [DefinitionIssue] {
     return [
         valid
             ? error("unsupported-format-version", "/formatVersion", "format \(text!) is not supported", "Upgrade @formhaus/core")
-            : error("invalid-type", "/formatVersion", "must be a version string", "Use \"\(FormDefinition.supportedFormatVersion)\""),
+            : error("invalid-type", "/formatVersion", "must be a version string", "Use \"\(FormDefinition.supportedFormatVersion)\"")
     ]
 }
 

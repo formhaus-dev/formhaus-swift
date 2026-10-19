@@ -31,7 +31,8 @@ struct AwaitOrderTests {
 
     @Test("a write queued while onBeforeStepChange replies synchronously makes next stale")
     func beforeStepChange() async throws {
-        let engine = try FormEngine(definition: Self.steps, values: ["a": "x"], options: FormEngineOptions(onBeforeStepChange: { _ in true }))
+        let engine = try FormEngine(
+            definition: Self.steps, values: ["a": "x"], options: FormEngineOptions(onBeforeStepChange: { _ in true }))
         deferOnce(engine, { $0.stepValidating }) { engine.setValue("a", "y") }
         #expect(try await engine.next() == false)
         #expect(engine.currentStep?.id == "one")
@@ -53,7 +54,11 @@ struct AwaitOrderTests {
         let engine = try FormEngine(definition: Self.flat, values: ["a": "x"], options: FormEngineOptions(onBeforeSubmit: { _ in true }))
         deferOnce(engine, { $0.submitting }) { engine.setValue("a", "y") }
         var calls = 0
-        #expect(try await engine.submit { _, _ in calls += 1; return nil } == false)
+        #expect(
+            try await engine.submit { _, _ in
+                calls += 1
+                return nil
+            } == false)
         #expect(calls == 0)
         #expect(engine.values["a"] == "y")
         #expect(!engine.submitting)

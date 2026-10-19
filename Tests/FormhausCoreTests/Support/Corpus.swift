@@ -1,5 +1,5 @@
-import Foundation
 import FormhausCore
+import Foundation
 import Testing
 
 struct IssueEntry: Hashable, CustomStringConvertible {

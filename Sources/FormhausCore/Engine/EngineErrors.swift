@@ -81,7 +81,8 @@ extension EngineCore {
             ?? visibility.allFields.map { ($0.key, $0) }
         for (path, field) in fields {
             guard let match = field.validation?.matchField, sameText(match, key), errors[path] != nil else { continue }
-            let error = item.map { itemError(ItemField(group: $0.group, index: $0.index, field: field)) } ?? fieldError(field, values[field.key])
+            let error =
+                item.map { itemError(ItemField(group: $0.group, index: $0.index, field: field)) } ?? fieldError(field, values[field.key])
             if error != nil { continue }
             clearError(path)
             cleared.append(path)

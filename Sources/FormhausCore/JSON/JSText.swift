@@ -92,18 +92,27 @@ private func isDecimalLiteral(_ text: String) -> Bool {
     var index = 0
     let isDigit = { (byte: UInt8) in (0x30...0x39).contains(byte) }
     var whole = 0
-    while index < chars.count, isDigit(chars[index]) { index += 1; whole += 1 }
+    while index < chars.count, isDigit(chars[index]) {
+        index += 1
+        whole += 1
+    }
     var fraction = 0
     if index < chars.count, chars[index] == UInt8(ascii: ".") {
         index += 1
-        while index < chars.count, isDigit(chars[index]) { index += 1; fraction += 1 }
+        while index < chars.count, isDigit(chars[index]) {
+            index += 1
+            fraction += 1
+        }
     }
     guard whole + fraction > 0 else { return false }
     if index < chars.count, chars[index] == UInt8(ascii: "e") || chars[index] == UInt8(ascii: "E") {
         index += 1
         if index < chars.count, chars[index] == UInt8(ascii: "+") || chars[index] == UInt8(ascii: "-") { index += 1 }
         var power = 0
-        while index < chars.count, isDigit(chars[index]) { index += 1; power += 1 }
+        while index < chars.count, isDigit(chars[index]) {
+            index += 1
+            power += 1
+        }
         guard power > 0 else { return false }
     }
     return index == chars.count

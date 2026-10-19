@@ -46,7 +46,10 @@ private func stepIssues(_ context: CheckContext) -> [DefinitionIssue] {
     var seen = StringMap<Int>(insertionOrder: true)
     for (index, step) in steps.enumerated() {
         if let first = seen[step.id] {
-            issues.append(error("duplicate-step-id", "/steps/\(index)/id", "step id \"\(step.id)\" is already used by /steps/\(first)", "Give each step a unique id"))
+            issues.append(
+                error(
+                    "duplicate-step-id", "/steps/\(index)/id", "step id \"\(step.id)\" is already used by /steps/\(first)",
+                    "Give each step a unique id"))
         } else {
             seen[step.id] = index
         }
@@ -90,17 +93,22 @@ private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
         }
         let prefix = entry.group == nil ? groups.first { hasTextPrefix(key, "\($0.node.key).") } : nil
         if reservedKeys.contains(key) {
-            issues.append(error("reserved-key", "\(entry.path)/key", "\"\(key)\" is a built-in object property name", "Rename the field key"))
+            issues.append(
+                error("reserved-key", "\(entry.path)/key", "\"\(key)\" is a built-in object property name", "Rename the field key"))
         } else if let clash {
             let inGroup = entry.group != nil
             issues.append(
                 error(
-                    "duplicate-key", "\(entry.path)/key", "key \"\(key)\" is already used by \(clash.path)\(inGroup ? "" : " on the same path")",
+                    "duplicate-key", "\(entry.path)/key",
+                    "key \"\(key)\" is already used by \(clash.path)\(inGroup ? "" : " on the same path")",
                     inGroup ? "Rename the field" : "Rename one of the fields, or move them to route branches that never meet"
                 )
             )
         } else if let prefix {
-            issues.append(error("duplicate-key", "\(entry.path)/key", "key \"\(key)\" starts with the group key \"\(prefix.node.key).\"", "Rename the field"))
+            issues.append(
+                error(
+                    "duplicate-key", "\(entry.path)/key", "key \"\(key)\" starts with the group key \"\(prefix.node.key).\"",
+                    "Rename the field"))
         }
     }
     return issues
@@ -109,14 +117,26 @@ private func keyIssues(_ context: CheckContext) -> [DefinitionIssue] {
 private func nestingIssues(_ context: CheckContext) -> [DefinitionIssue] {
     context.nodes.flatMap { entry -> [DefinitionIssue] in
         let section = entry.node.section != nil
-        guard (section && entry.parent != nil) || (entry.group != nil && ["group", "file", "hidden"].contains(entry.node.type)) else { return [] }
-        return [error("invalid-nesting", "\(entry.path)/type", "a \(entry.node.type) cannot be inside a \(entry.parent!.type)", "Move it to the fields of the step")]
+        guard (section && entry.parent != nil) || (entry.group != nil && ["group", "file", "hidden"].contains(entry.node.type)) else {
+            return []
+        }
+        return [
+            error(
+                "invalid-nesting", "\(entry.path)/type", "a \(entry.node.type) cannot be inside a \(entry.parent!.type)",
+                "Move it to the fields of the step")
+        ]
     }
 }
 
 func structureIssues(_ context: CheckContext) -> [DefinitionIssue] {
     let definition = context.definition
     let both = !(definition.fields ?? []).isEmpty && !(definition.steps ?? []).isEmpty
-    let mixed = both ? [error("fields-and-steps", "", "the definition has both \"fields\" and \"steps\"", "Move the top-level fields into a step, or remove \"steps\"")] : []
+    let mixed =
+        both
+        ? [
+            error(
+                "fields-and-steps", "", "the definition has both \"fields\" and \"steps\"",
+                "Move the top-level fields into a step, or remove \"steps\"")
+        ] : []
     return mixed + stepIssues(context) + keyIssues(context) + nestingIssues(context)
 }

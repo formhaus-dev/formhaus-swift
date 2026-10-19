@@ -1,6 +1,7 @@
 import Foundation
-@testable import FormhausCore
 import Testing
+
+@testable import FormhausCore
 
 struct ScenarioFile: Sendable {
     let name: String

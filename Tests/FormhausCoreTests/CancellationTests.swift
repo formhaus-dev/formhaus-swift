@@ -9,7 +9,8 @@ struct CancellationTests {
 
     @Test("next returns false when a hook throws CancellationError")
     func nextCancelled() async throws {
-        let engine = try FormEngine(definition: Self.steps, options: FormEngineOptions(onBeforeStepChange: { _ in throw CancellationError() }))
+        let engine = try FormEngine(
+            definition: Self.steps, options: FormEngineOptions(onBeforeStepChange: { _ in throw CancellationError() }))
         #expect(try await engine.next() == false)
         #expect(engine.currentStep?.id == "one")
         #expect(!engine.stepValidating)
@@ -18,7 +19,8 @@ struct CancellationTests {
     @Test("back returns false when onBeforeStepChange throws CancellationError")
     func backCancelled() async throws {
         let cancelled = try FormEngine(
-            definition: Self.steps, options: FormEngineOptions(onBeforeStepChange: { context in
+            definition: Self.steps,
+            options: FormEngineOptions(onBeforeStepChange: { context in
                 if context.reason == .back { throw CancellationError() }
                 return true
             }))
@@ -30,10 +32,12 @@ struct CancellationTests {
 
     @Test("a cancelled caller task gets false from next instead of an error")
     func cancelledTask() async throws {
-        let engine = try FormEngine(definition: Self.steps, options: FormEngineOptions(onStepValidate: { _, _ in
-            try await Task.sleep(nanoseconds: 10_000_000_000)
-            return nil
-        }))
+        let engine = try FormEngine(
+            definition: Self.steps,
+            options: FormEngineOptions(onStepValidate: { _, _ in
+                try await Task.sleep(nanoseconds: 10_000_000_000)
+                return nil
+            }))
         let task = Task { @MainActor in try await engine.next() }
         await Task.yield()
         task.cancel()
@@ -59,7 +63,8 @@ struct CancellationTests {
 
     @Test("next returns true when onAfterStepChange throws CancellationError after the move")
     func afterStepChangeCancelled() async throws {
-        let engine = try FormEngine(definition: Self.steps, options: FormEngineOptions(onAfterStepChange: { _ in throw CancellationError() }))
+        let engine = try FormEngine(
+            definition: Self.steps, options: FormEngineOptions(onAfterStepChange: { _ in throw CancellationError() }))
         #expect(try await engine.next())
         #expect(engine.currentStep?.id == "two")
         #expect(!engine.stepValidating)

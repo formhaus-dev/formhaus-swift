@@ -41,7 +41,9 @@ struct RejectedGroups {
     let rejected: [(key: String, value: JSONValue?)]
 }
 
-func rejectGroups(_ visibility: VisibilityState, _ fields: [FormField], _ input: JSONObject, _ resolve: @escaping ResolveMessage) -> RejectedGroups {
+func rejectGroups(_ visibility: VisibilityState, _ fields: [FormField], _ input: JSONObject, _ resolve: @escaping ResolveMessage)
+    -> RejectedGroups
+{
     var source = input
     var rejected: [(key: String, value: JSONValue?)] = []
     func reject(_ keys: [String]) {

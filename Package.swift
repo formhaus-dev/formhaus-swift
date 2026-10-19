@@ -5,7 +5,7 @@ let package = Package(
     name: "Formhaus",
     platforms: [.iOS(.v16), .macOS(.v13)],
     products: [
-        .library(name: "FormhausCore", targets: ["FormhausCore"]),
+        .library(name: "FormhausCore", targets: ["FormhausCore"])
     ],
     targets: [
         .target(name: "FormhausCore"),

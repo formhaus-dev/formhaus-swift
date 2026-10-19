@@ -92,11 +92,16 @@ struct CheckContext {
             }
         }
         var conditions: [ConditionEntry] = []
-        func collect(_ source: [String: [ShowCondition]?], _ path: String, _ owner: ConditionOwner, _ step: Int, _ key: String? = nil, _ group: String? = nil) {
+        func collect(
+            _ source: [String: [ShowCondition]?], _ path: String, _ owner: ConditionOwner, _ step: Int, _ key: String? = nil,
+            _ group: String? = nil
+        ) {
             let names = owner == .action ? ["disabled"] : ["show", "showAny"]
             for name in names {
                 for (index, condition) in ((source[name] ?? nil) ?? []).enumerated() {
-                    conditions.append(ConditionEntry(condition: condition, path: "\(path)/\(name)/\(index)", owner: owner, step: step, key: key, group: group))
+                    conditions.append(
+                        ConditionEntry(
+                            condition: condition, path: "\(path)/\(name)/\(index)", owner: owner, step: step, key: key, group: group))
                 }
             }
         }

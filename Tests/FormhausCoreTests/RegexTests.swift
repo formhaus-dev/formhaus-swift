@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import FormhausCore
 
 @Suite("Patterns match like JavaScript RegExp")

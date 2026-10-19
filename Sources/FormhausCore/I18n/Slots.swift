@@ -29,7 +29,8 @@ private func usedMessages(_ definition: FormDefinition) -> KeySet {
     var keys = KeySet(catalogKeys(definition.messages) + catalogKeys(definition.i18n?["messages"]))
     for field in definition.allFields.flatMap({ [$0] + $0.items }) {
         let rules = field.validation?.json ?? JSONObject()
-        for rule in NodeKind.validation.slots where hasRule(rules, rule) && rules[rule == "required" ? rule : "\(rule)Message"]?.stringValue == nil {
+        for rule in NodeKind.validation.slots
+        where hasRule(rules, rule) && rules[rule == "required" ? rule : "\(rule)Message"]?.stringValue == nil {
             keys.insert(ruleKey(field, rule))
         }
         keys.formUnion(typeMessageKeys(field).map(\.rawValue))
@@ -53,7 +54,9 @@ private func nodeSlots(_ definition: FormDefinition, _ text: TextNode) -> [Slot]
         var params = JSONObject()
         if let bound = bounds[slot] { params[bound] = text.node[slot] }
         let message = ruleKey(field, slot)
-        let fallback = literal ?? formatText(definition.messages?[message]?.stringValue ?? defaultMessages[MessageKey(rawValue: message)] ?? "", params)
+        let fallback =
+            literal
+            ?? formatText(definition.messages?[message]?.stringValue ?? defaultMessages[MessageKey(rawValue: message)] ?? "", params)
         return Slot(
             kind: .rule, address: text.address + [slot], key: keys[slot]?.stringValue, source: literal, fallback: fallback,
             params: params, template: literal != nil || keys[slot]?.isTruthy == true, location: text.location, property: literalName
@@ -78,7 +81,10 @@ private func catalogSlots(_ definition: FormDefinition, _ name: String, _ used: 
 func definitionSlots(_ definition: FormDefinition) -> [Slot] {
     var labels = KeySet(definition.isMultiStep ? ["continue", "back", "stepOf", "errorSummary"] : ["errorSummary"])
     if definition.allFields.contains(where: \.isGroup) {
-        labels.formUnion(["addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved", "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel"])
+        labels.formUnion([
+            "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved", "removeItemNamed", "removeItemPrompt", "removeItemBody",
+            "cancel",
+        ])
     }
     return textNodes(definition).flatMap { nodeSlots(definition, $0) }
         + catalogSlots(definition, "messages", usedMessages(definition))

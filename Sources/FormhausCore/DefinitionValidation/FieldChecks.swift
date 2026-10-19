@@ -3,14 +3,18 @@ let sourceNames = ["referrer", "page", "pageTitle", "language", "timezone", "dev
 private func rangeIssue(_ rules: FieldValidation, _ path: String, _ min: String, _ max: String) -> [DefinitionIssue] {
     guard let low = rules.json[min]?.numberValue, let high = rules.json[max]?.numberValue, low > high else { return [] }
     return [
-        error("invalid-range", "\(path)/validation/\(min)", "\(min) (\(jsNumberString(low))) is greater than \(max) (\(jsNumberString(high)))", "Lower \(min) or raise \(max)"),
+        error(
+            "invalid-range", "\(path)/validation/\(min)",
+            "\(min) (\(jsNumberString(low))) is greater than \(max) (\(jsNumberString(high)))", "Lower \(min) or raise \(max)")
     ]
 }
 
 private func patternIssue(_ pattern: String?, _ path: String) -> [DefinitionIssue] {
     guard let pattern, JSRegex(pattern) == nil else { return [] }
     return [
-        error("invalid-pattern", "\(path)/validation/pattern", "\(quoteJSON(pattern)) is not a valid regular expression", "Fix the pattern or escape special characters with a backslash"),
+        error(
+            "invalid-pattern", "\(path)/validation/pattern", "\(quoteJSON(pattern)) is not a valid regular expression",
+            "Fix the pattern or escape special characters with a backslash")
     ]
 }
 
@@ -19,12 +23,17 @@ private func ruleIssues(_ context: CheckContext, _ entry: FieldEntry) -> [Defini
     let path = entry.path
     let rules = field.validation ?? FieldValidation(json: JSONObject())
     let items = field.isGroup ? field.defaultItems : nil
-    var issues = rangeIssue(rules, path, "minLength", "maxLength") + rangeIssue(rules, path, "min", "max") + patternIssue(rules.pattern, path)
+    var issues =
+        rangeIssue(rules, path, "minLength", "maxLength") + rangeIssue(rules, path, "min", "max") + patternIssue(rules.pattern, path)
     if let match = rules.matchField {
         issues += missingTarget(context, match, "\(path)/validation/matchField", group: entry.group?.key)
     }
     if let items, let max = rules.maxLength, items > max {
-        issues.append(error("invalid-range", "\(path)/defaultItems", "defaultItems (\(jsNumberString(items))) is greater than maxLength (\(jsNumberString(max)))", "Lower defaultItems or raise maxLength"))
+        issues.append(
+            error(
+                "invalid-range", "\(path)/defaultItems",
+                "defaultItems (\(jsNumberString(items))) is greater than maxLength (\(jsNumberString(max)))",
+                "Lower defaultItems or raise maxLength"))
     }
     return issues
 }
@@ -32,7 +41,8 @@ private func ruleIssues(_ context: CheckContext, _ entry: FieldEntry) -> [Defini
 private func optionIssues(_ entry: FieldEntry) -> [DefinitionIssue] {
     let values = (entry.field.options ?? []).map(\.value)
     return values.enumerated().flatMap { index, value -> [DefinitionIssue] in
-        guard let first = values.firstIndex(where: { $0?.utf16.elementsEqual(value?.utf16 ?? "".utf16) ?? (value == nil) }), first < index else { return [] }
+        guard let first = values.firstIndex(where: { $0?.utf16.elementsEqual(value?.utf16 ?? "".utf16) ?? (value == nil) }), first < index
+        else { return [] }
         return [error("duplicate-option-value", "\(entry.path)/options/\(index)/value", "\"\(value ?? "")\" is already an option value")]
     }
 }
@@ -59,7 +69,11 @@ func sourceIssues(_ context: CheckContext) -> [DefinitionIssue] {
 
 func sourceWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     guard entry.field.source != nil, entry.field.type != "hidden" else { return [] }
-    return [warning("source-not-applicable", "\(entry.path)/source", "only hidden fields read \"source\"", "Set \"type\" to \"hidden\" or remove \"source\"")]
+    return [
+        warning(
+            "source-not-applicable", "\(entry.path)/source", "only hidden fields read \"source\"",
+            "Set \"type\" to \"hidden\" or remove \"source\"")
+    ]
 }
 
 private func nodeId(_ entry: FieldEntry) -> String {
@@ -117,6 +131,8 @@ func graphIssues(_ context: CheckContext) -> [DefinitionIssue] {
     for entry in context.entries { paths[nodeId(entry)] = entry.path }
     let (keys, edges) = dependencyGraph(context)
     return findCycles(keys, edges).map { cycle in
-        error("condition-cycle", paths[cycle[0]] ?? "", "show conditions form a cycle: \(cycle.joined(separator: " -> "))", "Remove one of the conditions in the cycle")
+        error(
+            "condition-cycle", paths[cycle[0]] ?? "", "show conditions form a cycle: \(cycle.joined(separator: " -> "))",
+            "Remove one of the conditions in the cycle")
     }
 }

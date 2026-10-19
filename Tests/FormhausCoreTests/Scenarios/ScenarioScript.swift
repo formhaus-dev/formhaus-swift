@@ -1,5 +1,5 @@
-import Foundation
 import FormhausCore
+import Foundation
 
 struct ScriptError: LocalizedError, CustomStringConvertible {
     let message: String

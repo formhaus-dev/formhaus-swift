@@ -31,7 +31,12 @@ private func action(_ value: JSONValue?, _ path: String, disables: Bool = true) 
     guard let object = value?.objectValue else { return [] }
     let ignored = !disables && object.has("disabled")
     return required(object, path, "label") + unknown(object, path, Properties.action)
-        + (ignored ? [warning("disabled-not-applicable", "\(path)/disabled", "the built-in renderers ignore \"disabled\" on this button", "Remove \"disabled\"")] : [])
+        + (ignored
+            ? [
+                warning(
+                    "disabled-not-applicable", "\(path)/disabled", "the built-in renderers ignore \"disabled\" on this button",
+                    "Remove \"disabled\"")
+            ] : [])
 }
 
 private func misplaced(_ key: String) -> String? {
@@ -48,7 +53,8 @@ private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     if empty { issues.append(warning("empty-label", "\(path)/label", "the label of \"\(field.key)\" is empty", labelHint)) }
     issues += unknown(field.json, path, field.isGroup ? Properties.group : Properties.field, hint: misplaced)
     for (index, option) in (field.options ?? []).enumerated() {
-        issues += required(option.json, "\(path)/options/\(index)", "label") + unknown(option.json, "\(path)/options/\(index)", Properties.option)
+        issues +=
+            required(option.json, "\(path)/options/\(index)", "label") + unknown(option.json, "\(path)/options/\(index)", Properties.option)
     }
     if let validation = field.validation { issues += unknown(validation.json, "\(path)/validation", Properties.validation) }
     return issues

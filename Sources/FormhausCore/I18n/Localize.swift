@@ -89,7 +89,9 @@ func translationErrors(_ definition: FormDefinition) -> [DefinitionIssue] {
         let unbound = block?.objectValue.map { object in texts.filter { object.has($0) && text.node[$0]?.stringValue == nil } } ?? []
         issues += strings(block, "\(text.path)/i18n", "translation keys", nested: text.kind == .form ? ["messages", "labels"] : [])
         issues += unbound.map {
-            error("i18n-unbound-slot", "\(text.path)/i18n/\($0)", "\"\($0)\" has a translation key but no source text", "Add \"\($0)\" as the fallback text")
+            error(
+                "i18n-unbound-slot", "\(text.path)/i18n/\($0)", "\"\($0)\" has a translation key but no source text",
+                "Add \"\($0)\" as the fallback text")
         }
     }
     return issues
@@ -110,5 +112,6 @@ public func localize(_ input: JSONValue, overlay: JSONValue, lang: String? = nil
         json.assign(value, at: slot.location[...], key: slot.property)
     }
     let definition = FormDefinition(unchecked: json.objectValue!)
-    return Localized(definition: definition, messages: json["messages"] ?? .object(JSONObject()), labels: json["labels"] ?? .object(JSONObject()))
+    return Localized(
+        definition: definition, messages: json["messages"] ?? .object(JSONObject()), labels: json["labels"] ?? .object(JSONObject()))
 }
