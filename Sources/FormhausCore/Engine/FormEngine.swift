@@ -1,3 +1,16 @@
+import os
+
+private let warningLog = Logger(subsystem: "dev.formhaus", category: "definition")
+
+@MainActor
+private func report(_ issue: DefinitionIssue, _ onWarning: WarningFn?) {
+    if let onWarning {
+        onWarning(issue)
+    } else {
+        warningLog.warning("[formhaus] \(issue.message, privacy: .public)")
+    }
+}
+
 @MainActor
 final class Listeners {
     private var next = 0
@@ -14,7 +27,21 @@ final class Listeners {
     }
 
     func fire() {
-        for entry in entries { entry.listener() }
+        var last = 0
+        while let entry = entry(after: last) {
+            last = entry.id
+            entry.listener()
+        }
+    }
+
+    private func entry(after id: Int) -> (id: Int, listener: @MainActor () -> Void)? {
+        var low = 0
+        var high = entries.count
+        while low < high {
+            let middle = (low + high) / 2
+            if entries[middle].id <= id { low = middle + 1 } else { high = middle }
+        }
+        return low < entries.count ? entries[low] : nil
     }
 }
 
@@ -31,7 +58,7 @@ public final class FormEngine {
     public init(definition: FormDefinition, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) {
         self.options = options
         let issues = checkDefinition(.object(definition.json), options: CheckDefinitionOptions(validators: options.validators.keys))
-        for issue in issues { options.onWarning?(issue) }
+        for issue in issues { report(issue, options.onWarning) }
         core = EngineCore(definition: definition, values: values, validators: options.validators, messages: options.messages)
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
@@ -82,7 +109,6 @@ public final class FormEngine {
         return StepProgress(current: min(currentStepIndex + 1, total), total: total)
     }
 
-    @discardableResult
     public func subscribe(_ listener: @escaping @MainActor () -> Void) -> @MainActor () -> Void {
         let id = listeners.add(listener)
         let listeners = listeners
