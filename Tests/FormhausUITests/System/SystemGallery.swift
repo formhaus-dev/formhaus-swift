@@ -35,8 +35,5 @@ func renderSystemPNG(_ view: some View, style: SnapshotStyle, height: CGFloat, t
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         host.layoutSubtreeIfNeeded()
     }
-    guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return }
-    host.cacheDisplay(in: host.bounds, to: rep)
-    let srgb = rep.converting(to: .sRGB, renderingIntent: .default) ?? rep
-    try srgb.representation(using: .png, properties: [:])?.write(to: url)
+    try writePNG(host, to: url)
 }

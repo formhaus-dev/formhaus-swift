@@ -43,6 +43,11 @@ func renderPNG(_ view: some View, style: SnapshotStyle, to url: URL) throws {
         host.frame.size = CGSize(width: style.width, height: host.fittingSize.height)
         host.layoutSubtreeIfNeeded()
     }
+    try writePNG(host, to: url)
+}
+
+@MainActor
+func writePNG(_ host: NSView, to url: URL) throws {
     guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return }
     host.cacheDisplay(in: host.bounds, to: rep)
     let srgb = rep.converting(to: .sRGB, renderingIntent: .default) ?? rep
