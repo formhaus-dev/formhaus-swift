@@ -8,7 +8,9 @@ struct FieldAccessories: View {
     var body: some View {
         LoadingIndicator(visible: context.loading)
         if clearable, !context.isRequired, !context.isLocked {
-            IconButton(systemName: "xmark.circle.fill", label: "\(context.label("clear")), \(context.label)", embedded: true, action: clear)
+            IconButton(
+                systemName: "xmark.circle.fill", label: "\(context.text(forLabel: "clear")), \(context.label)", embedded: true,
+                action: clear)
         }
     }
 }
