@@ -53,7 +53,7 @@ public struct Controls: Sendable {
     public var compactWidth: CGFloat = 480
     public var matrixWidth: CGFloat = 560
 
-    public init(star: CGFloat) {
+    public init(star: CGFloat = 32) {
         self.star = star
     }
 }

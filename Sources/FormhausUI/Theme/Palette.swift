@@ -22,9 +22,12 @@ public struct Palette: Sendable {
     public var errorSoft: Color?
 
     public init(
-        text: Color, textMuted: Color, border: Color, borderHover: Color, control: Color, error: Color, errorHover: Color,
-        background: Color, backgroundDisabled: Color, backgroundHover: Color, primary: Color, onPrimary: Color,
-        secondaryBorder: Color, scrim: Color, shadow: Color
+        text: Color = Color(hex: 0x18181B), textMuted: Color = Color(hex: 0x5F5F68), border: Color = Color(hex: 0xD4D4D8),
+        borderHover: Color = Color(hex: 0xA1A1AA), control: Color = Color(hex: 0x71717A), error: Color = Color(hex: 0xC0352D),
+        errorHover: Color = Color(hex: 0x9E2A23), background: Color = .white, backgroundDisabled: Color = Color(hex: 0xF4F4F5),
+        backgroundHover: Color = Color(hex: 0xF6F6F7), primary: Color = Color(hex: 0x5502FB), onPrimary: Color = .white,
+        secondaryBorder: Color = Color(hex: 0xD4D4D8), scrim: Color = Color(hex: 0x141416, opacity: 0.32),
+        shadow: Color = Color(hex: 0x141416, opacity: 0.2)
     ) {
         self.text = text
         self.textMuted = textMuted
@@ -43,13 +46,7 @@ public struct Palette: Sendable {
         self.shadow = shadow
     }
 
-    public static let light = Palette(
-        text: Color(hex: 0x18181B), textMuted: Color(hex: 0x5F5F68), border: Color(hex: 0xD4D4D8), borderHover: Color(hex: 0xA1A1AA),
-        control: Color(hex: 0x71717A), error: Color(hex: 0xC0352D), errorHover: Color(hex: 0x9E2A23), background: .white,
-        backgroundDisabled: Color(hex: 0xF4F4F5), backgroundHover: Color(hex: 0xF6F6F7), primary: Color(hex: 0x5502FB),
-        onPrimary: .white, secondaryBorder: Color(hex: 0xD4D4D8), scrim: Color(hex: 0x141416, opacity: 0.32),
-        shadow: Color(hex: 0x141416, opacity: 0.2)
-    )
+    public static let light = Palette()
 
     public static let dark = Palette(
         text: Color(hex: 0xECECEE), textMuted: Color(hex: 0xA8A8B3), border: Color(hex: 0x3A3A41), borderHover: Color(hex: 0x5A5A63),
@@ -81,8 +78,7 @@ public struct ResolvedPalette: Sendable {
     public let scrim: Color
     public let shadow: Color
 
-    init(_ palette: Palette, dark: Bool) {
-        let environment = EnvironmentValues()
+    init(_ palette: Palette, dark: Bool, environment: EnvironmentValues) {
         let background = palette.background.resolve(in: environment)
         let primary = palette.primary.resolve(in: environment)
         let error = palette.error.resolve(in: environment)
@@ -122,6 +118,7 @@ extension Color.Resolved {
 }
 
 extension Color {
+    @usableFromInline
     init(hex: UInt32, opacity: Double = 1) {
         let red = Double((hex >> 16) & 0xFF) / 255
         let green = Double((hex >> 8) & 0xFF) / 255

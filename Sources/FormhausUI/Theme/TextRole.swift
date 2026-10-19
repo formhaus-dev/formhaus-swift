@@ -1,56 +1,60 @@
 import SwiftUI
 
-public enum TextRole: Sendable {
-    case body
-    case label
-    case option
-    case helper
-    case error
-    case heading
-    case title
-    case counter
-    case itemTitle
-    case caption
-    case button
-    case textButton
-    case smallButton
-
-    var leading: CGFloat {
-        switch self {
-        case .body, .option: 1.5
-        case .label, .itemTitle: 1.4
-        case .helper, .error, .counter: 1.45
-        case .heading: 1.35
-        case .title, .caption: 1.3
-        case .button, .textButton, .smallButton: 1.2
-        }
+public struct TextRole: Sendable, Hashable {
+    public enum Size: Sendable, Hashable {
+        case body
+        case small
+        case heading
+        case title
     }
 
-    var weight: Font.Weight {
-        switch self {
-        case .label, .heading, .title, .itemTitle, .button: .semibold
-        case .error, .textButton, .smallButton, .caption: .medium
-        default: .regular
-        }
+    public enum Tone: Sendable, Hashable {
+        case text
+        case muted
+        case error
     }
 
-    var isSmall: Bool {
-        [.helper, .error, .counter, .itemTitle, .caption, .smallButton].contains(self)
+    public let size: Size
+    public let weight: Font.Weight
+    public let leading: CGFloat
+    public let tone: Tone
+    public let tabularDigits: Bool
+
+    public init(size: Size, weight: Font.Weight = .regular, leading: CGFloat = 1.5, tone: Tone = .text, tabularDigits: Bool = false) {
+        self.size = size
+        self.weight = weight
+        self.leading = leading
+        self.tone = tone
+        self.tabularDigits = tabularDigits
     }
+
+    public static let body = TextRole(size: .body)
+    public static let label = TextRole(size: .body, weight: .semibold, leading: 1.4)
+    public static let option = TextRole(size: .body)
+    public static let helper = TextRole(size: .small, leading: 1.45, tone: .muted)
+    public static let error = TextRole(size: .small, weight: .medium, leading: 1.45, tone: .error)
+    public static let heading = TextRole(size: .heading, weight: .semibold, leading: 1.35)
+    public static let title = TextRole(size: .title, weight: .semibold, leading: 1.3)
+    public static let counter = TextRole(size: .small, leading: 1.45, tone: .muted, tabularDigits: true)
+    public static let itemTitle = TextRole(size: .small, weight: .semibold, leading: 1.4, tone: .muted, tabularDigits: true)
+    public static let caption = TextRole(size: .small, weight: .medium, leading: 1.3, tone: .muted)
+    public static let button = TextRole(size: .body, weight: .semibold, leading: 1.2)
+    public static let textButton = TextRole(size: .body, weight: .medium, leading: 1.2, tone: .muted)
 
     func size(_ typography: Typography) -> CGFloat {
-        switch self {
+        switch size {
+        case .body: typography.body
+        case .small: typography.small
         case .heading: typography.heading
         case .title: typography.title
-        default: isSmall ? typography.small : typography.body
         }
     }
 
     func color(_ colors: ResolvedPalette) -> Color {
-        switch self {
-        case .helper, .counter, .itemTitle, .caption, .textButton: colors.textMuted
+        switch tone {
+        case .text: colors.text
+        case .muted: colors.textMuted
         case .error: colors.error
-        default: colors.text
         }
     }
 }
@@ -58,7 +62,7 @@ public enum TextRole: Sendable {
 extension FormhausTokens {
     public func font(_ role: TextRole) -> Font {
         let font = Font.system(size: role.size(typography), weight: role.weight, design: typography.design)
-        return role == .counter || role == .itemTitle ? font.monospacedDigit() : font
+        return role.tabularDigits ? font.monospacedDigit() : font
     }
 
     public func lineSpacing(_ role: TextRole) -> CGFloat {
