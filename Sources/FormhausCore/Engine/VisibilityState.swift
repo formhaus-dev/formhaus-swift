@@ -61,17 +61,17 @@ final class VisibilityState {
     func activeItem(_ key: String, _ values: JSONObject) -> ItemField? {
         guard let (groupKey, position, fieldKey) = parse(key), let group = activeField(groupKey, values), group.isGroup else { return nil }
         let items = itemsOf(values[groupKey])
-        guard position < items.count, let field = itemFields(group, items[position], values).first(where: { $0.key == fieldKey }) else {
+        guard position < items.count, let field = itemFields(group, items[position], values).first(where: { sameText($0.key, fieldKey) }) else {
             return nil
         }
         return ItemField(group: group, index: position, field: field)
     }
 
-    func affectsStructure(_ key: String, _ cleared: Set<String>) -> Bool {
+    func affectsStructure(_ key: String, _ cleared: KeySet) -> Bool {
         index.routeFields.contains(key) || index.fieldDependents.has(key) || index.stepDependents.has(key) || !cleared.isEmpty
     }
 
-    private func reconcileItems(_ values: inout JSONObject, _ errors: inout [String: String], _ cleared: inout Set<String>) {
+    private func reconcileItems(_ values: inout JSONObject, _ errors: inout FieldErrors, _ cleared: inout KeySet) {
         for group in groups where activeField(group.key, values) === group {
             let source = itemsOf(values[group.key])
             let items = source.enumerated().map { position, item -> JSONValue in
@@ -90,7 +90,7 @@ final class VisibilityState {
             if items != source { values[group.key] = .array(items) }
             for key in errors.keys {
                 guard let (position, field) = splitPath(group.key, key) else { continue }
-                if position < items.count, itemFields(group, items[position], values).contains(where: { $0.key == field }) { continue }
+                if position < items.count, itemFields(group, items[position], values).contains(where: { sameText($0.key, field) }) { continue }
                 errors.removeValue(forKey: key)
                 cleared.insert(key)
             }
@@ -98,13 +98,13 @@ final class VisibilityState {
     }
 
     @discardableResult
-    func reconcileHidden(_ values: inout JSONObject, _ errors: inout [String: String], initial: Bool = false) -> Set<String> {
+    func reconcileHidden(_ values: inout JSONObject, _ errors: inout FieldErrors, initial: Bool = false) -> KeySet {
         if initial { starts.resetStarts(values) }
         let order = OrderedKeys(index.fieldDependents.keys + index.stepDependents.keys).keys
         var queue = order
-        var queued = Set(queue)
-        var cleared = Set<String>()
-        let groupKeys = Set(groups.map(\.key))
+        var queued = KeySet(queue)
+        var cleared = KeySet()
+        let groupKeys = KeySet(groups.map(\.key))
         func held(_ key: String) -> Bool { values[key] != nil || errors[key] != nil }
         func mark(_ key: String) {
             cleared.insert(key)
@@ -118,7 +118,7 @@ final class VisibilityState {
             values.removeValue(forKey: key)
             errors.removeValue(forKey: key)
             if groupKeys.contains(key) {
-                for errorKey in errors.keys where owner(errorKey) == key { errors.removeValue(forKey: errorKey) }
+                for errorKey in errors.keys where sameText(owner(errorKey), key) { errors.removeValue(forKey: errorKey) }
             }
             mark(key)
         }
@@ -157,7 +157,7 @@ struct OrderedKeys {
     private(set) var keys: [String] = []
 
     init(_ items: [String]) {
-        var seen = Set<String>()
-        for item in items where seen.insert(item).inserted { keys.append(item) }
+        var seen = KeySet()
+        for item in items where seen.insert(item) { keys.append(item) }
     }
 }

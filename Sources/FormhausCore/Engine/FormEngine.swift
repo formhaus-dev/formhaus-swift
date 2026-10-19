@@ -1,8 +1,8 @@
 public struct FormEngineOptions {
-    public var validators: [String: ValidatorFn]
+    public var validators: Validators
     public var messages: MessageSource?
 
-    public init(validators: [String: ValidatorFn] = [:], messages: MessageSource? = nil) {
+    public init(validators: Validators = [:], messages: MessageSource? = nil) {
         self.validators = validators
         self.messages = messages
     }
@@ -11,11 +11,11 @@ public struct FormEngineOptions {
 public final class FormEngine {
     public let definition: FormDefinition
     public internal(set) var values: JSONObject
-    public internal(set) var errors: [String: String] = [:]
+    public internal(set) var errors = FieldErrors()
     public internal(set) var currentStepIndex = 0
-    var serverErrors: [String: String] = [:]
+    var serverErrors = FieldErrors()
     var skipped: [(id: String, keys: [String])] = []
-    let validators: [String: ValidatorFn]
+    let validators: Validators
     let messages: ResolveMessage
     let visibility: VisibilityState
 
@@ -53,7 +53,7 @@ public final class FormEngine {
     public var isLastStep: Bool { currentStepIndex >= visibleSteps.count - 1 }
 
     public func isStepSkipped(_ stepId: String) -> Bool {
-        skipped.contains { $0.id == stepId }
+        skipped.contains { sameText($0.id, stepId) }
     }
 
     public func getSubmitValues() -> JSONObject {
@@ -62,22 +62,22 @@ public final class FormEngine {
         return result
     }
 
-    func fieldsErrors(_ nodes: [FormNode], _ submitValues: JSONObject? = nil) -> [String: String] {
+    func fieldsErrors(_ nodes: [FormNode], _ submitValues: JSONObject? = nil) -> FieldErrors {
         let scope = visibility.conditionValues(values)
         return validateShown(nodes, submitValues ?? getSubmitValues(), scope, validators, .function(messages))
     }
 
     @discardableResult
-    public func validate() -> [String: String] {
-        var result: [String: String] = [:]
+    public func validate() -> FieldErrors {
+        var result = FieldErrors()
         if isMultiStep {
             for step in visibleSteps where !isStepSkipped(step.id) {
-                result.merge(fieldsErrors(step.fields)) { $1 }
+                result.merge(fieldsErrors(step.fields))
             }
         } else {
             result = fieldsErrors(definition.fields ?? [])
         }
-        errors = serverErrors.merging(result) { $1 }
+        errors = serverErrors.merging(result)
         return result
     }
 
@@ -85,7 +85,7 @@ public final class FormEngine {
         guard let step = currentStep else { return true }
         let found = fieldsErrors(step.fields)
         if found.isEmpty { return false }
-        errors.merge(found) { $1 }
+        errors.merge(found)
         return true
     }
 

@@ -1,11 +1,11 @@
 extension FormEngine {
     func includeCurrentStep() {
         guard let step = currentStep else { return }
-        skipped.removeAll { $0.id == step.id }
+        skipped.removeAll { sameText($0.id, step.id) }
     }
 
     func dropServerErrors(_ keys: some Sequence<String>) {
-        let dropped = Set(keys)
+        let dropped = KeySet(keys)
         for key in serverErrors.keys where dropped.contains(key) || dropped.contains(visibility.owner(key)) {
             serverErrors.removeValue(forKey: key)
         }
@@ -13,14 +13,14 @@ extension FormEngine {
 
     @discardableResult
     func pruneOffPathErrors() -> [String] {
-        let pathFields = Set(visibleSteps.flatMap { valueFields($0.fields).map(\.key) })
+        let pathFields = KeySet(visibleSteps.flatMap { valueFields($0.fields).map(\.key) })
         let pruned = errors.keys.filter { !pathFields.contains(visibility.owner($0)) }
         for key in pruned { errors.removeValue(forKey: key) }
         dropServerErrors(pruned)
         return pruned
     }
 
-    func reconcile() -> Set<String> {
+    func reconcile() -> KeySet {
         var values = self.values
         var errors = self.errors
         let cleared = visibility.reconcileHidden(&values, &errors)
@@ -47,9 +47,9 @@ extension FormEngine {
         reset.merge(createValues(fields))
         values = reset
         visibility.starts.reseed(fieldKeys, values)
-        for key in errors.keys where fieldKeys.contains(visibility.owner(key)) { errors.removeValue(forKey: key) }
+        for key in errors.keys where fieldKeys.containsText(visibility.owner(key)) { errors.removeValue(forKey: key) }
         dropServerErrors(fieldKeys)
-        if let position = skipped.firstIndex(where: { $0.id == step.id }) {
+        if let position = skipped.firstIndex(where: { sameText($0.id, step.id) }) {
             skipped[position].keys = fieldKeys
         } else {
             skipped.append((step.id, fieldKeys))
@@ -63,7 +63,7 @@ extension FormEngine {
         let changed = values[key] != value
         values[key] = value
         visibility.starts.remember(key, value)
-        if changed { skipped.removeAll { $0.keys.contains(key) } }
+        if changed { skipped.removeAll { $0.keys.containsText(key) } }
         let cleared = reconcile()
         dropServerErrors(cleared)
         guard let previousSteps, (changed || !cleared.isEmpty) && visibility.affectsStructure(key, cleared) else { return }
