@@ -26,13 +26,15 @@ extension FormEngine {
                 restoreSkipped(step, (values, errors, serverErrors), outcome.value, kept, writes, restore)
             }
         }
-        return try await submitForm(
-            { submitted, skipped in
-                let result = try await submit(submitted, skipped)
-                let rejected = result?.isRejection == true
-                if !rejected || operationBox.value == core.operationEpoch { outcome.value = rejected }
-                return result
-            }, keepSkipped: true, operationBox: operationBox)
+        return try await suspended {
+            try await submitForm(
+                { submitted, skipped in
+                    let result = try await suspended { try await submit(submitted, skipped) }
+                    let rejected = result?.isRejection == true
+                    if !rejected || operationBox.value == core.operationEpoch { outcome.value = rejected }
+                    return result
+                }, keepSkipped: true, operationBox: operationBox)
+        }
     }
 
     private func restoreSkipped(

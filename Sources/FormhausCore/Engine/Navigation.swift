@@ -23,10 +23,22 @@ extension EngineCore {
     }
 }
 
+@MainActor
+func suspended<T>(_ body: () async throws -> T) async throws -> T {
+    do {
+        let result = try await body()
+        await Task.yield()
+        return result
+    } catch {
+        await Task.yield()
+        throw error
+    }
+}
+
 extension FormEngine {
     func reportErrors(_ action: () async throws -> Bool) async throws -> Bool {
         let generation = core.errorsGeneration
-        let done = try await action()
+        let done = try await suspended(action)
         if !done && core.errorsGeneration != generation {
             for (fieldKey, error) in core.errors { core.emit(.fieldError(fieldKey: fieldKey, error: error)) }
         }
@@ -35,7 +47,9 @@ extension FormEngine {
 
     func afterCommit(_ phase: FormLifecycleError.Phase, _ callback: () async throws -> Void) async throws {
         do {
-            try await callback()
+            try await suspended(callback)
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             throw FormLifecycleError(phase: phase, cause: error)
         }
@@ -91,7 +105,7 @@ extension FormEngine {
         do {
             if stale() { return false }
             if validating, let validate = lifecycle.onStepValidate {
-                let result = try await validate(step.id, context.values)
+                let result = try await suspended { try await validate(step.id, context.values) }
                 if stale() { return false }
                 if let result, !result.isEmpty {
                     core.applyValidationErrors(result)
@@ -99,7 +113,7 @@ extension FormEngine {
                 }
             }
             if let before = lifecycle.onBeforeStepChange {
-                let allowed = try await before(context)
+                let allowed = try await suspended { try await before(context) }
                 if stale() || allowed == false { return false }
             }
             if stale() { return false }
@@ -108,8 +122,10 @@ extension FormEngine {
             if forward { core.emit(skipping ? .stepSkipped(stepId: step.id) : .stepCompleted(stepId: step.id)) }
             if skipping { _ = core.skipCurrentStep() }
             moveTo(toIndex)
-            try await afterCommit(.afterStepChange) { try await lifecycle.onAfterStepChange?(context) }
+            try await suspended { try await afterCommit(.afterStepChange) { try await lifecycle.onAfterStepChange?(context) } }
             return true
+        } catch is CancellationError {
+            return false
         } catch {
             if !committed && stale() { return false }
             throw error

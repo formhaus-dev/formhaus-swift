@@ -48,7 +48,7 @@ extension FormEngine {
             if stale() { return false }
             if !core.validate(navigate: true).isEmpty || stale() { return false }
             if let before = lifecycle.onBeforeSubmit {
-                let allowed = try await before(values)
+                let allowed = try await suspended { try await before(values) }
                 if stale() || allowed == false { return false }
                 if !core.validate(navigate: true).isEmpty || stale() { return false }
                 values = core.getSubmitValues()
@@ -61,7 +61,7 @@ extension FormEngine {
             core.emit(.formSubmitted(fieldCount: values.count))
             let result: SubmitResult?
             do {
-                result = try await submit(values, skippedSteps)
+                result = try await suspended { try await submit(values, skippedSteps) }
             } catch {
                 core.emit(.formSubmitFailed(reason: .error))
                 throw error
@@ -75,8 +75,10 @@ extension FormEngine {
             }
             if core.serverErrorsGeneration == serverErrors { core.applyValidationErrors(FieldErrors(), server: true) }
             let submitted = values
-            try await afterCommit(.afterSubmit) { try await lifecycle.onAfterSubmit?(submitted, skippedSteps) }
+            try await suspended { try await afterCommit(.afterSubmit) { try await lifecycle.onAfterSubmit?(submitted, skippedSteps) } }
             return true
+        } catch is CancellationError {
+            return false
         } catch {
             if !dispatched && stale() { return false }
             throw error
