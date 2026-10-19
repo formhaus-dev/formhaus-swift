@@ -24,6 +24,20 @@ jobs:
       - run: swift test --skip-build
       - run: xcodebuild build -scheme FormhausUI -destination 'generic/platform=iOS' -derivedDataPath .build/xcode -quiet SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
 
+  demo:
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: >-
+          xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
+          -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/demo -quiet
+          CODE_SIGNING_ALLOWED=NO
+      - run: >-
+          xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
+          -destination 'generic/platform=macOS' -derivedDataPath .build/demo -quiet
+          CODE_SIGNING_ALLOWED=NO
+
   lint:
     runs-on: macos-26
     timeout-minutes: 20
