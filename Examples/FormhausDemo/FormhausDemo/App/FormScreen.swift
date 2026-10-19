@@ -49,7 +49,7 @@ struct FormScreen: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
-        .hardTopEdge()
+        .hardTopEdge(session.style.palette(scheme, contrast).background)
         .alignsBar(toColumn: 640, padding: 16)
         .background(session.style.palette(scheme, contrast).background)
     }
@@ -57,11 +57,17 @@ struct FormScreen: View {
 
 extension View {
     @ViewBuilder
-    fileprivate func hardTopEdge() -> some View {
-        if #available(iOS 26, macOS 26, *) {
-            scrollEdgeEffectStyle(.hard, for: .top)
-        } else {
-            self
-        }
+    fileprivate func hardTopEdge(_ background: Color) -> some View {
+        #if os(iOS)
+            if #available(iOS 26, *) {
+                scrollEdgeEffectStyle(.hard, for: .top)
+                    .toolbarBackground(background, for: .navigationBar)
+                    .toolbarBackground(.visible, for: .navigationBar)
+            } else {
+                toolbarBackground(background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
+            }
+        #else
+            if #available(macOS 26, *) { scrollEdgeEffectStyle(.hard, for: .top) } else { self }
+        #endif
     }
 }

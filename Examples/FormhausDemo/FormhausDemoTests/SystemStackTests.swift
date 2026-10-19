@@ -86,6 +86,15 @@ private func settle(_ milliseconds: Int = 900) async {
 }
 
 @MainActor
+private func eventually(_ condition: @MainActor () -> Bool) async -> Bool {
+    for _ in 0..<30 {
+        if condition() { return true }
+        try? await Task.sleep(for: .milliseconds(100))
+    }
+    return condition()
+}
+
+@MainActor
 private func spoken(_ view: UIView) -> [String] {
     var labels: [String] = []
     func walk(_ element: NSObject) {
@@ -147,8 +156,7 @@ struct SystemStackTests {
         await settle()
         #expect(stage.depth == 3)
         stage.box.model = try stepsModel(values: [:])
-        await settle()
-        #expect(stage.depth == 1)
+        #expect(await eventually { stage.depth == 1 })
         stage.close()
     }
 
@@ -160,8 +168,7 @@ struct SystemStackTests {
         await settle()
         #expect(stage.depth == 2)
         stage.box.system = false
-        await settle()
-        #expect(stage.depth == 1)
+        #expect(await eventually { stage.depth == 1 })
         stage.close()
     }
 
@@ -207,8 +214,7 @@ struct SystemStackTests {
         await model.next()
         await settle()
         model.engine.reset()
-        await settle()
-        #expect(stage.depth == 1)
+        #expect(await eventually { stage.depth == 1 })
         stage.close()
     }
 }

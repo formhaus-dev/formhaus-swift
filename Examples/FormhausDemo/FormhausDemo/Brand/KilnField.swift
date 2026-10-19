@@ -72,7 +72,7 @@ struct KilnTextField: View {
 
     private var underline: Color {
         if focused { return tokens.colors.primary }
-        return context.isInvalid ? tokens.colors.error : tokens.colors.border
+        return context.isInvalid ? tokens.colors.error : tokens.colors.inputBorder
     }
 
     #if os(iOS)
