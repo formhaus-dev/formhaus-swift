@@ -7,6 +7,7 @@ public struct FileField: View {
     @FocusState private var focused: Bool
     @State private var importing = false
     @State private var photo: PhotosPickerItem?
+    @State private var choosingPhoto = false
     let context: FieldContext
 
     public init(_ context: FieldContext) {
@@ -38,25 +39,22 @@ public struct FileField: View {
         }
     }
 
-    @ViewBuilder private var picker: some View {
-        #if os(iOS)
-            if types.allSatisfy({ $0.conforms(to: .image) }) {
-                PhotosPicker(selection: $photo, matching: .images) { summary }.buttonStyle(.plain)
-            } else {
-                importButton
-            }
-        #else
-            importButton
-        #endif
-    }
-
-    private var importButton: some View {
+    private var picker: some View {
         Button {
-            importing = true
+            if photosOnly { choosingPhoto = true } else { importing = true }
         } label: {
             summary
         }
         .buttonStyle(.plain)
+        .photosPicker(isPresented: $choosingPhoto, selection: $photo, matching: .images)
+    }
+
+    private var photosOnly: Bool {
+        #if os(iOS)
+            types.allSatisfy { $0.conforms(to: .image) }
+        #else
+            false
+        #endif
     }
 
     private var summary: some View {
