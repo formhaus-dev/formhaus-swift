@@ -12,11 +12,13 @@ extension Backtracker {
         slots[2 * group + 1] = end
     }
 
-    mutating func updateState(_ instruction: Instruction, _ pc: Int, _ offset: Int) -> Bool {
+    mutating func updateState(_ instruction: Instruction, _ pc: Int, _ offset: Int) throws(BudgetExceeded) -> Bool {
         switch instruction {
         case .groupStart(let group), .mark(let group): setRegister(group, offset)
         case .groupEnd(let group): setCapture(group, min(registers[group], offset), max(registers[group], offset))
-        case .clear(let groups): for group in groups { setCapture(group, -1, -1) }
+        case .clear(let groups):
+            try budget.spend(groups.count)
+            for group in groups { setCapture(group, -1, -1) }
         case .progress(let register): return memoized(pc) || registers[register] != offset
         case .counterStart(let register): setRegister(register, 0)
         default: break
@@ -48,9 +50,10 @@ extension Backtracker {
         return .proceed
     }
 
-    func matchReference(_ reference: Backreference, _ offset: Int) -> Int? {
+    mutating func matchReference(_ reference: Backreference, _ offset: Int) throws(BudgetExceeded) -> Int? {
         var position = offset
         for group in reference.backward ? reference.groups : reference.groups.reversed() where slots[2 * group] >= 0 {
+            try budget.spend(slots[2 * group + 1] - slots[2 * group] + 1)
             guard let next = matchCapture(group, reference, position) else { return nil }
             position = next
         }
@@ -74,7 +77,8 @@ extension Backtracker {
 
     mutating func evaluateLook(_ index: Int, _ offset: Int) throws(BudgetExceeded) -> Bool {
         let body = program.looks[index]
-        if body.pure, pureLooks != nil { return (pureLooks?.evaluate(index, at: offset) == true) != body.look.negated }
+        if body.pure, pureLooks != nil { return try (pureLooks?.evaluate(index, at: offset, budget: &budget) == true) != body.look.negated }
+        try budget.spend(2 * slots.count)
         let snapshot = slots
         if !body.look.negated {
             saved.append(snapshot)

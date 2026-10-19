@@ -1,6 +1,4 @@
 struct Bitset {
-    static let budget = 1 << 25
-
     private var words: [UInt64]
 
     init(count: Int) {
@@ -20,6 +18,8 @@ struct Bitset {
 }
 
 struct MemoSearch {
+    static let visitedLimit = 1 << 25
+
     private enum Step {
         case next(Int, Int)
         case dead
@@ -36,22 +36,22 @@ struct MemoSearch {
     init?(_ program: RegexProgram, _ input: MatchInput) {
         width = input.text.count + 1
         let largest = program.looks.filter(\.pure).map { $0.end - $0.start + 1 }.max() ?? 0
-        guard largest * width <= Bitset.budget else { return nil }
+        guard largest * width <= Self.visitedLimit else { return nil }
         self.program = program
         self.input = input
         visited = Array(repeating: nil, count: program.looks.count)
         results = Array(repeating: nil, count: program.looks.count)
     }
 
-    mutating func evaluate(_ index: Int, at position: Int) -> Bool {
+    mutating func evaluate(_ index: Int, at position: Int, budget: inout StepBudget) throws(BudgetExceeded) -> Bool {
         if let known = results[index]?[position], known != 0 { return known == 1 }
         if results[index] == nil { results[index] = Array(repeating: 0, count: width) }
-        let found = search(index, from: position)
+        let found = try search(index, from: position, &budget)
         results[index]?[position] = found ? 1 : 2
         return found
     }
 
-    private mutating func search(_ index: Int, from position: Int) -> Bool {
+    private mutating func search(_ index: Int, from position: Int, _ budget: inout StepBudget) throws(BudgetExceeded) -> Bool {
         let look = program.looks[index]
         if visited[index] == nil { visited[index] = Bitset(count: (look.end - look.start + 1) * width) }
         let mark = log.count
@@ -62,7 +62,8 @@ struct MemoSearch {
                 let bit = (pc - look.start) * width + offset
                 guard visited[index]?.insert(bit) == true else { break }
                 log.append(bit)
-                state = step(pc, offset, &pending)
+                try budget.spend(1)
+                state = try step(pc, offset, &pending, &budget)
             }
             if case .success = state {
                 for bit in log[mark...] { visited[index]?.remove(bit) }
@@ -74,7 +75,9 @@ struct MemoSearch {
         return false
     }
 
-    private mutating func step(_ pc: Int, _ position: Int, _ pending: inout [(Int, Int)]) -> Step {
+    private mutating func step(
+        _ pc: Int, _ position: Int, _ pending: inout [(Int, Int)], _ budget: inout StepBudget
+    ) throws(BudgetExceeded) -> Step {
         let instruction = program.instructions[pc]
         switch instruction {
         case .unit, .set:
@@ -86,7 +89,7 @@ struct MemoSearch {
         case .jump(let target): return .next(target, position)
         case .assertion(let assertion): return input.holds(assertion, at: position) ? .next(pc + 1, position) : .dead
         case .look(let index):
-            return evaluate(index, at: position) != program.looks[index].look.negated ? .next(pc + 1, position) : .dead
+            return try evaluate(index, at: position, budget: &budget) != program.looks[index].look.negated ? .next(pc + 1, position) : .dead
         case .succeed, .match: return .success
         default: return .next(pc + 1, position)
         }

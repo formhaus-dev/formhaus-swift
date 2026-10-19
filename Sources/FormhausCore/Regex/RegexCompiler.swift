@@ -7,6 +7,7 @@ struct RegexCompiler {
     }
 
     static let expansionLimit: Double = 20000
+    static let instructionLimit = 32768
 
     var code: [Instruction] = []
     var registers: Int

@@ -14,13 +14,13 @@ struct LookOracle {
         }
     }
 
-    mutating func evaluate(_ index: Int, at position: Int) -> Bool {
-        guard let scanner = scanners[index] else { return memo?.evaluate(index, at: position) ?? false }
+    mutating func evaluate(_ index: Int, at position: Int, budget: inout StepBudget) throws(BudgetExceeded) -> Bool {
+        guard let scanner = scanners[index] else { return try memo?.evaluate(index, at: position, budget: &budget) ?? false }
         if let table = tables[index] { return table[position] }
         var local = scanner.snapshot()
-        let known = local.keys.count
-        let table = local.acceptance(text)
-        if local.keys.count > known { scanner.store(local) }
+        let revision = local.revision
+        let table = try local.acceptance(text, budget: &budget)
+        if local.revision != revision { scanner.store(local) }
         tables[index] = table
         return table[position]
     }

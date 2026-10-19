@@ -5,6 +5,8 @@ struct CompiledPattern: Sendable {
     let prefilter: Prefilter
     let automaton: AutomatonCache?
     let scanners: [AutomatonCache?]
+    let oversized: Bool
+    private let size: Int
 
     init(_ source: String) throws(RegexSyntaxError) {
         let parsed = try RegexParser.parse(source)
@@ -14,21 +16,25 @@ struct CompiledPattern: Sendable {
         scanners = zip(program.scans, program.looks).map { scan, body in
             scan.map { AutomatonCache(LazyDFA($0, anchored: false, backward: !body.look.behind, scanning: true)) }
         }
+        oversized = program.instructions.count > RegexCompiler.instructionLimit
+        size = program.instructions.count + program.scans.reduce(0) { $0 + ($1?.instructions.count ?? 0) }
     }
 
     func test(_ text: String) -> Bool? {
+        guard !oversized else { return nil }
         let units = codeUnits(text)
         guard prefilter.admits(units) else { return false }
         let input = MatchInput(text: units)
         var looks = program.looks.isEmpty ? nil : LookOracle(program, scanners, input)
         if let automaton, program.looks.isEmpty || looks != nil {
+            var budget = StepBudget.linear(units: units.count, instructions: size)
             var local = automaton.snapshot()
-            let known = local.keys.count
-            let matched = local.matches(units, first: prefilter.first, looks: &looks)
-            if local.keys.count > known { automaton.store(local) }
+            let revision = local.revision
+            let matched = try? local.matches(units, first: prefilter.first, looks: &looks, budget: &budget)
+            if local.revision != revision { automaton.store(local) }
             return matched
         }
-        var matcher = Backtracker(program, input)
+        var matcher = Backtracker(program, input, budget: StepBudget(limit: StepBudget.backtracking))
         return try? matcher.search(prefilter)
     }
 }
@@ -61,12 +67,10 @@ final class AutomatonCache: Sendable {
     }
 
     func store(_ automaton: LazyDFA) {
-        let replaced = shared.withLock { current -> LazyDFA? in
-            guard automaton.keys.count > current.keys.count else { return nil }
-            defer { current = automaton }
-            return current
+        var automaton = automaton
+        shared.withLockUnchecked { current in
+            if automaton.revision > current.revision { swap(&current, &automaton) }
         }
-        _ = replaced
     }
 }
 

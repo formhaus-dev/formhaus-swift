@@ -1,5 +1,3 @@
-struct BudgetExceeded: Error {}
-
 struct Backtracker {
     enum Frame {
         case resume(Int, Int)
@@ -23,7 +21,7 @@ struct Backtracker {
         case failure
     }
 
-    static let stepLimit = 10_000_000
+    static let memoLimit = 1 << 25
 
     let program: RegexProgram
     let input: MatchInput
@@ -31,19 +29,20 @@ struct Backtracker {
     var registers: [Int]
     var stack: [Frame] = []
     var saved: [[Int]] = []
-    var steps = 0
+    var budget: StepBudget
     var memo: Bitset?
     var pureLooks: MemoSearch?
     let width: Int
 
-    init(_ program: RegexProgram, _ input: MatchInput) {
+    init(_ program: RegexProgram, _ input: MatchInput, budget: StepBudget) {
         self.program = program
         self.input = input
+        self.budget = budget
         width = input.text.count + 1
         slots = Array(repeating: -1, count: 2 * (program.captureCount + 1))
         registers = Array(repeating: -1, count: program.registerCount)
         let region = program.mainEnd - program.memoFrom
-        memo = region > 0 && region * width <= Bitset.budget ? Bitset(count: region * width) : nil
+        memo = region > 0 && region * width <= Self.memoLimit ? Bitset(count: region * width) : nil
         pureLooks = MemoSearch(program, input)
     }
 
@@ -62,20 +61,19 @@ struct Backtracker {
         var pc = entry
         var offset = position
         while true {
-            steps += 1
-            guard steps <= Self.stepLimit else { throw BudgetExceeded() }
+            try budget.spend(1)
             switch try execute(&pc, &offset) {
             case .proceed: continue
             case .success: return true
             case .failure:
-                guard let (resumePC, resumeOffset) = backtrack(to: base) else { return false }
+                guard let (resumePC, resumeOffset) = try backtrack(to: base) else { return false }
                 pc = resumePC
                 offset = resumeOffset
             }
         }
     }
 
-    private mutating func backtrack(to base: Int) -> (Int, Int)? {
+    private mutating func backtrack(to base: Int) throws(BudgetExceeded) -> (Int, Int)? {
         while stack.count > base {
             switch stack.removeLast() {
             case .resume(let pc, let offset): return (pc, offset)
@@ -88,7 +86,7 @@ struct Backtracker {
                 saved.removeSubrange(index...)
             case .scan(let scan): return resumeScan(scan)
             case .extend(let scan):
-                if let resumed = resumeExtend(scan) { return resumed }
+                if let resumed = try resumeExtend(scan) { return resumed }
             }
         }
         return nil
@@ -117,7 +115,7 @@ struct Backtracker {
         case .look(let index):
             guard try evaluateLook(index, offset) else { return .failure }
         case .backreference(let index):
-            guard let next = matchReference(program.references[index], offset) else { return .failure }
+            guard let next = try matchReference(program.references[index], offset) else { return .failure }
             offset = next
         case .succeed, .match:
             return .success
@@ -126,10 +124,10 @@ struct Backtracker {
         case .counterNext(let next):
             return continueLoop(next, &pc, offset)
         case .repeatSet(let repeated):
-            guard let next = enterRepeat(repeated, pc, offset) else { return .failure }
+            guard let next = try enterRepeat(repeated, pc, offset) else { return .failure }
             offset = next
         default:
-            guard updateState(instruction, pc, offset) else { return .failure }
+            guard try updateState(instruction, pc, offset) else { return .failure }
         }
         pc += 1
         return .proceed
