@@ -8,7 +8,8 @@ struct MatrixRows: View {
     let model: FormModel
 
     var body: some View {
-        let columns = fields.first?.field?.options ?? []
+        let first = fields.first?.field
+        let columns = first.flatMap { model.options(for: $0.key) ?? $0.options } ?? []
         ViewThatFits(in: .horizontal) {
             rows(columns, wide: true).frame(
                 minWidth: max(tokens.controls.matrixWidth, CGFloat(columns.count + 2) * 96 * max(1, tokens.scale)))
@@ -21,9 +22,7 @@ struct MatrixRows: View {
             if wide { MatrixHeader(columns: columns) }
             ForEach(Array(fields.enumerated()), id: \.element.nodeID) { index, node in
                 if let field = node.field, isRow(field) {
-                    MatrixRow(
-                        context: FieldContext(field: field, key: field.key, state: model.field(field.key), model: model),
-                        columns: columns, wide: wide, last: index == fields.count - 1)
+                    MatrixRow(field: field, model: model, wide: wide, last: index == fields.count - 1)
                 } else {
                     FormNodeView(node: node, model: model).padding(.vertical, tokens.spacing.s5)
                 }

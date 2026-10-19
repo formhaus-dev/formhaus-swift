@@ -5,21 +5,20 @@ struct FlowLayout: Layout {
     let spacing: CGFloat
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
-        let rows = arrange(proposal.width ?? .infinity, subviews)
-        let width = rows.map { $0.width }.max() ?? 0
+        let limit = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? .infinity
+        let rows = arrange(limit, subviews)
+        let width = rows.map(\.width).max() ?? 0
         let height = rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(0, rows.count - 1))
-        return CGSize(width: proposal.width ?? width, height: height)
+        return CGSize(width: limit.isFinite ? limit : width, height: height)
     }
 
     func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
         var y = bounds.minY
         for row in arrange(bounds.width, subviews) {
             var x = bounds.minX
-            for index in row.indices {
-                let size = subviews[index].sizeThatFits(.unspecified)
-                let width = min(size.width, bounds.width)
-                subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(width: width, height: row.height))
-                x += width + spacing
+            for (index, size) in zip(row.indices, row.sizes) {
+                subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(width: size.width, height: row.height))
+                x += size.width + spacing
             }
             y += row.height + spacing
         }
@@ -27,6 +26,7 @@ struct FlowLayout: Layout {
 
     private struct Row {
         var indices: [Int] = []
+        var sizes: [CGSize] = []
         var width: CGFloat = 0
         var height: CGFloat = 0
     }
@@ -35,8 +35,9 @@ struct FlowLayout: Layout {
         var rows: [Row] = []
         var row = Row()
         for index in subviews.indices {
-            let size = subviews[index].sizeThatFits(.unspecified)
-            let width = min(size.width, maxWidth)
+            let ideal = subviews[index].sizeThatFits(.unspecified)
+            let width = min(ideal.width, maxWidth)
+            let size = width < ideal.width ? subviews[index].sizeThatFits(ProposedViewSize(width: width, height: nil)) : ideal
             if !row.indices.isEmpty, row.width + spacing + width > maxWidth {
                 rows.append(row)
                 row = Row()
@@ -44,6 +45,7 @@ struct FlowLayout: Layout {
             row.width += (row.indices.isEmpty ? 0 : spacing) + width
             row.height = max(row.height, size.height)
             row.indices.append(index)
+            row.sizes.append(CGSize(width: width, height: size.height))
         }
         if !row.indices.isEmpty { rows.append(row) }
         return rows

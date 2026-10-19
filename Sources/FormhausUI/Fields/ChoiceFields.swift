@@ -9,9 +9,7 @@ public struct RadioField: View {
     }
 
     public var body: some View {
-        ChoiceList(
-            context: context, shape: .radio, isSelected: { $0 == context.text && context.value != nil },
-            choose: { context.commit(.string($0)) })
+        ChoiceList(context: context, shape: .radio)
     }
 }
 
@@ -23,15 +21,32 @@ public struct MultiselectField: View {
     }
 
     public var body: some View {
-        ChoiceList(context: context, shape: .checkbox, isSelected: selected.contains) { value in
-            let current = selected
-            let next = current.contains(value) ? current.filter { $0 != value } : current + [value]
-            context.setValue(.array(next.map(JSONValue.string)))
-        }
+        ChoiceList(context: context, shape: .checkbox)
+    }
+}
+
+@MainActor
+struct ChoiceSelection {
+    let context: FieldContext
+
+    var multiple: Bool { context.field.type == "multiselect" }
+
+    var values: [String] { Self.values(context.state.value, multiple: multiple) }
+
+    static func values(_ value: JSONValue?, multiple: Bool) -> [String] {
+        if multiple { return value?.arrayValue?.compactMap(\.stringValue) ?? [] }
+        guard let value, !value.isNull else { return [] }
+        return [value.stringValue ?? value.numberValue.map(numberText) ?? ""]
     }
 
-    private var selected: [String] {
-        context.value?.arrayValue?.compactMap(\.stringValue) ?? []
+    func choose(_ value: String) {
+        guard multiple else {
+            context.commit(.string(value))
+            return
+        }
+        let current = values
+        let next = current.contains(value) ? current.filter { $0 != value } : current + [value]
+        context.setValue(.array(next.map(JSONValue.string)))
     }
 }
 
@@ -41,8 +56,6 @@ struct ChoiceList: View {
     @State private var zoomed: Zoomed?
     let context: FieldContext
     let shape: IndicatorShape
-    let isSelected: (String) -> Bool
-    let choose: (String) -> Void
 
     var body: some View {
         FieldShell(context, variant: .group) {
@@ -51,68 +64,50 @@ struct ChoiceList: View {
                 .formhausFocus(context, $focused)
         }
         .sheet(item: $zoomed) { zoomed in
-            ImageViewer(title: zoomed.label, source: zoomed.image, closeLabel: context.label("close"))
+            ImageViewer(title: zoomed.label, source: zoomed.image, closeLabel: context.text(forLabel: "close"))
         }
     }
 
     @ViewBuilder private var options: some View {
         let options = context.options
+        let selected = Set(ChoiceSelection.values(context.value, multiple: shape == .checkbox))
         if options.contains(where: { $0.image?.isEmpty == false }) {
-            ColumnGrid(
-                columns: clampedInt(context.field.columns.map(Double.init), 1...4), minimumWidth: tokens.controls.optionImageWidth,
-                compactWidth: tokens.controls.compactWidth, spacing: tokens.spacing.s5
-            ) {
-                ForEach(options, id: \.self) { option in picture(option) }
+            LazyVGrid(columns: gridColumns, alignment: .leading, spacing: tokens.spacing.s5) {
+                ForEach(options, id: \.self) { option in card(option, selected: selected, picture: true) }
             }
         } else if context.field.layout?.stringValue == "inline" {
             FlowLayout(spacing: tokens.spacing.s3) {
-                ForEach(options, id: \.self) { option in card(option).fixedSize() }
+                ForEach(options, id: \.self) { option in card(option, selected: selected, picture: false) }
             }
         } else {
-            VStack(alignment: .leading, spacing: tokens.spacing.s3) {
-                ForEach(options, id: \.self) { option in card(option) }
+            LazyVStack(alignment: .leading, spacing: tokens.spacing.s3) {
+                ForEach(options, id: \.self) { option in card(option, selected: selected, picture: false) }
             }
         }
     }
 
-    private func card(_ option: FieldOption) -> some View {
-        let value = option.value ?? ""
-        let selected = isSelected(value)
-        return Button {
-            choose(value)
-        } label: {
-            OptionRow(shape, label: option.label ?? value, selected: selected, invalid: context.isInvalid)
+    private var gridColumns: [GridItem] {
+        let spacing = tokens.spacing.s5
+        if let columns = context.field.columns, (1...4).contains(columns) {
+            return Array(repeating: GridItem(.flexible(), spacing: spacing, alignment: .top), count: columns)
         }
-        .buttonStyle(OptionCardStyle(selected: selected, invalid: context.isInvalid))
-        .accessibilityAddTraits(selected ? .isSelected : [])
-        .accessibilityHint(context.helperText ?? "")
+        return [
+            GridItem(
+                .adaptive(minimum: min(tokens.controls.optionImageWidth, 160 * max(1, tokens.scale))), spacing: spacing, alignment: .top)
+        ]
     }
 
-    private func picture(_ option: FieldOption) -> some View {
+    private func card(_ option: FieldOption, selected: Set<String>, picture: Bool) -> some View {
         let value = option.value ?? ""
-        let selected = isSelected(value)
-        return Button {
-            choose(value)
-        } label: {
-            VStack(alignment: .leading, spacing: tokens.spacing.s3) {
-                OptionImage(source: option.image ?? "")
-                OptionRow(shape, label: option.label ?? value, selected: selected, invalid: context.isInvalid)
-            }
-            .padding(.top, tokens.spacing.s3 - tokens.spacing.s5)
-            .frame(maxHeight: .infinity, alignment: .topLeading)
-        }
-        .buttonStyle(OptionCardStyle(selected: selected, invalid: context.isInvalid))
-        .accessibilityAddTraits(selected ? .isSelected : [])
-        .overlay(alignment: .topTrailing) {
-            if option.image?.isEmpty == false {
-                let inset = (tokens.controls.hitTarget - tokens.controls.iconButton) / 2
-                ZoomButton(label: context.label("enlargeImage", ["label": .string(option.label ?? "")])) {
-                    zoomed = Zoomed(id: value, label: option.label ?? value, image: option.image ?? "")
-                }
-                .padding(.top, 2 * tokens.spacing.s3 - inset)
-                .padding(.trailing, tokens.spacing.s6 + tokens.spacing.s3 - inset)
-            }
-        }
+        let selection = ChoiceSelection(context: context)
+        return ChoiceCard(
+            option: option, shape: shape, selected: selected.contains(value), invalid: context.isInvalid, picture: picture,
+            hint: context.helperText ?? "",
+            zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
+            choose: { selection.choose(value) },
+            zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: option.image ?? "") }
+        )
+        .equatable()
     }
 }
 

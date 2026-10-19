@@ -2,13 +2,27 @@
 import SwiftUI
 
 struct MatrixRow: View {
-    @Environment(\.formhausTokens) private var tokens
     @FocusState private var focused: Bool
-    @State private var hovered = false
-    let context: FieldContext
-    let columns: [FieldOption]
+    let field: FormField
+    let model: FormModel
     let wide: Bool
     let last: Bool
+
+    var body: some View {
+        let context = FieldContext(field: field, model: model)
+        MatrixRowBody(context: context, wide: wide, last: last, focused: $focused)
+    }
+}
+
+private struct MatrixRowBody: View {
+    @Environment(\.formhausTokens) private var tokens
+    let context: FieldContext
+    let wide: Bool
+    let last: Bool
+    var focused: FocusState<Bool>.Binding
+    @State private var hovered = false
+
+    private var columns: [FieldOption] { context.options }
 
     var body: some View {
         Group {
@@ -31,11 +45,11 @@ struct MatrixRow: View {
                 .padding(.bottom, tokens.spacing.s5)
             }
         }
-        .background(hovered || focused ? tokens.colors.backgroundHover : .clear)
+        .background(hovered || focused.wrappedValue ? tokens.colors.backgroundHover : .clear)
         .overlay(alignment: .bottom) { if !last { tokens.colors.border.frame(height: 1) } }
         .onHover { hovered = $0 }
         .disabled(context.isLocked)
-        .formhausFocus(context, $focused)
+        .formhausFocus(context, focused)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(context.accessibilityName)
         .id(context.key)
@@ -74,22 +88,11 @@ struct MatrixRow: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
-    private var selectedValues: [String] {
-        if context.field.type == "radio" { return context.value == nil ? [] : [context.text] }
-        return context.value?.arrayValue?.compactMap(\.stringValue) ?? []
-    }
-
     private func isSelected(_ value: String) -> Bool {
-        selectedValues.contains(value)
+        ChoiceSelection(context: context).values.contains(value)
     }
 
     private func choose(_ value: String) {
-        if context.field.type == "radio" {
-            context.commit(.string(value))
-            return
-        }
-        let current = selectedValues
-        let next = current.contains(value) ? current.filter { $0 != value } : current + [value]
-        context.setValue(.array(next.map(JSONValue.string)))
+        ChoiceSelection(context: context).choose(value)
     }
 }

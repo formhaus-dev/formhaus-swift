@@ -1,13 +1,9 @@
+import ImageIO
 import SwiftUI
-
-#if canImport(UIKit)
-    import UIKit
-#else
-    import AppKit
-#endif
 
 struct OptionImage: View {
     @Environment(\.formhausTokens) private var tokens
+    @State private var decoded: CGImage?
     let source: String
     var fit = false
 
@@ -23,12 +19,16 @@ struct OptionImage: View {
         .background(tokens.colors.backgroundDisabled)
         .clipShape(shape)
         .accessibilityHidden(true)
+        .task(id: source) {
+            guard isInline(source) else { return }
+            decoded = await InlineImages.shared.image(source)
+        }
     }
 
     @ViewBuilder private var picture: some View {
-        if let image = inlineImage(source) {
-            image.resizable()
-        } else if let url = URL(string: source), url.scheme == "https" {
+        if let image = decoded ?? InlineImages.shared.cached(source) {
+            Image(decorative: image, scale: 1).resizable()
+        } else if let url = URL(string: source), ["https", "http"].contains(url.scheme) {
             AsyncImage(url: url) { phase in
                 if let image = phase.image { image.resizable() } else { tokens.colors.backgroundDisabled }
             }
@@ -38,15 +38,37 @@ struct OptionImage: View {
     }
 }
 
-private func inlineImage(_ source: String) -> Image? {
-    guard source.hasPrefix("data:image/"), let comma = source.firstIndex(of: ","),
-        source[..<comma].hasSuffix(";base64"), let data = Data(base64Encoded: String(source[source.index(after: comma)...]))
+private func isInline(_ source: String) -> Bool {
+    source.hasPrefix("data:image/")
+}
+
+@MainActor
+final class InlineImages {
+    static let shared = InlineImages()
+    private var cache: [String: CGImage] = [:]
+    private var order: [String] = []
+
+    func cached(_ source: String) -> CGImage? {
+        cache[source]
+    }
+
+    func image(_ source: String) async -> CGImage? {
+        if let hit = cache[source] { return hit }
+        let image = await Task.detached(priority: .userInitiated) { decodeInline(source) }.value
+        guard let image else { return nil }
+        cache[source] = image
+        order.append(source)
+        if order.count > 128 { cache[order.removeFirst()] = nil }
+        return image
+    }
+}
+
+private func decodeInline(_ source: String) -> CGImage? {
+    guard isInline(source), let comma = source.firstIndex(of: ","), source[..<comma].hasSuffix(";base64"),
+        let data = Data(base64Encoded: String(source[source.index(after: comma)...])),
+        let image = CGImageSourceCreateWithData(data as CFData, nil)
     else { return nil }
-    #if canImport(UIKit)
-        return UIImage(data: data).map(Image.init(uiImage:))
-    #else
-        return NSImage(data: data).map(Image.init(nsImage:))
-    #endif
+    return CGImageSourceCreateImageAtIndex(image, 0, nil)
 }
 
 struct ZoomButton: View {
