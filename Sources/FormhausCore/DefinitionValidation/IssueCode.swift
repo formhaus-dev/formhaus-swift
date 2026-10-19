@@ -44,6 +44,7 @@ extension IssueCode {
     public static let invalidPattern = IssueCode(rawValue: "invalid-pattern")
     public static let slowPattern = IssueCode(rawValue: "slow-pattern")
     public static let invalidRange = IssueCode(rawValue: "invalid-range")
+    public static let invalidScale = IssueCode(rawValue: "invalid-scale")
     public static let ruleNotApplicable = IssueCode(rawValue: "rule-not-applicable")
     public static let disabledNotApplicable = IssueCode(rawValue: "disabled-not-applicable")
     public static let missingOptions = IssueCode(rawValue: "missing-options")
@@ -63,4 +64,6 @@ extension IssueCode {
     public static let i18nUnsafeIdentifier = IssueCode(rawValue: "i18n-unsafe-identifier")
     public static let unknownSource = IssueCode(rawValue: "unknown-source")
     public static let sourceNotApplicable = IssueCode(rawValue: "source-not-applicable")
+    public static let columnsNotApplicable = IssueCode(rawValue: "columns-not-applicable")
+    public static let unsafeImageUrl = IssueCode(rawValue: "unsafe-image-url")
 }

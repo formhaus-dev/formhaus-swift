@@ -3,6 +3,7 @@ struct FieldEntry {
     let path: String
     let step: Int
     let group: FormField?
+    let parent: FormNode?
 }
 
 struct NodeEntry {
@@ -147,7 +148,7 @@ struct CheckContext {
         self.validators = validators
         nodes = nodeEntries(definition)
         entries = nodes.compactMap { entry in
-            entry.node.field.map { FieldEntry(field: $0, path: entry.path, step: entry.step, group: entry.group) }
+            entry.node.field.map { FieldEntry(field: $0, path: entry.path, step: entry.step, group: entry.group, parent: entry.parent) }
         }
         let scoped = FieldScopes(entries)
         keys = scoped.keys

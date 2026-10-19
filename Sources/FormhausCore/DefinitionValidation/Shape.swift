@@ -87,7 +87,7 @@ private func action(_ value: JSONValue?, _ path: String) -> [DefinitionIssue] {
 }
 
 private func option(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
-    text(value, "value", path) + typed(value, ["label": .string], path)
+    text(value, "value", path) + typed(value, ["label": .string, "image": .string], path)
 }
 
 private let rules: KeyValuePairs<String, Kind> = [
@@ -112,6 +112,11 @@ private func dependencies(_ value: JSONValue?, _ path: String) -> [DefinitionIss
     return valid ? [] : [error("invalid-type", path, "must be an array of field keys")]
 }
 
+private func columns(_ value: JSONValue?, _ path: String) -> [DefinitionIssue] {
+    guard let value, !(value.isInteger && (1...4).contains(value.numberValue ?? 0)) else { return [] }
+    return [error(value.numberValue == nil ? "invalid-type" : "invalid-range", path, "\"columns\" must be a whole number from 1 to 4")]
+}
+
 private func field(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
     let type = value["type"]?.stringValue
     let container = (type == "section" || type == "group") && nestable(path)
@@ -126,6 +131,7 @@ private func field(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
         + validation(value["validation"], "\(path)/validation")
         + dependencies(value["optionsDependsOn"], "\(path)/optionsDependsOn")
         + props(value["props"], "\(path)/props")
+        + columns(value["columns"], "\(path)/columns")
 }
 
 private func route(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {

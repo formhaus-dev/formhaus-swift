@@ -25,6 +25,9 @@ private func ruleIssues(_ context: CheckContext, _ entry: FieldEntry) -> [Defini
     let items = field.isGroup ? field.defaultItems : nil
     var issues =
         rangeIssue(rules, path, "minLength", "maxLength") + rangeIssue(rules, path, "min", "max") + patternIssue(rules.pattern, path)
+    if let range = field.scaleRange, !(range.min.isInteger && range.max.isInteger && range.max > range.min && range.max - range.min < 11) {
+        issues.append(error("invalid-scale", "\(path)/validation", "a scale needs 2 to 11 whole-number points"))
+    }
     if let match = rules.matchField {
         issues += missingTarget(context, match, "\(path)/validation/matchField", group: entry.group?.key)
     }
