@@ -1,11 +1,11 @@
 import Testing
-import FormhausCore
+@testable import FormhausCore
 
 @Suite("Conformance corpus: texts and cases")
 struct CorpusCaseTests {
     static let withTexts = Corpus.names.filter { Corpus.fixture($0).texts != nil }
 
-    private func browserCanSubmit(_ definition: FormDefinition, _ values: JSONObject) -> Bool {
+    @MainActor private func browserCanSubmit(_ definition: FormDefinition, _ values: JSONObject) -> Bool {
         let engine = FormEngine(definition: definition, values: values)
         while engine.isMultiStep && !engine.isLastStep {
             if isActionDisabled(engine.currentStep?.next.action, engine.getSubmitValues()) || !engine.next() { return false }
@@ -32,7 +32,7 @@ struct CorpusCaseTests {
     }
 
     @Test("browser engine", arguments: Corpus.caseNames)
-    func browserEngine(id: String) throws {
+    @MainActor func browserEngine(id: String) throws {
         let (fixture, testCase) = Corpus.testCase(id)
         let definition = try fixture.runtime()
         let values = testCase.values.objectValue ?? JSONObject()
@@ -43,7 +43,7 @@ struct CorpusCaseTests {
     }
 
     @Test("a payload the browser accepts passes the server", arguments: Corpus.caseNames)
-    func acceptedPayloadPassesServer(id: String) throws {
+    @MainActor func acceptedPayloadPassesServer(id: String) throws {
         let (fixture, testCase) = Corpus.testCase(id)
         let definition = try fixture.runtime()
         guard browserCanSubmit(definition, testCase.values.objectValue ?? JSONObject()) else { return }

@@ -18,7 +18,7 @@ struct CorpusCheckTests {
     static let rejected = Corpus.names.filter { !Corpus.fixture($0).issues.isEmpty }
 
     private func entries(_ issues: [DefinitionIssue], _ severity: DefinitionIssue.Severity) -> [IssueEntry] {
-        IssueEntry.sorted(issues.filter { $0.severity == severity }.map { IssueEntry(code: $0.code, path: $0.path) })
+        IssueEntry.sorted(issues.filter { $0.severity == severity }.map { IssueEntry(code: $0.code.rawValue, path: $0.path) })
     }
 
     @Test("covers every audited case")
@@ -39,7 +39,7 @@ struct CorpusCheckTests {
     }
 
     @Test("rejected by the engine and the server", arguments: rejected)
-    func rejectedByEngineAndServer(name: String) {
+    @MainActor func rejectedByEngineAndServer(name: String) {
         let fixture = Corpus.fixture(name)
         #expect(throws: FormDefinitionError.self) { try FormEngine(definition: fixture.definition) }
         #expect(throws: FormDefinitionError.self) { try validateSubmission(fixture.definition, .object(JSONObject())) }
