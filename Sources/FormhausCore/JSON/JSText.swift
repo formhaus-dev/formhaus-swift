@@ -109,29 +109,69 @@ private func isDecimalLiteral(_ text: String) -> Bool {
     return index == chars.count
 }
 
+private enum Piece {
+    case text(String)
+    case value(JSONValue)
+}
+
+private func scalarString(_ value: JSONValue) -> String {
+    switch value {
+    case .null: "null"
+    case .bool(let flag): flag ? "true" : "false"
+    case .number(let number): jsNumberString(number)
+    case .string(let text): text
+    case .array, .object: "[object Object]"
+    }
+}
+
 func jsString(_ value: JSONValue?) -> String {
     guard let value else { return "undefined" }
-    switch value {
-    case .null: return "null"
-    case .bool(let flag): return flag ? "true" : "false"
-    case .number(let number): return jsNumberString(number)
-    case .string(let text): return text
-    case .array(let items): return items.map { $0.isNull ? "" : jsString($0) }.joined(separator: ",")
-    case .object: return "[object Object]"
+    guard case .array = value else { return scalarString(value) }
+    var output = ""
+    var pending: [Piece] = [.value(value)]
+    while let piece = pending.popLast() {
+        switch piece {
+        case .text(let text): output += text
+        case .value(.null): continue
+        case .value(.array(let items)):
+            for (index, item) in items.enumerated().reversed() {
+                pending.append(.value(item))
+                if index > 0 { pending.append(.text(",")) }
+            }
+        case .value(let item): output += scalarString(item)
+        }
     }
+    return output
 }
 
 func jsonStringify(_ value: JSONValue?) -> String {
     guard let value else { return "undefined" }
-    switch value {
-    case .null: return "null"
-    case .bool(let flag): return flag ? "true" : "false"
-    case .number(let number): return number.isFinite ? jsNumberString(number) : "null"
-    case .string(let text): return quoteJSON(text)
-    case .array(let items): return "[" + items.map { jsonStringify($0) }.joined(separator: ",") + "]"
-    case .object(let object):
-        return "{" + object.map { quoteJSON($0.key) + ":" + jsonStringify($0.value) }.joined(separator: ",") + "}"
+    var output = ""
+    var pending: [Piece] = [.value(value)]
+    while let piece = pending.popLast() {
+        switch piece {
+        case .text(let text): output += text
+        case .value(.number(let number)): output += number.isFinite ? jsNumberString(number) : "null"
+        case .value(.string(let text)): output += quoteJSON(text)
+        case .value(.array(let items)):
+            output += "["
+            pending.append(.text("]"))
+            for (index, item) in items.enumerated().reversed() {
+                pending.append(.value(item))
+                if index > 0 { pending.append(.text(",")) }
+            }
+        case .value(.object(let object)):
+            output += "{"
+            pending.append(.text("}"))
+            for (index, entry) in Array(object).enumerated().reversed() {
+                pending.append(.value(entry.value))
+                pending.append(.text(quoteJSON(entry.key) + ":"))
+                if index > 0 { pending.append(.text(",")) }
+            }
+        case .value(let item): output += scalarString(item)
+        }
     }
+    return output
 }
 
 func quoteJSON(_ text: String) -> String {
