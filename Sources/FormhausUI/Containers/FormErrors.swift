@@ -22,7 +22,7 @@ public struct FormErrorSummary: View {
                     } label: {
                         HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
                             Text(verbatim: "•").accessibilityHidden(true)
-                            Text(verbatim: "\(entry.label): \(entry.message)").fixedSize(horizontal: false, vertical: true)
+                            Text(verbatim: summaryLine(entry.label, entry.message)).fixedSize(horizontal: false, vertical: true)
                                 .multilineTextAlignment(.leading)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             Image(systemName: "chevron.right")
@@ -66,4 +66,11 @@ public struct FormTopLevelErrors: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
+}
+
+private let closingPunctuation: Set<Character> = ["?", "!", ":", ".", "\u{FF1F}", "\u{FF01}", "\u{FF1A}", "\u{FF0E}", "\u{3002}"]
+
+func summaryLine(_ label: String, _ message: String) -> String {
+    guard let last = label.last, closingPunctuation.contains(last) else { return "\(label): \(message)" }
+    return "\(label) \(message)"
 }
