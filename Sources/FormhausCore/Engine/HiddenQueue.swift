@@ -66,7 +66,7 @@ private struct HiddenPass {
         }
         for step in index.stepDependents[key] ?? [] {
             for field in valueFields(step.fields) where included(field) {
-                let shown = isVisible(step, visibility.scope(values.json))
+                let shown = isVisible(step, visibility.scope(values.json), limits: visibility.definition.listLimits)
                 acted = update(field, shown, dry: dry) || acted
             }
         }

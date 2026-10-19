@@ -19,7 +19,10 @@ extension EngineCore {
     func fieldsErrors(_ nodes: [FormNode], _ submitValues: JSONObject? = nil) -> FieldErrors {
         let values = submitValues ?? getSubmitValues()
         let scope = visibility.conditionValues(self.values.json)
-        return unsettleOnWrite { validateShown(nodes, values, scope, validators, .function(messages)) }
+        return unsettleOnWrite {
+            validateShown(
+                nodes, values, scope, ShownChecks(validators: validators, messages: .function(messages), limits: definition.listLimits))
+        }
     }
 
     func fieldError(_ field: FormField, _ value: JSONValue?, _ allValues: JSONObject? = nil) -> String? {
