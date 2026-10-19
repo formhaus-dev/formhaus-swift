@@ -6,4 +6,5 @@ let upcomingLabels: [String: String] = [
     "submit": "Submit",
     "stepTitle": "Step {index}",
     "stepErrors": "Errors: {count}",
+    "done": "Done",
 ]

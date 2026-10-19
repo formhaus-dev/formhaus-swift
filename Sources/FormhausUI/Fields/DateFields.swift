@@ -81,9 +81,12 @@ public struct DateField: View {
                             .foregroundStyle(
                                 display == nil ? tokens.colors.control : context.isLocked ? tokens.colors.textMuted : tokens.colors.text
                             )
-                            .lineLimit(1)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Image(systemName: kind == .time ? "clock" : "calendar").foregroundStyle(tokens.colors.textMuted)
+                        if display == nil {
+                            Image(systemName: kind == .time ? "clock" : "calendar").foregroundStyle(tokens.colors.textMuted)
+                        }
                     }
                     .contentShape(Rectangle())
                 }
@@ -91,9 +94,9 @@ public struct DateField: View {
                 .accessibilityLabel(context.accessibilityName)
                 .accessibilityValue(display ?? "")
                 .datePickerPresentation(isPresented: $picking) {
-                    DatePickerPanel(kind: kind, initial: date ?? Date(), label: context.label) { picked in
-                        context.setValue(.string(kind.text(picked)))
-                        if kind == .date { picking = false }
+                    DatePickerPanel(kind: kind, initial: date ?? Date(), label: context.label, done: context.text(forLabel: "done")) {
+                        context.setValue(.string(kind.text($0)))
+                        picking = false
                     }
                 }
                 FieldAccessories(context: context, clearable: date != nil) { context.setValue(.string("")) }
@@ -126,21 +129,28 @@ private struct DatePickerPanel: View {
     @State private var draft: Date
     let kind: DateKind
     let label: String
+    let done: String
     let pick: (Date) -> Void
 
-    init(kind: DateKind, initial: Date, label: String, pick: @escaping (Date) -> Void) {
+    init(kind: DateKind, initial: Date, label: String, done: String, pick: @escaping (Date) -> Void) {
         self.kind = kind
         self.label = label
+        self.done = done
         self.pick = pick
         _draft = State(initialValue: initial)
     }
 
     var body: some View {
-        DatePicker(selection: selection, displayedComponents: kind.components) { Text(label) }
-            .labelsHidden()
-            .modifier(PickerStyleChoice(kind: kind))
-            .tint(tokens.colors.primary)
-            .padding(tokens.spacing.s7)
+        VStack(alignment: .trailing, spacing: tokens.spacing.s5) {
+            DatePicker(selection: selection, displayedComponents: kind.components) { Text(label) }
+                .labelsHidden()
+                .modifier(PickerStyleChoice(kind: kind))
+                .tint(tokens.colors.primary)
+            Button(done) { pick(draft) }
+                .buttonStyle(FormButtonStyle(.primary, compact: true))
+                .keyboardShortcut(.defaultAction)
+        }
+        .padding(tokens.spacing.s7)
     }
 
     private var selection: Binding<Date> {
@@ -148,7 +158,7 @@ private struct DatePickerPanel: View {
             get: { draft },
             set: {
                 draft = $0
-                pick($0)
+                if kind == .date { pick($0) }
             })
     }
 }
