@@ -22,18 +22,24 @@ public struct FieldShell<Content: View>: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.s3) {
             if !isInline, !context.label.isEmpty {
-                FieldLabel(text: context.label, required: context.isRequired, requiredLabel: context.label("required"))
-                    .accessibilityAddTraits(variant == .group ? .isHeader : [])
-                    .measured("\(context.key)/label")
+                HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
+                    FieldLabel(text: context.label, required: context.isRequired, requiredLabel: context.text(forLabel: "required"))
+                        .accessibilityAddTraits(variant == .group ? .isHeader : [])
+                    if variant == .group { LoadingIndicator(visible: context.loading) }
+                }
+                .measured("\(context.key)/label")
             }
             if !isInline, let helper = context.helperText {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
                     .padding(.top, -tokens.spacing.s1)
             }
-            content.measured("\(context.key)/control")
+            HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
+                content.measured("\(context.key)/control")
+                if isInline { LoadingIndicator(visible: context.loading) }
+            }
             if isInline, let helper = context.helperText {
                 Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true).padding(.leading, inset)
-                    .padding(.top, variant == .row ? -tokens.spacing.s3 : -tokens.spacing.s1)
+                    .padding(.top, -tokens.spacing.s1)
             }
             if let error = context.error, !error.isEmpty {
                 FieldError(text: error).padding(.leading, inset)

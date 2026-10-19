@@ -50,7 +50,7 @@ private struct FormButtonBody: View {
             .background(shape.fill(fill))
             .overlay(shape.strokeBorder(border, lineWidth: 1))
             .contentShape(shape)
-            .opacity(enabled ? 1 : 0.5)
+            .opacity(enabled || variant == .primary ? 1 : 0.5)
             .scaleEffect(configuration.isPressed && !tokens.reduceMotion ? 0.98 : 1)
             .onHover { hovered = $0 }
             .animation(tokens.quick, value: hovered)
@@ -66,7 +66,7 @@ private struct FormButtonBody: View {
 
     private var foreground: Color {
         switch variant {
-        case .primary: tokens.colors.onPrimary
+        case .primary: enabled || busy ? tokens.colors.onPrimary : tokens.colors.primary
         case .secondary: tokens.colors.text
         case .text: active ? tokens.colors.text : tokens.colors.textMuted
         case .danger: active ? tokens.colors.errorHover : tokens.colors.error
@@ -75,7 +75,7 @@ private struct FormButtonBody: View {
 
     private var fill: Color {
         switch variant {
-        case .primary: active ? tokens.colors.primaryHover : tokens.colors.primary
+        case .primary: enabled || busy ? (active ? tokens.colors.primaryHover : tokens.colors.primary) : tokens.colors.primarySoft
         case .secondary: active ? tokens.colors.backgroundHover : tokens.colors.background
         case .text: active ? tokens.colors.backgroundHover : .clear
         case .danger: active ? tokens.colors.errorSoft : .clear

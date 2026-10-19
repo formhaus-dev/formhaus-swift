@@ -90,7 +90,8 @@ private struct SwitchRow: View {
     let configuration: ToggleStyleConfiguration
 
     var body: some View {
-        HStack(alignment: .center, spacing: tokens.spacing.s5) {
+        let offset = tokens.typography.body * 0.36
+        HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s5) {
             configuration.label
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
@@ -100,7 +101,7 @@ private struct SwitchRow: View {
                 .labelsHidden()
                 .toggleStyle(.switch)
                 .tint(tokens.colors.primary)
+                .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
         }
-        .frame(minHeight: tokens.controls.hitTarget)
     }
 }

@@ -13,21 +13,25 @@ public struct FormErrorSummary: View {
         let entries = model.errorEntries
         if !entries.isEmpty {
             let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
-            let title = model.label("errorSummary")
+            let title = model.text(forLabel: "errorSummary")
             VStack(alignment: .leading, spacing: tokens.spacing.s1) {
                 Text(title).formhausText(.label).accessibilityAddTraits(.isHeader)
                 ForEach(entries) { entry in
                     Button {
-                        model.show(entry.key)
+                        model.focus(field: entry.key)
                     } label: {
                         HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
                             Text(verbatim: "•").accessibilityHidden(true)
-                            Text(verbatim: "\(entry.label): \(entry.message)").underline().fixedSize(horizontal: false, vertical: true)
+                            Text(verbatim: "\(entry.label): \(entry.message)").fixedSize(horizontal: false, vertical: true)
                                 .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: tokens.typography.small, weight: .semibold))
+                                .accessibilityHidden(true)
                         }
                         .formhausText(.body, colored: false)
                         .foregroundStyle(tokens.colors.error)
-                        .frame(minHeight: tokens.controls.hitTarget * 0.6, alignment: .leading)
+                        .frame(minHeight: tokens.controls.hitTarget, alignment: .leading)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)

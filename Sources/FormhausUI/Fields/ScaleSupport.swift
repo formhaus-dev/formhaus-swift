@@ -92,7 +92,9 @@ struct DigitKeys: ViewModifier {
             .focusEffectDisabled()
             .focused($focused)
             .onKeyPress(characters: .decimalDigits, phases: .down) { press in
-                guard let key = press.characters.first, let point = scale.point(forDigit: key) else { return .ignored }
+                guard press.modifiers.isDisjoint(with: [.command, .control, .option]), let key = press.characters.first,
+                    let point = scale.point(forDigit: key)
+                else { return .ignored }
                 commit(point)
                 return .handled
             }

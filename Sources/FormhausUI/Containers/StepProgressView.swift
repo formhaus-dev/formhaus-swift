@@ -11,8 +11,10 @@ struct FormProgress: View {
         if structure.isMultiStep {
             let context = ProgressContext(
                 current: structure.progress.current, total: structure.progress.total,
-                counterLabel: model.label(
-                    "stepOf", ["current": .number(Double(structure.progress.current)), "total": .number(Double(structure.progress.total))]),
+                counterLabel: model.text(
+                    forLabel:
+                        "stepOf",
+                    ["current": .number(Double(structure.progress.current)), "total": .number(Double(structure.progress.total))]),
                 stepTitle: structure.currentStep?.title, stepDescription: structure.currentStep?.description, steps: marks(structure))
             if let custom = components.slots.progress {
                 custom(context)
@@ -28,8 +30,9 @@ struct FormProgress: View {
         return structure.steps.enumerated().map { index, step in
             let count = counts[step.id] ?? 0
             return StepStatus(
-                id: step.id, title: step.title ?? model.label("stepTitle", ["index": .number(Double(index + 1))]), errorCount: count,
-                errorLabel: count > 0 ? model.label("stepErrors", ["count": .number(Double(count))]) : nil)
+                id: step.id, title: step.title ?? model.text(forLabel: "stepTitle", ["index": .number(Double(index + 1))]),
+                errorCount: count,
+                errorLabel: count > 0 ? model.text(forLabel: "stepErrors", ["count": .number(Double(count))]) : nil)
         }
     }
 }
@@ -50,9 +53,13 @@ public struct StepProgressView: View {
             ProgressBar(fraction: context.total > 0 ? Double(context.current) / Double(context.total) : 0)
             Text(context.counterLabel).formhausText(.counter)
             if let steps = context.steps {
-                FlowLayout(spacing: tokens.spacing.s7) {
-                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
-                        StepMark(step: step, current: index + 1 == context.current)
+                if tokens.scale > 1.3, steps.indices.contains(context.current - 1) {
+                    StepMark(step: steps[context.current - 1], current: true)
+                } else {
+                    FlowLayout(spacing: tokens.spacing.s7) {
+                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                            StepMark(step: step, current: index + 1 == context.current)
+                        }
                     }
                 }
             }

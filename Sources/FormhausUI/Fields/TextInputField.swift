@@ -18,7 +18,7 @@ public struct TextInputField: View {
                     .textFieldStyle(.plain)
                     .textInputTraits(kind)
                     .submitLabel(context.model.structure.isLastStep ? .done : .continue)
-                    .onSubmit { context.submitPrimary() }
+                    .onSubmit { context.performPrimaryAction() }
                     .accessibilityHint(context.helperText ?? "")
                 LoadingIndicator(visible: context.loading)
             }
@@ -73,6 +73,7 @@ func numberValue(_ text: String) -> JSONValue? {
 }
 
 public struct LoadingIndicator: View {
+    @Environment(\.formhausTokens) private var tokens
     let visible: Bool
 
     public init(visible: Bool) {
@@ -81,7 +82,11 @@ public struct LoadingIndicator: View {
 
     public var body: some View {
         if visible {
-            ProgressView().controlSize(.small).accessibilityHidden(true)
+            ProgressView()
+                .controlSize(.small)
+                .scaleEffect(tokens.controls.indicator / 18)
+                .frame(width: tokens.controls.indicator, height: tokens.controls.indicator)
+                .accessibilityHidden(true)
         }
     }
 }

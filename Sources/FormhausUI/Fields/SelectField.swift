@@ -83,7 +83,7 @@ public struct AutocompleteField: View {
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled()
                     .placeholder(context.field.placeholder, visible: context.text.isEmpty)
-                    .onSubmit { context.submitPrimary() }
+                    .onSubmit { context.performPrimaryAction() }
                     .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
                     .disabled(context.isLocked)
                     .formhausFocus(context, $focused)
