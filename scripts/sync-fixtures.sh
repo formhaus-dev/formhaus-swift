@@ -1,0 +1,38 @@
+#!/bin/sh
+set -eu
+
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "usage: $0 <git-ref> [path-to-formhaus-repo]" >&2
+  exit 1
+fi
+
+ref=$1
+root=$(cd "$(dirname "$0")/.." && pwd)
+source_repo=${2:-$root/../formhaus}
+source_dir=packages/core/fixtures/conformance
+fixtures=$root/Tests/FormhausCoreTests/Fixtures
+target=$fixtures/conformance
+
+if [ ! -d "$source_repo/.git" ] && ! git -C "$source_repo" rev-parse --git-dir >/dev/null 2>&1; then
+  echo "error: $source_repo is not a git repository" >&2
+  exit 1
+fi
+
+sha=$(git -C "$source_repo" rev-parse --verify "$ref^{commit}")
+git -C "$source_repo" cat-file -e "$sha:$source_dir" 2>/dev/null || {
+  echo "error: $source_dir does not exist at $ref ($sha)" >&2
+  exit 1
+}
+
+staging=$(mktemp -d)
+trap 'rm -rf "$staging"' EXIT
+
+git -C "$source_repo" archive --format=tar "$sha" "$source_dir" | tar -x -C "$staging"
+
+rm -rf "$target"
+mkdir -p "$fixtures"
+mv "$staging/$source_dir" "$target"
+
+printf 'ref: %s\nsha: %s\n' "$ref" "$sha" > "$fixtures/VERSION"
+
+echo "synced $source_dir at $ref ($sha)"
