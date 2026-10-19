@@ -5,9 +5,7 @@ import UniformTypeIdentifiers
 public struct FileField: View {
     @Environment(\.formhausTokens) private var tokens
     @FocusState private var focused: Bool
-    @State private var importing = false
-    @State private var photo: PhotosPickerItem?
-    @State private var choosingPhoto = false
+    @State private var picking = false
     let context: FieldContext
 
     public init(_ context: FieldContext) {
@@ -17,33 +15,76 @@ public struct FileField: View {
     public var body: some View {
         FieldShell(context) {
             HStack(spacing: tokens.spacing.s3) {
-                picker
-                FieldAccessories(context: context, clearable: !context.text.isEmpty) { replace(with: nil) }
+                Button {
+                    picking = true
+                } label: {
+                    summary
+                }
+                .buttonStyle(.plain)
+                FieldAccessories(context: context, clearable: !context.text.isEmpty) { context.replaceFile(with: nil) }
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
             .disabled(context.isLocked)
             .formhausFocus(context, $focused)
             .accessibilityHint(context.helperText ?? "")
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: types) { result in
-            guard case .success(let url) = result else { return }
-            let owner = ObjectIdentifier(context.model)
-            Task { if let copy = await UploadStore.copy(url, owner: owner) { replace(with: copy) } }
-        }
-        .onChange(of: photo) { _, item in
-            guard let item else { return }
-            Task { await store(item) }
-        }
+        .filePicker(context, isPresented: $picking)
     }
 
-    private var picker: some View {
-        Button {
-            if photosOnly { choosingPhoto = true } else { importing = true }
-        } label: {
-            summary
+    private var summary: some View {
+        HStack(spacing: tokens.spacing.s3) {
+            Image(systemName: "paperclip").foregroundStyle(tokens.colors.textMuted)
+            Text(context.fileName ?? context.field.placeholder ?? context.text(forLabel: "chooseFile"))
+                .formhausText(.body, colored: false)
+                .foregroundStyle(context.fileName == nil ? tokens.colors.control : tokens.colors.text)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .buttonStyle(.plain)
-        .photosPicker(isPresented: $choosingPhoto, selection: $photo, matching: .images)
+        .frame(minHeight: tokens.controls.hitTarget)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(context.accessibilityName)
+        .accessibilityValue(context.fileName ?? context.text(forLabel: "chooseFile"))
+        .accessibilityAddTraits(.isButton)
+    }
+}
+
+extension FieldContext {
+    var fileName: String? {
+        guard !text.isEmpty else { return nil }
+        return URL(string: text)?.lastPathComponent ?? text
+    }
+
+    func replaceFile(with url: URL?) {
+        setValue(url.map { .string($0.absoluteString) } ?? .null)
+    }
+}
+
+private struct FilePicker: ViewModifier {
+    @State private var importing = false
+    @State private var photo: PhotosPickerItem?
+    @State private var choosingPhoto = false
+    @Binding var isPresented: Bool
+    let context: FieldContext
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: isPresented) { _, shown in
+                guard shown else { return }
+                isPresented = false
+                if photosOnly { choosingPhoto = true } else { importing = true }
+            }
+            .fileImporter(isPresented: $importing, allowedContentTypes: types) { result in
+                guard case .success(let url) = result else { return }
+                let owner = ObjectIdentifier(context.model)
+                Task { if let copy = await UploadStore.copy(url, owner: owner) { context.replaceFile(with: copy) } }
+            }
+            .photosPicker(isPresented: $choosingPhoto, selection: $photo, matching: .images)
+            .onChange(of: photo) { _, item in
+                guard let item else { return }
+                Task { await store(item) }
+            }
     }
 
     private var photosOnly: Bool {
@@ -54,28 +95,6 @@ public struct FileField: View {
         #endif
     }
 
-    private var summary: some View {
-        HStack(spacing: tokens.spacing.s3) {
-            Image(systemName: "paperclip").foregroundStyle(tokens.colors.textMuted)
-            Text(fileName ?? context.field.placeholder ?? context.text(forLabel: "chooseFile"))
-                .formhausText(.body, colored: false)
-                .foregroundStyle(fileName == nil ? tokens.colors.control : tokens.colors.text)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(context.accessibilityName)
-        .accessibilityValue(fileName ?? context.text(forLabel: "chooseFile"))
-        .accessibilityAddTraits(.isButton)
-    }
-
-    private var fileName: String? {
-        guard !context.text.isEmpty else { return nil }
-        return URL(string: context.text)?.lastPathComponent ?? context.text
-    }
-
     private var types: [UTType] { acceptedTypes(context.field.accept?.stringValue) }
 
     private func store(_ item: PhotosPickerItem) async {
@@ -83,11 +102,13 @@ public struct FileField: View {
         guard let data = try? await item.loadTransferable(type: Data.self) else { return }
         let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
         guard let url = await UploadStore.write(data, ext: ext, owner: ObjectIdentifier(context.model)) else { return }
-        replace(with: url)
+        context.replaceFile(with: url)
     }
+}
 
-    private func replace(with url: URL?) {
-        context.setValue(url.map { .string($0.absoluteString) } ?? .null)
+extension View {
+    func filePicker(_ context: FieldContext, isPresented: Binding<Bool>) -> some View {
+        modifier(FilePicker(isPresented: isPresented, context: context))
     }
 }
 

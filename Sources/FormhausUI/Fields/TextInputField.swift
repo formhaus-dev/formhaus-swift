@@ -45,19 +45,23 @@ public struct TextInputField: View {
     }
 
     private var binding: Binding<String> {
-        guard context.field.type == "number" else { return context.textBinding }
-        return Binding(
-            get: { numberText },
-            set: { text in
-                draft = text
-                context.setValue(numberValue(text))
-            }
-        )
+        context.field.type == "number" ? context.numberBinding($draft) : context.textBinding
     }
+}
 
-    private var numberText: String {
-        if !draft.isEmpty, let parsed = parseNumber(draft), context.value == .number(parsed) { return draft }
-        return context.text
+extension FieldContext {
+    func numberBinding(_ draft: Binding<String>) -> Binding<String> {
+        Binding(
+            get: {
+                if !draft.wrappedValue.isEmpty, let parsed = parseNumber(draft.wrappedValue), value == .number(parsed) {
+                    return draft.wrappedValue
+                }
+                return text
+            },
+            set: { text in
+                draft.wrappedValue = text
+                setValue(numberValue(text))
+            })
     }
 }
 
