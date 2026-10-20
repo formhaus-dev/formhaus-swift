@@ -23,13 +23,15 @@ struct InputChrome: ViewModifier {
             .padding(.horizontal, padded ? tokens.spacing.s6 : 0)
             .padding(.vertical, padded ? tokens.spacing.s4 : 0)
             .frame(maxWidth: .infinity, minHeight: tokens.controls.height, alignment: .leading)
-            .background(shape.fill(disabled ? tokens.colors.backgroundDisabled : tokens.colors.background))
-            .overlay(shape.strokeBorder(borderColor, lineWidth: 1))
-            .overlay(FocusRing(visible: focused, radius: tokens.radii.control))
+            .surface(
+                shape, fill: disabled ? tokens.colors.backgroundDisabled : tokens.colors.background, border: borderColor,
+                motion: tokens.quick
+            )
+            .overlay {
+                FocusRing(visible: true, radius: tokens.radii.control).animation(tokens.quick) { $0.opacity(focused ? 1 : 0) }
+            }
             .contentShape(shape)
             .onHover { hovered = $0 }
-            .animation(tokens.quick, value: focused)
-            .animation(tokens.quick, value: hovered)
     }
 
     private var borderColor: Color {

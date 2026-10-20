@@ -41,13 +41,10 @@ struct SelectableSurface: ViewModifier {
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
         content
-            .background(shape.fill(fill))
-            .overlay(shape.strokeBorder(border, lineWidth: 1))
+            .surface(shape, fill: fill, border: border, motion: tokens.quick)
             .contentShape(shape)
             .opacity(enabled ? 1 : 0.6)
             .onHover { hovered = $0 }
-            .animation(tokens.quick, value: selected)
-            .animation(tokens.quick, value: hovered)
     }
 
     private var fill: Color {
