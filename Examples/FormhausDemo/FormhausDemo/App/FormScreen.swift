@@ -47,37 +47,13 @@ struct FormScreen: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
-        .returnsToTop(on: session.model.engine.currentStep?.id)
         .topBar(session.style.palette(scheme, contrast).background)
         .alignsBar(toColumn: 640, padding: 16)
         .background(session.style.palette(scheme, contrast).background)
     }
 }
 
-@available(iOS 18, macOS 15, *)
-private struct ReturnsToTop<Step: Equatable>: ViewModifier {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    let step: Step
-    @State private var position = ScrollPosition(edge: .top)
-
-    func body(content: Content) -> some View {
-        content
-            .scrollPosition($position)
-            .onChange(of: step) {
-                Task {
-                    await Task.yield()
-                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { position.scrollTo(edge: .top) }
-                }
-            }
-    }
-}
-
 extension View {
-    @ViewBuilder
-    fileprivate func returnsToTop(on step: some Equatable) -> some View {
-        if #available(iOS 18, macOS 15, *) { modifier(ReturnsToTop(step: step)) } else { self }
-    }
-
     @ViewBuilder
     fileprivate func topBar(_ background: Color) -> some View {
         #if os(iOS)
