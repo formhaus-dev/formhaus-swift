@@ -97,6 +97,11 @@ jobs:
       - run: scripts/lint.sh format
       - run: scripts/lint.sh swiftlint
       - run: scripts/lint.sh duplicates
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: tokens-build/node_modules
+          key: tokens-build-${{ runner.os }}-${{ hashFiles('tokens-build/package-lock.json') }}
+      - run: scripts/lint.sh tokens
       - run: >-
           xcodebuild build -scheme FormhausUI -destination 'generic/platform=iOS' -derivedDataPath .build/xcode -quiet
           SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
