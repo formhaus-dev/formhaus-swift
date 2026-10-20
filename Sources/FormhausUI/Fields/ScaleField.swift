@@ -19,11 +19,11 @@ public struct ScaleField: View {
                         Button {
                             context.commit(.number(Double(point)))
                         } label: {
-                            Text(String(point)).monospacedDigit()
+                            Text(verbatim: String(point)).monospacedDigit()
                         }
                         .buttonStyle(ScaleBoxStyle(selected: current == point))
                         .accessibilityAddTraits(current == point ? .isSelected : [])
-                        .accessibilityHint(scale.anchor(for: point) ?? "")
+                        .accessibilityHint(Text(verbatim: scale.anchor(for: point) ?? ""))
                     }
                 }
                 ScaleAnchors(anchors: scale.anchors)

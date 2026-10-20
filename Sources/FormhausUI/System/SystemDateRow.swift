@@ -15,21 +15,22 @@ struct SystemDateRow: View {
                     SystemRowLabel(context: context)
                     Spacer(minLength: 12)
                     if let display {
-                        Text(display)
+                        Text(verbatim: display)
                             .foregroundStyle(expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
                             .padding(.horizontal, 11)
                             .padding(.vertical, 6)
                             .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     } else {
-                        Text(context.choicePrompt).foregroundStyle(expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
+                        Text(verbatim: context.choicePrompt).foregroundStyle(
+                            expanded ? AnyShapeStyle(.tint) : AnyShapeStyle(systemSecondary))
                     }
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(display ?? "")
-            .accessibilityHint(context.helperText ?? "")
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .formhausFocus(context, $focused)
             #if os(macOS)
                 .popover(isPresented: $expanded, arrowEdge: .bottom) { panel.padding(16).frame(minWidth: 280) }
@@ -80,7 +81,7 @@ private struct SystemDatePanel: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            DatePicker(selection: selection, displayedComponents: kind.components) { Text(label) }
+            DatePicker(selection: selection, displayedComponents: kind.components) { Text(verbatim: label) }
                 .labelsHidden()
                 .modifier(DatePickerStyleChoice(kind: kind))
             if clear != nil || kind != .date {

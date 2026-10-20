@@ -86,7 +86,7 @@ public struct DateField: View {
 
     private var summary: some View {
         HStack(spacing: tokens.spacing.s3) {
-            Text(display ?? context.field.placeholder ?? kind.pattern(locale))
+            Text(verbatim: display ?? context.placeholder ?? kind.pattern(locale))
                 .formhausText(.body, colored: false)
                 .foregroundStyle(
                     display == nil ? tokens.colors.control : context.isLocked ? tokens.colors.textMuted : tokens.colors.text
@@ -100,7 +100,7 @@ public struct DateField: View {
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(context.accessibilityName)
+        .accessibilityLabel(Text(verbatim: context.accessibilityName))
         .accessibilityValue(display ?? "")
         .accessibilityAddTraits(.isButton)
     }
@@ -134,7 +134,7 @@ private struct DatePickerPanel: View {
 
     var body: some View {
         VStack(alignment: .trailing, spacing: tokens.spacing.s5) {
-            DatePicker(selection: selection, displayedComponents: kind.components) { Text(label) }
+            DatePicker(selection: selection, displayedComponents: kind.components) { Text(verbatim: label) }
                 .labelsHidden()
                 .modifier(DatePickerStyleChoice(kind: kind))
                 .tint(tokens.colors.primary)

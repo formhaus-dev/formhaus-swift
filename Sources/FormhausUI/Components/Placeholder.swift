@@ -8,7 +8,7 @@ struct Placeholder: ViewModifier {
     func body(content: Content) -> some View {
         content.overlay(alignment: .topLeading) {
             if visible, let text, !text.isEmpty {
-                Text(text)
+                Text(verbatim: text)
                     .formhausText(.body, colored: false)
                     .foregroundStyle(tokens.colors.control)
                     .lineLimit(1)

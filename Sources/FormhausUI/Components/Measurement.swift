@@ -26,8 +26,18 @@ private struct Measure: ViewModifier {
 
 let measureSpace = "formhaus.measure"
 
+@MainActor
+final class RenderLog {
+    var bodies: [String: Int] = [:]
+
+    func note(_ name: String) {
+        bodies[name, default: 0] += 1
+    }
+}
+
 extension EnvironmentValues {
     @Entry var formhausMeasuring = false
+    @Entry var formhausRenderLog: RenderLog?
 }
 
 extension View {

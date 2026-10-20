@@ -13,7 +13,7 @@ struct SystemFileRow: View {
                 HStack {
                     SystemRowLabel(context: context)
                     Spacer(minLength: 12)
-                    Text(context.fileName ?? context.field.placeholder ?? context.text(forLabel: "chooseFile"))
+                    Text(verbatim: context.fileName ?? context.placeholder ?? context.text(forLabel: "chooseFile"))
                         .systemSecondaryText()
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -21,9 +21,9 @@ struct SystemFileRow: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(context.fileName ?? context.text(forLabel: "chooseFile"))
-            .accessibilityHint(context.helperText ?? "")
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .formhausFocus(context, $focused)
             .swipeActions {
                 if context.fileName != nil, !context.isRequired {

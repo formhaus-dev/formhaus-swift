@@ -41,7 +41,9 @@ func substitute(_ definition: FormDefinition, _ text: String, params: JSONObject
 
 private func answerText(_ field: FormField, _ item: JSONValue) -> RecallAnswer {
     if let entry = item.objectValue { return .text(entry["name"]?.stringValue ?? "") }
-    if let label = field.options?.first(where: { strictEquals($0.json["value"], item) })?.label { return .text(label) }
+    if let options = field.options, let position = field.optionIndex?.position(of: item), let label = options[position].label {
+        return .text(label)
+    }
     if case .number(let number) = item { return .number(number) }
     return .text(jsString(item))
 }

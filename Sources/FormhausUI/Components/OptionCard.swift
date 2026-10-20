@@ -87,7 +87,7 @@ public struct OptionRow: View {
         HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s5) {
             ChoiceIndicator(shape, selected: selected, invalid: invalid)
                 .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
-            Text(label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
+            Text(verbatim: label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }

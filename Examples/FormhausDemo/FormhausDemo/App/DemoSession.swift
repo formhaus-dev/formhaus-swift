@@ -87,7 +87,8 @@ final class DemoSession {
         }
         var options = FormEngineOptions()
         options.onAfterSubmit = { values, _ in relay.session?.finish(values) }
-        return FormModel(localized: localized, initialValues: values, engineOptions: options) { values, _ in
+        let renderer = FormRendererOptions(lang: language.rawValue)
+        return FormModel(localized: localized, initialValues: values, engineOptions: options, options: renderer) { values, _ in
             try await relay.session?.send(values)
         }
     }

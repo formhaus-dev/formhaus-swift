@@ -154,7 +154,7 @@ struct ZoomButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(label)
+        .accessibilityLabel(Text(verbatim: label))
     }
 }
 
@@ -168,7 +168,7 @@ struct ImageViewer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s5) {
-                Text(title).formhausText(.heading).frame(maxWidth: .infinity, alignment: .leading)
+                Text(verbatim: title).formhausText(.heading).frame(maxWidth: .infinity, alignment: .leading)
                 IconButton(systemName: "xmark", label: closeLabel) { dismiss() }
             }
             .padding(.vertical, tokens.spacing.s7)
@@ -180,7 +180,7 @@ struct ImageViewer: View {
         .frame(minWidth: 320, idealWidth: 560)
         .background(tokens.colors.background)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(title)
+        .accessibilityLabel(Text(verbatim: title))
     }
 }
 
@@ -202,6 +202,6 @@ struct IconButton: View {
         }
         .buttonStyle(.plain)
         .padding(-(embedded ? (tokens.controls.hitTarget - tokens.controls.iconButton) / 2 + tokens.spacing.s1 : 0))
-        .accessibilityLabel(label)
+        .accessibilityLabel(Text(verbatim: label))
     }
 }

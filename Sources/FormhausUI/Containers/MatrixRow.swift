@@ -51,7 +51,7 @@ private struct MatrixRowBody: View {
         .disabled(context.isLocked)
         .formhausFocus(context, focused)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(context.accessibilityName)
+        .accessibilityLabel(Text(verbatim: context.accessibilityName))
         .id(context.key)
     }
 
@@ -59,7 +59,7 @@ private struct MatrixRowBody: View {
         VStack(alignment: .leading, spacing: tokens.spacing.s1) {
             tokens.marked(context.label, required: context.isRequired)
                 .formhausText(.option).fontWeight(.medium)
-            if let helper = context.helperText { Text(helper).formhausText(.helper) }
+            if let helper = context.helperText { Text(verbatim: helper).formhausText(.helper) }
             if let error = context.error, !error.isEmpty { FieldError(text: error) }
         }
         .fixedSize(horizontal: false, vertical: true)
@@ -75,7 +75,7 @@ private struct MatrixRowBody: View {
             VStack(spacing: tokens.spacing.s1) {
                 ChoiceIndicator(context.field.type == "radio" ? .radio : .checkbox, selected: selected)
                 if caption {
-                    Text(option.label ?? value).formhausText(.caption).multilineTextAlignment(.center)
+                    Text(verbatim: option.label ?? value).formhausText(.caption).multilineTextAlignment(.center)
                 }
             }
             .padding(.vertical, caption ? tokens.spacing.s2 : 0)
@@ -83,7 +83,7 @@ private struct MatrixRowBody: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(option.label ?? value)
+        .accessibilityLabel(Text(verbatim: option.label ?? value))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 

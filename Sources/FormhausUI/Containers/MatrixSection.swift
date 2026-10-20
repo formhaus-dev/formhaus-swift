@@ -43,7 +43,7 @@ private struct MatrixHeader: View {
         MatrixLine(count: columns.count) {
             Color.clear.frame(height: 1)
             ForEach(Array(columns.enumerated()), id: \.offset) { _, option in
-                Text(option.label ?? "").formhausText(.caption).multilineTextAlignment(.center)
+                Text(verbatim: option.label ?? "").formhausText(.caption).multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             }
         }

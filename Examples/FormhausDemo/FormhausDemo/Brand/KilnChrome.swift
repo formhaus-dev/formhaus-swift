@@ -15,16 +15,16 @@ struct KilnStepHeader: View {
                 }
             }
             .accessibilityHidden(true)
-            Text(context.counterLabel.uppercased())
+            Text(verbatim: context.counterLabel.uppercased())
                 .font(KilnType.eyebrow)
                 .tracking(1.2)
                 .foregroundStyle(tokens.colors.primary)
                 .padding(.top, 6)
             if let title = context.stepTitle {
-                Text(title).font(KilnType.title).foregroundStyle(tokens.colors.text).accessibilityAddTraits(.isHeader)
+                Text(verbatim: title).font(KilnType.title).foregroundStyle(tokens.colors.text).accessibilityAddTraits(.isHeader)
             }
             if let description = context.stepDescription {
-                Text(description).font(KilnType.body).foregroundStyle(tokens.colors.textMuted)
+                Text(verbatim: description).font(KilnType.body).foregroundStyle(tokens.colors.textMuted)
             }
         }
         .fixedSize(horizontal: false, vertical: true)
@@ -39,9 +39,9 @@ struct KilnSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(context.title).font(KilnType.heading).foregroundStyle(tokens.colors.text).accessibilityAddTraits(.isHeader)
+                Text(verbatim: context.title).font(KilnType.heading).foregroundStyle(tokens.colors.text).accessibilityAddTraits(.isHeader)
                 if let description = context.description {
-                    Text(description).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
+                    Text(verbatim: description).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
                 }
             }
             context.content
@@ -67,13 +67,13 @@ struct KilnActions: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(tokens.colors.text)
-                .accessibilityLabel(context.state.backLabel)
+                .accessibilityLabel(Text(verbatim: context.state.backLabel))
                 .disabled(context.busy)
             }
             if context.state.showPrimary {
                 Button(action: context.performPrimaryAction) {
                     HStack(spacing: 10) {
-                        Text(context.state.primaryLabel)
+                        Text(verbatim: context.state.primaryLabel)
                         if context.busy { ProgressView().tint(tokens.colors.onPrimary) } else { Image(systemName: "arrow.right") }
                     }
                     .font(KilnType.body.weight(.semibold))

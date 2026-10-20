@@ -8,14 +8,19 @@ final class MemoryPool: Sendable {
     static let shared = MemoryPool()
     @TaskLocal static var current = shared
 
+    let limit: Int
     private let total = OSAllocatedUnfairLock(initialState: 0)
     let registry = OSAllocatedUnfairLock(uncheckedState: [ObjectIdentifier: Entry]())
+
+    init(limit: Int = AutomatonMemory.globalLimit) {
+        self.limit = limit
+    }
 
     var reserved: Int { total.withLock { $0 } }
 
     func take(_ bytes: Int) -> Bool {
         total.withLock { total in
-            guard total + bytes <= AutomatonMemory.globalLimit else { return false }
+            guard total + bytes <= limit else { return false }
             total += bytes
             return true
         }

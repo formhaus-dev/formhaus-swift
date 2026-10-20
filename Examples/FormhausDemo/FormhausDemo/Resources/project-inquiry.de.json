@@ -60,7 +60,7 @@
       "description": "Wir antworten innerhalb eines Werktags.",
       "fields": {
         "name": { "label": "Vollständiger Name" },
-        "email": { "label": "Geschäftliche E-Mail" },
+        "email": { "label": "Geschäftliche E-Mail", "helperText": "Wir antworten {{name}} an diese Adresse." },
         "company": { "label": "Firma", "placeholder": "Optional" }
       }
     }

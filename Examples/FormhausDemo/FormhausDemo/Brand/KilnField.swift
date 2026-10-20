@@ -14,16 +14,16 @@ struct KilnFieldFrame<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(context.label).font(KilnType.label).foregroundStyle(tokens.colors.text)
+                Text(verbatim: context.label).font(KilnType.label).foregroundStyle(tokens.colors.text)
                 if context.isRequired {
-                    Text(context.text(forLabel: "required")).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
+                    Text(verbatim: context.text(forLabel: "required")).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityAddTraits(.isHeader)
             if let helper = context.helperText {
-                Text(helper).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
+                Text(verbatim: helper).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
             }
             content
             if let error = context.error, !error.isEmpty {
@@ -48,8 +48,10 @@ struct KilnTextField: View {
 
     var body: some View {
         KilnFieldFrame(context: context) {
-            TextField(text: context.textBinding, prompt: Text(context.field.placeholder ?? "").foregroundStyle(tokens.colors.control)) {
-                Text(context.accessibilityName)
+            TextField(
+                text: context.textBinding, prompt: Text(verbatim: context.placeholder ?? "").foregroundStyle(tokens.colors.control)
+            ) {
+                Text(verbatim: context.accessibilityName)
             }
             .font(KilnType.body)
             .foregroundStyle(tokens.colors.text)

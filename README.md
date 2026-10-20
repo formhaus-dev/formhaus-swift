@@ -100,7 +100,8 @@ FormhausForm(definition: definition, renderer: FormRendererOptions(labels: .cata
 
 - `FormModel` owns a `FormEngine` and publishes Observation-tracked state. `field(key)` returns a `FieldState` with `value`, `error`, `loading` and `version` for one key or item path, so a keystroke re-renders only that field. `structure`, `actions`, `errorGroups`, `topLevelErrors` and `stepErrorCounts` change only when their content changes. `errorGroups` lists the errors per step, each `ErrorGroup` with a `title` and `entries`, and each `ErrorEntry.text` joins the label and the message. It replaces `errorEntries`, which is removed; for a flat list use `model.errorGroups.flatMap(\.entries)`. `version`, `structureVersion` and `valuesVersion` count changes like `getSnapshot`, `getStructureSnapshot` and `subscribeValues`.
 - `FormModel` actions: `setValue(_:forKey:)`, `commitValue(_:forKey:)`, `next`, `back`, `skip`, `submit`, `performPrimaryAction`, `cancel`, `setErrors`, `focus(field:)`, `addItem(toGroup:)`, `removeItem(_:fromGroup:)` and `text(forLabel:_:)`. `commitValue` runs auto-advance. `focus(field:)` opens the step of the field and focuses it. `FormModel(localized:)` takes the result of `localize`.
-- `FormRendererOptions` holds `labels`, `optionsProviders`, `onCancel`, `onFieldChange`, `onValuesChange` and `onError`.
+- `FormRendererOptions` holds `labels`, `optionsProviders`, `onCancel`, `onFieldChange`, `onValuesChange`, `onError`, `lang` and `formatRecall`. The model passes `lang` and `formatRecall` to the engine it creates, unless `FormEngineOptions` sets them.
+- Answer recall: in a format 1.5 definition, the step and section `title` and `description`, the field and group `label`, `helperText` and `placeholder`, and the group `itemLabel` show the answers of their `{{key}}` tokens. Option labels, actions, catalogs and messages show the tokens as written. `FieldContext.label`, `helperText`, `placeholder` and `accessibilityName`, `SectionContext.title` and `description`, `GroupContext.label` and `helperText`, `GroupItemContext.title`, `ProgressContext` and `errorGroups` carry the resolved texts. `FieldContext.field`, `SectionContext.section` and `GroupContext.group` stay the nodes of the definition. `FormModel.texts(for:)` returns the `RecalledTexts` (`title`, `description`, `label`, `helperText`, `placeholder`) of a field, section or step for a custom view. Resolved texts are never nodes, so an answer is resolved once and a typed `{{key}}` stays as written. A view re-renders only when an answer that its texts recall changes. Recalled answers are user input, so draw them with `Text(verbatim:)` and never as a `LocalizedStringKey`, which parses Markdown.
 - `FormhausForm(model:)` scrolls, moves focus to the first invalid field and scrolls to the top on a step change. `FormhausForm(definition:…)` builds a new model when the definition changes and always calls the latest handlers. An equal definition keeps the values and progress; to start over, give the form a new `.id()`. Pending actions are cancelled when the model is replaced or the form leaves the view tree, not when it is only hidden by navigation or a tab switch. `FormhausFormContent(model:)` is the same form without the scroll view. Inside an app's own `ScrollView` it scrolls to errors and to the top the same way. `FormFields`, `FormhausField`, `StepProgressView`, `FormActionsBar`, `FormErrorSummary` and `FormTopLevelErrors` are the building blocks.
 - `FormComponents` maps field types to views: `.standard.field("x-color") { ColorField($0) }`. A view gets a `FieldContext` with the field, value, error, options, `setValue` and `commitValue`. `FieldContext(field:key:model:)` builds one for previews and tests. Custom controls join focus-to-error with `.formhausFocus(context, $focused)` or `.onFormhausFocus(context) { … }`, and scrolling with `.formhausScrollAnchor(context)`; `FieldShell` does both. `.section`, `.group`, `.groupItem`, `.confirmDialog`, `.progress` and `.actions` replace the containers. `FormComponents.headless` has no built-in fields.
 - `FormComponents.system` renders the form as a native grouped `Form`, like a Settings screen. Put it in a `NavigationStack`. On iOS each step is a pushed screen with the step title and a "Step N" subtitle; Next or Submit sits in the toolbar, Cancel only on the first step, and the back button or a swipe goes back a step. On macOS the step content swaps in place, with Cancel, Back and Next in a bottom row. Text fields are labeled rows, select, radio and multiselect are navigation rows to a checklist on iOS and menus or checkboxes on macOS, checkbox and switch are toggles, dates expand inline on iOS, a scale is a wrapping row of numbered round buttons, and picture options, ratings and long text get their own section. A step description sits above its fields. Field errors are red section footers, and errors that belong to no field open an alert. The theme sets the accent and error colours. Registered fields and the `.section`, `.group`, `.groupItem`, `.progress` and `.actions` builders replace the native rows and containers; a section builder's view goes straight into the grouped `Form`, so return a `Section`. In a matrix section the rows stay native pickers even when `radio` is overridden, in this set and in the built-in one.
@@ -136,11 +137,11 @@ struct KilnTextField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(context.label).font(.system(.subheadline, design: .rounded).weight(.semibold))
+            Text(verbatim: context.label).font(.system(.subheadline, design: .rounded).weight(.semibold))
             TextField(context.accessibilityName, text: context.textBinding)
                 .overlay(alignment: .bottom) { Capsule().fill(focused ? tokens.colors.primary : tokens.colors.border).frame(height: 1.5) }
                 .formhausFocus(context, $focused)
-            if let error = context.error { Text(error).foregroundStyle(tokens.colors.error) }
+            if let error = context.error { Text(verbatim: error).foregroundStyle(tokens.colors.error) }
         }
         .formhausScrollAnchor(context)
     }
@@ -155,7 +156,7 @@ FormhausFormContent(model: model)
 
 ## Demo
 
-`Examples/FormhausDemo` is a SwiftUI app for iPhone, iPad and Mac. It renders the project inquiry form in `FormhausDemo/Resources/project-inquiry.json`: three steps, a route that skips a step, conditional fields, picture options, a rating, a matrix, a scale, an error summary and a server error. The same file runs in the [playground](https://formhaus.dev/playground). The options menu switches between the formhaus, native and Kiln component sets on the same `FormModel`, and to the German overlay in `project-inquiry.de.json`. On macOS the component sets are a segmented control in the window toolbar.
+`Examples/FormhausDemo` is a SwiftUI app for iPhone, iPad and Mac. It renders the project inquiry form in `FormhausDemo/Resources/project-inquiry.json`: three steps, a route that skips a step, conditional fields, picture options, a rating, a matrix, a scale, a helper text that recalls the name, an error summary and a server error. The same file runs in the [playground](https://formhaus.dev/playground). The options menu switches between the formhaus, native and Kiln component sets on the same `FormModel`, and to the German overlay in `project-inquiry.de.json`. On macOS the component sets are a segmented control in the window toolbar.
 
 Open `Examples/FormhausDemo/FormhausDemo.xcodeproj` in Xcode and run the `FormhausDemo` scheme, or build it from the command line:
 
@@ -240,6 +241,8 @@ JavaScriptCore stops the pathological patterns at its backtracking limit and ret
 
 `RecallBenchmarks` measures the renderer call that resolves the texts of one field. A label with four tokens (text, list, date and number) takes 3.7 µs with the identity formatter and 8.2 µs with the default formatter. A label without tokens takes 0.31 µs.
 
+`RendererBenchmarks` hosts a form with 3,000 picture options offscreen on macOS. The first render takes 152 ms and a selection 3.5 ms.
+
 To run the benchmarks:
 
 ```sh
@@ -247,6 +250,10 @@ cd Benchmarks && swift package benchmark
 ```
 
 The benchmarks use jemalloc when it is installed. Without it, set `BENCHMARK_DISABLE_JEMALLOC=true`.
+
+### Benchmarks and heavy tests
+
+CI runs fast checks that count work, such as renders and matcher steps, and never measures time. The large cases (counted repeats up to 4,001, 10,000-character inputs with the full step budget, 200,000 nested arrays, the full fuzz set of the regex fixture and the thread stress) run only with `scripts/heavy-tests.sh`, together with the thread sanitizer and the benchmarks. `scripts/heavy-tests.sh tests`, `tsan` or `benchmarks` runs one part. Run it before a release and after changes to the renderer, the regex engine or the engine core. CI runs the thread sanitizer on pull requests that change `Sources/FormhausCore/Regex`, and the iOS Simulator accessibility audit of the demo on pushes to `main` and from the Actions tab.
 
 ## Scenario runner
 

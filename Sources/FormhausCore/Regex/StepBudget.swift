@@ -1,7 +1,9 @@
 struct BudgetExceeded: Error {}
 
 struct StepBudget {
-    static let backtracking = StepBudget(limit: 10_000_000)
+    @TaskLocal static var backtrackingLimit = 10_000_000
+
+    static var backtracking: StepBudget { StepBudget(limit: backtrackingLimit) }
 
     private(set) var remaining: Int
 

@@ -49,7 +49,7 @@ struct SystemNodes: View {
                 }
                 .environment(\.formhausFooterErrors, true)
             case .node(.section(let section)):
-                SystemSection(section: section, model: model)
+                SystemSection(section: section, texts: model.texts(for: section), model: model)
             case .node(let node):
                 SystemNodeRow(node: node, matrix: false, model: model)
             }
@@ -71,7 +71,7 @@ struct SystemNodeRow: View {
         case .field(let field):
             FormhausField(field, model: model)
         case .section(let section):
-            SystemSection(section: section, model: model)
+            SystemSection(section: section, texts: model.texts(for: section), model: model)
         }
     }
 }
@@ -95,6 +95,7 @@ extension EnvironmentValues {
 private struct SystemSection: View {
     @Environment(\.formhausComponents) private var components
     let section: FormSection
+    let texts: RecalledTexts
     let model: FormModel
 
     var body: some View {
@@ -103,7 +104,7 @@ private struct SystemSection: View {
             if let custom = components.slots.section {
                 custom(
                     SectionContext(
-                        section: section, title: section.title ?? "", description: description,
+                        section: section, title: texts.title ?? "", description: description,
                         content: AnyView(ForEach(nodes, id: \.nodeID) { SystemNodeRow(node: $0, matrix: section.isMatrix, model: model) })))
             } else {
                 let chunks = systemChunks(nodes) { _ in false }
@@ -135,16 +136,16 @@ private struct SystemSection: View {
     }
 
     private var description: String? {
-        section.description.flatMap { $0.isEmpty ? nil : $0 }
+        texts.description.flatMap { $0.isEmpty ? nil : $0 }
     }
 
     @ViewBuilder private var header: some View {
-        if let title = section.title, !title.isEmpty {
-            Text(title).textCase(nil).systemSecondaryText().accessibilityAddTraits(.isHeader)
+        if let title = texts.title, !title.isEmpty {
+            Text(verbatim: title).textCase(nil).systemSecondaryText().accessibilityAddTraits(.isHeader)
         }
     }
 
     @ViewBuilder private var footer: some View {
-        if let description { Text(description).systemSecondaryText() }
+        if let description { Text(verbatim: description).systemSecondaryText() }
     }
 }

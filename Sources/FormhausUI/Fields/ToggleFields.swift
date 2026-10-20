@@ -11,11 +11,11 @@ public struct CheckboxField: View {
     public var body: some View {
         FieldShell(context, variant: .inline) {
             Toggle(isOn: context.boolBinding) {
-                Text(context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
             .toggleStyle(CheckboxStyle())
-            .accessibilityLabel(context.accessibilityName)
-            .accessibilityHint(context.helperText ?? "")
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .disabled(context.isLocked)
             .formhausFocus(context, $focused)
         }
@@ -68,11 +68,11 @@ public struct SwitchField: View {
     public var body: some View {
         FieldShell(context, variant: .row) {
             Toggle(isOn: context.boolBinding) {
-                Text(context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
             .toggleStyle(SwitchRowStyle(loading: context.loading))
-            .accessibilityLabel(context.accessibilityName)
-            .accessibilityHint(context.helperText ?? "")
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .disabled(context.isLocked)
             .formhausFocus(context, $focused)
         }

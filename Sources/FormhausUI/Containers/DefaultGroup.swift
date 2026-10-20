@@ -13,7 +13,7 @@ struct DefaultGroup: View {
             FieldLabel(text: context.label, required: context.group.isRequired, requiredLabel: context.model.text(forLabel: "required"))
                 .accessibilityAddTraits(.isHeader)
             if let helper = context.helperText, !helper.isEmpty {
-                Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
             }
             if let error = context.error, !error.isEmpty { FieldError(text: error) }
             VStack(alignment: .leading, spacing: tokens.spacing.s7) {
@@ -23,7 +23,7 @@ struct DefaultGroup: View {
                 if context.canAdd {
                     Button(action: context.add) {
                         Label {
-                            Text(context.addLabel)
+                            Text(verbatim: context.addLabel)
                         } icon: {
                             Image(systemName: "plus").fontWeight(.semibold)
                         }
@@ -52,13 +52,13 @@ struct DefaultGroupItem: View {
         let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
         VStack(alignment: .leading, spacing: tokens.spacing.s7) {
             HStack(alignment: .center, spacing: tokens.spacing.s3) {
-                Text(context.title).formhausText(.itemTitle).accessibilityAddTraits(.isHeader)
+                Text(verbatim: context.title).formhausText(.itemTitle).accessibilityAddTraits(.isHeader)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if context.canRemove {
                     Button(context.removeLabel, action: context.requestRemove)
                         .buttonStyle(FormButtonStyle(.danger, compact: true))
                         .disabled(context.disabled)
-                        .accessibilityLabel(context.removeName)
+                        .accessibilityLabel(Text(verbatim: context.removeName))
                         .focused($removeFocused)
                         .onFormhausFocus(context.removeFocus, model: context.model, disabled: context.disabled) { removeFocused = true }
                         .padding(.trailing, -tokens.spacing.s4)
@@ -71,6 +71,6 @@ struct DefaultGroupItem: View {
         .padding([.horizontal, .bottom], tokens.spacing.cardPadding)
         .overlay(shape.strokeBorder(tokens.colors.border, lineWidth: 1))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(context.title)
+        .accessibilityLabel(Text(verbatim: context.title))
     }
 }

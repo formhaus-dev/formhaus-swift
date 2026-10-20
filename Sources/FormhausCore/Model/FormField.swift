@@ -41,6 +41,7 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
     public let showAny: [ShowCondition]?
     public let validation: FieldValidation?
     public let options: [FieldOption]?
+    let optionIndex: OptionIndex?
     public let fields: [FormNode]?
 
     init(json: JSONObject, ordinals: inout Int) {
@@ -52,6 +53,7 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
         showAny = conditions(json["showAny"])
         validation = json["validation"]?.objectValue.map(FieldValidation.init(json:))
         options = json["options"]?.arrayValue.map { $0.compactMap { $0.objectValue.map(FieldOption.init(json:)) } }
+        optionIndex = options.map(OptionIndex.init)
         fields = type == "group" ? formNodes(json["fields"], &ordinals) : nil
     }
 

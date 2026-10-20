@@ -19,7 +19,7 @@ public struct FileField: View {
     private var summary: some View {
         HStack(spacing: tokens.spacing.s3) {
             Image(systemName: "paperclip").foregroundStyle(tokens.colors.textMuted)
-            Text(context.fileName ?? context.field.placeholder ?? context.text(forLabel: "chooseFile"))
+            Text(verbatim: context.fileName ?? context.placeholder ?? context.text(forLabel: "chooseFile"))
                 .formhausText(.body, colored: false)
                 .foregroundStyle(context.fileName == nil ? tokens.colors.control : tokens.colors.text)
                 .lineLimit(1)
@@ -29,7 +29,7 @@ public struct FileField: View {
         .frame(minHeight: tokens.controls.hitTarget)
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(context.accessibilityName)
+        .accessibilityLabel(Text(verbatim: context.accessibilityName))
         .accessibilityValue(context.fileName ?? context.text(forLabel: "chooseFile"))
         .accessibilityAddTraits(.isButton)
     }

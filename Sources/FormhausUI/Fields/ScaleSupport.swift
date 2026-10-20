@@ -73,9 +73,9 @@ struct ScaleAnchors: View {
     var body: some View {
         if anchors.contains(where: { $0 != nil }) {
             HStack(alignment: .top, spacing: tokens.spacing.s5) {
-                Text(anchors[0] ?? "").frame(maxWidth: .infinity, alignment: .leading)
-                if let middle = anchors[1] { Text(middle).multilineTextAlignment(.center) }
-                Text(anchors[2] ?? "").multilineTextAlignment(.trailing).frame(maxWidth: .infinity, alignment: .trailing)
+                Text(verbatim: anchors[0] ?? "").frame(maxWidth: .infinity, alignment: .leading)
+                if let middle = anchors[1] { Text(verbatim: middle).multilineTextAlignment(.center) }
+                Text(verbatim: anchors[2] ?? "").multilineTextAlignment(.trailing).frame(maxWidth: .infinity, alignment: .trailing)
             }
             .formhausText(.helper)
             .fixedSize(horizontal: false, vertical: true)

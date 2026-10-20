@@ -30,9 +30,9 @@ public struct RatingField: View {
                         }
                         .buttonStyle(.plain)
                         .onHover { inside in hovered = inside ? point : (hovered == point ? nil : hovered) }
-                        .accessibilityLabel(String(point))
+                        .accessibilityLabel(Text(verbatim: String(point)))
                         .accessibilityAddTraits(current == point ? .isSelected : [])
-                        .accessibilityHint(scale.anchor(for: point) ?? "")
+                        .accessibilityHint(Text(verbatim: scale.anchor(for: point) ?? ""))
                     }
                 }
                 .padding(.leading, -tokens.spacing.s1 / 2)

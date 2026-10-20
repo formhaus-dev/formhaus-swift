@@ -39,7 +39,7 @@ struct SystemGroup<Confirmation: ViewModifier>: View {
             if context.items.isEmpty { header }
         } footer: {
             VStack(alignment: .leading, spacing: 4) {
-                if let helper = context.helperText, !helper.isEmpty { Text(helper).systemSecondaryText() }
+                if let helper = context.helperText, !helper.isEmpty { Text(verbatim: helper).systemSecondaryText() }
                 if let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
             }
         }
@@ -50,7 +50,7 @@ struct SystemGroup<Confirmation: ViewModifier>: View {
     private var header: some View {
         tokens.marked(context.label, required: context.group.isRequired).textCase(nil).systemSecondaryText()
             .accessibilityLabel(
-                context.group.isRequired ? "\(context.label), \(context.model.text(forLabel: "required"))" : context.label)
+                Text(verbatim: context.group.isRequired ? "\(context.label), \(context.model.text(forLabel: "required"))" : context.label))
     }
 }
 
@@ -60,15 +60,15 @@ private struct SystemGroupItemTitle: View {
 
     var body: some View {
         HStack {
-            Text(item.title).font(.headline).accessibilityAddTraits(.isHeader)
+            Text(verbatim: item.title).font(.headline).accessibilityAddTraits(.isHeader)
             Spacer()
             if item.canRemove {
                 Button(role: .destructive, action: item.requestRemove) {
-                    Text(item.removeLabel).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+                    Text(verbatim: item.removeLabel).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
                 }
                 .buttonStyle(.borderless)
                 .disabled(item.disabled)
-                .accessibilityLabel(item.removeName)
+                .accessibilityLabel(Text(verbatim: item.removeName))
                 .focused($removeFocused)
                 .onFormhausFocus(item.removeFocus, model: item.model, disabled: item.disabled) { removeFocused = true }
             }

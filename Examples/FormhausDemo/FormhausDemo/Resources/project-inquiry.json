@@ -1,6 +1,6 @@
 {
   "id": "project-inquiry",
-  "formatVersion": "1.3",
+  "formatVersion": "1.5",
   "title": "Start a project",
   "description": "Tell us about your website. It takes about two minutes.",
   "submit": { "label": "Send inquiry" },
@@ -107,6 +107,7 @@
           "key": "email",
           "type": "email",
           "label": "Work email",
+          "helperText": "We'll reply to {{name}} at this address.",
           "inputMode": "email",
           "validation": { "required": true }
         },

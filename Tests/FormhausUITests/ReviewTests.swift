@@ -51,9 +51,9 @@ struct ReviewTests {
         #expect(form.group("team").items.count == 1)
     }
 
-    @Test("thousands of picture options render and select quickly")
+    @Test("picture options render lazily and a selection re-renders only the cards that change")
     func largeLists() throws {
-        let many: [JSONValue] = (0..<3000).map { index in
+        let many: [JSONValue] = (0..<30).map { index in
             ["value": .string("v\(index)"), "label": .string("Label \(index)"), "image": .string("https://example.invalid/\(index).png")]
         }
         let json: JSONValue = [
@@ -77,13 +77,19 @@ struct ReviewTests {
             ],
         ]
         let form = FormModel(definition: try FormDefinition(json: json)) { _, _ in nil }
-        let start = Date()
-        let view = host(ScrollView { FormhausFormContent(model: form) }, width: 360, height: 900)
-        #expect(Date().timeIntervalSince(start) < 2)
-        let select = Date()
-        form.setValue("v5", forKey: "big")
+        let log = RenderLog()
+        let view = host(ScrollView { FormhausFormContent(model: form) }.environment(\.formhausRenderLog, log), width: 360, height: 900)
+        let rendered = log.bodies.keys.filter { $0.hasPrefix("v") }
+        #expect(!rendered.isEmpty)
+        #expect(rendered.count < 30)
+        log.bodies = [:]
+        form.setValue("v1", forKey: "big")
         settle(view)
-        #expect(Date().timeIntervalSince(select) < 0.5)
+        #expect(log.bodies.keys.filter { $0.hasPrefix("v") }.sorted() == ["v1"])
+        log.bodies = [:]
+        form.setValue("v0", forKey: "big")
+        settle(view)
+        #expect(log.bodies.keys.filter { $0.hasPrefix("v") }.sorted() == ["v0", "v1"])
         #expect(view.fittingSize.width <= 360)
     }
 

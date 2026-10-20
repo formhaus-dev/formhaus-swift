@@ -51,8 +51,8 @@ run_duplicates() {
 
 run_periphery() {
   periphery=$tools/periphery-$periphery_version/periphery
-  scratch=$root/.build/periphery
-  swift build --build-tests --enable-index-store --scratch-path "$scratch" --quiet
+  scratch=${PERIPHERY_SCRATCH:-$root/.build/periphery}
+  swift build --build-tests --enable-index-store -Xswiftc -warnings-as-errors --scratch-path "$scratch" --quiet
   store=$scratch/debug/index/store
   "$periphery" scan --skip-build --index-store-path "$store" --quiet
   public_config=$(mktemp)

@@ -1,0 +1,33 @@
+name: Thread sanitizer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Sources/FormhausCore/Regex/**
+      - Tests/FormhausCoreTests/Regex*.swift
+      - .github/workflows/tsan.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - Sources/FormhausCore/Regex/**
+      - Tests/FormhausCoreTests/Regex*.swift
+      - .github/workflows/tsan.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tsan:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: swift test --sanitize=thread --scratch-path .build/tsan --filter "sharedAutomatons|concurrentUse"
+        env:
+          TSAN_OPTIONS: halt_on_error=1

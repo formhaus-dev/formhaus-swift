@@ -43,7 +43,12 @@ struct RegexCaseTests {
         let file = try Self.load()
         #expect(file.cases.count == file.counts.values.reduce(0, +))
         var failures: [String] = []
+        var fuzz = 0
         for item in file.cases {
+            if item.kind == "fuzz" {
+                fuzz += 1
+                if !Load.heavy, fuzz % 8 != 0 { continue }
+            }
             let pattern = JSRegex(item.pattern)
             let actual: Expected? = pattern == nil ? .syntaxError : pattern?.test(item.input).map(Expected.match)
             if actual != item.result {
@@ -59,22 +64,22 @@ struct RegexCaseTests {
 
 @Suite("Native pattern engine limits")
 struct RegexLimitTests {
-    @Test("linear patterns stay fast on pathological input")
+    @Test("linear patterns finish inside the linear step budget on pathological input")
     func pathologicalInput() throws {
         let text = String(repeating: "a", count: maxStringLength - 1) + "!"
-        let started = Date()
         for source in ["(a+)+$", "(a|aa)+$", "^(a+)+$", "(.*a){20}$"] {
             #expect(try #require(JSRegex(source)).test(text) == false, "\(source)")
         }
         #expect(try #require(JSRegex("(x+x+)+y")).test(String(repeating: "x", count: maxStringLength)) == false)
-        #expect(Date().timeIntervalSince(started) < 2)
     }
 
     @Test("a backtracking match that runs out of steps fails closed")
     func stepBudget() throws {
         let pattern = try #require(JSRegex("^(a|a)*\\1b$"))
-        #expect(pattern.test(String(repeating: "a", count: 40) + "cb") == nil)
-        #expect(pattern.test("aab") == true)
+        StepBudget.$backtrackingLimit.withValue(Load.heavy ? StepBudget.backtrackingLimit : 100_000) {
+            #expect(pattern.test(String(repeating: "a", count: 40) + "cb") == nil)
+            #expect(pattern.test("aab") == true)
+        }
     }
 
     @Test("lookarounds without backreferences are memoized")

@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import os
 
 @testable import FormhausCore
 
@@ -68,17 +69,19 @@ struct RegexTests {
         #expect(!rejects(try #require(JSRegex("^a+$")), String(repeating: "a", count: maxStringLength)))
     }
 
-    @Test("a slow match does not block other threads")
+    @Test("a slow match does not block other threads", .heavy)
     func slowMatchDoesNotBlock() async throws {
-        let slow = try #require(JSRegex("^(a+)+$"))
-        let text = String(repeating: "a", count: 29) + "!"
-        let blocked = Task.detached { slow.test(text) }
-        try? await Task.sleep(nanoseconds: 100_000_000)
-        let started = Date()
+        let slow = try #require(JSRegex("^(a|a)*\\1b$"))
+        let text = String(repeating: "a", count: 40) + "cb"
+        let finished = OSAllocatedUnfairLock(initialState: false)
+        let blocked = Task.detached {
+            defer { finished.withLock { $0 = true } }
+            return slow.test(text)
+        }
+        try? await Task.sleep(for: .milliseconds(50))
         #expect(JSRegex("^b$")?.test("b") == true)
-        let elapsed = Date().timeIntervalSince(started)
-        #expect(await blocked.value == false)
-        #expect(elapsed < 0.5)
+        #expect(!finished.withLock { $0 })
+        #expect(await blocked.value == nil)
     }
 
     @Test("patterns compile and match from many threads")

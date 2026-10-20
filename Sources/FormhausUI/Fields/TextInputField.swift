@@ -19,7 +19,7 @@ public struct TextInputField: View {
                     .textInputTraits(kind)
                     .submitLabel(context.model.structure.isLastStep ? .done : .continue)
                     .onSubmit { context.performPrimaryAction() }
-                    .accessibilityHint(context.helperText ?? "")
+                    .accessibilityHint(Text(verbatim: context.helperText ?? ""))
                 LoadingIndicator(visible: context.loading)
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)
@@ -30,10 +30,10 @@ public struct TextInputField: View {
 
     @ViewBuilder private var input: some View {
         if kind == .password {
-            SecureField(text: binding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }.placeholder(
+            SecureField(text: binding, prompt: Text(verbatim: "")) { Text(verbatim: context.accessibilityName) }.placeholder(
                 prompt, visible: binding.wrappedValue.isEmpty)
         } else {
-            TextField(text: binding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }.placeholder(
+            TextField(text: binding, prompt: Text(verbatim: "")) { Text(verbatim: context.accessibilityName) }.placeholder(
                 prompt, visible: binding.wrappedValue.isEmpty)
         }
     }
@@ -41,7 +41,7 @@ public struct TextInputField: View {
     private var kind: InputKind { InputKind(context.field) }
 
     private var prompt: String? {
-        context.field.placeholder ?? context.field.mask?.stringValue
+        context.placeholder ?? context.field.mask?.stringValue
     }
 
     private var binding: Binding<String> {

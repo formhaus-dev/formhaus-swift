@@ -12,10 +12,13 @@ public struct FormRendererOptions {
     public var onFieldChange: FieldChangeFn?
     public var onValuesChange: ValuesChangeFn?
     public var onError: ActionErrorFn?
+    public var lang: String?
+    public var formatRecall: RecallFormatFn?
 
     public init(
         labels: LabelSource? = nil, optionsProviders: [String: OptionsProvider] = [:], onCancel: (@MainActor () -> Void)? = nil,
-        onFieldChange: FieldChangeFn? = nil, onValuesChange: ValuesChangeFn? = nil, onError: ActionErrorFn? = nil
+        onFieldChange: FieldChangeFn? = nil, onValuesChange: ValuesChangeFn? = nil, onError: ActionErrorFn? = nil,
+        lang: String? = nil, formatRecall: RecallFormatFn? = nil
     ) {
         self.labels = labels
         self.optionsProviders = optionsProviders
@@ -23,5 +26,16 @@ public struct FormRendererOptions {
         self.onFieldChange = onFieldChange
         self.onValuesChange = onValuesChange
         self.onError = onError
+        self.lang = lang
+        self.formatRecall = formatRecall
+    }
+}
+
+extension FormEngineOptions {
+    func recalling(with renderer: FormRendererOptions) -> FormEngineOptions {
+        var options = self
+        options.lang = lang ?? renderer.lang
+        options.formatRecall = formatRecall ?? renderer.formatRecall
+        return options
     }
 }
