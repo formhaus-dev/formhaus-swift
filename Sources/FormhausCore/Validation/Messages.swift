@@ -1,6 +1,6 @@
 let defaultMessageKeys: [MessageKey] = [
     "required", "minLength", "maxLength", "minItems", "maxItems", "min", "max", "pattern", "matchField", "email",
-    "number", "date", "datetime", "time", "option", "options", "boolean", "string", "file", "value", "hidden",
+    "number", "date", "datetime", "time", "option", "options", "exclusive", "boolean", "string", "file", "value", "hidden",
 ]
 
 private let invalidValueMessage = "Invalid value"
@@ -22,6 +22,7 @@ let defaultMessages: [MessageKey: String] = [
     "time": "Enter a valid time",
     "option": "Select one of the available options",
     "options": "Must be a list of available options",
+    "exclusive": "Select \"{option}\" or other options, not both",
     "boolean": "Must be true or false",
     "string": "Must be text",
     "file": "Must be a file reference",
@@ -64,7 +65,7 @@ func replacePlaceholders(_ template: String, _ replacement: (String) -> String?)
 }
 
 func formatText(_ template: String, _ params: JSONObject) -> String {
-    replacePlaceholders(template) { params[$0].map { jsString($0) } }
+    cut(replacePlaceholders(template) { params[$0].map { jsString($0) } })
 }
 
 func resolveText(

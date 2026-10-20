@@ -1,5 +1,5 @@
 public struct FormStep: Sendable, Conditional, NodeIdentity {
-    let json: JSONObject
+    var json: JSONObject
     let ordinal: Int
     public let id: String
     public let fields: [FormNode]
@@ -37,7 +37,7 @@ public struct FormStep: Sendable, Conditional, NodeIdentity {
 }
 
 public struct FormDefinition: Sendable {
-    public static let supportedFormatVersion = "1.4"
+    public static let supportedFormatVersion = "1.5"
 
     let json: JSONObject
     public let id: String
@@ -45,10 +45,13 @@ public struct FormDefinition: Sendable {
     public let cancel: FormAction?
     public let fields: [FormNode]?
     public let steps: [FormStep]?
+    let recallsAnswers: Bool
 
     init(unchecked json: JSONObject) {
         var ordinals = 0
         self.json = json
+        let (major, minor) = formatParts(json["formatVersion"])
+        recallsAnswers = major > 1 || minor >= 5
         id = json["id"]?.stringValue ?? ""
         submit = FormAction(json: json["submit"]?.objectValue ?? JSONObject())
         cancel = json["cancel"]?.objectValue.map(FormAction.init(json:))
