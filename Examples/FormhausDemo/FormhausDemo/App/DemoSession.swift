@@ -29,6 +29,7 @@ final class DemoSession {
     private(set) var scrollTarget: ScrollTarget?
     @ObservationIgnored let timings: ScriptTimings
     @ObservationIgnored let launch: LaunchOptions
+    @ObservationIgnored let frames = FieldFrames()
     @ObservationIgnored private let source: FormSource
     @ObservationIgnored private var registered: Set<String> = ["ada@lovelace.dev"]
     @ObservationIgnored private let relay: Relay

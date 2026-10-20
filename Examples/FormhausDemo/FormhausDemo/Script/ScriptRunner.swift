@@ -7,6 +7,7 @@ protocol ScriptStage: AnyObject {
     func reveal(_ key: String)
     func setLanguage(_ language: DemoLanguage)
     var style: DemoStyle { get set }
+    var frames: FieldFrames { get }
 }
 
 @MainActor
@@ -17,10 +18,34 @@ struct ScriptRunner {
     let stage: any ScriptStage
 
     func run() async {
+        let timeline = ScriptTimeline()
         for beat in script.beats {
             if Task.isCancelled { return }
             if case .mark(let name) = beat, name == stopAt { return }
+            record(beat, on: timeline)
             await play(beat)
+        }
+    }
+
+    private func record(_ beat: Beat, on timeline: ScriptTimeline) {
+        switch beat {
+        case .mark(let name): timeline.mark(name)
+        case .type(let key, _): field("type", key, on: timeline)
+        case .pick(let key, _): field("pick", key, on: timeline)
+        case .toggle(let key, _): field("toggle", key, on: timeline)
+        case .next: timeline.tap("next")
+        case .back: timeline.tap("back")
+        case .submit: timeline.tap("submit")
+        default: break
+        }
+    }
+
+    private func field(_ kind: String, _ key: String, on timeline: ScriptTimeline) {
+        let index = timeline.tap(kind, key: key, target: stage.frames.frames[key])
+        let stage = stage
+        Task {
+            try? await Task.sleep(for: .seconds(0.4))
+            timeline.settle(index, target: stage.frames.frames[key])
         }
     }
 

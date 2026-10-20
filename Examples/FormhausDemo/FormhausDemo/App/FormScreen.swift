@@ -21,9 +21,14 @@ struct FormScreen: View {
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.45)) { proxy.scrollTo(target.key, anchor: .center) }
             }
         }
-        .formhausComponents(session.style.components)
+        .formhausComponents(components)
         .formhausTheme(session.style.theme)
         .formhausBehavior(FormBehavior(errorSummary: true))
+    }
+
+    private var components: FormComponents {
+        let tracked = session.style == .formhaus && session.launch.script != nil
+        return tracked ? session.style.components.tracking(session.frames) : session.style.components
     }
 
     private var scroller: some View {
