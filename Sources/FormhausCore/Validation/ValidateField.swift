@@ -1,6 +1,16 @@
 public typealias ValidatorFn = @Sendable (JSONValue, JSONObject) -> String?
 public typealias Validators = StringMap<ValidatorFn>
 
+public struct ValidateOptions: Sendable {
+    public var validators: Validators
+    public var messages: MessageSource?
+
+    public init(validators: Validators = [:], messages: MessageSource? = nil) {
+        self.validators = validators
+        self.messages = messages
+    }
+}
+
 private func isEmptyValue(_ value: JSONValue?, _ field: FormField) -> Bool {
     isBlank(value) || (value == .bool(false) && booleanTypes.contains(field.type))
 }
@@ -44,10 +54,9 @@ private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: Fo
 }
 
 public func validateFieldValue(
-    _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, validators: Validators = [:],
-    messages: MessageSource? = nil
+    _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, options: ValidateOptions = ValidateOptions()
 ) -> String? {
-    CallBudget.run { fieldValueError(field, input, allValues, validators, messages) }
+    CallBudget.run { fieldValueError(field, input, allValues, options.validators, options.messages) }
 }
 
 private func fieldValueError(

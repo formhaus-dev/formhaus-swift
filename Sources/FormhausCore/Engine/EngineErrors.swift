@@ -30,9 +30,8 @@ extension EngineCore {
 
     func fieldError(_ field: FormField, _ value: JSONValue?, _ allValues: JSONObject? = nil) -> String? {
         let all = allValues ?? getSubmitValues()
-        return CallBudget.run {
-            unsettleOnWrite { validateFieldValue(field, value, all, validators: validators, messages: .function(messages)) }
-        }
+        let options = ValidateOptions(validators: validators, messages: .function(messages))
+        return CallBudget.run { unsettleOnWrite { validateFieldValue(field, value, all, options: options) } }
     }
 
     func itemError(_ item: ItemField) -> String? {

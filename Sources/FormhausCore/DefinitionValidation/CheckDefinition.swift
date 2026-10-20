@@ -17,7 +17,3 @@ func definitionIssues(_ input: JSONValue, warnings: Bool, validators: [String]? 
 public func checkDefinition(_ input: JSONValue, options: CheckDefinitionOptions = CheckDefinitionOptions()) -> [DefinitionIssue] {
     definitionIssues(input, warnings: true, validators: options.validators)
 }
-
-public func validateDefinition(_ input: JSONValue) -> [String] {
-    checkDefinition(input).map(\.message)
-}
