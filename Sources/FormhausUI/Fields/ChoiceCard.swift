@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ChoiceCard: View, Equatable {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.formhausRenderLog) private var renderLog
     let option: FieldOption
     let shape: IndicatorShape
     let selected: Bool
@@ -18,8 +19,13 @@ struct ChoiceCard: View, Equatable {
     }
 
     var body: some View {
+        renderLog?.note(option.value ?? "")
+        return card
+    }
+
+    private var card: some View {
         let label = option.label ?? option.value ?? ""
-        Button(action: choose) {
+        return Button(action: choose) {
             VStack(alignment: .leading, spacing: tokens.spacing.s3) {
                 if picture, let image = option.image, !image.isEmpty { OptionImage(key: ImageKey(image, digest: option.imageKey)) }
                 OptionRow(shape, label: label, selected: selected)

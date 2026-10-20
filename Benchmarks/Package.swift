@@ -27,5 +27,15 @@ let package = Package(
             path: "Benchmarks/RecallBenchmarks",
             plugins: [.plugin(name: "BenchmarkPlugin", package: "package-benchmark")]
         ),
+        .executableTarget(
+            name: "RendererBenchmarks",
+            dependencies: [
+                .product(name: "FormhausCore", package: "formhaus-swift"),
+                .product(name: "FormhausUI", package: "formhaus-swift"),
+                .product(name: "Benchmark", package: "package-benchmark"),
+            ],
+            path: "Benchmarks/RendererBenchmarks",
+            plugins: [.plugin(name: "BenchmarkPlugin", package: "package-benchmark")]
+        ),
     ]
 )
