@@ -10,6 +10,7 @@ public final class FieldState {
     public private(set) var loading = false
     public private(set) var version = 0
     public private(set) var focusToken = 0
+    private(set) var hasFocus = false
     @ObservationIgnored private var focusPending: Int?
 
     init(key: String) {
@@ -19,6 +20,10 @@ public final class FieldState {
     func requestFocus(_ id: Int) {
         focusPending = id
         focusToken += 1
+    }
+
+    func noteFocus(_ focused: Bool) {
+        if hasFocus != focused { hasFocus = focused }
     }
 
     func dropFocusRequest() {

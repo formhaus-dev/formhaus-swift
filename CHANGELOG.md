@@ -10,6 +10,7 @@
 
 - The formhaus set colors the step title red and announces the error count when the current step has errors, as in the web renderers.
 - `ProgressContext` has `errorCount` and `errorLabel` for the current step, independent of `stepErrorMarks`.
+- The focused field keeps focus and the keyboard while a submit or async step validation runs. Text typed meanwhile applies once the form unlocks.
 
 ## 0.1.2
 
