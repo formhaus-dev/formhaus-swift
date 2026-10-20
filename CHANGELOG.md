@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### FormhausCore
+
+- `JSONValue` and `JSONObject` have `jsonData()` and `jsonString()` for request bodies, and `JSONValue` conforms to `Codable`.
+
 ## 0.1.0
 
 First release. Requires Swift 6.2, iOS 17 or macOS 14. Follows `@formhaus/core` 0.22.0 and definition format 1.5.
