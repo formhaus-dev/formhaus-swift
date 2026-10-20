@@ -28,8 +28,8 @@ export default async (layer, beat, data) => {
         const y = devicesY + (tallest - item.node.height * item.scale) / 2;
         place(item.node.root, { x: item.x, y: y + (1 - p) * 30, scale: item.scale, opacity: p });
       });
-      place(install, { x: (1920 - install.offsetWidth) / 2, y: installY + (1 - progress(t, 1.2, 0.6)) * 14, opacity: progress(t, 1.2, 0.6) });
-      place(links, { y: linksY, opacity: progress(t, 1.7, 0.6) });
+      place(install, { x: (1920 - install.offsetWidth) / 2, y: installY + (1 - progress(t, 0.8, 0.5)) * 14, opacity: progress(t, 0.8, 0.5) });
+      place(links, { y: linksY, opacity: progress(t, 1.1, 0.5) });
       return showRow(devices);
     },
   };

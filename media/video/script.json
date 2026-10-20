@@ -304,7 +304,7 @@
     {
       "id": "tour",
       "scene": "tour",
-      "duration": 8.67,
+      "duration": 9.07,
       "device": "iphone",
       "clip": "ios-showcase",
       "script": "showcase",
@@ -340,8 +340,8 @@
         },
         {
           "from": "success",
-          "lead": 1.1,
-          "length": 1.6,
+          "lead": 0.95,
+          "length": 2.0,
           "rate": 1,
           "label": "Success"
         }
