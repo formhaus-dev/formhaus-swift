@@ -12,7 +12,7 @@ const extract = (id, entry) => {
   const source = join(footage, entry.file);
   const dir = join(frames, id);
   const info = join(dir, 'info.json');
-  if (fresh(source, info) && readJSON(info).start === entry.start) return { ...readJSON(info), marks: entry.marks ?? [] };
+  if (fresh(source, info) && readJSON(info).start === entry.start) return { ...readJSON(info), marks: entry.marks ?? [], taps: entry.taps ?? [] };
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   if (entry.still) {
@@ -25,7 +25,7 @@ const extract = (id, entry) => {
   const count = entry.still ? 1 : readdirSync(dir).filter((name) => name.endsWith('.jpg')).length;
   const data = { start: entry.start, rate, count, still: Boolean(entry.still) };
   writeFileSync(info, JSON.stringify(data));
-  return { ...data, marks: entry.marks ?? [] };
+  return { ...data, marks: entry.marks ?? [], taps: entry.taps ?? [] };
 };
 
 export const extractAll = () => Object.fromEntries(Object.entries(manifest).map(([id, entry]) => [id, extract(id, entry)]));

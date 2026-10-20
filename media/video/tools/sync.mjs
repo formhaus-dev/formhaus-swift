@@ -2,6 +2,8 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { footage, readJSON, script } from './paths.mjs';
+import { locateTaps } from './taps.mjs';
+import { resolveColor } from './tokens.mjs';
 
 const config = script();
 const manifestPath = join(footage, 'manifest.json');
@@ -24,24 +26,33 @@ const samples = (file) => {
 
 const firstEvent = (frames) => {
   const launch = frames.find((frame) => frame.luma > 225);
-  const event = launch && frames.find((frame) => frame.time > launch.time + 0.3 && frame.score > 0.02);
+  const changes = frames.filter((frame) => launch && frame.time > launch.time && frame.score > 0.02);
+  const event = changes.find((frame, index) => frame.time - (changes[index - 1]?.time ?? launch.time) >= 0.4);
   if (!event) throw new Error('No first event found');
   return event.time;
 };
 
-const measureMarks = (frames, start, marks, stop) => {
-  const measured = [];
-  let drift = 0;
-  for (const [mark, time] of Object.entries(marks)) {
-    if (mark === stop) break;
-    if (mark === 'first' || mark === 'end') continue;
-    const expected = start + time + drift;
-    const hit = frames.find((frame) => frame.time >= expected - 0.1 && frame.time <= expected + 0.8 && frame.score > 0.01);
-    if (hit) drift = hit.time - start - time;
-    measured.push([time, Number((time + drift).toFixed(3))]);
-  }
-  return measured;
+const refine = (frames, start, timeline) => {
+  const deltas = timeline.taps
+    .filter((tap) => ['next', 'pick', 'submit'].includes(tap.kind))
+    .map((tap) => {
+      const frame = frames.find((item) => item.score > 0.004 && item.time - start - tap.time > -0.3 && item.time - start - tap.time < 0.6);
+      return frame && frame.time - start - tap.time;
+    })
+    .filter((delta) => delta !== undefined)
+    .sort((a, b) => a - b);
+  return deltas.length ? start + deltas[Math.floor(deltas.length / 2)] : start;
 };
+
+const hex = (value) => [1, 3, 5].map((offset) => parseInt(value.slice(offset, offset + 2), 16));
+
+const iosTaps = (file, start, timeline, spec) => {
+  const primary = hex(resolveColor(config.theme.colors.primary));
+  return locateTaps(file, start, timeline, spec.screen, primary);
+};
+
+const webTaps = (timeline) =>
+  timeline.taps.map(({ time, kind, x, y }) => ({ time, kind, x: x / timeline.size[0], y: y / timeline.size[1] }));
 
 for (const [id, clip] of Object.entries(config.footage)) {
   const file = source(id);
@@ -50,11 +61,15 @@ for (const [id, clip] of Object.entries(config.footage)) {
     manifest[id] = { file: basename(file), still: true };
     continue;
   }
+  const timeline = readJSON(join(footage, `${id}.timeline.json`));
+  const nominal = config.marks[clip.script];
   const frames = samples(file);
-  const marks = config.marks[clip.script];
-  const start = Math.max(0, firstEvent(frames) - marks.first);
-  const measured = measureMarks(frames, start, marks, clip.stop);
-  manifest[id] = { file: basename(file), start: Number(start.toFixed(3)), marks: measured };
-  console.log(`${id}: starts at ${start.toFixed(2)} s, drift ${measured.map(([a, b]) => (b - a).toFixed(2)).join(' ')}`);
+  const first = firstEvent(frames) - timeline.taps[0].time;
+  const start = Math.max(0, config.devices[clip.device].kind === 'browser' ? first : refine(frames, first, timeline));
+  const marks = timeline.marks.filter(({ name }) => name in nominal && name !== 'first').map(({ name, time }) => [nominal[name], Number(time.toFixed(3))]);
+  const spec = config.devices[clip.device];
+  const taps = spec.kind === 'browser' ? webTaps(timeline) : iosTaps(file, start, timeline, spec);
+  manifest[id] = { file: basename(file), start: Number(start.toFixed(3)), marks, taps };
+  console.log(`${id}: starts at ${start.toFixed(2)} s, ${taps.length} taps, drift ${marks.map(([a, b]) => (b - a).toFixed(2)).join(' ')}`);
 }
 writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
