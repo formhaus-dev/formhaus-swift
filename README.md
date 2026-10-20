@@ -221,12 +221,13 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 - Answer recall formats with Foundation format styles in UTC, as the specification lists for Swift. A locale that is not a well-formed BCP 47 tag, or whose language Foundation does not provide, falls back to `en`. A `RecallFormatFn` receives a `RecallAnswer` (`.text`, `.number` or `.list`), the field and the locale. `RecallAnswer.stored` writes the answer like the identity formatter.
 - `FormEngine.recallText(_:options:)` stands for `recallText` with `engine` in TypeScript. It reads the engine's active path, and it takes `lang` and `formatRecall` from the engine options when `options` leaves them out. Both options are fixed for the lifetime of an engine.
 - Patterns run on a native engine that follows `new RegExp(pattern).test(value)` in ECMAScript 2025 with no flags, including Annex B syntax, modifier groups such as `(?i:...)` and duplicate named groups. `Tests/FormhausCoreTests/Fixtures/regex/cases.json` holds the expected results, recorded with Node. To record them again, run `node scripts/regex-cases.mjs`.
-- Node 24.15 folds case wrongly in some modifier groups. It returns `false` for `(?i:b|[ab])`, `(?i:x|[a-c])` and `(?i:((3|([a]))))` on `A`, and for `^(?i:\u0178)$` on `ÿ`, where the specification says `true`. It returns `true` for `(?i:(?=\W{2}|(W))(A|(?<![a])))` on `A😀`, where the specification says `false`. JavaScriptCore and the native engine follow the specification. `scripts/regex-cases.mjs` leaves these cases out and checks every recorded case again in a new node process.
+- Node 24.15 folds case wrongly in some modifier groups. It returns `false` for `(?i:b|[ab])`, `(?i:x|[a-c])` and `(?i:((3|([a]))))` on `A`, and for `^(?i:\u0178)$` on `ÿ`, where the specification says `true`. It returns `true` for `(?i:(?=\W{2}|(W))(A|(?<![a])))` on `A😀`, where the specification says `false`. The native engine follows the specification. `scripts/regex-cases.mjs` leaves these cases out and checks every recorded case again in a new node process.
 - Duplicate group names follow V8, which accepts some patterns that the specification rejects, such as `(?<a>a)(?:b|(?<a>c))`.
 - A pattern with more than 100 nested groups counts as invalid. JavaScript accepts it.
 - Values are at most 10,000 code units long, so a counted repeat is cut to the number of iterations such a value can use. `^.{0,50000}$` compiles like `^.{0,10000}$`. Such a pattern fails the rule for a longer value. A pattern that still compiles to more than 262,144 instructions fails the rule, unless the value is shorter than any match. A single character or class repeated in a pattern with backreferences, such as `\w{1,5000}`, takes one instruction. V8 rejects literals of 32,768 code units or more, and the native engine accepts them.
 - Patterns with backreferences use a backtracking matcher. A match there that needs more than 10,000,000 steps fails the pattern rule. Clearing captures, copying them for a lookaround and comparing a backreference count as steps. Patterns that nest quantified groups which can match empty and also use backreferences, such as `(?:((\1?\1.?){2})*K?)+[ab]`, can run out of steps even on values of about 10 code units. `@formhaus/core` keeps matching until it finishes.
-- All other patterns match in time proportional to the input length times the compiled pattern size.
+- All other patterns match in time proportional to the input length times the compiled pattern size. Such a match also stops after 10,000,000 steps and then fails the pattern rule.
+- One `validateSubmission`, `FormEngine.validate()` or `FormEngine.validateField(_:)` call has 20,000,000 steps for all its patterns. Once they are spent, every further pattern rule in the call fails.
 - The JSON parser rejects strings with unpaired surrogate escapes such as `"\uD800"`. Swift `String` cannot hold them, and replacing them with U+FFFD would change the value.
 - The JSON parser rejects documents nested deeper than 512 levels (`JSONValue.maxNestingDepth`). Swift compares and frees nested values recursively, so deeper values could overflow the stack.
 - `JSONValue` equality compares structure. A new array or object with the same contents counts as the same value, where JavaScript compares object identity. `FormEngine` keeps the JavaScript rule: every array or object passed to `setValue` or `setItemValue` counts as a change, and group items keep their identity across edits.
@@ -236,34 +237,47 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 
 ## Performance
 
-Patterns without backreferences compile to a lazy DFA, so nested quantifiers such as `(a+)+$` cannot backtrack. A lookaround without backreferences runs as one automaton scan over the whole input, so its result for every position costs time linear in the input. Only patterns with backreferences use a backtracking matcher. It memoizes the part of the pattern after the last backreference, and it runs lookarounds that contain no backreferences as scans too. Each pattern keeps up to 8 DFA copies, so threads that match the same pattern at once each get their own cache. One copy may use 1 MB, and all copies of all patterns together 32 MB. When the total is full, copies that were not used since the last reclaim give their memory back first. When a copy reaches its own limit, its states are cleared once per match. The pattern cache keeps at most 256 patterns and 16 MB of compiled programs, and drops the least recently used patterns first. A pattern larger than 16 MB on its own still runs, but is compiled again on every call. If the limit is reached again in the same match, the match continues on the NFA without caching, so the result stays the same.
+Patterns run on a native ECMAScript regex engine with `new RegExp(p).test(s)` semantics. Patterns without backreferences match in time linear in the input.
 
-Median time of one `validateFieldValue` call with a `pattern` rule, on an Apple M5 Pro with macOS 26 and Swift 6.4. "Long" inputs have 10,000 code units. "Compile" uses a new pattern on every call, so it includes the first match.
+Limits:
 
-| Benchmark | JavaScriptCore | Native |
-| --- | ---: | ---: |
-| compile email | 3.0 µs | 11 µs |
-| compile phone | 2.8 µs | 11 µs |
-| compile postcode | 3.1 µs | 8.9 µs |
-| compile IBAN | 2.9 µs | 13 µs |
-| compile password (3 lookaheads) | 3.3 µs | 29 µs |
-| compile quoted (backreference) | 2.5 µs | 3.2 µs |
-| match email, short / long | 1.5 µs / 21 µs | 0.74 µs / 15 µs |
-| match phone, short / long | 1.4 µs / 44 µs | 0.70 µs / 2.4 µs |
-| match postcode, short / long | 1.5 µs / 44 µs | 0.71 µs / 2.5 µs |
-| match IBAN, short / long | 1.4 µs / 44 µs | 0.73 µs / 2.5 µs |
-| match password, short / long | 1.7 µs / 120 µs | 1.2 µs / 74 µs |
-| match quoted, short / long | 1.3 µs / 93 µs | 1.1 µs / 143 µs |
-| `(a+)+$` on 9,999 `a` and `!` | 882 ms | 12 µs |
-| `(a\|aa)+$` on 9,999 `a` and `!` | 1,249 ms | 12 µs |
-| `(x+x+)+y` on 10,000 `x` | 929 ms | 12 µs |
-| `(?:a\|[]()…)*\1(?!)` with 15,000 `()` on 9,999 `a` | 5.4 ms | 5.6 ms |
-| `(?=(?!b)[^]*x)y(?:z\|$)` on 9,999 `y` and `x` | 46 ms | 2.3 ms |
-| `[^]*a[^]{3900}$` on 10,000 random `a` and `b` | 12 µs | 97 ms |
-| `[a-z]{0,4001}1` on 6,000 `b` and `1` | 26 ms | 188 ms |
-| `[ab]*a[ab]{12}$` on 10,000 random `a` and `b` | 15 µs | 2.0 ms |
+- A match stops after 10,000,000 steps and fails the pattern rule. One validation call has 20,000,000 steps for all its patterns.
+- A pattern that compiles to more than 262,144 instructions fails the rule.
+- Values are at most 10,000 code units long.
+- The pattern cache keeps 256 patterns and 16 MB of compiled programs. Automaton states use at most 1 MB per copy and 32 MB in total.
 
-JavaScriptCore stops the pathological patterns at its backtracking limit and returns `false`. The native engine fails the rule for the pattern with 15,000 captures when it runs out of steps. Node takes 94 s for `[^]*a[^]{3900}$` on the same input. The last three patterns build many large DFA states, so they run on the NFA without caching once a copy reaches its 1 MB limit. The native engine adds 165 KB to a stripped release executable that links `FormhausCore`: 1,008,336 bytes against 839,664 on main.
+Measured on an Apple M5 Pro with macOS 26.6 and Swift 6.4, in a release build, as the package-benchmark median of 2 runs. Each row is one `validateFieldValue` call with a `pattern` rule. It compares `new RegExp(p).test(s)` in JavaScriptCore, the engine the package used before, with the formhaus native engine, on the same patterns and inputs. Long inputs have 10,000 code units. To reproduce, run `cd Benchmarks && swift package benchmark --target RegexBenchmarks`.
+
+| Benchmark | JavaScriptCore | formhaus | Difference |
+| --- | ---: | ---: | --- |
+| match email, short | 1.5 µs | 🟢 0.79 µs | ×1.9 faster |
+| match email, long | 21 µs | 🟢 12 µs | ×1.8 faster |
+| match phone, short | 1.4 µs | 🟢 0.77 µs | ×1.8 faster |
+| match phone, long | 44 µs | 🟢 2.8 µs | ×16 faster |
+| match postcode, short | 1.5 µs | 🟢 0.79 µs | ×1.9 faster |
+| match postcode, long | 44 µs | 🟢 2.8 µs | ×16 faster |
+| match IBAN, short | 1.4 µs | 🟢 0.80 µs | ×1.7 faster |
+| match IBAN, long | 44 µs | 🟢 2.9 µs | ×15 faster |
+| match password, short | 1.7 µs | 🟢 1.3 µs | ×1.3 faster |
+| match password, long | 120 µs | 🟢 72 µs | ×1.7 faster |
+| `(a+)+$` on 9,999 `a` and `!` | 882 ms | 🟢 2.8 µs | ×320,000 faster |
+| `(a\|aa)+$` on 9,999 `a` and `!` | 1,249 ms | 🟢 2.8 µs | ×450,000 faster |
+| `(x+x+)+y` on 10,000 `x` | 929 ms | 🟢 5.0 µs | ×190,000 faster |
+| `(?:a\|[]()…)*\1(?!)` with 15,000 `()` on 9,999 `a` | 5.4 ms | 🟢 5.4 ms | ×1.0 faster |
+| `(?=(?!b)[^]*x)y(?:z\|$)` on 9,999 `y` and `x` | 46 ms | 🟢 2.6 ms | ×17 faster |
+| `[^]*a[^]{3900}$` on 10,000 random `a` and `b` | 12 µs | 🟢 7.9 µs | ×1.5 faster |
+| `[a-z]{0,4001}1` on 6,000 `b` and `1` | 26 ms | 🟢 4.1 µs | ×6,300 faster |
+| `[ab]*a[ab]{12}$` on 10,000 random `a` and `b` | 15 µs | 🟢 1.8 µs | ×8.5 faster |
+| match quoted (backreference), short | 1.3 µs | 🟢 1.1 µs | ×1.2 faster |
+| match quoted (backreference), long | 93 µs | 🟢 20 µs | ×4.7 faster |
+| compile email ✓ | 3.0 µs | 🔴 7.4 µs | ×2.5 slower |
+| compile phone ✓ | 2.8 µs | 🔴 8.3 µs | ×3.0 slower |
+| compile postcode ✓ | 3.1 µs | 🔴 7.1 µs | ×2.3 slower |
+| compile IBAN ✓ | 2.9 µs | 🔴 8.9 µs | ×3.1 slower |
+| compile password (3 lookaheads) ✓ | 3.3 µs | 🔴 16 µs | ×5.0 slower |
+| compile quoted (backreference) ✓ | 2.5 µs | 🔴 3.4 µs | ×1.3 slower |
+
+✓ A pattern compiles once and is then served from the 256-pattern cache, so this is a one-time cost when a form first renders. A compile row uses a new pattern on every call, so it includes the first match. The pattern with 15,000 captures runs out of steps and fails the rule.
 
 `RecallBenchmarks` measures the renderer call that resolves the texts of one field. A label with four tokens (text, list, date and number) takes 3.7 µs with the identity formatter and 8.2 µs with the default formatter. A label without tokens takes 0.31 µs.
 
