@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/formhaus-dev/formhaus/discussions
+    about: Ask and discuss in formhaus discussions
+  - name: Documentation
+    url: https://formhaus.dev/guide/
+    about: Guides and the definition format

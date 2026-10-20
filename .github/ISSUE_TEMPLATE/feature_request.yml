@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a change to FormhausCore or FormhausUI
+labels: [enhancement]
+body:
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: What you want to build and what stops you today
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The API or behaviour you have in mind
+  - type: markdown
+    attributes:
+      value: Changes to the definition format or engine behaviour start in the [formhaus](https://github.com/formhaus-dev/formhaus) repository, so every implementation follows them.
