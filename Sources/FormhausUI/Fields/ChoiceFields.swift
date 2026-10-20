@@ -72,7 +72,7 @@ struct ChoiceList: View {
                 .formhausFocus(context, $focused)
         }
         .onAppear {
-            InlineImages.shared.prefetch(
+            OptionImages.shared.prefetch(
                 context.options.prefix(64).compactMap { option in option.safeImage.map { ImageKey($0, digest: option.imageKey) } })
         }
         .sheet(item: $zoomed) { zoomed in

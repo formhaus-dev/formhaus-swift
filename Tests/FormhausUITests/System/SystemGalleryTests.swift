@@ -69,7 +69,7 @@ struct SystemGalleryTests {
 
     @Test("block fields, empty, filled and invalid")
     func blockFields() async throws {
-        _ = await InlineImages.shared.image(ImageKey(swatch))
+        _ = await OptionImages.shared.image(ImageKey(swatch))
         try renderSystem("blocks-empty", try model(blocks), height: 1400)
         let filled: JSONObject = [
             "bio": "Rear admiral and computer scientist.", "ease": 4, "nps": 9, "stars": 3, "color": "b", "goals": "pro",

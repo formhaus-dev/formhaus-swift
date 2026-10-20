@@ -1,12 +1,9 @@
-import ImageIO
 import SwiftUI
 
 struct OptionImage: View {
     @Environment(\.formhausTokens) private var tokens
     let key: ImageKey
     var fit = false
-
-    private var source: String { key.source }
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: max(0, tokens.radii.control - tokens.spacing.s1), style: .continuous)
@@ -20,24 +17,16 @@ struct OptionImage: View {
         .background(tokens.colors.backgroundDisabled)
         .clipShape(shape)
         .accessibilityHidden(true)
-        .onAppear { InlineImages.shared.prefetch([key]) }
+        .onAppear { OptionImages.shared.load(key) }
     }
 
     @ViewBuilder private var picture: some View {
-        if let image = isInline(source) ? InlineImages.shared.entry(key).image : nil {
+        if let image = OptionImages.shared.loaded(key) {
             Image(decorative: image, scale: 1).resizable()
-        } else if let url = URL(string: source), ["https", "http"].contains(url.scheme) {
-            AsyncImage(url: url) { phase in
-                if let image = phase.image { image.resizable() } else { tokens.colors.backgroundDisabled }
-            }
         } else {
             tokens.colors.backgroundDisabled
         }
     }
-}
-
-private func isInline(_ source: String) -> Bool {
-    source.hasPrefix("data:image/")
 }
 
 struct ImageKey: Hashable, Sendable {
@@ -62,77 +51,6 @@ private func fullDigest(_ source: String) -> Int {
     var hasher = Hasher()
     hasher.combine(source)
     return hasher.finalize()
-}
-
-@MainActor
-@Observable
-final class ImageEntry {
-    fileprivate(set) var image: CGImage?
-    @ObservationIgnored fileprivate var loading = false
-    @ObservationIgnored fileprivate var bytes = 0
-}
-
-@MainActor
-final class InlineImages {
-    static let shared = InlineImages()
-    private var entries: [ImageKey: ImageEntry] = [:]
-    private var order: [ImageKey] = []
-    private var bytes = 0
-    private let maxBytes = 48 * 1024 * 1024
-    private let maxCount = 256
-
-    func entry(_ key: ImageKey) -> ImageEntry {
-        if let entry = entries[key] { return entry }
-        let entry = ImageEntry()
-        entries[key] = entry
-        return entry
-    }
-
-    func cached(_ key: ImageKey) -> CGImage? {
-        entries[key]?.image
-    }
-
-    func prefetch(_ keys: [ImageKey]) {
-        for key in keys where isInline(key.source) { load(key, entry(key)) }
-    }
-
-    func image(_ key: ImageKey) async -> CGImage? {
-        let entry = entry(key)
-        if let image = entry.image { return image }
-        let source = key.source
-        guard let image = await Task.detached(priority: .userInitiated, operation: { decodeInline(source) }).value else { return nil }
-        store(image, key, entry)
-        return image
-    }
-
-    private func load(_ key: ImageKey, _ entry: ImageEntry) {
-        guard entry.image == nil, !entry.loading else { return }
-        entry.loading = true
-        Task {
-            _ = await image(key)
-            entry.loading = false
-        }
-    }
-
-    private func store(_ image: CGImage, _ key: ImageKey, _ entry: ImageEntry) {
-        guard entry.image == nil else { return }
-        entry.image = image
-        entry.bytes = image.bytesPerRow * image.height
-        bytes += entry.bytes
-        order.append(key)
-        while order.count > maxCount || bytes > maxBytes, order.count > 1 {
-            let oldest = order.removeFirst()
-            if let evicted = entries.removeValue(forKey: oldest) { bytes -= evicted.bytes }
-        }
-    }
-}
-
-private func decodeInline(_ source: String) -> CGImage? {
-    guard isInline(source), let comma = source.firstIndex(of: ","), source[..<comma].hasSuffix(";base64"),
-        let data = Data(base64Encoded: String(source[source.index(after: comma)...])),
-        let image = CGImageSourceCreateWithData(data as CFData, nil)
-    else { return nil }
-    return CGImageSourceCreateImageAtIndex(image, 0, nil)
 }
 
 struct ZoomButton: View {

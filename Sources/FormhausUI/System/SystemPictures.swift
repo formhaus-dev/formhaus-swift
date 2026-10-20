@@ -24,7 +24,7 @@ struct SystemPictures: View {
         }
         .onAppear {
             let keys = context.options.prefix(64).compactMap { option in option.safeImage.map { ImageKey($0, digest: option.imageKey) } }
-            InlineImages.shared.prefetch(keys)
+            OptionImages.shared.prefetch(keys)
         }
     }
 
