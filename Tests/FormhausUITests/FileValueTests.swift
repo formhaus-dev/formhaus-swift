@@ -26,8 +26,12 @@ struct FileValueTests {
         }
     }
 
+    private func context(_ form: FormModel) throws -> FieldContext {
+        FieldContext(field: try #require(form.engine.definition.fields?.first?.field), model: form)
+    }
+
     private func picked(_ form: FormModel) throws -> String? {
-        FieldContext(field: try #require(form.engine.definition.fields?.first?.field), model: form).fileName
+        try context(form).fileName
     }
 
     @Test("the server keeps an app reference as given", arguments: references)
@@ -57,6 +61,19 @@ struct FileValueTests {
         #expect(form.engine.values["doc"] == value)
         #expect(form.engine.getSubmitValues() == ["doc": value])
         #expect(try picked(form) == nil)
+        #expect(form.pickedFile(forKey: "doc") == nil)
+    }
+
+    @Test("a reference shows as plain text and can be cleared", arguments: references)
+    func clearReference(value: JSONValue) throws {
+        let form = try model(["doc": value])
+        form.start()
+        let field = try context(form)
+        #expect(field.reference == value.stringValue)
+        #expect(field.fileValueText == value.stringValue)
+        field.setValue(.null)
+        #expect(try context(form).reference == nil)
+        #expect((form.engine.getSubmitValues()["doc"] ?? .null) == .null)
     }
 
     @Test("a picked file shows its name and is submitted")
@@ -70,6 +87,11 @@ struct FileValueTests {
         let copy = try #require(await UploadStore.copy(source, owner: ObjectIdentifier(form)))
         form.setValue(.string(copy.absoluteString), forKey: "doc")
         #expect(try picked(form) == source.lastPathComponent)
+        #expect(try context(form).reference == nil)
+        #expect(form.pickedFile(forKey: "doc") == copy)
+        for variant in [" \(copy.absoluteString)\n", copy.absoluteString.replacingOccurrences(of: "file:", with: "FILE:")] {
+            #expect(UploadStore.owned(variant) == copy)
+        }
         await form.submit()
         #expect(log.values == [["doc": .string(copy.absoluteString)]])
         UploadStore.release(owner: ObjectIdentifier(form))
