@@ -1,0 +1,33 @@
+:root {
+  --fh-font-size: 17px;
+  --fh-font-size-small: 15px;
+  color-scheme: light;
+  font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  background: var(--fh-color-bg, #fff);
+  color: var(--fh-color-text, #18181b);
+}
+
+.page {
+  box-sizing: border-box;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 36px 32px 48px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0 0 28px;
+  color: var(--fh-color-text-muted, #5f5f68);
+  font-size: 17px;
+}

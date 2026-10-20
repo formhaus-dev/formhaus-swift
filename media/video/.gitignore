@@ -1,0 +1,7 @@
+node_modules/
+footage/
+build/
+web/dist/
+out/*
+!out/formhaus-swift.gif
+!out/poster.png
