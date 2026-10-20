@@ -63,11 +63,11 @@ jobs:
       - run: >-
           xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
           -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/demo -quiet
-          CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+          CODE_SIGNING_ALLOWED=NO
       - run: >-
           xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
           -destination 'generic/platform=macOS' -derivedDataPath .build/demo -quiet
-          CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+          CODE_SIGNING_ALLOWED=NO
       - name: Accessibility audit on the iOS Simulator
         if: github.event_name != 'pull_request'
         run: |
@@ -79,7 +79,7 @@ jobs:
 
   lint:
     runs-on: macos-26
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -97,3 +97,6 @@ jobs:
       - run: scripts/lint.sh format
       - run: scripts/lint.sh swiftlint
       - run: scripts/lint.sh duplicates
+      - run: >-
+          xcodebuild build -scheme FormhausUI -destination 'generic/platform=iOS' -derivedDataPath .build/xcode -quiet
+          SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
