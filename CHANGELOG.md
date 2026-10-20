@@ -6,6 +6,10 @@
 
 - `JSONValue` and `JSONObject` have `jsonData()` and `jsonString()` for request bodies, and `JSONValue` conforms to `Codable`.
 
+### FormhausUI
+
+- The system set shows the step counter, such as "Step 2 of 3", above the step title, like the formhaus set.
+
 ## 0.1.0
 
 First release. Requires Swift 6.2, iOS 17 or macOS 14. Follows `@formhaus/core` 0.22.0 and definition format 1.5.
