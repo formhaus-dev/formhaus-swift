@@ -41,6 +41,7 @@ extension IssueCode {
     public static let recallSyntax = IssueCode(rawValue: "recall-syntax")
     public static let recallSensitiveField = IssueCode(rawValue: "recall-sensitive-field")
     public static let recallQuerySource = IssueCode(rawValue: "recall-query-source")
+    public static let recallUntrustedSource = IssueCode(rawValue: "recall-untrusted-source")
     public static let conditionOperatorCount = IssueCode(rawValue: "condition-operator-count")
     public static let unknownOperator = IssueCode(rawValue: "unknown-operator")
     public static let conditionValueMismatch = IssueCode(rawValue: "condition-value-mismatch")

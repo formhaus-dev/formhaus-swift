@@ -64,6 +64,12 @@ private func keyWarnings(_ context: CheckContext, _ shared: StringMap<[FormField
                     "recall-query-source", text.path, "\(token) shows text from the page URL, which anyone can write in a link",
                     "Recall it only where any text is safe to show"))
         }
+        if fields.contains(where: { $0.type == "hidden" && ["referrer", "pageTitle"].contains($0.source?.stringValue) }) {
+            issues.append(
+                warning(
+                    "recall-untrusted-source", text.path, "\(token) shows the referring page or the page title, which another site can set",
+                    "Recall it only where any text is safe to show"))
+        }
         return issues
     }
 }
