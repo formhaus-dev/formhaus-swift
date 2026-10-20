@@ -48,6 +48,16 @@ struct StepScrollTests {
         #expect(ScrollTarget.resolve(from: before, to: after, mode: .formTop) == .field("a"))
     }
 
+    @Test("a summary focus scrolls without an anchor so a visible summary stays put")
+    func summaryAnchor() {
+        let request = FocusRequest(key: "a", id: 1, summary: true)
+        let target = ScrollTarget.focus(request, summary: true)
+        #expect(target == .summary)
+        #expect(target?.anchor == nil)
+        #expect(ScrollTarget.focus(request, summary: false) == .field("a"))
+        #expect(ScrollTarget.field("a").anchor == .center)
+    }
+
     @Test("FormhausFormContent asks the owning scroll view for its top on Next and Back")
     func ownedRequest() async throws {
         let form = try stepsForm(["a": "x"])
