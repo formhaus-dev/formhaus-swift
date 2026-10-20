@@ -2,9 +2,10 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
-let maxImageSide = 4096
+let maxImageSide = 2048
 let maxImageBytes = 10 * 1024 * 1024
-private let maxDecodedSide = 2048
+private let decodes = AsyncGate(width: 2)
+private let fetches = AsyncGate(width: 4)
 private let imageTypes = Set([UTType.png, .jpeg, .gif, .webP].map(\.identifier))
 
 private let imageSession: URLSession = {
@@ -31,11 +32,9 @@ func remoteImageURL(_ source: String) -> URL? {
 }
 
 func loadImage(_ source: String) async -> CGImage? {
-    if isInline(source) {
-        return await Task.detached(priority: .userInitiated) { decodeInline(source) }.value
-    }
-    guard let url = remoteImageURL(source), let data = await fetchImage(url) else { return nil }
-    return await Task.detached(priority: .userInitiated) { decodeImage(data) }.value
+    if isInline(source) { return await decodes.run { decodeInline(source) } }
+    guard let url = remoteImageURL(source), let data = await fetches.run({ await fetchImage(url) }) else { return nil }
+    return await decodes.run { decodeImage(data) }
 }
 
 private func fetchImage(_ url: URL) async -> Data? {
@@ -79,7 +78,7 @@ func decodeImage(_ data: Data) -> CGImage? {
     else { return nil }
     let options: [CFString: Any] = [
         kCGImageSourceCreateThumbnailFromImageAlways: true,
-        kCGImageSourceThumbnailMaxPixelSize: maxDecodedSide,
+        kCGImageSourceThumbnailMaxPixelSize: maxImageSide,
         kCGImageSourceCreateThumbnailWithTransform: true,
         kCGImageSourceShouldCacheImmediately: true,
     ]
