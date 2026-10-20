@@ -2,9 +2,9 @@ import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { conformance } from './conformance.mjs';
 import { definitions } from './definitions.mjs';
-import { editLines, excerpt } from './excerpt.mjs';
+import { editLines } from './excerpt.mjs';
 import { extractAll } from './frames.mjs';
-import { footage as footageDir, readJSON, repo, root, script } from './paths.mjs';
+import { repo, root, script } from './paths.mjs';
 import { resolveColor } from './tokens.mjs';
 
 export const build = () => {
@@ -26,9 +26,6 @@ export const build = () => {
     theme: { ...config.theme, colors },
     footage: extractAll(),
     conformance: conformance(),
-    excerpt: excerpt(base, config.excerpt.field),
-    excerptFile: config.excerpt.file,
-    mcp: readJSON(join(footageDir, 'mcp.json')),
     edit: editLines(base, config.edit, before, after),
   };
   const dir = join(root, 'build');

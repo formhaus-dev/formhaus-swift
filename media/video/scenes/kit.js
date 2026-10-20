@@ -18,12 +18,3 @@ export const place = (node, { x = 0, y = 0, scale = 1, opacity = 1 }) => {
   node.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
   node.style.opacity = String(opacity);
 };
-
-export const rise = (node, t, start, { length = 0.7, distance = 24, x = 0, y = 0, scale = 1 } = {}) => {
-  const p = progress(t, start, length, easeOut);
-  place(node, { x, y: y + (1 - p) * distance * motion.scale, scale, opacity: p });
-  return p;
-};
-
-export const fill = (template, values) => template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '');
-

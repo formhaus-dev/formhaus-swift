@@ -90,7 +90,6 @@ cd "$here"
 [ -d node_modules ] || npm ci --no-audit --no-fund
 mkdir -p "$footage"
 node tools/definitions.mjs
-timeout 120 node tools/record-mcp.mjs
 plan=$(node tools/plan.mjs "$@")
 web=$(node tools/plan.mjs --web "$@")
 mac=$(node tools/plan.mjs --mac "$@")
