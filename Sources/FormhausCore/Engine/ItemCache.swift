@@ -1,9 +1,13 @@
 struct ItemContext: Equatable {
     static let fixed = ItemContext(values: [], lengths: [], epoch: 0)
 
-    var values: [JSONValue?]
-    var lengths: [Int?]
-    var epoch: Int
+    let values: [JSONValue?]
+    let lengths: [Int?]
+    let epoch: Int
+
+    static func == (lhs: ItemContext, rhs: ItemContext) -> Bool {
+        lhs.epoch == rhs.epoch && lhs.lengths == rhs.lengths && lhs.values == rhs.values
+    }
 }
 
 final class ItemCache<Output: Equatable> {
