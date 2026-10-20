@@ -53,6 +53,7 @@ import FormhausUI
 import SwiftUI
 
 let url = Bundle.main.url(forResource: "signup", withExtension: "json")!
+let endpoint = URL(string: "https://example.com/signup")!
 let definition = try FormDefinition(json: JSONValue(parsing: Data(contentsOf: url)))
 
 struct SignupView: View {
@@ -60,17 +61,18 @@ struct SignupView: View {
 
     var body: some View {
         FormhausForm(definition: definition) { values, _ in
-            let email = values["email"]?.stringValue ?? ""
-            if try await accounts.exists(email) {
-                return .rejected(errors: ["email": "This email is already registered."])
-            }
-            return .ok
+            var request = URLRequest(url: endpoint)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = values.jsonData()
+            let (data, _) = try await URLSession.shared.data(for: request)
+            return try SubmitResult(json: JSONValue(parsing: data))
         }
     }
 }
 ```
 
-`.rejected(errors:formErrors:)` also takes errors that belong to no field. `SubmitResult(json:)` reads the `{ ok, errors, formErrors }` object that a formhaus endpoint returns. `FormEngine` runs the same form without a UI, for a renderer of your own. The [documentation](https://formhaus.dev/guide/) covers the definition format.
+`.rejected(errors:formErrors:)` also takes errors that belong to no field. `SubmitResult(json:)` reads the `{ ok, errors, formErrors }` object that a formhaus endpoint returns. `jsonData()` and `jsonString()` on `JSONValue` and `JSONObject` write compact JSON in JavaScript key order. `JSONValue` is also `Codable`, but Foundation's keyed decoding may not keep the key order of the source JSON; use `JSONValue(parsing:)` when order matters. `FormEngine` runs the same form without a UI, for a renderer of your own. The [documentation](https://formhaus.dev/guide/) covers the definition format.
 
 ## Choose a look
 
