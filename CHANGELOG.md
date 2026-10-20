@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### FormhausCore
+
+- Passes the conformance suite of `@formhaus/core` 1.0.0.
+
 ### FormhausUI
 
 - The formhaus set colors the step title red and announces the error count when the current step has errors, as in the web renderers.
