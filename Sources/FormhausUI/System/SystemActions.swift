@@ -65,12 +65,14 @@ struct SystemSkip: View {
 
 #if os(iOS)
     struct SystemToolbar: ViewModifier {
+        @Environment(\.formhausBehavior) private var behavior
+        @Environment(\.formhausComponents) private var components
         let context: ActionsContext
         let first: Bool
         let empty: Bool
-        let custom: Bool
 
         func body(content: Content) -> some View {
+            let custom = components.slots.actions != nil
             content
                 .toolbar {
                     if !empty, !custom {
@@ -87,8 +89,26 @@ struct SystemSkip: View {
                         SystemPrimaryButton(context: context, prominent: true).padding(.horizontal, 20).padding(.bottom, 8)
                     }
                 }
-                .navigationBarBackButtonHidden(context.model.disabled || context.model.stepValidating)
+                .navigationBarBackButtonHidden(!first || context.model.disabled || context.model.stepValidating)
                 .interactiveDismissDisabled(context.model.disabled || context.model.stepValidating)
+                .navigationBack(context, automatic: behavior.backPlacement == .automatic && !custom)
+        }
+    }
+
+    struct SystemBottomRow: View {
+        @Environment(\.formhausBackInBar) private var backInBar
+        let context: ActionsContext
+
+        var body: some View {
+            if context.state.showBack, !backInBar {
+                Section {
+                    Button(context.state.backLabel, action: context.back)
+                        .buttonStyle(.borderless)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .disabled(context.busy)
+                }
+                .listRowBackground(Color.clear)
+            }
         }
     }
 #else

@@ -39,7 +39,6 @@ public final class FormModel {
     @ObservationIgnored private var focusCounter = 0
     @ObservationIgnored private var pendingFocusKey: String?
     @ObservationIgnored private var emittedValues: JSONObject?
-    @ObservationIgnored let systemStack = StepStore()
 
     public init(engine: FormEngine, options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler) {
         self.engine = engine

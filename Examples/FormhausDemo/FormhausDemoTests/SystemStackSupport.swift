@@ -71,6 +71,22 @@ final class Stage {
 
     var depth: Int { navigation?.viewControllers.count ?? 0 }
 
+    var fields: [String] {
+        axLabels(window).map { String($0.prefix(while: \.isLetter)) }.filter { ["X", "Y", "Z", "Secret"].contains($0) }
+    }
+
+    var hostBackHidden: Bool { navigation?.topViewController?.navigationItem.hidesBackButton ?? false }
+
+    var barBack: AXNode? {
+        axTree(window).first { node in
+            node.bar && node.label == "Back" && !(node.element.map { "\(type(of: $0))" } ?? "").contains("BackButton")
+        }
+    }
+
+    func tapBack() -> Bool {
+        barBack?.element?.accessibilityActivate() ?? false
+    }
+
     func close() {
         window.isHidden = true
         window.rootViewController = nil

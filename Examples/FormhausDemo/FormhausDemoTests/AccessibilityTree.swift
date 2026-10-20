@@ -11,6 +11,7 @@ struct AXNode {
     let frame: CGRect
     var cell: CGRect?
     var bar = false
+    weak var element: NSObject?
 
     var isInteractive: Bool { traits.contains(.button) || traits.contains(.adjustable) }
     var isSwitch: Bool { traits.contains(.toggleButton) }
@@ -31,9 +32,14 @@ func enableAccessibilityAutomation() {
 
 @MainActor
 func axLabels(_ view: UIView) -> [String] {
+    axTree(view).map(\.label).filter { !$0.isEmpty }
+}
+
+@MainActor
+func axTree(_ view: UIView) -> [AXNode] {
     var nodes: [AXNode] = []
     walk(view, into: &nodes)
-    return nodes.map(\.label).filter { !$0.isEmpty }
+    return nodes
 }
 
 @MainActor
@@ -66,7 +72,7 @@ private func walk(_ element: NSObject, cell: CGRect? = nil, bar: Bool = false, i
             AXNode(
                 label: element.accessibilityLabel ?? "", value: element.accessibilityValue ?? "",
                 hint: element.accessibilityHint ?? "", traits: element.accessibilityTraits, frame: element.accessibilityFrame,
-                cell: cell, bar: bar))
+                cell: cell, bar: bar, element: element))
         return
     }
     for child in children(of: element) { walk(child, cell: cell, bar: bar, into: &nodes) }
