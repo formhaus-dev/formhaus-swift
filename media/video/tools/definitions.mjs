@@ -2,6 +2,9 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { definitionSource, footage, readJSON, script } from './paths.mjs';
 
+export const fieldByKey = (definition, key) =>
+  definition.steps.flatMap((step) => step.fields).find((field) => field.key === key);
+
 const setPath = (target, path, value) => {
   const keys = path.split('.');
   const last = keys.pop();
@@ -13,8 +16,7 @@ export const definitions = () => {
   const { edit } = script();
   const base = readJSON(definitionSource);
   const variant = structuredClone(base);
-  const step = (definition) => definition.steps.find((item) => item.id === edit.step);
-  setPath(step(variant), edit.property, edit.value);
+  setPath(fieldByKey(variant, edit.field), edit.property, edit.value);
   return { base, variant };
 };
 

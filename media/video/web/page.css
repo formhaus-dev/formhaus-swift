@@ -14,9 +14,9 @@ body {
 
 .page {
   box-sizing: border-box;
-  max-width: 600px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 36px 32px 48px;
+  padding: 24px 32px 24px;
 }
 
 h1 {
@@ -24,4 +24,8 @@ h1 {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+.fh-field__radio-group[data-columns][data-columns] {
+  --fhi-columns: 4;
 }

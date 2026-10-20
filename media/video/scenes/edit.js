@@ -4,25 +4,20 @@ import { el, place, progress } from './kit.js';
 import { pair } from './pair.js';
 
 const codeCard = (layer, beat, data) => {
-  const { open, key, before, after, rest, close } = data.edit;
+  const { key, prefix, before, after, suffix } = data.edit;
   const card = el('div', 'card abs', layer);
   el('div', 'card__tab', card, beat.file).style.fontSize = '28px';
   const pre = el('pre', 'code', card);
   pre.style.fontSize = '40px';
   pre.style.padding = '16px 48px 32px';
-  const line = (text) => {
-    const node = el('span', 'code__line', pre);
-    node.innerHTML = json(text);
-    return node;
-  };
-  line(open);
+  const keyLine = el('span', 'code__line', pre);
+  keyLine.innerHTML = json(key);
+  keyLine.style.opacity = '0.55';
   const edited = el('span', 'code__line', pre);
-  el('span', null, edited).innerHTML = json(key);
+  el('span', null, edited).innerHTML = json(prefix);
   const value = el('span', 'code-edit', edited);
   const caret = el('span', 'code-caret', edited);
-  el('span', null, edited).innerText = ',';
-  for (const text of rest) line(text);
-  line(close);
+  el('span', null, edited).innerHTML = json(suffix);
   return { card, edited, value, caret, before, after };
 };
 
@@ -34,28 +29,44 @@ const typed = (code, t, start, length) => {
 };
 
 export default async (layer, beat, data) => {
-  const { sides, frame } = pair(layer, data, beat);
+  const { sides, frame, captionY, middle } = pair(layer, data, beat);
   const players = Object.entries(sides).map(([key, side]) => {
-    const [script, mark] = beat.sync[key];
-    return { player: footage(data, beat.clips[key], side.node.img, { cursor: beat.cursor && key === 'web' }), from: data.marks[script][mark] + beat.from };
+    const after = side.node.img.cloneNode();
+    side.node.screen.append(after);
+    Object.assign(after.style, { position: 'absolute', inset: '0' });
+    const [script, mark] = beat.sync;
+    const from = data.marks[script][mark] + beat.from;
+    const cursor = beat.cursor && key === 'web';
+    return {
+      img: after,
+      from,
+      before: footage(data, beat.clips.before[key], side.node.img, { cursor }),
+      after: footage(data, beat.clips.after[key], after, { cursor }),
+    };
   });
   const title = el('div', 'caption abs', layer, beat.title);
   const code = codeCard(layer, beat, data);
-  const typeEnd = beat.editAt + 0.8;
+  const [codeAt, afterAt] = beat.cuts;
 
   return {
     update(t) {
-      frame(t);
-      place(title, { y: 96 });
-      const text = typed(code, t, beat.editAt, 0.8);
-      code.value.innerHTML = json(text);
-      code.value.style.background = t >= typeEnd - 0.4 ? 'rgba(185, 163, 255, 0.28)' : 'transparent';
-      code.edited.style.background = `rgba(185, 163, 255, ${0.16 * progress(t, beat.editAt - 0.3, 0.3)})`;
-      code.caret.style.opacity = t >= beat.editAt - 0.4 && t <= typeEnd + 0.2 ? '1' : '0';
-      const devices = t >= beat.cutAt;
-      place(code.card, { x: (1920 - code.card.offsetWidth) / 2, y: 623 - code.card.offsetHeight / 2 + (1 - progress(t, 0, 0.35)) * 40, opacity: devices ? 0 : 1 });
-      for (const side of Object.values(sides)) side.node.root.style.visibility = devices ? 'visible' : 'hidden';
-      return Promise.all(players.map(({ player, from }) => player.at(from + Math.max(0, t - beat.cutAt))));
+      frame();
+      place(title, { y: captionY });
+      const showCode = t >= codeAt && t < afterAt;
+      const local = t - codeAt;
+      code.value.innerHTML = json(typed(code, local, 0.2, 0.7));
+      code.value.style.background = local >= 0.6 ? 'rgba(185, 163, 255, 0.28)' : 'transparent';
+      code.edited.style.background = `rgba(185, 163, 255, ${0.16 * progress(local, 0, 0.2)})`;
+      code.caret.style.opacity = local >= 0 && local <= 1.0 ? '1' : '0';
+      place(code.card, { x: (1920 - code.card.offsetWidth) / 2, y: middle - code.card.offsetHeight / 2 + (1 - progress(local, 0, 0.3)) * 40, opacity: showCode ? 1 : 0 });
+      for (const side of Object.values(sides)) side.node.root.style.opacity = showCode ? '0.3' : '1';
+      const after = t >= afterAt;
+      return Promise.all(
+        players.map((player) => {
+          player.img.style.opacity = after ? '1' : '0';
+          return after ? player.after.at(player.from + t - afterAt) : player.before.at(player.from + Math.min(t, codeAt));
+        }),
+      );
     },
   };
 };

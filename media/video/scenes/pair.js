@@ -1,7 +1,9 @@
 import { device } from './devices.js';
-import { el, mix, motion, place, progress } from './kit.js';
+import { captionHeight, el, place, stack } from './kit.js';
 
-export const pair = (layer, data, beat, { gap = 48, top = 214, height = 818 } = {}) => {
+const safeWidth = 1920 - 2 * 150;
+
+export const pair = (layer, data, beat, { gap = 48, head = captionHeight, height = 736 } = {}) => {
   const box = el('div', 'abs', layer);
   const sides = Object.fromEntries(
     Object.entries(beat.devices).map(([side, name]) => {
@@ -9,7 +11,12 @@ export const pair = (layer, data, beat, { gap = 48, top = 214, height = 818 } = 
       return [side, { node, scale: height / node.height }];
     }),
   );
-  const width = Object.values(sides).reduce((sum, item) => sum + item.node.width * item.scale, 0) + gap;
+  const natural = Object.values(sides).reduce((sum, item) => sum + item.node.width * item.scale, 0);
+  const fit = Math.min(1, (safeWidth - gap) / natural);
+  for (const item of Object.values(sides)) item.scale *= fit;
+  const width = natural * fit + gap;
+  const tallest = Math.max(...Object.values(sides).map((item) => item.node.height * item.scale));
+  const [captionY, devicesY] = stack([[head, 48], [tallest]]);
   let x = (1920 - width) / 2;
   for (const item of Object.values(sides)) {
     item.x = x;
@@ -17,12 +24,11 @@ export const pair = (layer, data, beat, { gap = 48, top = 214, height = 818 } = 
   }
   return {
     sides,
-    frame(t) {
-      const push = mix(beat.push ?? 0.97, 1, motion.scale * progress(t, 0, beat.duration, (p) => p)) || 1;
+    captionY,
+    middle: devicesY + tallest / 2,
+    frame() {
       for (const item of Object.values(sides)) {
-        const scale = item.scale * push;
-        const itemHeight = item.node.height * scale;
-        place(item.node.root, { x: 960 + (item.x - 960) * push, y: top + (height - itemHeight) / 2, scale });
+        place(item.node.root, { x: item.x, y: devicesY + (tallest - item.node.height * item.scale) / 2, scale: item.scale });
       }
     },
   };

@@ -18,6 +18,10 @@ body {
   height: 100%;
 }
 
+#stage * {
+  text-wrap-style: balance;
+}
+
 #stage {
   position: absolute;
   left: 0;
@@ -108,8 +112,8 @@ body {
     inset 0 0 0 1.5px var(--c-bezelEdge),
     inset 0 0 0 5px var(--c-bezel),
     inset 0 0 0 6px rgba(255, 255, 255, 0.06),
-    0 50px 90px -40px rgba(13, 13, 21, 0.45),
-    0 18px 36px -18px rgba(13, 13, 21, 0.25);
+    0 24px 40px -24px rgba(13, 13, 21, 0.4),
+    0 10px 20px -12px rgba(13, 13, 21, 0.2);
 }
 
 .iphone__button {
@@ -150,8 +154,8 @@ body {
   border-radius: 16px;
   background: var(--c-surface);
   box-shadow:
-    0 50px 90px -45px rgba(13, 13, 21, 0.35),
-    0 16px 34px -18px rgba(13, 13, 21, 0.18);
+    0 24px 40px -24px rgba(13, 13, 21, 0.3),
+    0 10px 20px -12px rgba(13, 13, 21, 0.15);
 }
 
 .browser .device__screen {
@@ -322,7 +326,7 @@ body {
 
 .proof-list {
   width: 760px;
-  height: 860px;
+  height: 800px;
   overflow: hidden;
   border: 1px solid var(--c-border);
   border-radius: 24px;
@@ -331,7 +335,7 @@ body {
 }
 
 .proof-viewport {
-  height: 800px;
+  height: 740px;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
   mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
@@ -438,8 +442,8 @@ body {
   border-radius: 14px;
   background: var(--c-surface);
   box-shadow:
-    0 50px 90px -45px rgba(13, 13, 21, 0.35),
-    0 16px 34px -18px rgba(13, 13, 21, 0.18);
+    0 24px 40px -24px rgba(13, 13, 21, 0.3),
+    0 10px 20px -12px rgba(13, 13, 21, 0.15);
 }
 
 .mac .device__screen {

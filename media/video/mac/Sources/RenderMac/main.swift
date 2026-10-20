@@ -18,7 +18,7 @@ struct MacForm: View {
                 FormhausFormContent(model: model)
             }
             .padding(32)
-            .frame(maxWidth: 640, alignment: .leading)
+            .frame(maxWidth: 760, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
         .background(Color.white)
@@ -26,9 +26,25 @@ struct MacForm: View {
     }
 }
 
+func desktopLayout(_ data: Data) throws -> Data {
+    guard var root = try JSONSerialization.jsonObject(with: data) as? [String: Any], let steps = root["steps"] as? [[String: Any]]
+    else { return data }
+    root["steps"] = steps.map { step in
+        var step = step
+        step["fields"] = (step["fields"] as? [[String: Any]])?.map { field in
+            var field = field
+            if field["columns"] != nil { field["columns"] = 4 }
+            return field
+        }
+        return step
+    }
+    return try JSONSerialization.data(withJSONObject: root)
+}
+
 @MainActor
 func render(definition: URL, output: URL, size: CGSize) throws {
-    let localized = try localize(JSONValue(parsing: Data(contentsOf: definition)), overlay: .object(JSONObject()), lang: "en")
+    let source = try desktopLayout(Data(contentsOf: definition))
+    let localized = try localize(JSONValue(parsing: source), overlay: .object(JSONObject()), lang: "en")
     let model = FormModel(localized: localized) { _, _ in .ok }
     model.start()
     let host = NSHostingView(rootView: MacForm(model: model))

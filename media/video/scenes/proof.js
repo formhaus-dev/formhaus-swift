@@ -1,7 +1,7 @@
 import { el, motion, place, progress } from './kit.js';
 
 const rowHeight = 50;
-const listHeight = 860;
+const listHeight = 800;
 
 export default async (layer, beat, data) => {
   const { count, names } = data.conformance;
@@ -28,10 +28,10 @@ export default async (layer, beat, data) => {
     update(t) {
       const counted = Math.max(1, Math.round(progress(t, 0, beat.duration - 0.6) * count));
       number.textContent = String(counted);
-      place(number, { x: 140, y: 170, opacity: progress(t, 0, 0.5) });
-      place(label, { x: 150, y: 520, opacity: progress(t, 0, 0.4) });
-      place(engines, { x: 150, y: 700, opacity: progress(t, 0.6, 0.5) });
-      place(list, { x: 1040, y: 110, opacity: 0.5 * progress(t, 0.1, 0.6) });
+      place(number, { x: 140, y: 232, opacity: progress(t, 0, 0.5) });
+      place(label, { x: 150, y: 582, opacity: progress(t, 0, 0.4) });
+      place(engines, { x: 150, y: 762, opacity: progress(t, 0.6, 0.5) });
+      place(list, { x: 1040, y: 128, opacity: 0.5 * progress(t, 0.1, 0.6) });
       if (motion.scale) {
         rows.style.transform = `translateY(${-progress(t, 0.3, beat.duration - 0.8) * travel}px)`;
         return;

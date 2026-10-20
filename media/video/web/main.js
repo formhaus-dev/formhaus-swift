@@ -18,7 +18,7 @@ function Page() {
     'div',
     { className: 'page' },
     h('h1', null, definition.title),
-    h(FormRenderer, { definition, onSubmit: async () => {} }),
+    h(FormRenderer, { definition, errorSummary: true, onSubmit: async () => {} }),
   );
 }
 

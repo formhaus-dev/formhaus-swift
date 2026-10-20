@@ -24,24 +24,31 @@ const samples = (file) => {
     .map(([time, luma, score]) => ({ time: Number(time[1]), luma: Number(luma[1]), score: Number(score[1]) }));
 };
 
-const firstEvent = (frames) => {
-  const launch = frames.find((frame) => frame.luma > 225);
-  const changes = frames.filter((frame) => launch && frame.time > launch.time && frame.score > 0.02);
-  const event = changes.find((frame, index) => frame.time - (changes[index - 1]?.time ?? launch.time) >= 0.4);
-  if (!event) throw new Error('No first event found');
-  return event.time;
-};
+const transitions = ['next', 'submit'];
 
-const refine = (frames, start, timeline) => {
-  const deltas = timeline.taps
-    .filter((tap) => ['next', 'pick', 'submit'].includes(tap.kind))
-    .map((tap) => {
-      const frame = frames.find((item) => item.score > 0.004 && item.time - start - tap.time > -0.3 && item.time - start - tap.time < 0.6);
-      return frame && frame.time - start - tap.time;
-    })
-    .filter((delta) => delta !== undefined)
-    .sort((a, b) => a - b);
-  return deltas.length ? start + deltas[Math.floor(deltas.length / 2)] : start;
+const vote = (frames, timeline) => {
+  const changes = frames.filter((frame) => frame.score > 0.02).map((frame) => frame.time);
+  const small = frames.filter((frame) => frame.score > 0.003).map((frame) => frame.time);
+  const taps = timeline.taps.filter((tap) => transitions.includes(tap.kind));
+  const gap = (list, start, tap) => {
+    const delta = list.map((time) => time - start - tap.time).find((value) => value > -0.05 && value < 0.35);
+    return delta === undefined ? null : Math.abs(delta);
+  };
+  const hits = (start) =>
+    timeline.taps.reduce((sum, tap) => {
+      const major = transitions.includes(tap.kind);
+      const delta = gap(major ? changes : small, start, tap);
+      return delta === null ? sum : sum + (major ? 20 : 10) - delta;
+    }, 0);
+  const candidates = changes.flatMap((time) => taps.map((tap) => time - tap.time)).filter((start) => start >= 0);
+  const best = candidates.reduce((top, start) => (hits(start) > hits(top) ? start : top), candidates[0]);
+  if (best === undefined) throw new Error('No step change found to sync on');
+  const offsets = taps
+    .map((tap) => changes.find((time) => time - best - tap.time > -0.05 && time - best - tap.time < 0.35))
+    .map((time, index) => time && time - taps[index].time)
+    .filter((value) => value !== undefined)
+    .sort((x, y) => x - y);
+  return offsets[0] ?? best;
 };
 
 const hex = (value) => [1, 3, 5].map((offset) => parseInt(value.slice(offset, offset + 2), 16));
@@ -64,8 +71,8 @@ for (const [id, clip] of Object.entries(config.footage)) {
   const timeline = readJSON(join(footage, `${id}.timeline.json`));
   const nominal = config.marks[clip.script];
   const frames = samples(file);
-  const first = firstEvent(frames) - timeline.taps[clip.syncTap ?? 0].time;
-  const start = Math.max(0, config.devices[clip.device].kind === 'browser' ? first : refine(frames, first, timeline));
+  const browser = config.devices[clip.device].kind === 'browser';
+  const start = browser ? timeline.offset : vote(frames, timeline);
   const marks = timeline.marks.filter(({ name }) => name in nominal && name !== 'first').map(({ name, time }) => [nominal[name], Number(time.toFixed(3))]);
   const spec = config.devices[clip.device];
   const taps = spec.kind === 'browser' ? webTaps(timeline) : iosTaps(file, start, timeline, spec);

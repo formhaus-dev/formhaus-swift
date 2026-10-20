@@ -8,7 +8,10 @@ export const deviceRow = (layer, data, beat, height, gap) => {
     const time = typeof at === 'string' ? data.marks.tour[at] + 0.4 : (at ?? 0);
     return { name, node, scale: height / node.height, clip: footage(data, beat.stills[name], node.img), time };
   });
-  const width = items.reduce((sum, item) => sum + item.node.width * item.scale, 0) + gap * (items.length - 1);
+  const natural = items.reduce((sum, item) => sum + item.node.width * item.scale, 0);
+  const fit = Math.min(1, (1920 - 300 - gap * (items.length - 1)) / natural);
+  for (const item of items) item.scale *= fit;
+  const width = natural * fit + gap * (items.length - 1);
   let x = (1920 - width) / 2;
   for (const item of items) {
     item.x = x;

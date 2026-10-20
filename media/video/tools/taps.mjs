@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
 const grab = (file, time, [width, height], format) => {
-  const filter = `scale=${width}:${height},fps=30,trim=start=${time.toFixed(3)},setpts=PTS-STARTPTS,format=${format}`;
+  const filter = `scale=${width}:${height},fps=30,tpad=stop_mode=clone:stop_duration=3,trim=start=${time.toFixed(3)},setpts=PTS-STARTPTS,format=${format}`;
   const { stdout } = spawnSync('ffmpeg', ['-v', 'error', '-fflags', '+igndts', '-i', file, '-vf', filter, '-frames:v', '1', '-f', 'rawvideo', '-'], {
     maxBuffer: 64 * 1024 * 1024,
   });
@@ -63,7 +63,7 @@ const changed = (file, start, tap, size) => {
   const differs = (x, y) => {
     const [bx, by] = [x - dx, y - dy];
     if (bx < 0 || by < 0 || bx >= width || by >= height) return false;
-    return Math.abs(later[y * width + x] - before[by * width + bx]) > 18;
+    return Math.abs(later[y * width + x] - before[by * width + bx]) > 10;
   };
   const found = cells(clip(size, tap.after ?? tap.frame), differs);
   if (!found.length) return null;

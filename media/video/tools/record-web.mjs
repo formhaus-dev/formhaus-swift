@@ -13,9 +13,15 @@ const actions = {
     branch: ['next', primary],
     back: ['back', (page) => page.getByRole('button', { name: 'Back' })],
   },
+  edit: {
+    picked: ['pick', (page) => page.locator('.fh-field__radio-label', { hasText: 'A new website' })],
+    scope: ['next', primary],
+    design: ['pick', (page) => page.getByText('Design', { exact: true })],
+  },
   branch: {
     landing: ['pick', (page) => page.locator('.fh-field__radio-label', { hasText: 'A landing page' })],
     branch: ['next', primary],
+    errors: ['submit', primary],
   },
 };
 
@@ -39,13 +45,14 @@ const record = async (browser, origin, id, clip, config) => {
     recordVideo: { dir, size: { width: width * scale, height: height * scale } },
   });
   const page = await context.newPage();
+  const opened = Date.now();
   await page.goto(`${origin}/web/dist/index.html?def=${clip.definition}&zoom=${scale * pageZoom}`);
   await page.waitForSelector('html[data-ready="true"]', { state: 'attached', timeout: 60000 });
   await page.waitForTimeout(200);
   await page.evaluate(() => document.fonts.ready);
   const start = Date.now();
   const elapsed = () => (Date.now() - start) / 1000;
-  const timeline = { size: [width * scale, height * scale], marks: [], taps: [] };
+  const timeline = { size: [width * scale, height * scale], offset: (start - opened) / 1000, marks: [], taps: [] };
   for (const [mark, time] of Object.entries(config.marks[clip.script])) {
     if (mark === clip.stop) break;
     const action = actions[clip.script][mark];
