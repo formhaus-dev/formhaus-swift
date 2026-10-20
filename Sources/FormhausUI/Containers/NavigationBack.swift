@@ -4,17 +4,17 @@ import SwiftUI
     import UIKit
 
     private struct NavigationBack: ViewModifier {
-        @State private var inNavigation = false
+        @State private var found: Bool?
         let context: ActionsContext
         let automatic: Bool
 
         func body(content: Content) -> some View {
-            let inBar = automatic && inNavigation
+            let inBar = automatic && (found ?? context.model.inNavigationBar)
             let shows = inBar && context.state.showBack
             content
                 .environment(\.formhausBackInBar, inBar)
                 .background {
-                    NavigationProbe(found: $inNavigation).frame(width: 0, height: 0).accessibilityHidden(true)
+                    NavigationProbe(found: $found, model: context.model).frame(width: 0, height: 0).accessibilityHidden(true)
                     if shows { Color.clear.navigationBarBackButtonHidden(true) }
                 }
                 .toolbar {
@@ -41,14 +41,18 @@ import SwiftUI
     }
 
     private struct NavigationProbe: UIViewRepresentable {
-        @Binding var found: Bool
+        @Binding var found: Bool?
+        let model: FormModel
 
         func makeUIView(context _: Context) -> ProbeView {
             ProbeView()
         }
 
         func updateUIView(_ view: ProbeView, context _: Context) {
-            view.report = { value in if found != value { found = value } }
+            view.report = { value in
+                model.inNavigationBar = value
+                if found != value { found = value }
+            }
             view.check()
         }
     }
