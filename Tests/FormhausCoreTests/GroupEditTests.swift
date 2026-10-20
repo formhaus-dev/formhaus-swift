@@ -79,6 +79,21 @@ struct GroupEditTests {
         }
         #expect(fastest.large / fastest.small < 8)
     }
+
+    @Test("building and validating grow linearly with the item count", .heavy)
+    func buildCost() {
+        let small = (0..<3).map { _ in buildAndValidate(4) }.min() ?? .zero
+        let large = (0..<3).map { _ in buildAndValidate(32) }.min() ?? .zero
+        #expect(large / small < 16)
+    }
+}
+
+@MainActor
+private func buildAndValidate(_ count: Int) -> Duration {
+    ContinuousClock().measure {
+        let engine = try? FormEngine(definition: groups(count, items: 1000), values: ["mode": "full"])
+        _ = engine?.validate()
+    }
 }
 
 @MainActor
