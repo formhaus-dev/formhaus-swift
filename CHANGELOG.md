@@ -6,6 +6,7 @@
 
 - Switching from the system set to another set inside a `NavigationStack` shows Back only in the navigation bar.
 - Focusing the error summary scrolls only as far as needed to show it. A summary that is already on screen no longer moves the page.
+- The system set scrolls to the error summary only as far as needed. A summary that is already on screen no longer moves the page.
 
 ## 0.1.1
 
