@@ -70,14 +70,24 @@ jobs:
           xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
           -destination 'generic/platform=macOS' -derivedDataPath .build/demo -quiet
           CODE_SIGNING_ALLOWED=NO
+      - id: device
+        run: |
+          echo "id=$(xcrun simctl list devices available -j | python3 -c "import json, sys
+          devices = json.load(sys.stdin)['devices']
+          print(next(d['udid'] for runtime, items in sorted(devices.items(), reverse=True) if 'iOS' in runtime for d in items if d['name'].startswith('iPhone')))")" >> "$GITHUB_OUTPUT"
+      - name: System step navigation on the iOS Simulator
+        if: github.event_name == 'pull_request'
+        run: >-
+          xcodebuild test -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
+          -destination "id=${{ steps.device.outputs.id }}" -derivedDataPath .build/demo -quiet CODE_SIGNING_ALLOWED=NO
+          -test-timeouts-enabled YES -maximum-test-execution-time-allowance 120
+          -only-testing:FormhausDemoTests/SystemStackTests -only-testing:FormhausDemoTests/SystemNavigationTests
+          -only-testing:FormhausDemoTests/SystemReplaceTests
       - name: Accessibility audit on the iOS Simulator
         if: github.event_name != 'pull_request'
-        run: |
-          device=$(xcrun simctl list devices available -j | python3 -c "import json, sys
-          devices = json.load(sys.stdin)['devices']
-          print(next(d['udid'] for runtime, items in sorted(devices.items(), reverse=True) if 'iOS' in runtime for d in items if d['name'].startswith('iPhone')))")
-          xcodebuild test -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo \
-            -destination "id=$device" -derivedDataPath .build/demo -quiet CODE_SIGNING_ALLOWED=NO
+        run: >-
+          xcodebuild test -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
+          -destination "id=${{ steps.device.outputs.id }}" -derivedDataPath .build/demo -quiet CODE_SIGNING_ALLOWED=NO
 
   lint:
     runs-on: macos-26
