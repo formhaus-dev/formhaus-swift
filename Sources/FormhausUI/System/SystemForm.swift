@@ -92,11 +92,8 @@ struct SystemPage: View {
             .scrollDismissesKeyboard(.interactively)
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
             .onChange(of: model.focusRequest) { _, request in
-                guard let request, let key = request.key else { return }
-                let summary = request.summary && behavior.errorSummary
-                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
-                    proxy.scrollTo(summary ? ScrollAnchor.summary(model) : key, anchor: summary ? .top : .center)
-                }
+                guard let request, let target = ScrollTarget.focus(request, summary: behavior.errorSummary) else { return }
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { target.scroll(proxy, model: model) }
             }
         }
     }

@@ -17,8 +17,32 @@ enum ScrollTarget: Equatable {
     case formTop
     case screenTop
 
+    static func focus(_ request: FocusRequest, summary: Bool) -> ScrollTarget? {
+        guard let key = request.key else { return nil }
+        return request.summary && summary ? .summary : .field(key)
+    }
+
+    @MainActor
+    func scroll(_ proxy: ScrollViewProxy, model: FormModel) {
+        switch self {
+        case .summary: proxy.scrollTo(ScrollAnchor.summary(model), anchor: anchor)
+        case .field(let key): proxy.scrollTo(key, anchor: anchor)
+        case .formTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: anchor)
+        case .screenTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: anchor)
+        }
+    }
+
+    var anchor: UnitPoint? {
+        switch self {
+        case .summary: nil
+        case .field: .center
+        case .formTop: .top
+        case .screenTop: UnitPoint(x: 0.5, y: ScrollAnchor.screenReach)
+        }
+    }
+
     static func resolve(from old: ScrollTrigger, to new: ScrollTrigger, mode: StepScroll, summary: Bool = true) -> ScrollTarget? {
-        if new.focus != old.focus, let focus = new.focus, let key = focus.key { return focus.summary && summary ? .summary : .field(key) }
+        if new.focus != old.focus, let focus = new.focus, let target = Self.focus(focus, summary: summary) { return target }
         guard new.step != old.step else { return nil }
         switch mode {
         case .screenTop: return .screenTop
@@ -79,12 +103,7 @@ struct StepScroller: ViewModifier {
             return
         }
         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
-            switch target {
-            case .summary: proxy.scrollTo(ScrollAnchor.summary(model))
-            case .field(let key): proxy.scrollTo(key, anchor: .center)
-            case .formTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: .top)
-            case .screenTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: UnitPoint(x: 0.5, y: ScrollAnchor.screenReach))
-            }
+            target.scroll(proxy, model: model)
         }
     }
 }
