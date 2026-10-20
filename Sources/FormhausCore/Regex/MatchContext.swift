@@ -1,17 +1,24 @@
 final class MatchContext {
     let text: [UInt16]
-    @exclusivity(unchecked) var budget: StepBudget
+    @exclusivity(unchecked) private(set) var spent = 0
+    @exclusivity(unchecked) private var budget = StepBudget(limit: 0)
+    private let allowance: Int
     private let scanners: [AutomatonCache?]
     private var tables: [[Bool]?]
 
-    init(_ text: [UInt16], scanners: [AutomatonCache?], budget: StepBudget) {
+    init(_ text: [UInt16], scanners: [AutomatonCache?], allowance: Int) {
         self.text = text
         self.scanners = scanners
-        self.budget = budget
+        self.allowance = allowance
         tables = Array(repeating: nil, count: scanners.count)
     }
 
+    func limit(_ steps: Int) {
+        budget = StepBudget(limit: min(steps, allowance - spent))
+    }
+
     func spend(_ steps: Int) throws(BudgetExceeded) {
+        spent += steps
         try budget.spend(steps)
     }
 
