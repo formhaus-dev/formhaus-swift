@@ -169,3 +169,41 @@ struct LazyDFA: Sendable {
         return state
     }
 }
+
+extension LazyDFA {
+    static func entry(_ text: [UInt16], at end: Int) -> Key {
+        Key(pcs: [0], context: end < text.count ? UnitContext(text[end]) : .edge)
+    }
+
+    mutating func reverse(_ text: [UInt16], from end: Int, floor: Int, context: MatchContext) throws(BudgetExceeded) -> Verdict {
+        var mayReset = true
+        let key = Self.entry(text, at: end)
+        guard var state = intern(key, &mayReset) else { return try stepper.run(key, text, from: end, to: floor, context) }
+        var position = end
+        while true {
+            rewind(text, &state, &position, floor: floor)
+            let move = try step(state, text.nextUnit(from: position, backward: true), position, context, &mayReset)
+            if move.accepts { return .match }
+            switch move.next {
+            case .stop: return .miss
+            case _ where position == floor: return .undecided
+            case .state(let next): state = next
+            case .threads(let key): return try stepper.run(key, text, from: position - 1, to: floor, context)
+            }
+            position -= 1
+        }
+    }
+
+    private func rewind(_ text: [UInt16], _ state: inout Int32, _ position: inout Int, floor: Int) {
+        table.withUnsafeBufferPointer { table in
+            text.withUnsafeBufferPointer { text in
+                while position > floor {
+                    let next = table[Int(state) * width + classes.index(of: text[position - 1])]
+                    guard next >= 0 else { return }
+                    state = next
+                    position -= 1
+                }
+            }
+        }
+    }
+}
