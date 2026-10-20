@@ -395,7 +395,7 @@
         "browser": 0.5,
         "iphone": 0.5
       },
-      "install": ".package(url: \"https://github.com/formhaus-dev/formhaus-swift.git\", from: \"0.1.1\")",
+      "install": ".package(url: \"https://github.com/formhaus-dev/formhaus-swift.git\", from: \"0.1.2\")",
       "links": [
         "formhaus.dev",
         "github.com/formhaus-dev/formhaus-swift"
