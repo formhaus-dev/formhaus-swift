@@ -21,18 +21,59 @@ extension Backtracker {
         return position
     }
 
-    mutating func resumeScan(_ scan: Scan) -> (Int, Int) {
-        let position = scan.position + scan.step
+    mutating func resumeScan(_ scan: Scan) throws(BudgetExceeded) -> (Int, Int) {
+        var position = scan.position + scan.step
+        var skipped = 0
+        while position != scan.stop, !mayEnter(scan.pc, at: position) {
+            position += scan.step
+            skipped += 1
+        }
+        try context.spend(skipped)
         if position != scan.stop { stack.append(.scan(Scan(pc: scan.pc, position: position, stop: scan.stop, step: scan.step))) }
         return (scan.pc, position)
     }
 
     mutating func resumeExtend(_ scan: Scan) throws(BudgetExceeded) -> (Int, Int)? {
-        guard case .repeatSet(let repeated) = program.instructions[scan.pc], consumes(repeated, at: scan.position) else { return nil }
-        let position = scan.position + scan.step
-        try context.spend(1)
+        guard case .repeatSet(let repeated) = program.instructions[scan.pc] else { return nil }
+        var position = scan.position
+        var steps = 0
+        repeat {
+            guard consumes(repeated, at: position) else {
+                try context.spend(steps)
+                return nil
+            }
+            position += scan.step
+            steps += 1
+        } while position != scan.stop && !mayEnter(scan.pc + 1, at: position)
+        try context.spend(steps)
         if position != scan.stop { stack.append(.extend(Scan(pc: scan.pc, position: position, stop: scan.stop, step: scan.step))) }
         return (scan.pc + 1, position)
+    }
+
+    private func mayEnter(_ entry: Int, at position: Int) -> Bool {
+        var pc = entry
+        while true {
+            switch program.instructions[pc] {
+            case .unit(let expected, let backward): return text.nextUnit(from: position, backward: backward) == expected
+            case .set(let index, let backward):
+                return text.nextUnit(from: position, backward: backward).map(program.sets[index].contains) ?? false
+            case .backreference(let index): return pc != entry || mayRepeat(program.references[index], at: position)
+            case .state(.progress): return true
+            case .state: pc += 1
+            case .jump(let target): pc = target
+            default: return true
+            }
+        }
+    }
+
+    private func mayRepeat(_ reference: Backreference, at position: Int) -> Bool {
+        guard reference.groups.count == 1 else { return true }
+        let start = slots[2 * reference.groups[0]]
+        let end = slots[2 * reference.groups[0] + 1]
+        guard start >= 0, end > start else { return true }
+        guard let next = text.nextUnit(from: position, backward: reference.backward) else { return false }
+        let expected = text[reference.backward ? end - 1 : start]
+        return next == expected || reference.ignoreCase && CaseFolding.canonical[Int(next)] == CaseFolding.canonical[Int(expected)]
     }
 
     private func consumes(_ repeated: RepeatSet, at position: Int) -> Bool {

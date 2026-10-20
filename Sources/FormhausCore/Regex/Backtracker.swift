@@ -81,7 +81,7 @@ struct Backtracker {
             case .captures(let index):
                 slots = saved[index]
                 saved.removeSubrange(index...)
-            case .scan(let scan): return resumeScan(scan)
+            case .scan(let scan): return try resumeScan(scan)
             case .extend(let scan):
                 if let resumed = try resumeExtend(scan) { return resumed }
             }
