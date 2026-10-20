@@ -10,7 +10,7 @@ const offset = (focus, item, zoom, height) => {
   return height / 2 - focus * size;
 };
 
-export const twoUp = (layer, data, beat, region = { top: 130, height: 950 }, gap = 90) => {
+export const twoUp = (layer, data, beat, region = { top: 214, height: 818 }, gap = 90) => {
   const box = el('div', 'abs camera', layer);
   Object.assign(box.style, { top: `${region.top}px`, width: '1920px', height: `${region.height}px` });
   const sides = Object.fromEntries(

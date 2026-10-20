@@ -3,7 +3,7 @@ import { footage } from './footage.js';
 import { clamp, el, easeInOut, mix, motion, place, progress } from './kit.js';
 
 const lead = 0.4;
-const blend = 0.35;
+const blend = 0.2;
 const move = 0.9;
 
 const camera = (segments, t, key) =>
@@ -14,7 +14,8 @@ const camera = (segments, t, key) =>
 
 export default async (layer, beat, data) => {
   const spec = data.devices[beat.device];
-  const phones = [0, 1].map(() => device(layer, spec));
+  const stage = el('div', 'abs tour-stage', layer);
+  const phones = [0, 1].map(() => device(stage, spec));
   const clips = phones.map((phone) => footage(data, beat.clip, phone.img));
   const marks = data.marks[beat.script];
   let start = lead;

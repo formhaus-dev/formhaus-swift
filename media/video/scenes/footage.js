@@ -52,10 +52,10 @@ const pointer = (taps, parent) => {
   };
 };
 
-export const footage = (data, id, img, { cursor = false } = {}) => {
+export const footage = (data, id, img, { cursor = false, touches: showTouches = true } = {}) => {
   const info = data.footage[id];
   if (!info) throw new Error(`Missing footage ${id}. Run record.sh first.`);
-  const marks = touches(info.taps ?? [], img.parentElement);
+  const marks = showTouches ? touches(info.taps ?? [], img.parentElement) : [];
   const point = cursor && info.taps?.length ? pointer(info.taps, img.parentElement) : null;
   const show = (src) => {
     if (img.getAttribute('src') !== src) img.setAttribute('src', src);

@@ -9,7 +9,7 @@ const captions = (layer, beat, marks) => {
 };
 
 export default async (layer, beat, data) => {
-  const region = beat.labels ? { top: 130, height: 880 } : undefined;
+  const region = beat.labels ? { top: 214, height: 750 } : undefined;
   const { sides, frame } = twoUp(layer, data, beat, region);
   const clip = (key) => {
     const [script, mark] = beat.sync[key];
@@ -27,10 +27,10 @@ export default async (layer, beat, data) => {
       lines.forEach((line, index) => {
         const next = lines[index + 1]?.at ?? Infinity;
         const shown = progress(t, line.at, 0.35) * (1 - progress(t, next - 0.3, 0.25));
-        place(line.node, { y: 28 + (1 - progress(t, line.at, 0.35)) * 10, opacity: shown });
+        place(line.node, { y: 96 + (1 - progress(t, line.at, 0.35)) * 10, opacity: shown });
       });
       for (const { node, side } of labels) {
-        place(node, { x: side.x + (side.node.width * side.scale - node.offsetWidth) / 2, y: 1020, opacity: 1 });
+        place(node, { x: side.x + (side.node.width * side.scale - node.offsetWidth) / 2, y: 984, opacity: 1 });
       }
       return Promise.all(Object.values(clips).map(({ player, from }) => player.at(from + t)));
     },

@@ -1,21 +1,14 @@
 import { json } from './code.js';
-import { footage } from './footage.js';
 import { el, place, progress } from './kit.js';
-import { twoUp } from './camera.js';
+import { lens } from './lens.js';
 
-const layers = (data, side, ids) => {
-  const after = side.node.img.cloneNode();
-  side.node.screen.append(after);
-  after.style.position = 'absolute';
-  after.style.inset = '0';
-  return { before: footage(data, ids.before, side.node.img), after: footage(data, ids.after, after), node: after };
-};
+const gap = 60;
 
 export default async (layer, beat, data) => {
-  const camera = twoUp(layer, data, beat, beat.region);
-  const sides = Object.fromEntries(
-    Object.keys(camera.sides).map((key) => [key, layers(data, camera.sides[key], { before: beat.clips.before[key], after: beat.clips.after[key] })]),
+  const sides = Object.keys(beat.lenses).map((key) =>
+    lens(layer, data, { device: beat.devices[key], clips: [beat.clips.before[key], beat.clips.after[key]], fade: key === 'ios' ? 'both' : true, ...beat.lenses[key] }),
   );
+  const total = sides.reduce((sum, item) => sum + item.width, 0) + gap;
   const title = el('div', 'caption abs', layer, beat.title);
   const after = el('div', 'caption abs', layer, beat.after);
 
@@ -50,7 +43,11 @@ export default async (layer, beat, data) => {
         width = card.offsetWidth;
         card.style.width = `${width}px`;
       }
-      camera.frame(t);
+      let x = (1920 - total) / 2;
+      for (const side of sides) {
+        place(side.card, { x, y: 1032 - side.height, opacity: progress(t, 0.1, 0.6) });
+        x += side.width + gap;
+      }
       const count = Math.round(progress(t, beat.editAt, 0.8, (p) => p) * inserted.length);
       typed.innerHTML = json(inserted.slice(0, count));
       typed.style.background = count ? 'rgba(185, 163, 255, 0.28)' : 'transparent';
@@ -59,11 +56,11 @@ export default async (layer, beat, data) => {
       const blink = Math.floor(t * 2.5) % 2 === 0;
       caret.style.opacity = typing || (t > beat.editAt - 0.6 && t < swapAt + 0.5 && blink) ? '1' : '0';
       const swap = progress(t, swapAt, 0.6);
-      place(title, { y: 24, opacity: progress(t, 0, 0.6) * (1 - swap) });
-      place(after, { y: 24, opacity: swap });
-      place(card, { x: (1920 - width) / 2, y: 120 + (1 - progress(t, 0.2, 0.7)) * 20, opacity: progress(t, 0.2, 0.7) });
-      for (const side of Object.values(sides)) side.node.style.opacity = String(swap);
-      return Promise.all(Object.values(sides).flatMap((side) => [side.before.at(time), side.after.at(time)]));
+      place(title, { y: 96, opacity: progress(t, 0, 0.6) * (1 - swap) });
+      place(after, { y: 96, opacity: swap });
+      place(card, { x: (1920 - width) / 2, y: 214 + (1 - progress(t, 0.2, 0.7)) * 20, opacity: progress(t, 0.2, 0.7) });
+      for (const side of sides) side.players[1].img.style.opacity = String(swap);
+      return Promise.all(sides.flatMap((side) => side.players.map(({ player }) => player.at(time))));
     },
   };
 };
