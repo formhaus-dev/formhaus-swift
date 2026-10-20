@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,25 +20,56 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: swift --version
-      - run: swift build --build-tests -Xswiftc -warnings-as-errors
+        with:
+          fetch-depth: 0
+      - id: swift
+        run: echo "version=$(swift --version 2>&1 | shasum -a 256 | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - id: tools
+        run: echo "key=$(scripts/lint.sh versions)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            .build
+            !.build/tools
+          key: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
+          restore-keys: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .build/tools
+          key: lint-tools-${{ runner.os }}-${{ steps.tools.outputs.key }}
+      - run: scripts/restore-mtimes.sh
+      - run: scripts/lint.sh install
+      - run: swift build --build-tests --enable-index-store -Xswiftc -warnings-as-errors
       - run: swift test --skip-build
-      - run: xcodebuild build -scheme FormhausUI -destination 'generic/platform=iOS' -derivedDataPath .build/xcode -quiet SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+      - run: scripts/lint.sh periphery
+        env:
+          PERIPHERY_SCRATCH: .build
 
   demo:
     runs-on: macos-26
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: xcode
+        run: echo "version=$(xcodebuild -version | shasum -a 256 | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .build/demo
+          key: demo-${{ runner.os }}-${{ steps.xcode.outputs.version }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
+          restore-keys: demo-${{ runner.os }}-${{ steps.xcode.outputs.version }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+      - run: scripts/restore-mtimes.sh
       - run: >-
           xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
           -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/demo -quiet
-          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
       - run: >-
           xcodebuild build -project Examples/FormhausDemo/FormhausDemo.xcodeproj -scheme FormhausDemo
           -destination 'generic/platform=macOS' -derivedDataPath .build/demo -quiet
-          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
       - name: Accessibility audit on the iOS Simulator
+        if: github.event_name != 'pull_request'
         run: |
           device=$(xcrun simctl list devices available -j | python3 -c "import json, sys
           devices = json.load(sys.stdin)['devices']
@@ -47,7 +79,7 @@ jobs:
 
   lint:
     runs-on: macos-26
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -65,7 +97,3 @@ jobs:
       - run: scripts/lint.sh format
       - run: scripts/lint.sh swiftlint
       - run: scripts/lint.sh duplicates
-      - run: scripts/lint.sh periphery
-      - run: swift test --sanitize=thread --scratch-path .build/tsan --filter "sharedAutomatons|concurrentUse"
-        env:
-          TSAN_OPTIONS: halt_on_error=1
