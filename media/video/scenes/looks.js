@@ -4,8 +4,10 @@ import { captionHeight, el, place, progress, stack } from './kit.js';
 
 const height = 660;
 const pill = 58;
-const hold = 1.3;
-const blend = 0.25;
+const lead = 0.3;
+const hold = 1.1;
+
+const shownAt = (t, index) => index === 0 || t >= lead + index * hold;
 
 export default async (layer, beat, data) => {
   const title = el('div', 'caption abs', layer, beat.title);
@@ -21,14 +23,12 @@ export default async (layer, beat, data) => {
     update(t) {
       const [captionY, top, labelY] = stack([[captionHeight, 48], [height, 18], [pill]]);
       place(title, { y: captionY, opacity: progress(t, 0, 0.5) });
-          const scale = height / phone.height;
+      const scale = height / phone.height;
       place(phone.root, { x: (1920 - phone.width * scale) / 2, y: top, scale });
       looks.forEach((look, index) => {
-        const enter = index === 0 ? 1 : progress(t, 0.4 + index * hold, blend);
-        const leave = looks[index + 1] ? progress(t, 0.4 + (index + 1) * hold, blend) : 0;
-        look.img.style.opacity = String(enter);
-        const shown = enter * (1 - leave);
-        place(look.label, { x: (1920 - look.label.offsetWidth) / 2, y: labelY, opacity: shown });
+        const shown = shownAt(t, index) && !(looks[index + 1] && shownAt(t, index + 1));
+        look.img.style.opacity = shownAt(t, index) ? '1' : '0';
+        place(look.label, { x: (1920 - look.label.offsetWidth) / 2, y: labelY, opacity: shown ? 1 : 0 });
       });
       return Promise.all(looks.map((look) => look.clip.at(look.time)));
     },
