@@ -14,6 +14,14 @@ struct ActivePath {
     let steps: [FormStep]
     let values: JSONObject
     let limits: ListLimits
+    private let ordinals: Set<Int>
+
+    init(steps: [FormStep], values: JSONObject, limits: ListLimits) {
+        self.steps = steps
+        self.values = values
+        self.limits = limits
+        ordinals = Set(steps.map(\.ordinal))
+    }
 
     static func walk(_ definition: FormDefinition, _ values: JSONObject) -> ActivePath {
         let steps = definition.steps ?? []
@@ -53,7 +61,7 @@ struct ActivePath {
     }
 
     func contains(_ step: FormStep) -> Bool {
-        steps.contains { $0.ordinal == step.ordinal }
+        ordinals.contains(step.ordinal)
     }
 }
 

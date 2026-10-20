@@ -44,11 +44,12 @@ private struct Prepared {
 }
 
 private func applySkips(_ engine: EngineCore, _ skippedSteps: JSONValue?) {
-    guard let requested = skippedSteps?.arrayValue else { return }
+    guard let list = skippedSteps?.arrayValue else { return }
+    let requested = KeySet(list.compactMap(\.stringValue))
     var index = 0
     while index < engine.visibleSteps.count {
         let step = engine.visibleSteps[index]
-        if step.canSkip && requested.contains(where: { strictEquals($0, .string(step.id)) }) { engine.skipStep(at: index) }
+        if step.canSkip && requested.contains(step.id) { engine.skipStep(at: index) }
         index += 1
     }
 }

@@ -25,9 +25,19 @@ func stepIndexes(_ steps: [FormStep]) -> StringMap<Int> {
     return indexes
 }
 
-func reachableSteps(_ steps: [FormStep]) -> [Set<Int>] {
-    let indexes = stepIndexes(steps)
-    return steps.indices.map { start in
+private final class StepReachability {
+    private let steps: [FormStep]
+    private let indexes: StringMap<Int>
+    private var memo: [Int: Set<Int>] = [:]
+
+    init(_ steps: [FormStep]) {
+        self.steps = steps
+        indexes = stepIndexes(steps)
+    }
+
+    func reaches(_ start: Int, _ target: Int) -> Bool {
+        guard steps.indices.contains(start) else { return false }
+        if let known = memo[start] { return known.contains(target) }
         var seen = Set<Int>()
         var queue = successors(steps, indexes, start)
         while let index = queue.popLast() {
@@ -36,7 +46,8 @@ func reachableSteps(_ steps: [FormStep]) -> [Set<Int>] {
             queue.append(contentsOf: successors(steps, indexes, index))
             if isConditional(steps[index]) && index + 1 < steps.count { queue.append(index + 1) }
         }
-        return seen
+        memo[start] = seen
+        return seen.contains(target)
     }
 }
 
@@ -69,10 +80,8 @@ private func stepIssues(_ context: CheckContext) -> [DefinitionIssue] {
 }
 
 private func keyClashes(_ context: CheckContext) -> [NodeEntry?] {
-    let reachable = reachableSteps(context.definition.steps ?? [])
-    let exclusive = { (a: NodeEntry, b: NodeEntry) in
-        a.step != b.step && !(reachable.indices.contains(a.step) && reachable[a.step].contains(b.step))
-    }
+    let reachable = StepReachability(context.definition.steps ?? [])
+    let exclusive = { (a: NodeEntry, b: NodeEntry) in a.step != b.step && !reachable.reaches(a.step, b.step) }
     var firstOuter = StringMap<NodeEntry>(insertionOrder: true)
     for entry in context.nodes where entry.group == nil && firstOuter[entry.node.key] == nil { firstOuter[entry.node.key] = entry }
     var earlierOuter = StringMap<[NodeEntry]>(insertionOrder: true)
