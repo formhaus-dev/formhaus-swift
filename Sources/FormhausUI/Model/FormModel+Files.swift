@@ -3,7 +3,7 @@ import Foundation
 
 extension FormModel {
     public func pickedFile(forKey key: String) -> URL? {
-        engine.value(at: key)?.stringValue.flatMap(UploadStore.owned)
+        engine.value(at: key)?.stringValue.flatMap { UploadStore.owned($0, by: ObjectIdentifier(self)) }
     }
 
     func pruneUploads(_ values: JSONObject) {

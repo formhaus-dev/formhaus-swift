@@ -90,11 +90,28 @@ struct FileValueTests {
         #expect(try context(form).reference == nil)
         #expect(form.pickedFile(forKey: "doc") == copy)
         for variant in [" \(copy.absoluteString)\n", copy.absoluteString.replacingOccurrences(of: "file:", with: "FILE:")] {
-            #expect(UploadStore.owned(variant) == copy)
+            #expect(UploadStore.owned(variant, by: ObjectIdentifier(form)) == copy)
         }
         await form.submit()
         #expect(log.values == [["doc": .string(copy.absoluteString)]])
         UploadStore.release(owner: ObjectIdentifier(form))
         #expect(try picked(form) == nil)
+    }
+
+    @Test("a file picked on one form is not an upload of another form")
+    func foreignUpload() async throws {
+        let source = FileManager.default.temporaryDirectory.appendingPathComponent("formhaus-cv-\(UUID().uuidString).txt")
+        try Data("cv".utf8).write(to: source)
+        defer { try? FileManager.default.removeItem(at: source) }
+        let first = try model()
+        let second = try model()
+        let copy = try #require(await UploadStore.copy(source, owner: ObjectIdentifier(first)))
+        first.setValue(.string(copy.absoluteString), forKey: "doc")
+        second.setValue(.string(copy.absoluteString), forKey: "doc")
+        #expect(first.pickedFile(forKey: "doc") == copy)
+        #expect(second.pickedFile(forKey: "doc") == nil)
+        #expect(try picked(second) == nil)
+        #expect(try context(second).reference == copy.absoluteString)
+        UploadStore.release(owner: ObjectIdentifier(first))
     }
 }
