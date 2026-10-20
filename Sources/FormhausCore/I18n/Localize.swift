@@ -85,7 +85,7 @@ func translationErrors(_ definition: FormDefinition) -> [DefinitionIssue] {
         issues += strings(block, "\(text.path)/i18n", "translation keys", nested: text.kind == .form ? ["messages", "labels"] : [])
         issues += unbound.map {
             error(
-                "i18n-unbound-slot", "\(text.path)/i18n/\($0)", "\"\($0)\" has a translation key but no source text",
+                "i18n-key-without-text", "\(text.path)/i18n/\($0)", "\"\($0)\" has a translation key but no source text",
                 "Add \"\($0)\" as the fallback text")
         }
     }

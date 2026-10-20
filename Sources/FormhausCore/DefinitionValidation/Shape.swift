@@ -114,7 +114,7 @@ private func dependencies(_ value: JSONValue?, _ path: String) -> [DefinitionIss
 
 private func columns(_ value: JSONValue?, _ path: String) -> [DefinitionIssue] {
     guard let value, !(value.isInteger && (1...4).contains(value.numberValue ?? 0)) else { return [] }
-    return [error(value.numberValue == nil ? "invalid-type" : "invalid-range", path, "\"columns\" must be a whole number from 1 to 4")]
+    return [error(value.numberValue == nil ? "invalid-type" : "invalid-columns", path, "\"columns\" must be a whole number from 1 to 4")]
 }
 
 private func field(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
