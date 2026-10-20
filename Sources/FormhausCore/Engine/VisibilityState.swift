@@ -129,10 +129,8 @@ final class VisibilityState {
         canGoNextDirty = false
         if let step, customSteps.contains(step.ordinal) { settled = false }
         let scope = conditionValues(values)
-        let errors =
-            step.map {
-                validateShown($0.fields, scope, scope, ShownChecks(validators: validators, messages: nil, limits: limits(values)))
-            } ?? FieldErrors()
+        let checks = ShownChecks(validators: validators, messages: nil, limits: limits(values))
+        let errors = step.map { step in CallBudget.run { validateShown(step.fields, scope, scope, checks) } } ?? FieldErrors()
         canGoNext = definition.isMultiStep && errors.isEmpty
         return canGoNext
     }

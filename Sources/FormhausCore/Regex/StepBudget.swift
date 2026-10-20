@@ -23,18 +23,18 @@ struct StepBudget {
 
 final class CallBudget: Sendable {
     static let limit = 20_000_000
-    static let patternTestLimit = 10_000
+    @TaskLocal static var patternTestLimit = 10_000
     @TaskLocal static var current: CallBudget?
 
     private struct Spent {
         var remaining: Int
-        var patternTests = 0
+        var patternTests: Int
     }
 
     private let state: OSAllocatedUnfairLock<Spent>
 
     init(limit: Int = CallBudget.limit) {
-        state = OSAllocatedUnfairLock(initialState: Spent(remaining: limit))
+        state = OSAllocatedUnfairLock(initialState: Spent(remaining: limit, patternTests: CallBudget.patternTestLimit))
     }
 
     var remaining: Int { state.withLock { $0.remaining } }
@@ -45,12 +45,17 @@ final class CallBudget: Sendable {
 
     func admitsPatternTest() -> Bool {
         state.withLock { spent in
-            spent.patternTests += 1
-            return spent.patternTests <= Self.patternTestLimit
+            spent.patternTests -= 1
+            return spent.patternTests >= 0
         }
     }
 
     static func run<Value>(_ body: () -> Value) -> Value {
         current == nil ? $current.withValue(CallBudget(), operation: body) : body()
+    }
+
+    nonisolated(nonsending) static func run<Value>(_ body: nonisolated(nonsending) () async throws -> Value) async rethrows -> Value {
+        guard current == nil else { return try await body() }
+        return try await $current.withValue(CallBudget(), operation: body)
     }
 }

@@ -1,5 +1,9 @@
 extension EngineCore {
     func writeValue(_ key: String, _ slot: ValueSlot, own: Bool = true, after: () -> Void = {}) {
+        CallBudget.run { storeValue(key, slot, own: own, after: after) }
+    }
+
+    private func storeValue(_ key: String, _ slot: ValueSlot, own: Bool, after: () -> Void) {
         baselineFields()
         let previousSteps = isMultiStep ? visibleSteps : nil
         let valueChanged = !values.slot(key).isSame(slot)

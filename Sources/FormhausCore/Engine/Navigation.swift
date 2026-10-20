@@ -70,7 +70,7 @@ func suspended<T>(_ body: () async throws -> T) async throws -> T {
 extension FormEngine {
     func reportErrors(_ action: () async throws -> Bool) async throws -> Bool {
         let generation = core.errorsGeneration
-        let done = try await suspended(action)
+        let done = try await CallBudget.run { try await suspended(action) }
         if !done && core.errorsGeneration != generation {
             for (fieldKey, error) in core.errors { core.emit(.fieldError(fieldKey: fieldKey, error: error)) }
         }
