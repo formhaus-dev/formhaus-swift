@@ -122,20 +122,10 @@ private struct SystemValueRow: View {
                 Section {
                     ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
                         let value = option.value ?? ""
-                        Button {
+                        SystemCheckRow(label: option.label ?? value, checked: selected.contains(value)) {
                             selection.choose(value)
                             if !selection.multiple { dismiss() }
-                        } label: {
-                            HStack {
-                                Text(verbatim: option.label ?? value).foregroundStyle(Color.primary)
-                                Spacer()
-                                Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(.tint)
-                                    .opacity(selected.contains(value) ? 1 : 0)
-                            }
-                            .frame(minHeight: 44)
-                            .contentShape(Rectangle())
                         }
-                        .accessibilityAddTraits(selected.contains(value) ? .isSelected : [])
                     }
                 } footer: {
                     VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context) }

@@ -78,6 +78,28 @@ struct RenderCountTests {
         #expect(counter.helpers["late"] == "From x")
     }
 
+    @Test("choosing an inline option re-renders no other field", arguments: [false, true])
+    func inlineChoice(system: Bool) throws {
+        _ = NSApplication.shared
+        let definition: JSONValue = [
+            "id": "probe", "title": "Probe", "submit": ["label": "Send"],
+            "fields": [
+                ["key": "a", "type": "probe", "label": "A"],
+                [
+                    "key": "pick", "type": "multiselect", "label": "Pick",
+                    "options": [["value": "x", "label": "X"], ["value": "y", "label": "Y"]],
+                ],
+                ["key": "b", "type": "probe", "label": "B"],
+            ],
+        ]
+        let (form, counter, host) = try probed(definition, system: system)
+        let start = counter.counts
+        form.setValue(["x"], forKey: "pick")
+        form.setValue(["x", "y"], forKey: "pick")
+        settle(host)
+        #expect(counter.counts == start)
+    }
+
     private func probed(_ definition: JSONValue, system: Bool) throws -> (FormModel, BodyCounter, NSView) {
         let form = FormModel(definition: try FormDefinition(json: definition)) { _, _ in nil }
         let counter = BodyCounter()

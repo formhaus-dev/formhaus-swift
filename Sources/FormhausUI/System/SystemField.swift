@@ -2,6 +2,7 @@
 import SwiftUI
 
 struct SystemField: View {
+    @Environment(\.formhausBehavior) private var behavior
     let context: FieldContext
 
     var body: some View {
@@ -10,6 +11,7 @@ struct SystemField: View {
         case "autocomplete": SystemTextRow(context: context, suggests: true)
         case "textarea": SystemTextArea(context: context)
         case _ where context.field.hasPictureOptions: SystemPictures(context: context)
+        case _ where isInlineChoice(context.field, limit: behavior.inlineChoiceLimit): SystemChoiceList(context: context)
         case "select", "radio", "multiselect": SystemPickerRow(context: context)
         case "checkbox", "switch": SystemToggleRow(context: context)
         case "date", "time", "datetime": SystemDateRow(context: context)
@@ -22,9 +24,9 @@ struct SystemField: View {
     }
 }
 
-func isSystemBlock(_ field: FormField, _ components: FormComponents) -> Bool {
+func isSystemBlock(_ field: FormField, _ components: FormComponents, limit: Int) -> Bool {
     guard components.fields[field.type] == nil else { return false }
-    return ["textarea", "scale", "rating"].contains(field.type) || field.hasPictureOptions
+    return ["textarea", "scale", "rating"].contains(field.type) || field.hasPictureOptions || isInlineChoice(field, limit: limit)
 }
 
 extension EnvironmentValues {
@@ -90,10 +92,12 @@ struct SystemBlock<Content: View>: View {
     @Environment(\.formhausNested) private var nested
     @Environment(\.formhausTokens) private var tokens
     let context: FieldContext
+    let anchored: Bool
     let content: Content
 
-    init(context: FieldContext, @ViewBuilder content: () -> Content) {
+    init(context: FieldContext, anchored: Bool = true, @ViewBuilder content: () -> Content) {
         self.context = context
+        self.anchored = anchored
         self.content = content()
     }
 
@@ -105,10 +109,10 @@ struct SystemBlock<Content: View>: View {
                 SystemNotes(context: context)
             }
             .disabled(context.isLocked)
-            .formhausScrollAnchor(context)
+            .scrollAnchor(anchored, context)
         } else {
             Section {
-                content.disabled(context.isLocked).formhausScrollAnchor(context)
+                content.disabled(context.isLocked).scrollAnchor(anchored, context)
             } header: {
                 tokens.marked(context.label, required: context.isRequired)
                     .textCase(nil)
@@ -122,6 +126,13 @@ struct SystemBlock<Content: View>: View {
                 }
             }
         }
+    }
+}
+
+extension View {
+    @ViewBuilder
+    fileprivate func scrollAnchor(_ anchored: Bool, _ context: FieldContext) -> some View {
+        if anchored { formhausScrollAnchor(context) } else { self }
     }
 }
 
