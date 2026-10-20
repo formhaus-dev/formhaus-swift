@@ -1,33 +1,44 @@
-#if os(iOS)
-    @_spi(Renderer) import FormhausCore
-    import Observation
-    import SwiftUI
+@_spi(Renderer) import FormhausCore
+import Foundation
+import Observation
+import SwiftUI
 
+extension Notification.Name {
+    static let formhausStepsReleased = Notification.Name("formhaus.stepsReleased")
+}
+
+#if os(iOS)
     struct StepSnapshot {
         let nodes: [FormNode]
         let step: FormStep?
     }
+#endif
 
-    @MainActor
-    @Observable
-    final class StepStore {
-        private(set) var history: [String] = []
+@MainActor
+@Observable
+final class StepStore {
+    private(set) var history: [String] = []
+    #if os(iOS)
         private(set) var snapshots: [String: StepSnapshot] = [:]
-        let token = UUID()
+    #endif
+    let token = UUID()
+    #if os(iOS)
         @ObservationIgnored private var owner: ObjectIdentifier?
         @ObservationIgnored private var revision: Int?
-        @ObservationIgnored private var target: Int?
+    #endif
+    @ObservationIgnored private var target: Int?
 
-        isolated deinit {
-            let token = token
-            Task { @MainActor in
-                NotificationCenter.default.post(name: .formhausStepsReleased, object: nil, userInfo: ["owner": token])
-            }
+    isolated deinit {
+        let token = token
+        Task { @MainActor in
+            NotificationCenter.default.post(name: .formhausStepsReleased, object: nil, userInfo: ["owner": token])
         }
+    }
 
-        func sync(_ model: FormModel) {
-            let structure = model.structure
-            let ids = path(structure)
+    func sync(_ model: FormModel) {
+        let structure = model.structure
+        let ids = path(structure)
+        #if os(iOS)
             if owner != ObjectIdentifier(model) || revision != structure.revision {
                 owner = ObjectIdentifier(model)
                 revision = structure.revision
@@ -37,9 +48,20 @@
                 }
             }
             if let current = ids.last { snapshots[current] = StepSnapshot(nodes: structure.nodes, step: structure.currentStep) }
-            if target == nil, history != ids { history = ids }
-        }
+        #endif
+        if target == nil, history != ids { history = ids }
+    }
 
+    func release() {
+        target = nil
+        guard history.count > 1 else { return }
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) { history = Array(history.prefix(1)) }
+        NotificationCenter.default.post(name: .formhausStepsReleased, object: nil, userInfo: ["owner": token])
+    }
+
+    #if os(iOS)
         func pop(to level: Int, _ model: FormModel) {
             guard history.count > level + 1 else { return }
             history.removeSubrange((level + 1)...)
@@ -69,14 +91,14 @@
             let step = structure.steps.first { stepKey($0) == id }
             return StepSnapshot(nodes: step.map { model.engine.visibleNodes(of: $0) } ?? [], step: step)
         }
+    #endif
 
-        private func path(_ structure: FormStructure) -> [String] {
-            guard structure.isMultiStep, structure.steps.indices.contains(structure.stepIndex) else { return ["form"] }
-            return structure.steps.prefix(structure.stepIndex + 1).map(stepKey)
-        }
+    private func path(_ structure: FormStructure) -> [String] {
+        guard structure.isMultiStep, structure.steps.indices.contains(structure.stepIndex) else { return ["form"] }
+        return structure.steps.prefix(structure.stepIndex + 1).map(stepKey)
     }
+}
 
-    private func stepKey(_ step: FormStep) -> String {
-        "step:\(step.id)"
-    }
-#endif
+private func stepKey(_ step: FormStep) -> String {
+    "step:\(step.id)"
+}
