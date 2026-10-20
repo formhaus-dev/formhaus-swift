@@ -20,12 +20,7 @@ func lookup(_ overlay: JSONValue?, _ path: [String]) -> String? {
 }
 
 func placeholders(_ text: String) -> [String] {
-    var names = Set<String>()
-    _ = replacePlaceholders(text) { name in
-        names.insert(name)
-        return nil
-    }
-    return names.sorted(by: codeUnitLess)
+    OrderedKeys(templateTokens(text)).keys.sorted(by: codeUnitLess)
 }
 
 func translationKey(_ prefix: String?, _ explicit: String?, _ address: [String]) -> String? {
