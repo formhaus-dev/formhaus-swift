@@ -85,6 +85,7 @@ final class ModelHolder {
 private struct FormScroller: View {
     @Environment(\.formhausTokens) private var tokens
     @Environment(\.formhausComponents) private var components
+    @State private var topRequests = TopRequests()
     let model: FormModel
 
     var body: some View {
@@ -96,19 +97,23 @@ private struct FormScroller: View {
     }
 
     private var scroller: some View {
-        ScrollView {
-            FormhausFormContent(model: model)
-                .padding(tokens.spacing.s10)
-                .frame(maxWidth: tokens.controls.maxWidth)
-                .frame(maxWidth: .infinity)
+        ScrollViewReader { proxy in
+            ScrollView {
+                FormhausFormContent(model: model)
+                    .padding(tokens.spacing.s10)
+                    .frame(maxWidth: tokens.controls.maxWidth)
+                    .frame(maxWidth: .infinity)
+                    .background(alignment: .top) { Color.clear.frame(height: 1).id(ScrollAnchor.screenTop(model)) }
+            }
+            .modifier(ScreenTopScroller(requests: topRequests, proxy: proxy, anchor: ScrollAnchor.screenTop(model)))
         }
+        .environment(\.formhausTopRequests, topRequests)
         .scrollDismissesKeyboard(.interactively)
         .background(tokens.colors.background)
     }
 }
 
 public struct FormhausFormContent: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.formhausComponents) private var components
     let model: FormModel
 
@@ -123,9 +128,7 @@ public struct FormhausFormContent: View {
             } else {
                 ScrollViewReader { proxy in
                     FormStack(model: model)
-                        .background(alignment: .top) { Color.clear.frame(height: 1).id(topAnchor(model)) }
-                        .onChange(of: model.focusRequest) { _, request in scroll(proxy, to: request) }
-                        .onChange(of: model.structure.currentStep?.nodeID) { scrollToTop(proxy) }
+                        .modifier(StepScroller(model: model, proxy: proxy))
                         .sensoryFeedback(.error, trigger: model.invalidAttempts)
                 }
             }
@@ -134,23 +137,6 @@ public struct FormhausFormContent: View {
         .onAppear { model.start() }
         .resolveFormhausTokens()
     }
-}
-
-extension FormhausFormContent {
-    private func scroll(_ proxy: ScrollViewProxy, to request: FocusRequest?) {
-        guard let key = request?.key else { return }
-        withAnimation(scrollAnimation) { proxy.scrollTo(key, anchor: .center) }
-    }
-
-    private func scrollToTop(_ proxy: ScrollViewProxy) {
-        withAnimation(scrollAnimation) { proxy.scrollTo(topAnchor(model), anchor: .top) }
-    }
-
-    private var scrollAnimation: Animation? { reduceMotion ? nil : .easeOut(duration: 0.2) }
-}
-
-func topAnchor(_ model: FormModel) -> String {
-    "formhaus.top.\(ObjectIdentifier(model).hashValue)"
 }
 
 private struct FormStack: View {

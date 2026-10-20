@@ -26,20 +26,27 @@ public enum BackPlacement: Sendable {
     case bottom
 }
 
+public enum StepScroll: Sendable {
+    case screenTop
+    case formTop
+}
+
 public struct FormBehavior: Sendable {
     public var errorSummary = false
     public var confirmRemove = true
     public var stepErrorMarks = false
     public var backPlacement = BackPlacement.automatic
+    public var stepScroll = StepScroll.screenTop
 
     public init(
         errorSummary: Bool = false, confirmRemove: Bool = true, stepErrorMarks: Bool = false,
-        backPlacement: BackPlacement = .automatic
+        backPlacement: BackPlacement = .automatic, stepScroll: StepScroll = .screenTop
     ) {
         self.errorSummary = errorSummary
         self.confirmRemove = confirmRemove
         self.stepErrorMarks = stepErrorMarks
         self.backPlacement = backPlacement
+        self.stepScroll = stepScroll
     }
 }
 
@@ -55,5 +62,9 @@ extension View {
 
     public func formhausBehavior(_ behavior: FormBehavior) -> some View {
         environment(\.formhausBehavior, behavior)
+    }
+
+    public func formhausBehavior(stepScroll: StepScroll) -> some View {
+        transformEnvironment(\.formhausBehavior) { $0.stepScroll = stepScroll }
     }
 }
