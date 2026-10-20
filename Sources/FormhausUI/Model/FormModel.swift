@@ -34,6 +34,9 @@ public final class FormModel {
     @ObservationIgnored private var groupStates: [String: GroupState] = [:]
     @ObservationIgnored var optionStates: [String: OptionsState] = [:]
     @ObservationIgnored var optionsRevision = -1
+    #if os(iOS)
+        @ObservationIgnored var inNavigationBar = false
+    #endif
     @ObservationIgnored private var lastValues: JSONObject
     @ObservationIgnored private var lastErrors: FieldErrors
     @ObservationIgnored private var focusCounter = 0

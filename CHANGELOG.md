@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### FormhausUI
+
+- Switching from the system set to another set inside a `NavigationStack` shows Back only in the navigation bar.
+
 ## 0.1.1
 
 ### FormhausCore

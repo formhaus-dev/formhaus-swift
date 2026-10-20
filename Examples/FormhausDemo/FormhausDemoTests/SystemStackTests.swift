@@ -13,15 +13,13 @@ struct SystemStackTests {
     func inPlace() async throws {
         let model = try stepsModel()
         let stage = Stage(model)
-        await settle()
+        #expect(await stage.shows(["X"]))
         #expect(stage.depth == 1)
-        #expect(stage.fields == ["X"])
         for expected in ["Y", "Z"] {
             await model.next()
-            await settle()
+            #expect(await stage.shows([expected]))
             #expect(stage.depth == 1)
-            #expect(stage.fields == [expected])
-            #expect(stage.navigation?.topViewController?.navigationItem.title == "P")
+            #expect(await eventually { stage.navigation?.topViewController?.navigationItem.title == "P" })
         }
         stage.close()
     }
@@ -30,22 +28,20 @@ struct SystemStackTests {
     func barBack() async throws {
         let model = try stepsModel()
         let stage = Stage(model, deep: true)
-        await settle()
+        #expect(await stage.shows(["X"]))
         #expect(!stage.hostBackHidden)
         #expect(stage.barBack == nil)
         await model.next()
         await model.next()
-        await settle()
-        #expect(stage.hostBackHidden)
-        #expect(stage.tapBack())
-        await settle()
+        #expect(await stage.shows(["Z"]))
+        #expect(await eventually { stage.hostBackHidden })
+        #expect(await eventually { stage.tapBack() })
+        #expect(await stage.shows(["Y"]))
         #expect(model.structure.currentStep?.id == "b")
-        #expect(stage.fields == ["Y"])
-        #expect(stage.tapBack())
-        await settle()
+        #expect(await eventually { stage.tapBack() })
+        #expect(await stage.shows(["X"]))
         #expect(model.structure.currentStep?.id == "a")
-        #expect(stage.fields == ["X"])
-        #expect(!stage.hostBackHidden)
+        #expect(await eventually { !stage.hostBackHidden })
         #expect(stage.depth == 2)
         stage.close()
     }
@@ -53,14 +49,13 @@ struct SystemStackTests {
     @Test("replacing the model keeps the host stack")
     func modelReplaced() async throws {
         let stage = Stage(try stepsModel())
-        await settle()
+        #expect(await stage.shows(["X"]))
         await stage.box.model.next()
         await stage.box.model.next()
-        await settle()
+        #expect(await stage.shows(["Z"]))
         stage.box.model = try stepsModel(values: [:])
-        await settle()
+        #expect(await stage.shows(["X"]))
         #expect(stage.depth == 1)
-        #expect(stage.fields == ["X"])
         stage.close()
     }
 
@@ -68,15 +63,14 @@ struct SystemStackTests {
     func focusAfterJumpBack() async throws {
         let model = try stepsModel()
         let stage = Stage(model)
-        await settle()
+        #expect(await stage.shows(["X"]))
         await model.next()
         await model.next()
-        await settle()
+        #expect(await stage.shows(["Z"]))
         model.focus(field: "x")
-        await settle(1500)
+        #expect(await stage.shows(["X"]))
+        #expect(await eventually { responder(stage.window) is UITextField })
         #expect(stage.depth == 1)
-        #expect(stage.fields == ["X"])
-        #expect(responder(stage.window) is UITextField)
         stage.close()
     }
 
@@ -84,16 +78,16 @@ struct SystemStackTests {
     func backDuringValidation() async throws {
         let model = try stepsModel(delay: true)
         let stage = Stage(model, deep: true)
-        await settle()
+        #expect(await stage.shows(["X"]))
         await model.next()
-        await settle()
+        #expect(await stage.shows(["Y"]))
         let pending = Task { await model.next() }
         #expect(await eventually { model.stepValidating })
-        #expect(stage.hostBackHidden)
+        #expect(await eventually { stage.hostBackHidden })
+        #expect(model.stepValidating)
         await pending.value
-        await settle()
+        #expect(await stage.shows(["Z"]))
         #expect(stage.depth == 2)
-        #expect(stage.fields == ["Z"])
         stage.close()
     }
 
@@ -101,14 +95,13 @@ struct SystemStackTests {
     func reset() async throws {
         let model = try stepsModel()
         let stage = Stage(model)
-        await settle()
+        #expect(await stage.shows(["X"]))
         await model.next()
         await model.next()
-        await settle()
+        #expect(await stage.shows(["Z"]))
         model.engine.reset()
-        await settle()
+        #expect(await stage.shows(["X"]))
         #expect(stage.depth == 1)
-        #expect(stage.fields == ["X"])
         stage.close()
     }
 }
