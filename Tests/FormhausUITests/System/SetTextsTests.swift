@@ -67,7 +67,7 @@ private func shows(_ line: String, _ text: String) -> Bool {
 }
 
 private let ordered = [
-    "Scope", "Tell us what you need", "Your name", "Services", "Design", "Development", "Budget", "Under ten thousand",
+    "Step 1 of 2", "Scope", "Tell us what you need", "Your name", "Services", "Design", "Development", "Budget", "Under ten thousand",
     "Above ten thousand", "How sure are you", "Exploring", "Decided", "Project brief", "Continue",
 ]
 private let placed = ["Grace Hopper", "As it appears on invoices", "Goals and deadlines"]
