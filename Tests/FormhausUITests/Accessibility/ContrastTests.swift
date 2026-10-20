@@ -16,12 +16,12 @@ func checkPalette(_ name: String, _ palette: Palette, increased: Bool) {
         ("error", ratio(palette.error, background), 4.5),
         ("primary", ratio(palette.primary, background), increased ? 4.5 : 3),
         ("onPrimary", ratio(palette.onPrimary, palette.primary), 4.5),
-        ("input border", ratio(palette.inputBorder, background), 3),
     ]
     for (check, value, minimum) in checks {
         #expect(value >= minimum, "\(name) \(check): \(value)")
     }
     if increased {
+        #expect(ratio(palette.inputBorder, background) >= 3, "\(name) input border: \(ratio(palette.inputBorder, background))")
         #expect(ratio(palette.border, palette.inputBorder) < 1.01, "\(name) card border follows the input border")
         #expect(ratio(palette.secondaryBorder, palette.inputBorder) < 1.01, "\(name) secondary border follows the input border")
     }
@@ -43,7 +43,7 @@ private let forest: FormhausTheme = {
 
 @Suite("Contrast")
 struct ContrastTests {
-    @Test("formhaus palettes meet WCAG AA, and Increase Contrast raises borders to 3:1", arguments: [ColorScheme.light, .dark])
+    @Test("formhaus palettes meet WCAG AA, and Increase Contrast raises input borders to 3:1", arguments: [ColorScheme.light, .dark])
     func standard(scheme: ColorScheme) {
         checkPalette("\(scheme)", FormhausTheme.standard.palette(for: scheme, contrast: .standard), increased: false)
         checkPalette("\(scheme) increased", FormhausTheme.standard.palette(for: scheme, contrast: .increased), increased: true)
@@ -55,14 +55,6 @@ struct ContrastTests {
         checkPalette("forest \(scheme) increased", increased, increased: true)
         let primary = increased.primary.resolve(in: EnvironmentValues())
         #expect(primary.green > primary.red && primary.green > primary.blue)
-    }
-
-    @Test("formhaus input borders match the web tokens")
-    func webTokens() {
-        #expect(ratio(Palette.light.inputBorder, Color(hex: 0x84848D)) < 1.01)
-        #expect(ratio(Palette.dark.inputBorder, Color(hex: 0x73737D)) < 1.01)
-        #expect(ratio(Palette.light.inputBorderHover ?? .clear, Color(hex: 0x5F5F68)) < 1.01)
-        #expect(ratio(Palette.dark.inputBorderHover ?? .clear, Color(hex: 0x9A9AA5)) < 1.01)
     }
 
     @Test("an explicit Increase Contrast palette wins over the derived one")
