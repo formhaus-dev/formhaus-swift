@@ -80,7 +80,7 @@ struct StepScroller: ViewModifier {
         }
         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
             switch target {
-            case .summary: proxy.scrollTo(ScrollAnchor.summary(model), anchor: .top)
+            case .summary: proxy.scrollTo(ScrollAnchor.summary(model))
             case .field(let key): proxy.scrollTo(key, anchor: .center)
             case .formTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: .top)
             case .screenTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: UnitPoint(x: 0.5, y: ScrollAnchor.screenReach))
