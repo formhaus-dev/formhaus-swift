@@ -5,7 +5,6 @@ extension FormModel {
     public func setValue(_ value: JSONValue?, forKey key: String) {
         guard !disabled else { return }
         dropFocusRequest()
-        let value = withoutForeignFile(value, forKey: key, in: definition)
         engine.setValue(key, value)
         options.onFieldChange?(key, value, engine.values)
     }

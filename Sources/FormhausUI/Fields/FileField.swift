@@ -12,8 +12,10 @@ public struct FileField: View {
     }
 
     public var body: some View {
-        PickerInput(context: context, active: picking, clearable: !context.text.isEmpty, cleared: .null, label: summary) { picking = true }
-            .filePicker(context, isPresented: $picking)
+        PickerInput(context: context, active: picking, clearable: context.fileName != nil, cleared: .null, label: summary) {
+            picking = true
+        }
+        .filePicker(context, isPresented: $picking)
     }
 
     private var summary: some View {
@@ -37,8 +39,8 @@ public struct FileField: View {
 
 extension FieldContext {
     var fileName: String? {
-        guard !text.isEmpty else { return nil }
-        return URL(string: text)?.lastPathComponent ?? text
+        guard let url = URL(string: text), url.isFileURL, UploadStore.owns(url) else { return nil }
+        return url.lastPathComponent
     }
 
     func replaceFile(with url: URL?) {
