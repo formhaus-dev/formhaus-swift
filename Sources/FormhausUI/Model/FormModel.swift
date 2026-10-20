@@ -41,6 +41,7 @@ public final class FormModel {
     @ObservationIgnored private var emittedValues: JSONObject?
 
     public init(engine: FormEngine, options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler) {
+        dropForeignFiles(engine)
         self.engine = engine
         self.options = options
         submitHandler = onSubmit
