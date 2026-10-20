@@ -107,8 +107,8 @@ func exclusiveValues(_ field: FormField) -> [JSONValue] {
 }
 
 private func isOption(_ field: FormField, _ value: JSONValue) -> Bool {
-    guard let options = staticOptions(field) else { return true }
-    return options.contains { strictEquals($0.json["value"], value) }
+    guard !field.hasOptionsFrom, let index = field.optionIndex else { return true }
+    return index.position(of: value) != nil
 }
 
 private typealias Fail = (MessageKey, JSONObject) -> String
@@ -132,7 +132,7 @@ private func multiselectError(_ field: FormField, _ value: JSONValue, _ fail: Fa
     if repeated { return fail("options", [:]) }
     guard items.count > 1,
         let exclusive = staticOptions(field)?.first(where: { option in
-            option.exclusive && items.contains { strictEquals(option.json["value"], $0) }
+            option.exclusive && option.json["value"]?.stringValue.map(seen.contains) == true
         })
     else { return nil }
     return fail("exclusive", ["option": exclusive.json["label"] ?? .string("undefined")])

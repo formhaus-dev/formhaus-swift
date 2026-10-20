@@ -42,11 +42,18 @@ private func ruleIssues(_ context: CheckContext, _ entry: FieldEntry) -> [Defini
 }
 
 private func optionIssues(_ entry: FieldEntry) -> [DefinitionIssue] {
-    let values = (entry.field.options ?? []).map(\.value)
-    return values.enumerated().flatMap { index, value -> [DefinitionIssue] in
-        guard let first = values.firstIndex(where: { $0?.utf16.elementsEqual(value?.utf16 ?? "".utf16) ?? (value == nil) }), first < index
-        else { return [] }
-        return [error("duplicate-option-value", "\(entry.path)/options/\(index)/value", "\"\(value ?? "")\" is already an option value")]
+    var seen = KeySet()
+    var seenMissing = false
+    return (entry.field.options ?? []).map(\.value).enumerated().compactMap { index, value -> DefinitionIssue? in
+        let repeated: Bool
+        if let value {
+            repeated = !seen.insert(value)
+        } else {
+            repeated = seenMissing
+            seenMissing = true
+        }
+        guard repeated else { return nil }
+        return error("duplicate-option-value", "\(entry.path)/options/\(index)/value", "\"\(value ?? "")\" is already an option value")
     }
 }
 
