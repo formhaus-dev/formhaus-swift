@@ -4,10 +4,20 @@
     "width": 1920,
     "height": 1080,
     "fps": 60,
-    "scales": [1, 2],
+    "scales": [
+      1,
+      2
+    ],
     "transition": 0.35,
-    "poster": { "beat": "parity", "at": 5.4 },
-    "gif": { "width": 800, "fps": 15, "maxBytes": 3000000 }
+    "poster": {
+      "beat": "branch",
+      "at": 3.6
+    },
+    "gif": {
+      "width": 800,
+      "fps": 15,
+      "maxBytes": 3000000
+    }
   },
   "theme": {
     "fonts": {
@@ -27,151 +37,320 @@
       "lavender": "#e7d9fa",
       "bezel": "{palette.graphite.950}",
       "bezelEdge": "{palette.graphite.700}",
-      "code": "{palette.graphite.900}",
-      "codeText": "{palette.graphite.50}",
-      "codeMuted": "{palette.graphite.400}",
-      "codeKey": "#b9a3ff",
-      "codeString": "#9fe0c0",
-      "codeError": "{palette.red.400}",
+      "code": "{color.bg.default}",
+      "codeText": "{color.text.default}",
+      "codeMuted": "{color.text.muted}",
+      "codeKey": "{color.primary.default}",
+      "codeString": "#1f7a4d",
+      "codeError": "{color.error.default}",
       "success": "#1f9d55"
     }
   },
   "devices": {
-    "iphone": { "kind": "iphone", "simulator": "iPhone 17 Pro", "screen": [402, 874], "radius": 62 },
-    "browser": { "kind": "browser", "viewport": [720, 960], "scale": 2, "url": "northwind.studio/start" },
-    "builder": { "kind": "browser", "viewport": [1280, 800], "scale": 1.5, "url": "Formhaus builder" },
-    "mac": { "kind": "mac", "window": [880, 820], "title": "Start a project" }
+    "iphone": {
+      "kind": "iphone",
+      "simulator": "iPhone 17 Pro",
+      "screen": [
+        402,
+        874
+      ],
+      "radius": 62
+    },
+    "browser": {
+      "kind": "browser",
+      "viewport": [
+        720,
+        960
+      ],
+      "scale": 2,
+      "url": "northwind.studio/start"
+    },
+    "mac": {
+      "kind": "mac",
+      "window": [
+        880,
+        820
+      ],
+      "title": "Start a project"
+    }
   },
-  "excerpt": { "field": "projectType", "file": "project-inquiry.json" },
   "edit": {
     "field": "currentSite",
     "property": "show.0.in",
-    "value": ["redesign", "online-store", "landing-page"]
+    "value": [
+      "redesign",
+      "online-store",
+      "landing-page"
+    ]
   },
   "marks": {
-    "builder": { "first": 0.9, "scope": 0.9, "details": 1.8, "json": 2.7 },
-    "tour": { "first": 1.6, "error": 1.6, "landing": 3.8, "branch": 4.7, "back": 6.9 },
-    "showcase": { "first": 1.6, "condition": 1.6, "typing": 2.95, "project": 5.65, "scope": 6.55, "services": 7.9, "scoped": 10.6, "contact": 11.5, "server": 16.92, "success": 22.96, "end": 25.2 },
-    "styles": { "first": 1.6, "start": 0, "filled": 7.45, "system": 9.65, "brand": 12.45, "formhaus": 15.25, "end": 18.0 }
+    "tour": {
+      "first": 1.6,
+      "error": 1.6,
+      "landing": 3.8,
+      "branch": 4.7,
+      "back": 6.9
+    },
+    "showcase": {
+      "first": 1.6,
+      "condition": 1.6,
+      "typing": 2.95,
+      "project": 5.65,
+      "scope": 6.55,
+      "services": 7.9,
+      "scoped": 10.6,
+      "contact": 11.5,
+      "server": 16.92,
+      "success": 22.96,
+      "end": 25.2
+    },
+    "styles": {
+      "first": 1.6,
+      "start": 0,
+      "filled": 7.45,
+      "system": 9.65,
+      "brand": 12.45,
+      "formhaus": 15.25,
+      "end": 18.0
+    },
+    "branch": {
+      "first": 1.6,
+      "landing": 1.6,
+      "branch": 2.5,
+      "end": 4.7
+    }
   },
   "footage": {
-    "ios-tour": { "device": "iphone", "script": "tour", "stop": "back", "definition": "base", "length": 8 },
-    "ios-showcase": { "device": "iphone", "script": "showcase", "definition": "base", "length": 27 },
-    "ios-variant": { "device": "iphone", "script": "tour", "stop": "branch", "definition": "variant", "length": 7 },
-    "ios-styles": { "device": "iphone", "script": "styles", "definition": "base", "length": 17 },
-    "mac-still": { "device": "mac", "definition": "base", "still": true },
-    "web-tour": { "device": "browser", "script": "tour", "stop": "back", "definition": "base", "length": 7.6 },
-    "web-variant": { "device": "browser", "script": "tour", "stop": "branch", "definition": "variant", "length": 6 },
-    "builder": { "device": "builder", "page": "builder", "script": "builder", "definition": "base", "length": 4.6 }
+    "ios-tour": {
+      "device": "iphone",
+      "script": "tour",
+      "stop": "back",
+      "definition": "base",
+      "length": 8
+    },
+    "ios-showcase": {
+      "device": "iphone",
+      "script": "showcase",
+      "definition": "base",
+      "length": 27
+    },
+    "ios-variant": {
+      "device": "iphone",
+      "script": "tour",
+      "stop": "branch",
+      "definition": "variant",
+      "length": 7
+    },
+    "ios-styles": {
+      "device": "iphone",
+      "script": "styles",
+      "definition": "base",
+      "length": 17
+    },
+    "mac-still": {
+      "device": "mac",
+      "definition": "base",
+      "still": true
+    },
+    "web-tour": {
+      "device": "browser",
+      "script": "tour",
+      "stop": "back",
+      "definition": "base",
+      "length": 7.6
+    },
+    "web-variant": {
+      "device": "browser",
+      "script": "tour",
+      "stop": "branch",
+      "definition": "variant",
+      "length": 6
+    },
+    "ios-branch": {
+      "device": "iphone",
+      "script": "branch",
+      "definition": "base",
+      "length": 6,
+      "syncTap": 1
+    },
+    "web-branch": {
+      "device": "browser",
+      "script": "branch",
+      "definition": "base",
+      "length": 5,
+      "syncTap": 1
+    }
   },
   "beats": [
     {
-      "id": "problem",
-      "scene": "problem",
-      "duration": 4.2,
-      "caption": "Stop building the same form twice.",
-      "panels": [
+      "id": "launch",
+      "scene": "launch",
+      "duration": 4,
+      "title": "Formhaus is now on iOS and macOS.",
+      "subline": "Native SwiftUI, same JSON as the web.",
+      "devices": {
+        "mac": "mac",
+        "phone": "iphone"
+      },
+      "stills": {
+        "mac": "mac-still",
+        "phone": "ios-tour"
+      },
+      "at": 0.8
+    },
+    {
+      "id": "branch",
+      "scene": "split",
+      "duration": 4.4,
+      "caption": "Same rules on every platform.",
+      "captionAt": 2.2,
+      "devices": {
+        "web": "browser",
+        "ios": "iphone"
+      },
+      "clips": {
+        "web": "web-branch",
+        "ios": "ios-branch"
+      },
+      "sync": {
+        "web": [
+          "branch",
+          "landing"
+        ],
+        "ios": [
+          "branch",
+          "landing"
+        ]
+      },
+      "from": -1.1,
+      "cursor": true,
+      "camera": [
         {
-          "file": "SignupForm.tsx",
-          "language": "tsx",
-          "lines": [
-            "export function validate(email: string, password: string) {",
-            "  if (password.length < 8) return \"Must be at least 8 characters\";",
-            "  if (!email.includes(\"@\")) return \"Enter a valid email\";",
-            "  return null;",
-            "}"
-          ],
-          "drift": { "line": 2, "at": 1.2, "marker": "8 characters" }
+          "at": 0,
+          "zoom": 1,
+          "focus": {
+            "web": "top",
+            "ios": "top"
+          }
         },
         {
-          "file": "SignupView.swift",
-          "language": "swift",
-          "lines": [
-            "func validate(email: String, password: String) -> String? {",
-            "    if password.count < 6 { return \"Password too short\" }",
-            "    if !email.contains(\"@\") { return \"Enter a valid email\" }",
-            "    return nil",
-            "}"
-          ],
-          "drift": { "line": 2, "at": 1.65, "marker": "6 characters" }
-        },
-        {
-          "file": "SignupScreen.kt",
-          "language": "kotlin",
-          "lines": [
-            "fun validate(email: String, password: String): String? {",
-            "    if (password.length < 8) return \"Must be at least 8 characters\"",
-            "    return null",
-            "}"
-          ],
-          "drift": { "line": 3, "at": 2.1, "marker": "No email check" }
+          "at": 2.6,
+          "zoom": 1.5,
+          "focus": {
+            "web": "top",
+            "ios": "top"
+          }
         }
       ]
     },
     {
-      "id": "create",
-      "scene": "create",
-      "duration": 5.8,
-      "continues": true,
-      "caption": "Create it with AI or the builder.",
-      "cut": 3.1,
-      "assistant": {
-        "title": "Assistant",
-        "prompt": "A project inquiry form: type of site, current URL for redesigns, services, contact.",
-        "tool": "formhaus · validate_definition",
-        "result": "{issues} issues"
-      },
-      "builder": { "clip": "builder", "device": "builder" }
-    },
-    {
-      "id": "ship",
-      "scene": "ship",
-      "duration": 3.2,
-      "caption": "The same JSON renders on web, iOS and macOS.",
-      "devices": ["browser", "mac", "iphone"],
-      "stills": { "browser": "web-tour", "mac": "mac-still", "iphone": "ios-tour" },
-      "at": 0.8
-    },
-    {
-      "id": "launch",
-      "scene": "launch",
-      "duration": 2.6,
-      "title": "Formhaus is now on iOS and macOS.",
-      "subline": "Native SwiftUI, same JSON as the web.",
-      "devices": { "mac": "mac", "phone": "iphone" },
-      "stills": { "mac": "mac-still", "phone": "ios-tour" },
-      "at": 0.8
-    },
-    {
       "id": "parity",
-      "scene": "parity",
+      "scene": "split",
       "duration": 6.2,
-      "devices": { "web": "browser", "ios": "iphone" },
-      "clips": { "web": "web-tour", "ios": "ios-tour" },
-      "from": 0.2,
-      "labels": { "web": "React · @formhaus/react", "ios": "SwiftUI · FormhausUI" },
+      "devices": {
+        "web": "browser",
+        "ios": "iphone"
+      },
+      "clips": {
+        "web": "web-tour",
+        "ios": "ios-tour"
+      },
+      "from": -1.4,
+      "labels": {
+        "web": "React · @formhaus/react",
+        "ios": "SwiftUI · FormhausUI"
+      },
       "steps": [
-        { "at": "error", "text": "Next, with nothing filled in." },
-        { "at": "landing", "text": "Pick “A landing page”." },
-        { "at": "branch", "text": "Both skip to step 2." }
+        {
+          "at": "error",
+          "text": "Next, with nothing filled in."
+        },
+        {
+          "at": "landing",
+          "text": "Pick “A landing page”."
+        },
+        {
+          "at": "branch",
+          "text": "Both skip to step 2."
+        }
       ],
-      "caption": { "at": "branch", "lead": 0.5, "text": "Same errors and branch handling on web and iOS." }
+      "caption": "Same errors and branch handling on web and iOS.",
+      "sync": {
+        "web": [
+          "tour",
+          "error"
+        ],
+        "ios": [
+          "tour",
+          "error"
+        ]
+      },
+      "captionAt": 5.0,
+      "camera": [
+        {
+          "at": 0,
+          "zoom": 1,
+          "focus": {
+            "web": "top",
+            "ios": "top"
+          }
+        },
+        {
+          "at": 2.2,
+          "zoom": 1.12,
+          "focus": {
+            "web": "top",
+            "ios": "top"
+          }
+        },
+        {
+          "at": 4.4,
+          "zoom": 1,
+          "focus": {
+            "web": "top",
+            "ios": "top"
+          }
+        }
+      ]
     },
     {
       "id": "edit",
       "scene": "edit",
       "duration": 5.2,
-      "devices": { "web": "browser", "ios": "iphone" },
+      "devices": {
+        "web": "browser",
+        "ios": "iphone"
+      },
       "clips": {
-        "before": { "web": "web-tour", "ios": "ios-tour" },
-        "after": { "web": "web-variant", "ios": "ios-variant" }
+        "before": {
+          "web": "web-tour",
+          "ios": "ios-tour"
+        },
+        "after": {
+          "web": "web-variant",
+          "ios": "ios-variant"
+        }
       },
       "hold": "landing",
       "offset": 0.5,
       "editAt": 1.6,
       "title": "Fix it once and get it everywhere.",
       "after": "Fix it once and get it everywhere.",
-      "file": "project-inquiry.json"
+      "file": "project-inquiry.json",
+      "region": {
+        "top": 330,
+        "height": 750
+      },
+      "camera": [
+        {
+          "at": 0,
+          "zoom": 1.6,
+          "focus": {
+            "web": "bottom",
+            "ios": "bottom"
+          }
+        }
+      ]
     },
     {
       "id": "tour",
@@ -182,26 +361,75 @@
       "script": "showcase",
       "title": "The formhaus components run natively on iOS.",
       "segments": [
-        { "from": "condition", "lead": 0.6, "length": 1.2, "rate": 1, "label": "Picture options", "focus": 0.36, "zoom": 1.2 },
-        { "from": "typing", "lead": 0.65, "length": 2.4, "rate": 1.6, "label": "Conditions and typing", "focus": 0.6, "zoom": 1.3 },
-        { "from": "scope", "lead": 0.35, "length": 2.5, "rate": 2, "label": "Choices and scales", "focus": 0.5, "zoom": 1.15 },
-        { "from": "server", "lead": 1.5, "length": 2.1, "rate": 1, "label": "Server errors and focus", "focus": 0.48, "zoom": 1.25 },
-        { "from": "success", "lead": 1.46, "length": 2.4, "rate": 1, "label": "Success", "focus": 0.45, "zoom": 1.1 }
+        {
+          "from": "condition",
+          "lead": 0.6,
+          "length": 1.2,
+          "rate": 1,
+          "label": "Picture options",
+          "focus": 0.36,
+          "zoom": 1.35
+        },
+        {
+          "from": "typing",
+          "lead": 0.65,
+          "length": 2.4,
+          "rate": 1.6,
+          "label": "Conditions and typing",
+          "focus": 0.6,
+          "zoom": 1.45
+        },
+        {
+          "from": "scope",
+          "lead": 0.35,
+          "length": 2.5,
+          "rate": 2,
+          "label": "Choices and scales",
+          "focus": 0.5,
+          "zoom": 1.3
+        },
+        {
+          "from": "server",
+          "lead": 1.5,
+          "length": 2.1,
+          "rate": 1,
+          "label": "Server errors and focus",
+          "focus": 0.48,
+          "zoom": 1.4
+        },
+        {
+          "from": "success",
+          "lead": 1.46,
+          "length": 2.4,
+          "rate": 1,
+          "label": "Success",
+          "focus": 0.45,
+          "zoom": 1.3
+        }
       ]
     },
     {
-      "id": "styles",
-      "scene": "styles",
-      "duration": 6.4,
-      "device": "iphone",
-      "clip": "ios-styles",
-      "play": { "from": "system", "lead": 1.4, "until": "formhaus" },
+      "id": "looks",
+      "scene": "looks",
+      "duration": 5,
       "title": "Bring your own components.",
-      "code": "FormhausForm(model: model)",
+      "clip": "ios-styles",
       "sets": [
-        { "at": "filled", "name": "formhaus", "line": ".formhausComponents(.standard)" },
-        { "at": "system", "name": "iOS", "line": ".formhausComponents(.system)" },
-        { "at": "brand", "name": "Kiln", "line": ".formhausComponents(kiln)" }
+        {
+          "at": "filled",
+          "offset": 0.6,
+          "name": "formhaus"
+        },
+        {
+          "at": "system",
+          "offset": 1.2,
+          "name": "iOS system"
+        },
+        {
+          "at": "brand",
+          "offset": 1.2,
+          "name": "Kiln"
+        }
       ]
     },
     {
@@ -210,18 +438,35 @@
       "duration": 3.9,
       "count": "shared conformance tests pass in TypeScript and Swift",
       "header": "Test",
-      "engines": ["TypeScript", "Swift"]
+      "engines": [
+        "TypeScript",
+        "Swift"
+      ]
     },
     {
       "id": "end",
       "scene": "end",
       "duration": 4.8,
       "title": "Same engine for web, iOS and macOS.",
-      "devices": ["browser", "mac", "iphone"],
-      "stills": { "browser": "web-tour", "mac": "mac-still", "iphone": "ios-tour" },
-      "at": { "browser": "landing", "iphone": "landing" },
+      "devices": [
+        "browser",
+        "mac",
+        "iphone"
+      ],
+      "stills": {
+        "browser": "web-tour",
+        "mac": "mac-still",
+        "iphone": "ios-tour"
+      },
+      "at": {
+        "browser": "landing",
+        "iphone": "landing"
+      },
       "install": ".package(url: \"https://github.com/formhaus-dev/formhaus-swift.git\", branch: \"main\")",
-      "links": ["formhaus.dev", "github.com/formhaus-dev/formhaus-swift"]
+      "links": [
+        "formhaus.dev",
+        "github.com/formhaus-dev/formhaus-swift"
+      ]
     }
   ]
 }

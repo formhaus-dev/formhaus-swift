@@ -70,28 +70,25 @@ body {
 .caption {
   width: 1920px;
   text-align: center;
-  font-size: 44px;
-  font-weight: 650;
-  letter-spacing: -0.028em;
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
 }
 
-.caption--muted {
+.caption--step {
   color: var(--c-muted);
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
 }
 
-.label {
-  color: var(--c-muted);
-  font-size: 19px;
-  font-weight: 550;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
-
-.accent {
-  color: var(--c-primary);
+.pill {
+  padding: 8px 22px;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: 32px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px -18px rgba(13, 13, 21, 0.4);
 }
 
 .device {
@@ -205,11 +202,12 @@ body {
 }
 
 .card {
+  border: 1px solid var(--c-border);
   border-radius: 22px;
   background: var(--c-code);
   color: var(--c-codeText);
   font-family: var(--font-mono);
-  box-shadow: 0 40px 80px -40px rgba(13, 13, 21, 0.5);
+  box-shadow: 0 30px 70px -45px rgba(13, 13, 21, 0.35);
 }
 
 .card__tab {
@@ -282,7 +280,7 @@ body {
   align-items: center;
   gap: 18px;
   color: var(--c-muted);
-  font-size: 30px;
+  font-size: 38px;
   font-weight: 550;
   letter-spacing: -0.015em;
   white-space: nowrap;
@@ -304,20 +302,9 @@ body {
   box-shadow: 0 0 0 6px var(--c-primarySoft);
 }
 
-.code-slot {
-  position: relative;
-  height: 1.62em;
-}
-
-.code-swap {
-  position: absolute;
-  left: 14px;
-  top: 0;
-}
-
 .proof-number {
   color: var(--c-primary);
-  font-size: 220px;
+  font-size: 320px;
   font-weight: 750;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -325,8 +312,8 @@ body {
 }
 
 .proof-label {
-  width: 760px;
-  font-size: 48px;
+  width: 860px;
+  font-size: 52px;
   line-height: 1.15;
   white-space: normal;
   font-weight: 700;
@@ -390,8 +377,8 @@ body {
 
 .end-install {
   width: max-content;
-  padding: 22px 34px;
-  font-size: 23px;
+  padding: 20px 34px;
+  font-size: 32px;
   white-space: pre;
 }
 
@@ -402,14 +389,14 @@ body {
   gap: 28px;
   width: 1920px;
   color: var(--c-muted);
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 550;
   letter-spacing: -0.012em;
 }
 
 .end-links img {
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   border-radius: 8px;
 }
 
@@ -436,55 +423,12 @@ body {
 }
 
 .launch-title {
-  font-size: 80px;
+  font-size: 84px;
   letter-spacing: -0.04em;
 }
 
 .launch-sub {
-  font-size: 36px;
-}
-
-.assistant {
-  width: 760px;
-  padding: 0 0 28px;
-  overflow: hidden;
-  border-radius: 22px;
-  background: var(--c-code);
-  color: var(--c-codeText);
-  box-shadow: 0 40px 80px -40px rgba(13, 13, 21, 0.5);
-}
-
-.assistant__bar {
-  padding: 18px 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--c-codeMuted);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.assistant__prompt {
-  margin: 26px 28px 0;
-  padding: 18px 22px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
-  font-size: 22px;
-  line-height: 1.45;
-  white-space: normal;
-}
-
-.assistant__tool {
-  margin: 22px 28px 0;
-  color: var(--c-codeMuted);
-  font-family: var(--font-mono);
-  font-size: 18px;
-}
-
-.assistant__result {
-  margin: 10px 28px 0;
-  color: var(--c-codeString);
-  font-family: var(--font-mono);
-  font-size: 18px;
-  white-space: pre;
+  font-size: 42px;
 }
 
 .mac {
@@ -541,27 +485,32 @@ body {
   transform: translateX(-50%);
 }
 
-.code-panel .card__tab {
-  padding-top: 20px;
-  font-size: 19px;
-}
-
-.code-panel .code {
-  padding: 22px 32px 28px;
-  font-size: 26px;
-}
-
-.drift-marker {
-  position: absolute;
-  right: 32px;
-  height: 41.6px;
-  padding: 0 16px;
-  border-radius: 10px;
-  background: rgba(242, 115, 106, 0.16);
-  color: var(--c-codeError);
-  font-family: var(--font-sans);
-  font-size: 22px;
+.look-label {
+  color: var(--c-text);
+  font-size: 34px;
   font-weight: 650;
-  line-height: 41.6px;
-  opacity: 0;
+  text-align: center;
+}
+
+.pointer {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin: -4px 0 0 -6px;
+  pointer-events: none;
+}
+
+.pointer svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 3px rgba(13, 13, 21, 0.3));
+}
+
+.camera {
+  overflow: hidden;
+}
+
+.proof-engines .chip {
+  padding: 12px 28px;
+  font-size: 32px;
 }

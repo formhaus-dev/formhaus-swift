@@ -64,7 +64,7 @@ for (const [id, clip] of Object.entries(config.footage)) {
   const timeline = readJSON(join(footage, `${id}.timeline.json`));
   const nominal = config.marks[clip.script];
   const frames = samples(file);
-  const first = firstEvent(frames) - timeline.taps[0].time;
+  const first = firstEvent(frames) - timeline.taps[clip.syncTap ?? 0].time;
   const start = Math.max(0, config.devices[clip.device].kind === 'browser' ? first : refine(frames, first, timeline));
   const marks = timeline.marks.filter(({ name }) => name in nominal && name !== 'first').map(({ name, time }) => [nominal[name], Number(time.toFixed(3))]);
   const spec = config.devices[clip.device];

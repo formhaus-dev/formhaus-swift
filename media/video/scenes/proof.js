@@ -7,7 +7,7 @@ export default async (layer, beat, data) => {
   const { count, names } = data.conformance;
   const number = el('div', 'proof-number abs', layer);
   const label = el('div', 'proof-label abs', layer, beat.count);
-  const engines = el('div', 'chips abs', layer);
+  const engines = el('div', 'chips proof-engines abs', layer);
   for (const name of beat.engines) el('span', 'chip chip--on', engines, `${name} ✓`);
 
   const list = el('div', 'proof-list abs', layer);
@@ -28,10 +28,10 @@ export default async (layer, beat, data) => {
     update(t) {
       const counted = Math.round(progress(t, 0.2, 1.6) * count);
       number.textContent = String(counted);
-      place(number, { x: 150, y: 250, opacity: progress(t, 0, 0.5) });
-      place(label, { x: 156, y: 470, opacity: progress(t, 0.2, 0.5) });
-      place(engines, { x: 156, y: 650, opacity: progress(t, 0.6, 0.5) });
-      place(list, { x: 1010, y: 110, opacity: progress(t, 0.1, 0.6) });
+      place(number, { x: 140, y: 170, opacity: progress(t, 0, 0.5) });
+      place(label, { x: 150, y: 520, opacity: progress(t, 0.2, 0.5) });
+      place(engines, { x: 150, y: 700, opacity: progress(t, 0.6, 0.5) });
+      place(list, { x: 1060, y: 110, opacity: 0.5 * progress(t, 0.1, 0.6) });
       if (motion.scale) {
         rows.style.transform = `translateY(${-progress(t, 0.3, beat.duration - 0.8) * travel}px)`;
         return;
