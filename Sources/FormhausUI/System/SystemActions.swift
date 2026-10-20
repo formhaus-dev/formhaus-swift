@@ -10,7 +10,7 @@ struct SystemPrimaryButton: View {
             ProgressView()
         } else if context.state.showPrimary {
             Button(action: context.performPrimaryAction) {
-                Text(label)
+                Text(verbatim: label)
                     #if os(iOS)
                         .foregroundStyle(prominent || filled ? AnyShapeStyle(.white) : AnyShapeStyle(.tint))
                         .frame(maxWidth: prominent ? .infinity : nil, minHeight: prominent ? 34 : nil)

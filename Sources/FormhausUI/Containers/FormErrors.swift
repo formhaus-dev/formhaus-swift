@@ -16,10 +16,10 @@ public struct FormErrorSummary: View {
             let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
             let title = model.text(forLabel: "errorSummary")
             VStack(alignment: .leading, spacing: 0) {
-                Text(title).formhausText(.label).accessibilityAddTraits(.isHeader).padding(.bottom, tokens.spacing.s1)
+                Text(verbatim: title).formhausText(.label).accessibilityAddTraits(.isHeader).padding(.bottom, tokens.spacing.s1)
                 ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
                     if groups.count > 1 {
-                        Text(group.title).formhausText(.helper).accessibilityAddTraits(.isHeader)
+                        Text(verbatim: group.title).formhausText(.helper).accessibilityAddTraits(.isHeader)
                             .padding(.top, index > 0 ? tokens.spacing.s5 : tokens.spacing.s3)
                     }
                     ForEach(Array(group.entries.enumerated()), id: \.element.id) { row, entry in

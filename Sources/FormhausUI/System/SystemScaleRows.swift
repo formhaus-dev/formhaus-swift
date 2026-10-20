@@ -21,9 +21,9 @@ struct SystemScale: View {
                 }
                 if scale.anchors.contains(where: { $0 != nil }) {
                     HStack(alignment: .top) {
-                        Text(scale.anchors[0] ?? "")
+                        Text(verbatim: scale.anchors[0] ?? "")
                         Spacer(minLength: 12)
-                        Text(scale.anchors[2] ?? "").multilineTextAlignment(.trailing)
+                        Text(verbatim: scale.anchors[2] ?? "").multilineTextAlignment(.trailing)
                     }
                     .font(.footnote)
                     .systemSecondaryText()
@@ -32,9 +32,9 @@ struct SystemScale: View {
             }
             .padding(.vertical, 4)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(spoken(scale, current))
-            .accessibilityHint(context.helperText ?? "")
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .accessibilityAdjustableAction { direction in step(scale, current, direction) }
             .focusable()
             .formhausFocus(context, $focused)
@@ -58,7 +58,7 @@ private struct SystemScaleDot: View {
     let selected: Bool
 
     var body: some View {
-        Text(String(point))
+        Text(verbatim: String(point))
             .font(.body.monospacedDigit().weight(selected ? .semibold : .regular))
             .foregroundStyle(selected ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
             .frame(minWidth: 44, minHeight: 44)
@@ -98,7 +98,7 @@ struct SystemRating: View {
             }
             .padding(.leading, -8)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(
                 current > 0 ? [String(current), scale.anchor(for: current)].compactMap(\.self).joined(separator: ", ") : ""
             )

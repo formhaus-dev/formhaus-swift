@@ -29,7 +29,7 @@ struct ChoiceCard: View, Equatable {
         }
         .buttonStyle(OptionCardStyle(selected: selected))
         .accessibilityAddTraits(selected ? .isSelected : [])
-        .accessibilityHint(hint)
+        .accessibilityHint(Text(verbatim: hint))
         .overlay(alignment: .topTrailing) {
             if picture, option.image?.isEmpty == false {
                 let inset = (tokens.controls.hitTarget - tokens.controls.iconButton) / 2

@@ -13,7 +13,7 @@ public struct SelectField: View {
     public var body: some View {
         FieldShell(context) {
             HStack(spacing: tokens.spacing.s3) {
-                Text(selectedLabel ?? context.field.placeholder ?? "")
+                Text(verbatim: selectedLabel ?? context.field.placeholder ?? "")
                     .formhausText(.body, colored: false)
                     .foregroundStyle(textColor)
                     .lineLimit(1)
@@ -33,10 +33,10 @@ public struct SelectField: View {
         Menu {
             Picker(selection: selection) {
                 ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
-                    Text(option.label ?? option.value ?? "").tag(option.value ?? "")
+                    Text(verbatim: option.label ?? option.value ?? "").tag(option.value ?? "")
                 }
             } label: {
-                Text(context.accessibilityName)
+                Text(verbatim: context.accessibilityName)
             }
             .pickerStyle(.inline)
         } label: {
@@ -47,9 +47,9 @@ public struct SelectField: View {
         .menuIndicator(.hidden)
         .disabled(context.isLocked)
         .formhausFocus(context, $focused)
-        .accessibilityLabel(context.accessibilityName)
+        .accessibilityLabel(Text(verbatim: context.accessibilityName))
         .accessibilityValue(selectedLabel ?? "")
-        .accessibilityHint(context.helperText ?? "")
+        .accessibilityHint(Text(verbatim: context.helperText ?? ""))
     }
 
     private var textColor: Color {
@@ -80,7 +80,7 @@ public struct AutocompleteField: View {
         FieldShell(context) {
             VStack(alignment: .leading, spacing: tokens.spacing.s1) {
                 HStack(spacing: tokens.spacing.s3) {
-                    TextField(text: context.textBinding, prompt: Text(verbatim: "")) { Text(context.accessibilityName) }
+                    TextField(text: context.textBinding, prompt: Text(verbatim: "")) { Text(verbatim: context.accessibilityName) }
                         .textFieldStyle(.plain)
                         .autocorrectionDisabled()
                         .placeholder(context.field.placeholder, visible: context.text.isEmpty)
@@ -120,7 +120,7 @@ private struct SuggestionList: View {
                 Button {
                     pick(option.value ?? "")
                 } label: {
-                    Text(option.label ?? option.value ?? "")
+                    Text(verbatim: option.label ?? option.value ?? "")
                         .formhausText(.option)
                         .frame(maxWidth: .infinity, minHeight: tokens.controls.hitTarget, alignment: .leading)
                         .padding(.horizontal, tokens.spacing.s6)

@@ -83,7 +83,7 @@ public struct FormActionsBar: View {
     @ViewBuilder private var primary: some View {
         if state.showPrimary {
             Button(action: context.performPrimaryAction) {
-                Text(state.primaryLabel).frame(maxWidth: .infinity)
+                Text(verbatim: state.primaryLabel).frame(maxWidth: .infinity)
             }
             .buttonStyle(FormButtonStyle(.primary, busy: context.busy && !context.model.loading))
             .disabled(context.busy || state.primaryDisabled)

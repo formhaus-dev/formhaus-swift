@@ -13,7 +13,7 @@ struct SystemTextRow: View {
                 HStack(spacing: 8) {
                     input
                         .labelsHidden()
-                        .accessibilityLabel(context.accessibilityName)
+                        .accessibilityLabel(Text(verbatim: context.accessibilityName))
                         .multilineTextAlignment(.trailing)
                         .textInputTraits(kind)
                         .submitLabel(nextKey != nil ? .next : context.model.structure.isLastStep ? .done : .continue)
@@ -21,7 +21,7 @@ struct SystemTextRow: View {
                             if let nextKey { context.model.focus(field: nextKey) } else { context.performPrimaryAction() }
                         }
                         .formhausFocus(context, $focused)
-                        .accessibilityHint(context.helperText ?? "")
+                        .accessibilityHint(Text(verbatim: context.helperText ?? ""))
                     if context.loading { ProgressView().controlSize(.small) }
                 }
             } label: {
@@ -32,11 +32,11 @@ struct SystemTextRow: View {
     }
 
     @ViewBuilder private var input: some View {
-        let prompt = Text(context.prompt)
+        let prompt = Text(verbatim: context.prompt)
         if kind == .password {
-            SecureField(text: binding, prompt: prompt) { Text(context.accessibilityName) }
+            SecureField(text: binding, prompt: prompt) { Text(verbatim: context.accessibilityName) }
         } else {
-            TextField(text: binding, prompt: prompt) { Text(context.accessibilityName) }
+            TextField(text: binding, prompt: prompt) { Text(verbatim: context.accessibilityName) }
         }
     }
 
@@ -74,11 +74,13 @@ struct SystemTextArea: View {
 
     var body: some View {
         SystemBlock(context: context) {
-            TextField(text: context.textBinding, prompt: Text(context.prompt), axis: .vertical) { Text(context.accessibilityName) }
-                .lineLimit(rows...)
-                .labelsHidden()
-                .formhausFocus(context, $focused)
-                .accessibilityHint(context.helperText ?? "")
+            TextField(text: context.textBinding, prompt: Text(verbatim: context.prompt), axis: .vertical) {
+                Text(verbatim: context.accessibilityName)
+            }
+            .lineLimit(rows...)
+            .labelsHidden()
+            .formhausFocus(context, $focused)
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
         }
     }
 
@@ -97,8 +99,8 @@ struct SystemToggleRow: View {
                 SystemRowLabel(context: context)
             }
             .modifier(SystemToggleStyle(checkbox: context.field.type == "checkbox"))
-            .accessibilityLabel(context.accessibilityName)
-            .accessibilityHint(context.helperText ?? "")
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .formhausFocus(context, $focused)
         }
     }

@@ -56,7 +56,7 @@ struct SystemRowLabel: View {
 
     var body: some View {
         tokens.marked(context.label, required: context.isRequired).foregroundStyle(Color.primary)
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
     }
 }
 
@@ -66,7 +66,7 @@ struct SystemNotes: View {
 
     var body: some View {
         if let helper = context.helperText {
-            Text(helper).font(.footnote).systemSecondaryText().fixedSize(horizontal: false, vertical: true)
+            Text(verbatim: helper).font(.footnote).systemSecondaryText().fixedSize(horizontal: false, vertical: true)
         }
         if !footerErrors, let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
     }
@@ -77,7 +77,7 @@ struct SystemErrorText: View {
     let text: String
 
     var body: some View {
-        Text(text)
+        Text(verbatim: text)
             .font(.footnote)
             .foregroundStyle(tokens.colors.error)
             .fixedSize(horizontal: false, vertical: true)
@@ -113,7 +113,7 @@ struct SystemBlock<Content: View>: View {
                 tokens.marked(context.label, required: context.isRequired)
                     .textCase(nil)
                     .systemSecondaryText()
-                    .accessibilityLabel(context.accessibilityName)
+                    .accessibilityLabel(Text(verbatim: context.accessibilityName))
                     .accessibilityAddTraits(.isHeader)
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {

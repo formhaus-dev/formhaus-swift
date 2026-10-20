@@ -30,7 +30,7 @@ public struct FieldShell<Content: View>: View {
                 .measured("\(context.key)/label")
             }
             if !isInline, let helper = context.helperText {
-                Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
                     .padding(.top, -tokens.spacing.s1)
             }
             HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
@@ -38,7 +38,7 @@ public struct FieldShell<Content: View>: View {
                 if variant == .inline { LoadingIndicator(visible: context.loading) }
             }
             if isInline, let helper = context.helperText {
-                Text(helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true).padding(.leading, inset)
+                Text(verbatim: helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true).padding(.leading, inset)
                     .padding(.top, -tokens.spacing.s1)
             }
             if let error = context.error, !error.isEmpty {
@@ -78,7 +78,7 @@ public struct FieldLabel: View {
         tokens.marked(text, required: required)
             .formhausText(.label)
             .fixedSize(horizontal: false, vertical: true)
-            .accessibilityLabel(required ? "\(text), \(requiredLabel)" : text)
+            .accessibilityLabel(Text(verbatim: required ? "\(text), \(requiredLabel)" : text))
     }
 }
 
@@ -90,7 +90,7 @@ public struct FieldError: View {
     }
 
     public var body: some View {
-        Text(text)
+        Text(verbatim: text)
             .formhausText(.error)
             .fixedSize(horizontal: false, vertical: true)
             .onAppear { announce(text) }
@@ -105,6 +105,6 @@ func announce(_ message: String) {
 
 extension FormhausTokens {
     func marked(_ text: String, required: Bool) -> Text {
-        Text(text) + Text(required ? " *" : "").foregroundStyle(colors.error)
+        Text(verbatim: text) + Text(verbatim: required ? " *" : "").foregroundStyle(colors.error)
     }
 }

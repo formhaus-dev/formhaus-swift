@@ -47,7 +47,7 @@ private struct SystemPictureTile: View {
                 SystemOptionImage(option: option)
                     .clipShape(shape)
                     .overlay(shape.strokeBorder(selected ? AnyShapeStyle(.tint) : AnyShapeStyle(.separator), lineWidth: selected ? 3 : 1))
-                Text(label).font(.subheadline).foregroundStyle(Color.primary).multilineTextAlignment(.center)
+                Text(verbatim: label).font(.subheadline).foregroundStyle(Color.primary).multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                 Image(systemName: indicator)
                     .font(.title3)
@@ -57,7 +57,7 @@ private struct SystemPictureTile: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(label)
+        .accessibilityLabel(Text(verbatim: label))
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 

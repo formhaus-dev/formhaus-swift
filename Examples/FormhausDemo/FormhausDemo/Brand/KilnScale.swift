@@ -16,7 +16,7 @@ struct KilnScaleField: View {
                         Button {
                             context.commit(.number(Double(point)))
                         } label: {
-                            Text(String(point))
+                            Text(verbatim: String(point))
                                 .font(KilnType.body.weight(.semibold).monospacedDigit())
                                 .foregroundStyle(current == point ? tokens.colors.onPrimary : tokens.colors.text)
                                 .frame(maxWidth: .infinity, minHeight: 48)
@@ -25,14 +25,14 @@ struct KilnScaleField: View {
                                 .contentShape(Capsule())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(String(point))
+                        .accessibilityLabel(Text(verbatim: String(point)))
                         .accessibilityAddTraits(current == point ? .isSelected : [])
                     }
                 }
                 HStack {
-                    Text(scale.anchor(for: scale.low) ?? "")
+                    Text(verbatim: scale.anchor(for: scale.low) ?? "")
                     Spacer()
-                    Text(scale.anchor(for: scale.high) ?? "")
+                    Text(verbatim: scale.anchor(for: scale.high) ?? "")
                 }
                 .font(KilnType.note)
                 .foregroundStyle(tokens.colors.textMuted)
@@ -73,7 +73,7 @@ struct KilnRatingField: View {
             }
             .padding(.leading, -8)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(current > 0 ? String(current) : "")
             .accessibilityAdjustableAction { direction in
                 let next = current + (direction == .increment ? 1 : -1)

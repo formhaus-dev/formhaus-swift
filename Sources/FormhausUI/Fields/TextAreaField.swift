@@ -13,12 +13,14 @@ public struct TextAreaField: View {
     public var body: some View {
         FieldShell(context) {
             HStack(alignment: .top, spacing: tokens.spacing.s3) {
-                TextField(text: context.textBinding, prompt: Text(verbatim: ""), axis: .vertical) { Text(context.accessibilityName) }
-                    .placeholder(context.field.placeholder, visible: context.text.isEmpty)
-                    .textFieldStyle(.plain)
-                    .lineLimit(rows...)
-                    .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)
-                    .accessibilityHint(context.helperText ?? "")
+                TextField(text: context.textBinding, prompt: Text(verbatim: ""), axis: .vertical) {
+                    Text(verbatim: context.accessibilityName)
+                }
+                .placeholder(context.field.placeholder, visible: context.text.isEmpty)
+                .textFieldStyle(.plain)
+                .lineLimit(rows...)
+                .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)
+                .accessibilityHint(Text(verbatim: context.helperText ?? ""))
                 LoadingIndicator(visible: context.loading)
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)

@@ -35,7 +35,7 @@ struct KilnChoiceField: View {
                 }
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(option.label ?? value)
+            .accessibilityLabel(Text(verbatim: option.label ?? value))
             .accessibilityAddTraits(isOn ? [.isSelected] : [])
         }
     }
@@ -52,7 +52,7 @@ struct KilnChip: View {
     var body: some View {
         HStack(spacing: 6) {
             if selected { Image(systemName: "checkmark").font(KilnType.note.weight(.bold)) }
-            Text(label).font(KilnType.body.weight(.medium))
+            Text(verbatim: label).font(KilnType.body.weight(.medium))
         }
         .foregroundStyle(selected ? tokens.colors.onPrimary : tokens.colors.text)
         .padding(.horizontal, 18)
@@ -84,7 +84,7 @@ private struct KilnPictureCard: View {
                 .colorMultiply(Color(kiln: 0xF2D3BD))
                 .aspectRatio(4 / 3, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            Text(option.label ?? option.value ?? "")
+            Text(verbatim: option.label ?? option.value ?? "")
                 .font(KilnType.heading)
                 .foregroundStyle(tokens.colors.text)
                 .fixedSize(horizontal: false, vertical: true)
