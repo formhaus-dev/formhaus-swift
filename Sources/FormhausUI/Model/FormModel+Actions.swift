@@ -5,6 +5,7 @@ extension FormModel {
     public func setValue(_ value: JSONValue?, forKey key: String) {
         guard !disabled else { return }
         dropFocusRequest()
+        let value = withoutForeignFile(value, forKey: key, in: definition)
         engine.setValue(key, value)
         options.onFieldChange?(key, value, engine.values)
     }
@@ -38,15 +39,11 @@ extension FormModel {
     }
 
     public func skip() async {
-        await run {
-            dropForeignFiles(self.engine)
-            return try await self.engine.skip(self.submitHandler)
-        }
+        await run { try await self.engine.skip(self.submitHandler) }
     }
 
     public func submit() async {
         await run {
-            dropForeignFiles(self.engine)
             guard !isActionDisabled(self.engine.definition.submit, self.engine.getSubmitValues()) else { return false }
             return try await self.engine.submit(self.submitHandler)
         }
