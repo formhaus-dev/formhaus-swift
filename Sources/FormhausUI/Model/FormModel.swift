@@ -177,7 +177,7 @@ public final class FormModel {
 
     private func refreshGroup(_ state: GroupState) {
         let items = engine.items(state.key)
-        state.update(items, hasContent: items.indices.map { engine.itemHasContent(state.key, $0) })
+        state.update(items, hasContent: items.isEmpty ? [] : engine.itemsHaveContent(state.key))
     }
 
     private func refreshField(_ state: FieldState) {

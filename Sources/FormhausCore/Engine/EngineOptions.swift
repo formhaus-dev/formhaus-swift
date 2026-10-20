@@ -56,7 +56,7 @@ public struct GroupItem: Sendable, Identifiable, Hashable {
     public let fields: [FormField]
 
     public static func == (lhs: GroupItem, rhs: GroupItem) -> Bool {
-        lhs.id == rhs.id && lhs.fields.map(\.ordinal) == rhs.fields.map(\.ordinal)
+        lhs.id == rhs.id && lhs.fields.count == rhs.fields.count && zip(lhs.fields, rhs.fields).allSatisfy { $0.ordinal == $1.ordinal }
     }
 
     public func hash(into hasher: inout Hasher) {

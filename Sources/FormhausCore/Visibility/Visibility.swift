@@ -92,25 +92,30 @@ func itemsOf(_ value: JSONValue?) -> [JSONValue] {
 }
 
 func itemScope(_ group: FormField, _ item: JSONValue, _ values: JSONObject) -> JSONObject {
+    itemScope(group.items, item, values)
+}
+
+func itemScope(_ fields: [FormField], _ item: JSONValue, _ values: JSONObject) -> JSONObject {
     var scope = values
     let source = item.objectValue ?? JSONObject()
-    for field in group.items { scope[field.key] = trimValue(field, source[field.key]) }
+    for field in fields { scope[field.key] = trimValue(field, source[field.key]) }
     return scope
 }
 
 func cleanItems(_ group: FormField, _ value: JSONValue?, _ values: JSONObject, _ limits: ListLimits) -> JSONValue? {
     guard let items = value?.arrayValue else { return value }
-    return .array(
-        items.map { item in
-            guard item.objectValue != nil else { return item }
-            let scope = itemScope(group, item, values)
-            var result = JSONObject()
-            for field in group.items where scope[field.key] != nil && isVisible(field, scope, limits: limits) {
-                result[field.key] = scope[field.key]
-            }
-            return .object(result)
-        }
-    )
+    let fields = group.items
+    return .array(items.map { cleanItem(fields, $0, values, limits) })
+}
+
+func cleanItem(_ fields: [FormField], _ item: JSONValue, _ values: JSONObject, _ limits: ListLimits) -> JSONValue {
+    guard item.objectValue != nil else { return item }
+    let scope = itemScope(fields, item, values)
+    var result = JSONObject()
+    for field in fields where scope[field.key] != nil && isVisible(field, scope, limits: limits) {
+        result[field.key] = scope[field.key]
+    }
+    return .object(result)
 }
 
 func itemPath(_ group: String, _ index: Int, _ field: String) -> String {

@@ -25,10 +25,10 @@ enum UploadStore {
         return register(target, folder: folder, owner: owner)
     }
 
-    static func owned(_ value: String) -> URL? {
+    static func owned(_ value: String, by owner: ObjectIdentifier) -> URL? {
         let text = value.trimmingCharacters(in: .whitespacesAndNewlines.union(.controlCharacters))
         guard text.lowercased().hasPrefix("file:"), let url = URL(string: text), url.isFileURL, let folder = folder(of: url),
-            let upload = uploads[folder], upload.url.standardizedFileURL == url.standardizedFileURL
+            let upload = uploads[folder], upload.owner == owner, upload.url.standardizedFileURL == url.standardizedFileURL
         else { return nil }
         return upload.url
     }

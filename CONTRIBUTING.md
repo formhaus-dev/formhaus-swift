@@ -8,7 +8,7 @@ cd formhaus-swift
 swift build
 ```
 
-Requires Swift 6 and Xcode on macOS.
+Requires Swift 6.2 and Xcode on macOS.
 
 ## Build and test
 

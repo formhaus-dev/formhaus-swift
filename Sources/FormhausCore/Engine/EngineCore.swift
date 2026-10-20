@@ -24,7 +24,7 @@ final class EngineCore {
     var sending: Int?
     var started = false
     var viewedStep: String?
-    var shownFields: StringMap<(String, Bool)>?
+    var shownFields: ShownFields?
     private(set) var version = 0
     var emitEvent: ((FormEvent) -> Void)?
     var onChange: (() -> Void)?
@@ -122,7 +122,7 @@ final class EngineCore {
         if emitEvent == nil {
             shownFields = nil
         } else if started, shownFields == nil {
-            shownFields = visibility.conditionResults(values)
+            shownFields = visibility.trackShown(values, since: nil).state
         }
     }
 
@@ -144,11 +144,10 @@ final class EngineCore {
     }
 
     private func trackFields() {
-        let previous = shownFields
-        let next = visibility.conditionResults(values)
+        let (next, flips) = visibility.trackShown(values, since: shownFields)
         shownFields = next
-        for (id, entry) in next where previous?[id].map({ $0.1 == !entry.1 }) == true {
-            emit(entry.1 ? .fieldShown(fieldKey: entry.0) : .fieldHidden(fieldKey: entry.0))
+        for (key, shown) in flips {
+            emit(shown ? .fieldShown(fieldKey: key) : .fieldHidden(fieldKey: key))
         }
     }
 }

@@ -14,6 +14,8 @@ struct ListLimits: Sendable {
         for field in fields.flatMap({ [$0] + $0.items }) { lengths[field.key] = exemptLength(field) }
     }
 
+    func length(_ key: String) -> Int? { lengths[key] }
+
     func contains(_ key: String, _ value: JSONValue?, _ operand: JSONValue?) -> Bool {
         guard let items = value?.arrayValue, items.count <= maxListItems || items.count <= lengths[key] ?? 0 else { return false }
         return items.contains { sameValueZero($0, operand) }

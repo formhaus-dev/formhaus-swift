@@ -46,7 +46,7 @@ public struct FileField: View {
 
 extension FieldContext {
     var fileName: String? {
-        UploadStore.owned(text)?.lastPathComponent
+        UploadStore.owned(text, by: ObjectIdentifier(model))?.lastPathComponent
     }
 
     var reference: String? {

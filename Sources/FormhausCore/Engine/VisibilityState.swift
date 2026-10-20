@@ -16,6 +16,10 @@ final class VisibilityState {
     let index: DefinitionIndex
     let groups: [FormField]
     let paths: PathCache
+    let reconciled = ItemCache<JSONValue>()
+    let listed = ItemCache<GroupItem>()
+    let filled = ItemCache<Bool>()
+    let shown: ShownCache
     let conditional: [FormField]
     let customSteps: [Int]
     let order: [String]
@@ -31,6 +35,7 @@ final class VisibilityState {
         self.definition = definition
         index = DefinitionIndex(definition)
         groups = index.allFields.filter(\.isGroup)
+        shown = ShownCache(index, groups)
         paths = PathCache(definition)
         let index = index
         conditional = index.allFields.filter { $0.isConditioned || index.section(of: $0)?.isConditioned == true }
@@ -129,10 +134,8 @@ final class VisibilityState {
         canGoNextDirty = false
         if let step, customSteps.contains(step.ordinal) { settled = false }
         let scope = conditionValues(values)
-        let errors =
-            step.map {
-                validateShown($0.fields, scope, scope, ShownChecks(validators: validators, messages: nil, limits: limits(values)))
-            } ?? FieldErrors()
+        let checks = ShownChecks(validators: validators, messages: nil, limits: limits(values))
+        let errors = step.map { step in CallBudget.run { validateShown(step.fields, scope, scope, checks) } } ?? FieldErrors()
         canGoNext = definition.isMultiStep && errors.isEmpty
         return canGoNext
     }
@@ -144,25 +147,6 @@ final class VisibilityState {
 
     func affectsStructure(_ key: String, _ cleared: KeySet) -> Bool {
         index.routeFields.contains(key) || index.fieldDependents.has(key) || index.stepDependents.has(key) || !cleared.isEmpty
-    }
-
-    func conditionResults(_ values: Values) -> StringMap<(String, Bool)> {
-        var results = StringMap<(String, Bool)>(insertionOrder: true)
-        for field in conditional {
-            results[field.key] = (field.key, (results[field.key]?.1 ?? false) || visible(field, values.json))
-        }
-        for group in groups {
-            for (position, item) in itemsOf(values[group.key]).enumerated() {
-                let shown = itemFields(group, item, values.json)
-                let id = item.objectValue != nil ? values.itemId(group.key, position).map { "i\($0)" } ?? "\(position)" : "\(position)"
-                for field in group.items where field.isConditioned {
-                    results["\(group.key) \(id) \(field.key)"] = (
-                        itemPath(group.key, position, field.key), shown.contains { $0.ordinal == field.ordinal }
-                    )
-                }
-            }
-        }
-        return results
     }
 
     func unsettle() { settled = false }
