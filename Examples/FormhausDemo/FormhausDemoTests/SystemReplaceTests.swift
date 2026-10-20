@@ -29,18 +29,15 @@ struct SystemReplaceTests {
     func earlierStepFiltered() async throws {
         let model = FormModel(definition: try FormDefinition(json: conditional("Y")), initialValues: ["x": "1"]) { _, _ in .ok }
         let stage = Stage(model)
-        await settle()
+        #expect(await stage.shows(["X"]))
         await model.next()
-        await settle()
+        #expect(await stage.shows(["Y"]))
         model.engine.replaceDefinition(try FormDefinition(json: conditional("Y2")))
-        await settle()
+        #expect(await eventually { axLabels(stage.window).contains("Y2") })
         #expect(stage.depth == 1)
-        #expect(axLabels(stage.window).contains("Y2"))
         await model.back()
-        await settle()
-        let labels = axLabels(stage.window)
-        #expect(labels.contains("X"))
-        #expect(!labels.contains("Secret"))
+        #expect(await stage.shows(["X"]))
+        #expect(!axLabels(stage.window).contains("Secret"))
         #expect(stage.depth == 1)
         stage.close()
     }

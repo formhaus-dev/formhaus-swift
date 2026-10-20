@@ -83,6 +83,14 @@ final class Stage {
         }
     }
 
+    var backs: [AXNode] { axTree(window).filter { $0.label == "Back" } }
+
+    var listed: Bool { axTree(window).contains { $0.cell != nil } }
+
+    func shows(_ expected: [String]) async -> Bool {
+        await eventually { self.fields == expected }
+    }
+
     func tapBack() -> Bool {
         barBack?.element?.accessibilityActivate() ?? false
     }
@@ -113,17 +121,14 @@ func stepsModel(values: JSONObject = ["x": "1"], delay: Bool = false, options ba
 }
 
 @MainActor
-func settle(_ milliseconds: Int = 900) async {
-    try? await Task.sleep(for: .milliseconds(milliseconds))
-}
-
-@MainActor
-func eventually(_ condition: @MainActor () -> Bool) async -> Bool {
-    for _ in 0..<30 {
-        if condition() { return true }
-        try? await Task.sleep(for: .milliseconds(100))
+func eventually(timeout: Duration = .seconds(10), _ condition: @MainActor () -> Bool) async -> Bool {
+    let clock = ContinuousClock()
+    let deadline = clock.now + timeout
+    while !condition() {
+        guard clock.now < deadline else { return false }
+        try? await Task.sleep(for: .milliseconds(50))
     }
-    return condition()
+    return true
 }
 
 @MainActor
