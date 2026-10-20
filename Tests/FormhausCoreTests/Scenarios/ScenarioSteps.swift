@@ -23,6 +23,7 @@ extension ScenarioRun {
         case "validate": return json(engine.validate())
         case "validateField": return engine.validateField(key).map(JSONValue.string)
         case "goToStepWithField": engine.goToStepWithField(key)
+        case "goToStep": return json(engine.goToStep(step["stepId"]?.stringValue ?? ""))
         case "reset": engine.reset(step["values"]?.objectValue)
         case "replaceDefinition": try engine.replaceDefinition(file.localized(step["definition"] ?? .null))
         case let name: throw ScriptError(message: "unknown action \(name ?? "nil")")

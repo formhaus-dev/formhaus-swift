@@ -98,10 +98,21 @@ func json(_ event: FormEvent) -> JSONValue {
     case .formSubmitted(let fieldCount):
         object["fieldCount"] = .number(Double(fieldCount))
     case .formSubmitFailed(let reason):
+        object["reason"] = .string(reason.name)
+        if case .error(let status?) = reason { object["status"] = .number(Double(status)) }
+    case .stepRedirected(let requestedStepId, let stepId, let reason):
+        object["requestedStepId"] = .string(requestedStepId)
+        object["stepId"] = stepId.map(JSONValue.string) ?? .null
         object["reason"] = .string(reason.rawValue)
     case .formViewed, .formSubmitSucceeded, .formReset:
         break
     }
+    return .object(object)
+}
+
+func json(_ result: GoToStepResult) -> JSONValue {
+    var object: JSONObject = ["stepId": result.stepId.map(JSONValue.string) ?? .null, "reached": .bool(result.reached)]
+    if let reason = result.reason { object["reason"] = .string(reason.rawValue) }
     return .object(object)
 }
 
