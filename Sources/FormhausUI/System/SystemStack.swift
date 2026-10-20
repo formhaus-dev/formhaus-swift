@@ -27,12 +27,15 @@
 
         func sync(_ model: FormModel) {
             let structure = model.structure
+            let ids = path(structure)
             if owner != ObjectIdentifier(model) || revision != structure.revision {
                 owner = ObjectIdentifier(model)
                 revision = structure.revision
                 snapshots = [:]
+                for step in structure.steps.prefix(ids.count) {
+                    snapshots[stepKey(step)] = StepSnapshot(nodes: model.engine.visibleNodes(of: step), step: step)
+                }
             }
-            let ids = path(structure)
             if let current = ids.last { snapshots[current] = StepSnapshot(nodes: structure.nodes, step: structure.currentStep) }
             if target == nil, history != ids { history = ids }
         }
@@ -55,7 +58,8 @@
             }
         }
 
-        func snapshot(_ level: Int, _ structure: FormStructure) -> StepSnapshot {
+        func snapshot(_ level: Int, _ model: FormModel) -> StepSnapshot {
+            let structure = model.structure
             guard history.indices.contains(level) else { return StepSnapshot(nodes: [], step: nil) }
             let id = history[level]
             if level == history.count - 1, id == path(structure).last {
@@ -63,7 +67,7 @@
             }
             if let kept = snapshots[id] { return kept }
             let step = structure.steps.first { stepKey($0) == id }
-            return StepSnapshot(nodes: step?.fields ?? [], step: step)
+            return StepSnapshot(nodes: step.map { model.engine.visibleNodes(of: $0) } ?? [], step: step)
         }
 
         private func path(_ structure: FormStructure) -> [String] {

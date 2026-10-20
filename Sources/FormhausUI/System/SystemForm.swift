@@ -38,7 +38,7 @@ struct SystemForm: View {
 
         @ViewBuilder private var page: some View {
             if let active = store {
-                let snapshot = active.snapshot(level, model.structure)
+                let snapshot = active.snapshot(level, model)
                 SystemPage(
                     model: model, nodes: snapshot.nodes, step: snapshot.step, level: level, current: active.history.count == level + 1
                 )
