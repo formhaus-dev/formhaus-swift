@@ -1,0 +1,26 @@
+{
+  "name": "check-autocomplete-version",
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "first",
+        "type": "text",
+        "label": "first",
+        "autocomplete": "given-name"
+      }
+    ]
+  }
+}

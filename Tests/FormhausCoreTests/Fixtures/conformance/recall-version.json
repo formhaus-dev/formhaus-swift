@@ -1,0 +1,50 @@
+{
+  "name": "recall-version",
+  "covers": [],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name"
+      },
+      {
+        "key": "next",
+        "type": "text",
+        "label": "Hi {{name}}",
+        "helperText": "{{nope}}"
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "texts below format 1.5 keep the braces",
+      "values": {
+        "name": "Ada"
+      },
+      "texts": [
+        {
+          "address": "fields.next.label",
+          "text": "Hi {{name}}"
+        },
+        {
+          "address": "fields.next.helperText",
+          "text": "{{nope}}"
+        }
+      ]
+    }
+  ]
+}

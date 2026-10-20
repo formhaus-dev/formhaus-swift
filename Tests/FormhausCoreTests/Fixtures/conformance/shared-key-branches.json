@@ -161,7 +161,8 @@
           "amount": "Enter a number"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": { "kind": "exact" }
     },
     {
       "name": "number on the range branch",
@@ -181,7 +182,8 @@
           "amount": "Select one of the available options"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": { "kind": "range" }
     },
     {
       "name": "boolean for the text field on the range branch",
@@ -203,7 +205,8 @@
           "urgent": "Must be text"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": { "kind": "range", "amount": "high" }
     }
   ]
 }

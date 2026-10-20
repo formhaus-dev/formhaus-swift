@@ -1,0 +1,154 @@
+{
+  "name": "recall-inactive",
+  "covers": [],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "unknown-recall-field",
+      "path": "/steps/2/description"
+    },
+    {
+      "code": "recall-forward-reference",
+      "path": "/steps/2/fields/0/helperText"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "start",
+        "title": "Start",
+        "fields": [
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "pro",
+                "label": "Pro"
+              },
+              {
+                "value": "team",
+                "label": "Team"
+              }
+            ]
+          },
+          {
+            "key": "contact",
+            "type": "checkbox",
+            "label": "Contact me"
+          },
+          {
+            "key": "phone",
+            "type": "phone",
+            "label": "Phone",
+            "show": [
+              {
+                "field": "contact",
+                "eq": true
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "show": [
+              {
+                "field": "plan",
+                "eq": "team"
+              }
+            ],
+            "to": "team"
+          },
+          {
+            "to": "review"
+          }
+        ]
+      },
+      {
+        "id": "team",
+        "title": "Team",
+        "fields": [
+          {
+            "key": "size",
+            "type": "number",
+            "label": "Size"
+          }
+        ],
+        "routes": [
+          {
+            "to": "review"
+          }
+        ]
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "description": "Plan {{plan}}, size [{{size}}], phone [{{phone}}], [{{missing}}]",
+        "fields": [
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note for {{ plan }}",
+            "helperText": "[{{later}}] [{{note}}]"
+          }
+        ]
+      },
+      {
+        "id": "end",
+        "title": "End",
+        "fields": [
+          {
+            "key": "later",
+            "type": "text",
+            "label": "Later"
+          }
+        ]
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "skipped branch and hidden field",
+      "values": {
+        "plan": "pro",
+        "size": 5,
+        "contact": false,
+        "phone": "123",
+        "later": "x",
+        "note": "y"
+      },
+      "texts": [
+        {
+          "address": "steps.review.description",
+          "text": "Plan Pro, size [], phone [], []"
+        },
+        {
+          "address": "steps.review.fields.note.label",
+          "text": "Note for Pro"
+        }
+      ]
+    },
+    {
+      "name": "active branch",
+      "values": {
+        "plan": "team",
+        "size": 5,
+        "contact": true,
+        "phone": "123"
+      },
+      "texts": [
+        {
+          "address": "steps.review.description",
+          "text": "Plan Team, size [5], phone [123], []"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "name": "recall-values",
+  "covers": [],
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name"
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email"
+      },
+      {
+        "key": "plan",
+        "type": "select",
+        "label": "Plan",
+        "options": [
+          {
+            "value": "pro",
+            "label": "Pro"
+          },
+          {
+            "value": "team",
+            "label": "Team"
+          }
+        ]
+      },
+      {
+        "key": "color",
+        "type": "radio",
+        "label": "Color",
+        "options": [
+          {
+            "value": "red",
+            "label": "Red"
+          },
+          {
+            "value": "blue",
+            "label": "Blue"
+          }
+        ]
+      },
+      {
+        "key": "tags",
+        "type": "multiselect",
+        "label": "Tags",
+        "options": [
+          {
+            "value": "a",
+            "label": "Alpha"
+          },
+          {
+            "value": "b",
+            "label": "Beta"
+          },
+          {
+            "value": "c",
+            "label": "Gamma"
+          }
+        ]
+      },
+      {
+        "key": "agree",
+        "type": "checkbox",
+        "label": "I agree"
+      },
+      {
+        "key": "news",
+        "type": "switch",
+        "label": "News"
+      },
+      {
+        "key": "seats",
+        "type": "number",
+        "label": "Seats"
+      },
+      {
+        "key": "score",
+        "type": "scale",
+        "label": "Score",
+        "validation": {
+          "min": 0,
+          "max": 10
+        }
+      },
+      {
+        "key": "stars",
+        "type": "rating",
+        "label": "Stars"
+      },
+      {
+        "key": "day",
+        "type": "date",
+        "label": "Day"
+      },
+      {
+        "key": "at",
+        "type": "time",
+        "label": "At"
+      },
+      {
+        "key": "when",
+        "type": "datetime",
+        "label": "When"
+      },
+      {
+        "key": "cv",
+        "type": "file",
+        "label": "CV"
+      },
+      {
+        "key": "ref",
+        "type": "hidden"
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "fields": [
+          {
+            "key": "guest",
+            "type": "text",
+            "label": "Guest"
+          }
+        ]
+      },
+      {
+        "key": "big",
+        "type": "number",
+        "label": "Big"
+      },
+      {
+        "key": "sum",
+        "type": "number",
+        "label": "Sum"
+      },
+      {
+        "key": "review",
+        "type": "textarea",
+        "label": "Review",
+        "helperText": "{{name}}|{{email}}|{{plan}}|{{color}}|{{tags}}|{{agree}}|{{news}}|{{seats}}|{{score}}|{{stars}}|{{day}}|{{at}}|{{when}}|{{cv}}|{{ref}}|{{people}}"
+      },
+      {
+        "key": "edges",
+        "type": "textarea",
+        "label": "Edges",
+        "helperText": "{{day}}|{{at}}|{{when}}|{{seats}}|{{big}}|{{sum}}|{{review}}"
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "every value kind",
+      "values": {
+        "name": "Ada",
+        "email": "ada@example.com",
+        "plan": "team",
+        "color": "red",
+        "tags": ["c", "a"],
+        "agree": true,
+        "news": true,
+        "seats": 3,
+        "score": 0,
+        "stars": 4.5,
+        "day": "2026-01-02",
+        "at": "09:30",
+        "when": "2026-01-02T09:30",
+        "cv": [
+          {
+            "name": "cv.pdf"
+          },
+          {
+            "name": "photo.png"
+          }
+        ],
+        "ref": "ad-7",
+        "people": [
+          {
+            "guest": "Bo"
+          },
+          {
+            "guest": "Cy"
+          }
+        ]
+      },
+      "texts": [
+        {
+          "address": "fields.review.helperText",
+          "text": "Ada|ada@example.com|Team|Red|Gamma, Alpha|I agree|News|3|0|4.5|2026-01-02|09:30|2026-01-02T09:30|cv.pdf, photo.png|ad-7|2"
+        }
+      ]
+    },
+    {
+      "name": "false, empty and missing values",
+      "values": {
+        "agree": false,
+        "news": false,
+        "tags": [],
+        "people": []
+      },
+      "texts": [
+        {
+          "address": "fields.review.helperText",
+          "text": "|||||||||||||||0"
+        }
+      ]
+    },
+    {
+      "name": "values outside the options and no recursion",
+      "values": {
+        "name": "{{email}}",
+        "email": "ada@example.com",
+        "plan": "gold",
+        "tags": ["a", "x"],
+        "cv": {
+          "name": "one.pdf"
+        }
+      },
+      "texts": [
+        {
+          "address": "fields.review.helperText",
+          "text": "{{email}}|ada@example.com|gold||Alpha, x|||||||||one.pdf||"
+        }
+      ]
+    },
+    {
+      "name": "dates, times and numbers as stored",
+      "values": {
+        "day": "2027-06-14",
+        "at": "23:59",
+        "when": "2027-06-14T23:59:30Z",
+        "seats": -0,
+        "big": 1e21,
+        "sum": 0.30000000000000004,
+        "review": "Line one\n\n  line two"
+      },
+      "texts": [
+        {
+          "address": "fields.edges.helperText",
+          "text": "2027-06-14|23:59|2027-06-14T23:59:30Z|0|1e+21|0.30000000000000004|Line one\n\n  line two"
+        }
+      ]
+    }
+  ]
+}

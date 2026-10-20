@@ -149,7 +149,8 @@
           "tools": "Must be a list of available options"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": { "habits": ["2"], "people": [{ "roles": ["y"] }] }
     }
   ]
 }

@@ -1,0 +1,41 @@
+{
+  "name": "check-outdated-version-exclusive",
+  "covers": ["asks for format 1.5 when an option is exclusive"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "conditions",
+        "type": "multiselect",
+        "label": "Do you have any of these conditions?",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ]
+      }
+    ]
+  }
+}

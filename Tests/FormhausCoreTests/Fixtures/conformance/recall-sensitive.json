@@ -1,0 +1,64 @@
+{
+  "name": "recall-sensitive",
+  "covers": [],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "recall-query-source",
+      "path": "/fields/3/helperText"
+    },
+    {
+      "code": "recall-sensitive-field",
+      "path": "/fields/3/helperText"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "pw",
+        "type": "password",
+        "label": "Password"
+      },
+      {
+        "key": "utm",
+        "type": "hidden",
+        "source": {
+          "query": "utm"
+        }
+      },
+      {
+        "key": "ref",
+        "type": "hidden",
+        "source": "referrer"
+      },
+      {
+        "key": "note",
+        "type": "text",
+        "label": "Note",
+        "helperText": "[{{pw}}] [{{pw}}] [{{utm}}] [{{ref}}]"
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "a password shows nothing",
+      "values": {
+        "pw": "hunter2",
+        "utm": "spring",
+        "ref": "https://example.com/"
+      },
+      "texts": [
+        {
+          "address": "fields.note.helperText",
+          "text": "[] [] [spring] [https://example.com/]"
+        }
+      ]
+    }
+  ]
+}

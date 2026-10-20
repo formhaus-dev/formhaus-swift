@@ -1,0 +1,49 @@
+{
+  "name": "recall-steps",
+  "covers": [],
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": { "label": "Send" },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About you",
+        "fields": [{ "key": "name", "type": "text", "label": "Name" }, { "key": "email", "type": "email", "label": "Email" }]
+      },
+      {
+        "id": "hello",
+        "title": "Hello, {{name}}!",
+        "description": "A few more questions.",
+        "fields": [{ "key": "role", "type": "text", "label": "Role" }]
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "description": "Check your answers: {{name}}, {{email}}, role {{role}}",
+        "fields": []
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "greeting and review",
+      "values": { "name": "Ada", "email": "ada@example.com", "role": "Engineer" },
+      "texts": [
+        { "address": "steps.hello.title", "text": "Hello, Ada!" },
+        { "address": "steps.review.description", "text": "Check your answers: Ada, ada@example.com, role Engineer" }
+      ]
+    },
+    {
+      "name": "unanswered",
+      "values": {},
+      "texts": [
+        { "address": "steps.hello.title", "text": "Hello, !" },
+        { "address": "steps.review.description", "text": "Check your answers: , , role " }
+      ]
+    }
+  ]
+}

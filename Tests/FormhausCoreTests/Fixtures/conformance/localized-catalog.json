@@ -119,7 +119,8 @@
           "email": "Введите корректный email"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": { "name": "Аня" }
     },
     {
       "name": "accepts valid answers",

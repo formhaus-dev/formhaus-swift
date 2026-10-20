@@ -1,0 +1,101 @@
+{
+  "name": "recall-syntax",
+  "covers": [],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "recall-syntax",
+      "path": "/fields/1/helperText"
+    },
+    {
+      "code": "unknown-recall-field",
+      "path": "/fields/1/helperText"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name"
+      },
+      {
+        "key": "note",
+        "type": "text",
+        "label": "Note \\{{name}} and \\{{ alone for {{ name }}",
+        "helperText": "{{name|upper}} {{name?}} {{a:b}} {{f(name)}} {{'name'}} {{\"name\"}} {{name[0]}} {{kids.kid}} {{ }} {{name}}"
+      },
+      {
+        "key": "kids",
+        "type": "group",
+        "label": "Kids of {{name}}",
+        "itemLabel": "Kid {{kid}} of {{name}}",
+        "fields": [
+          {
+            "key": "kid",
+            "type": "text",
+            "label": "Kid"
+          }
+        ]
+      },
+      {
+        "key": "contact.email",
+        "type": "email",
+        "label": "Email"
+      },
+      {
+        "key": "contact",
+        "type": "text",
+        "label": "Contact",
+        "helperText": "Write to {{contact.email}}"
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "reserved content, escapes and item labels",
+      "values": {
+        "name": "Ada",
+        "kids": [
+          {
+            "kid": "Bo"
+          },
+          {
+            "kid": "Cy"
+          }
+        ],
+        "contact.email": "ada@example.com"
+      },
+      "texts": [
+        {
+          "address": "fields.note.label",
+          "text": "Note {{name}} and {{ alone for Ada"
+        },
+        {
+          "address": "fields.note.helperText",
+          "text": "{{name|upper}} {{name?}} {{a:b}} {{f(name)}} {{'name'}} {{\"name\"}} {{name[0]}}  {{ }} Ada"
+        },
+        {
+          "address": "fields.kids.itemLabel",
+          "group": "kids",
+          "item": 1,
+          "text": "Kid Cy of Ada"
+        },
+        {
+          "address": "fields.kids.itemLabel",
+          "text": "Kid  of Ada"
+        },
+        {
+          "address": "fields.contact.helperText",
+          "text": "Write to ada@example.com"
+        }
+      ]
+    }
+  ]
+}

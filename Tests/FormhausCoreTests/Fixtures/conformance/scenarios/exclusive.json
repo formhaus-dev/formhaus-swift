@@ -1,0 +1,431 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "exclusive",
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "conditions",
+        "type": "multiselect",
+        "label": "Do you have any of these conditions?",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "details",
+        "type": "text",
+        "label": "Tell us more",
+        "show": [
+          {
+            "field": "conditions",
+            "notContains": "none"
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "fields": [
+          {
+            "key": "history",
+            "type": "multiselect",
+            "label": "Family history",
+            "options": [
+              {
+                "value": "asthma",
+                "label": "Asthma"
+              },
+              {
+                "value": "diabetes",
+                "label": "Diabetes"
+              },
+              {
+                "value": "none",
+                "label": "None of these",
+                "exclusive": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "symptoms",
+        "type": "multiselect",
+        "label": "Symptoms",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          },
+          {
+            "value": "private",
+            "label": "Prefer not to say",
+            "exclusive": true
+          }
+        ],
+        "validation": {
+          "minLength": 2
+        }
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "picking an exclusive option clears the other answers",
+      "values": {
+        "conditions": ["asthma", "diabetes"]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "conditions",
+          "value": ["asthma", "diabetes", "none"]
+        },
+        {
+          "expect": {
+            "values": {
+              "conditions": ["none"]
+            },
+            "fields": ["conditions", "people", "symptoms"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "picking another option removes the exclusive one",
+      "values": {
+        "conditions": ["none"]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "conditions",
+          "value": ["none", "asthma"]
+        },
+        {
+          "expect": {
+            "values": {
+              "conditions": ["asthma"]
+            },
+            "fields": ["conditions", "details", "people", "symptoms"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "the last newly picked exclusive option wins",
+      "definition": {
+        "formatVersion": "1.5",
+        "id": "f",
+        "title": "F",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "conditions",
+            "type": "multiselect",
+            "label": "Do you have any of these conditions?",
+            "options": [
+              {
+                "value": "asthma",
+                "label": "Asthma"
+              },
+              {
+                "value": "diabetes",
+                "label": "Diabetes"
+              },
+              {
+                "value": "none",
+                "label": "None of these",
+                "exclusive": true
+              },
+              {
+                "value": "private",
+                "label": "Prefer not to say",
+                "exclusive": true
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "conditions",
+          "value": ["asthma", "none", "private"]
+        },
+        {
+          "expect": {
+            "values": {
+              "conditions": ["private"]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "conditions",
+          "value": ["private", "none"]
+        },
+        {
+          "expect": {
+            "values": {
+              "conditions": ["none"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "group items follow the same rules",
+      "values": {
+        "people": [
+          {
+            "history": ["asthma"]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "history",
+          "value": ["asthma", "none"]
+        },
+        {
+          "expect": {
+            "values": {
+              "people": [
+                {
+                  "history": ["none"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "people.0.history",
+          "value": ["none", "diabetes"]
+        },
+        {
+          "expect": {
+            "values": {
+              "people": [
+                {
+                  "history": ["diabetes"]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initial values and writes that add nothing are not changed",
+      "values": {
+        "conditions": ["asthma", "none"]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "conditions": "Select \"None of these\" or other options, not both"
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "conditions": ["asthma", "none"]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "conditions",
+          "value": ["asthma", "none"]
+        },
+        {
+          "expect": {
+            "values": {
+              "conditions": ["asthma", "none"]
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "conditions",
+          "value": ["asthma", "none", "diabetes"]
+        },
+        {
+          "expect": {
+            "values": {
+              "conditions": ["asthma", "diabetes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "a write to a hidden field keeps the rule when the field is shown again",
+      "definition": {
+        "formatVersion": "1.5",
+        "id": "f",
+        "title": "F",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "ask",
+            "type": "checkbox",
+            "label": "Ask"
+          },
+          {
+            "key": "conditions",
+            "type": "multiselect",
+            "label": "Do you have any of these conditions?",
+            "options": [
+              {
+                "value": "asthma",
+                "label": "Asthma"
+              },
+              {
+                "value": "diabetes",
+                "label": "Diabetes"
+              },
+              {
+                "value": "none",
+                "label": "None of these",
+                "exclusive": true
+              }
+            ],
+            "show": [
+              {
+                "field": "ask",
+                "eq": true
+              }
+            ]
+          },
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "fields": [
+              {
+                "key": "asked",
+                "type": "checkbox",
+                "label": "Asked"
+              },
+              {
+                "key": "history",
+                "type": "multiselect",
+                "label": "Family history",
+                "options": [
+                  {
+                    "value": "asthma",
+                    "label": "Asthma"
+                  },
+                  {
+                    "value": "diabetes",
+                    "label": "Diabetes"
+                  },
+                  {
+                    "value": "none",
+                    "label": "None of these",
+                    "exclusive": true
+                  }
+                ],
+                "show": [
+                  {
+                    "field": "asked",
+                    "eq": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "people": [{}]
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "conditions",
+          "value": ["asthma", "none"]
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "history",
+          "value": ["diabetes", "none"]
+        },
+        {
+          "do": "setValue",
+          "key": "ask",
+          "value": true
+        },
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 0,
+          "field": "asked",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "ask": true,
+              "conditions": ["none"],
+              "people": [
+                {
+                  "asked": true,
+                  "history": ["none"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    }
+  ]
+}
