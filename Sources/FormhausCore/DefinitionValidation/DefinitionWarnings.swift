@@ -199,7 +199,7 @@ private func fieldWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [Def
                 "custom-type-name", "\(entry.path)/type", problem,
                 "Name custom types with a dash or colon, like \"x-rating\", so a future built-in type cannot take the name"))
     }
-    issues += optionWarnings(entry) + ruleWarnings(context, entry) + sourceWarnings(entry)
+    issues += optionWarnings(entry) + ruleWarnings(context, entry) + sourceWarnings(entry) + autocompleteWarnings(entry)
     for (index, key) in (field.optionsDependsOn ?? []).enumerated() {
         issues += missingTarget(context, key, "\(entry.path)/optionsDependsOn/\(index)").map { $0.withSeverity(.warning) }
     }
@@ -239,5 +239,6 @@ private func routeWarnings(_ context: CheckContext) -> [DefinitionIssue] {
 
 func definitionWarnings(_ context: CheckContext) -> [DefinitionIssue] {
     versionWarnings(context) + propertyWarnings(context) + context.conditions.flatMap { conditionWarnings(context, $0) }
-        + context.entries.flatMap { fieldWarnings(context, $0) } + routeWarnings(context)
+        + context.entries.flatMap { fieldWarnings(context, $0) } + routeWarnings(context) + recallWarnings(context)
+        + exclusiveWarnings(context)
 }
