@@ -21,39 +21,27 @@ public struct ChoiceIndicator: View {
         let size = tokens.controls.indicator
         ZStack {
             if shape == .radio {
-                IndicatorFace(shape: Circle(), fill: tokens.colors.background, stroke: stroke, width: 2)
-            } else {
-                IndicatorFace(
-                    shape: RoundedRectangle(cornerRadius: tokens.radii.indicator, style: .continuous),
-                    fill: selected ? tokens.colors.primary : tokens.colors.background, stroke: stroke, width: 1.5)
-            }
-            if selected, shape == .radio {
+                Color.clear.surface(
+                    Circle(), fill: tokens.colors.background, border: stroke, lineWidth: 2, motion: tokens.quick)
                 Circle().fill(tokens.colors.primary).frame(width: size * 4 / 9, height: size * 4 / 9)
-            }
-            if selected, shape == .checkbox {
+                    .animation(tokens.quick) { $0.opacity(selected ? 1 : 0) }
+            } else {
+                Color.clear.surface(
+                    RoundedRectangle(cornerRadius: tokens.radii.indicator, style: .continuous),
+                    fill: selected ? tokens.colors.primary : tokens.colors.background, border: stroke, lineWidth: 1.5,
+                    motion: tokens.quick)
                 Image(systemName: "checkmark")
                     .font(.system(size: size * 0.62, weight: .bold))
                     .foregroundStyle(tokens.colors.onPrimary)
+                    .animation(tokens.quick) { $0.opacity(selected ? 1 : 0) }
             }
         }
         .frame(width: size, height: size)
-        .animation(tokens.quick, value: selected)
         .accessibilityHidden(true)
     }
 
     private var stroke: Color {
         if selected { return tokens.colors.primary }
         return invalid ? tokens.colors.error : tokens.colors.control
-    }
-}
-
-private struct IndicatorFace<Outline: InsettableShape>: View {
-    let shape: Outline
-    let fill: Color
-    let stroke: Color
-    let width: CGFloat
-
-    var body: some View {
-        shape.fill(fill).overlay(shape.strokeBorder(stroke, lineWidth: width))
     }
 }

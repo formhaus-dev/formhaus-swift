@@ -41,20 +41,20 @@ private struct FormButtonBody: View {
         let shape = RoundedRectangle(cornerRadius: tokens.radii.control, style: .continuous)
         configuration.label
             .formhausText(variant == .text || compact ? .textButton : .button, colored: false)
-            .foregroundStyle(foreground)
             .lineLimit(1)
-            .opacity(busy ? 0 : 1)
-            .overlay { if busy { ProgressView().controlSize(.small).tint(foreground) } }
+            .animation(tokens.quick) { $0.foregroundStyle(foreground).opacity(busy ? 0 : 1) }
+            .overlay {
+                if busy {
+                    ProgressView().controlSize(.small).tint(foreground).transition(.opacity.animation(tokens.quick))
+                }
+            }
             .padding(.horizontal, horizontalPadding)
             .frame(minHeight: compact ? tokens.controls.hitTarget : tokens.controls.height)
-            .background(shape.fill(fill))
-            .overlay(shape.strokeBorder(border, lineWidth: 1))
+            .surface(shape, fill: fill, border: border, motion: tokens.quick)
             .contentShape(shape)
             .opacity(enabled || variant == .primary ? 1 : 0.5)
             .scaleEffect(configuration.isPressed && !tokens.reduceMotion ? 0.98 : 1)
             .onHover { hovered = $0 }
-            .animation(tokens.quick, value: hovered)
-            .animation(tokens.quick, value: busy)
     }
 
     private var horizontalPadding: CGFloat {

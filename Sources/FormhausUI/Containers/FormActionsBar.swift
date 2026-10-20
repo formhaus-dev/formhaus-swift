@@ -3,6 +3,7 @@ import SwiftUI
 
 struct FormActionsSlot: View {
     @Environment(\.formhausComponents) private var components
+    @Environment(\.formhausBehavior) private var behavior
     let model: FormModel
 
     var body: some View {
@@ -10,13 +11,28 @@ struct FormActionsSlot: View {
         if let custom = components.slots.actions {
             custom(context)
         } else {
-            FormActionsBar(context: context)
+            FormActionsBar(context: context).navigationBack(context, automatic: behavior.backPlacement == .automatic)
         }
     }
 }
 
+enum ActionsLayout {
+    case stacked
+    case row
+}
+
+extension EnvironmentValues {
+    @Entry var formhausActionsLayout: ActionsLayout?
+    @Entry var formhausBackInBar = false
+}
+
 public struct FormActionsBar: View {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.formhausActionsLayout) private var forcedLayout
+    @Environment(\.formhausBackInBar) private var backInBar
+    #if os(iOS)
+        @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     let context: ActionsContext
 
     public init(context: ActionsContext) {
@@ -24,29 +40,56 @@ public struct FormActionsBar: View {
     }
 
     public var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: tokens.spacing.s3) {
-                secondary.padding(.leading, leadingInset)
-                Spacer(minLength: tokens.spacing.s3)
-                primary.fixedSize()
-            }
-            .frame(minWidth: tokens.controls.compactWidth)
-            VStack(spacing: tokens.spacing.s3) {
-                if hasSecondary {
-                    HStack(spacing: tokens.spacing.s3) { secondary }.padding(.leading, leadingInset)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+        Group {
+            if layout == .stacked {
+                stacked
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    row
+                    stacked
                 }
-                primary.frame(maxWidth: .infinity)
             }
         }
         .padding(.top, tokens.spacing.s1)
     }
 
+    private var layout: ActionsLayout {
+        if let forcedLayout { return forcedLayout }
+        #if os(iOS)
+            return sizeClass == .compact ? .stacked : .row
+        #else
+            return .row
+        #endif
+    }
+
+    private var row: some View {
+        HStack(spacing: tokens.spacing.s3) {
+            back(fill: false)
+            textButtons
+            Spacer(minLength: tokens.spacing.s3)
+            primary.fixedSize()
+        }
+        .padding(.leading, leadingInset)
+        .frame(minWidth: tokens.controls.compactWidth)
+    }
+
+    private var stacked: some View {
+        VStack(spacing: tokens.spacing.s3) {
+            primary.frame(maxWidth: .infinity)
+            back(fill: true)
+            if state.cancelAction != nil || state.showSkip {
+                HStack(spacing: tokens.spacing.s3) { textButtons }.frame(maxWidth: .infinity)
+            }
+        }
+    }
+
     private var state: FormActionsState { context.state }
+
+    private var showsBack: Bool { state.showBack && !backInBar }
 
     private var leadingInset: CGFloat {
         let first: FormButtonVariant? =
-            if state.showBack {
+            if showsBack {
                 FormButtonVariant(state.backAction, fallback: .secondary)
             } else if let cancel = state.cancelAction {
                 FormButtonVariant(cancel, fallback: .text)
@@ -58,16 +101,18 @@ public struct FormActionsBar: View {
         return first == .text ? -tokens.spacing.s4 : 0
     }
 
-    private var hasSecondary: Bool {
-        state.showBack || state.cancelAction != nil || state.showSkip
+    @ViewBuilder private func back(fill: Bool) -> some View {
+        if showsBack {
+            Button(action: context.back) {
+                Text(verbatim: state.backLabel).frame(maxWidth: fill ? .infinity : nil)
+            }
+            .buttonStyle(FormButtonStyle(FormButtonVariant(state.backAction, fallback: .secondary)))
+            .disabled(context.busy)
+            .measured("actions/back")
+        }
     }
 
-    @ViewBuilder private var secondary: some View {
-        if state.showBack {
-            Button(state.backLabel, action: context.back)
-                .buttonStyle(FormButtonStyle(FormButtonVariant(state.backAction, fallback: .secondary)))
-                .disabled(context.busy)
-        }
+    @ViewBuilder private var textButtons: some View {
         if let cancel = state.cancelAction {
             Button(cancel.label ?? "", action: context.cancel)
                 .buttonStyle(FormButtonStyle(FormButtonVariant(cancel, fallback: .text)))
@@ -88,6 +133,7 @@ public struct FormActionsBar: View {
             .buttonStyle(FormButtonStyle(.primary, busy: context.busy && !context.model.loading))
             .disabled(context.busy || state.primaryDisabled)
             .keyboardShortcut(.defaultAction)
+            .measured("actions/primary")
         }
     }
 }

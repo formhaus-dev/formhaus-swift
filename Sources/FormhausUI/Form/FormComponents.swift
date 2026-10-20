@@ -21,15 +21,25 @@ public struct FormComponents: Sendable {
     }
 }
 
+public enum BackPlacement: Sendable {
+    case automatic
+    case bottom
+}
+
 public struct FormBehavior: Sendable {
     public var errorSummary = false
     public var confirmRemove = true
     public var stepErrorMarks = false
+    public var backPlacement = BackPlacement.automatic
 
-    public init(errorSummary: Bool = false, confirmRemove: Bool = true, stepErrorMarks: Bool = false) {
+    public init(
+        errorSummary: Bool = false, confirmRemove: Bool = true, stepErrorMarks: Bool = false,
+        backPlacement: BackPlacement = .automatic
+    ) {
         self.errorSummary = errorSummary
         self.confirmRemove = confirmRemove
         self.stepErrorMarks = stepErrorMarks
+        self.backPlacement = backPlacement
     }
 }
 

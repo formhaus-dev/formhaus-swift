@@ -93,11 +93,13 @@ private struct ProgressBar: View {
             .frame(height: tokens.controls.progressHeight)
             .overlay(alignment: .leading) {
                 GeometryReader { proxy in
-                    Capsule().fill(tokens.colors.primary).frame(width: proxy.size.width * min(1, max(0, fraction)))
+                    Capsule().fill(tokens.colors.primary)
+                        .animation(tokens.animation(tokens.motion.progress)) {
+                            $0.offset(x: -proxy.size.width * (1 - min(1, max(0, fraction))))
+                        }
                 }
             }
             .clipShape(Capsule())
-            .animation(tokens.animation(tokens.motion.progress), value: fraction)
             .accessibilityHidden(true)
     }
 }
