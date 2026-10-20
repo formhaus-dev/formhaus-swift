@@ -41,6 +41,27 @@ private func ruleIssues(_ context: CheckContext, _ entry: FieldEntry) -> [Defini
     return issues
 }
 
+func itemLimitWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
+    let field = entry.field
+    guard field.isGroup else { return [] }
+    let max = field.validation?.maxLength
+    let limit = "the \(jsNumberString(field.maxItems))-item limit"
+    var issues: [DefinitionIssue] = []
+    if let max, max > Double(maxGroupItems) {
+        issues.append(
+            warning(
+                "invalid-range", "\(entry.path)/validation/maxLength", "maxLength (\(jsNumberString(max))) is greater than \(limit)",
+                "Lower maxLength to \(maxGroupItems)"))
+    }
+    if let items = field.defaultItems, items > field.maxItems, max.map({ items <= $0 }) ?? true {
+        issues.append(
+            warning(
+                "invalid-range", "\(entry.path)/defaultItems", "defaultItems (\(jsNumberString(items))) is greater than \(limit)",
+                max == nil ? "Lower defaultItems or set validation.maxLength" : "Lower defaultItems to \(maxGroupItems)"))
+    }
+    return issues
+}
+
 private func optionIssues(_ entry: FieldEntry) -> [DefinitionIssue] {
     var seen = KeySet()
     var seenMissing = false
