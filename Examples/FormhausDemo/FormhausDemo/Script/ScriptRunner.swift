@@ -19,11 +19,13 @@ struct ScriptRunner {
     func run() async {
         let timeline = ScriptTimeline()
         for beat in script.beats {
-            if Task.isCancelled { return }
-            if case .mark(let name) = beat, name == stopAt { return }
+            if Task.isCancelled { break }
+            if case .mark(let name) = beat, name == stopAt { break }
             record(beat, on: timeline)
             await play(beat)
         }
+        await pause(0.5)
+        timeline.save()
     }
 
     private func record(_ beat: Beat, on timeline: ScriptTimeline) {

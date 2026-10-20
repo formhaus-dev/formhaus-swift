@@ -34,7 +34,8 @@ struct DemoScript: Sendable {
             .mark("start"), .wait(.intro),
             .pick("projectType", "landing-page"), .mark("landing"), .wait(.beat),
             .next, .mark("branch"), .wait(.hold),
-            .submit, .mark("errors"), .wait(.hold),
+            .submit, .mark("errors"), .wait(.beat), .wait(.short),
+            .mark("typing"), .type("name", "Ada Lovelace"), .wait(.hold),
         ])
 
     static let edit = DemoScript(

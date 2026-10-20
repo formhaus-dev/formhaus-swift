@@ -76,8 +76,17 @@ struct RootView: View {
     private func playScript() async {
         guard let name = session.launch.script, let script = DemoScript.named(name) else { return }
         ScriptKeyboard.hide()
+        if session.launch.warmup { await warmUp(script) }
+        if session.launch.ticker { FrameTicker.install() }
         let runner = ScriptRunner(script: script, timings: session.timings, stopAt: session.launch.stopAt, stage: session)
         await runner.run()
+    }
+
+    private func warmUp(_ script: DemoScript) async {
+        await ScriptRunner(script: script, timings: session.timings.faster(6), stopAt: session.launch.stopAt, stage: session).run()
+        try? await Task.sleep(for: .seconds(0.8))
+        session.restart()
+        try? await Task.sleep(for: .seconds(0.8))
     }
 }
 

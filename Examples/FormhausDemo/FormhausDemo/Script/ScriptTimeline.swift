@@ -47,19 +47,16 @@ final class ScriptTimeline {
 
     func mark(_ name: String) {
         file.marks.append(TimelineMark(name: name, time: elapsed))
-        save()
     }
 
     @discardableResult
     func tap(_ kind: String, key: String? = nil, target: FieldFrame? = nil) -> Int {
         file.taps.append(TimelineTap(time: elapsed, kind: kind, key: key, type: target?.type, frame: Self.values(target)))
-        save()
         return file.taps.count - 1
     }
 
     func settle(_ index: Int, target: FieldFrame?) {
         file.taps[index].after = Self.values(target)
-        save()
     }
 
     private static func values(_ target: FieldFrame?) -> [Double]? {
@@ -71,7 +68,7 @@ final class ScriptTimeline {
         return Double(duration.components.seconds) + Double(duration.components.attoseconds) / 1e18
     }
 
-    private func save() {
+    func save() {
         guard let url, let data = try? JSONEncoder().encode(file) else { return }
         try? data.write(to: url, options: .atomic)
     }

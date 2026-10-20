@@ -25,7 +25,7 @@ final class DemoSession {
     @ObservationIgnored let launch: LaunchOptions
     @ObservationIgnored let frames = FieldFrames()
     @ObservationIgnored private let source: FormSource
-    @ObservationIgnored private var registered: Set<String> = ["ada@lovelace.dev"]
+    @ObservationIgnored private var registered = DemoSession.preregistered
     @ObservationIgnored private let relay: Relay
 
     init(launch: LaunchOptions, bundle: Bundle = .main) {
@@ -62,9 +62,12 @@ final class DemoSession {
 
     func restart() {
         model.engine.cancelPendingActions()
+        registered = Self.preregistered
         model = Self.makeModel(source, language, relay: relay)
         phase = .form
     }
+
+    private static let preregistered: Set<String> = ["ada@lovelace.dev"]
 
     private static func makeModel(
         _ source: FormSource, _ language: DemoLanguage, values: JSONObject = JSONObject(), relay: Relay

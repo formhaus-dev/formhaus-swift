@@ -21,6 +21,13 @@ struct ScriptTimings: Decodable, Sendable {
         return timings
     }
 
+    func faster(_ factor: Double) -> ScriptTimings {
+        var timings = self
+        timings.speed *= factor
+        timings.submitDelay /= factor
+        return timings
+    }
+
     func duration(_ pace: Pace) -> Double {
         let seconds =
             switch pace {
