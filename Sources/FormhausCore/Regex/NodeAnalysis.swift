@@ -8,7 +8,12 @@ extension RegexNode {
     }
 
     func contains(where predicate: (RegexNode) -> Bool) -> Bool {
-        predicate(self) || children.contains { $0.contains(where: predicate) }
+        if predicate(self) { return true }
+        switch self {
+        case .sequence(let nodes), .alternation(let nodes): return nodes.contains { $0.contains(where: predicate) }
+        case .group(let body, _), .quantified(let body, _), .look(let body, _): return body.contains(where: predicate)
+        default: return false
+        }
     }
 
     var captureRange: ClosedRange<Int>? {

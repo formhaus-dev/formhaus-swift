@@ -124,6 +124,7 @@ struct RegexCompiler {
     }
 
     mutating func intern(_ set: CharSet) -> Int {
+        if let last = sets.indices.last, sets[last] == set { return last }
         if let index = setIndex[set] { return index }
         sets.append(set)
         setIndex[set] = sets.count - 1

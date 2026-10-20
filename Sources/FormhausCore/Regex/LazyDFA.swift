@@ -147,6 +147,14 @@ struct LazyDFA: Sendable {
         return memory.reserve(cost) ? append(key) : nil
     }
 
+    private mutating func reserve(_ states: Int) {
+        keys.reserveCapacity(states)
+        idle.reserveCapacity(states)
+        lookup.reserveCapacity(states)
+        table.reserveCapacity(states * width)
+        accepting.reserveCapacity(states * width)
+    }
+
     private mutating func reset() {
         keys = []
         idle = []
@@ -161,6 +169,7 @@ struct LazyDFA: Sendable {
     @discardableResult
     private mutating func append(_ key: Key) -> Int32 {
         let state = Int32(keys.count)
+        if keys.count == keys.capacity { reserve(Swift.max(16, 2 * keys.count)) }
         keys.append(key)
         idle.append(!stepper.anchored && key.pcs == [0])
         lookup[key] = state
