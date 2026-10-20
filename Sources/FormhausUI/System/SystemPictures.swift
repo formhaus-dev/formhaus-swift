@@ -23,7 +23,7 @@ struct SystemPictures: View {
             .sensoryFeedback(.selection, trigger: selected)
         }
         .onAppear {
-            let keys = context.options.prefix(64).compactMap { option in option.image.map { ImageKey($0, digest: option.imageKey) } }
+            let keys = context.options.prefix(64).compactMap { option in option.safeImage.map { ImageKey($0, digest: option.imageKey) } }
             InlineImages.shared.prefetch(keys)
         }
     }

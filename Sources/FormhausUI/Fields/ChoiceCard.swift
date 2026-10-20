@@ -27,7 +27,7 @@ struct ChoiceCard: View, Equatable {
         let label = option.label ?? option.value ?? ""
         return Button(action: choose) {
             VStack(alignment: .leading, spacing: tokens.spacing.s3) {
-                if picture, let image = option.image, !image.isEmpty { OptionImage(key: ImageKey(image, digest: option.imageKey)) }
+                if picture, let image = option.safeImage { OptionImage(key: ImageKey(image, digest: option.imageKey)) }
                 OptionRow(shape, label: label, selected: selected)
             }
             .padding(.top, picture ? tokens.spacing.s3 - tokens.spacing.s5 : 0)
@@ -37,7 +37,7 @@ struct ChoiceCard: View, Equatable {
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityHint(Text(verbatim: hint))
         .overlay(alignment: .topTrailing) {
-            if picture, option.image?.isEmpty == false {
+            if picture, option.safeImage != nil {
                 let inset = (tokens.controls.hitTarget - tokens.controls.iconButton) / 2
                 ZoomButton(label: zoomLabel, action: zoom)
                     .padding(.top, 2 * tokens.spacing.s3 - inset)

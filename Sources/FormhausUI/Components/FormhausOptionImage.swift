@@ -6,7 +6,7 @@ public struct FormhausOptionImage: View {
     let contentMode: ContentMode
 
     public init(option: FieldOption, contentMode: ContentMode = .fill) {
-        key = ImageKey(option.image ?? "", digest: option.imageKey)
+        key = ImageKey(option.safeImage ?? "", digest: option.imageKey)
         self.contentMode = contentMode
     }
 
