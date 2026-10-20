@@ -3,11 +3,11 @@
   "issues": [],
   "warnings": [
     {
-      "code": "invalid-range",
+      "code": "group-item-limit",
       "path": "/fields/0/validation/maxLength"
     },
     {
-      "code": "invalid-range",
+      "code": "group-item-limit",
       "path": "/fields/0/defaultItems"
     }
   ],

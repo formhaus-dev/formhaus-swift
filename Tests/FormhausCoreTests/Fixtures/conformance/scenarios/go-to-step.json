@@ -1,0 +1,94 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "go to step",
+  "definition": {
+    "id": "route",
+    "title": "Route",
+    "submit": { "label": "Submit" },
+    "steps": [
+      {
+        "id": "name",
+        "title": "Name",
+        "fields": [
+          { "key": "name", "type": "text", "label": "Name", "validation": { "required": true } },
+          {
+            "key": "kind",
+            "type": "radio",
+            "label": "Kind",
+            "options": [{ "value": "a", "label": "A" }, { "value": "b", "label": "B" }]
+          }
+        ]
+      },
+      { "id": "a", "title": "A", "show": [{ "field": "kind", "eq": "a" }], "fields": [{ "key": "city", "type": "text", "label": "City" }] },
+      { "id": "b", "title": "B", "show": [{ "field": "kind", "eq": "b" }], "fields": [{ "key": "code", "type": "text", "label": "Code" }] },
+      {
+        "id": "extras",
+        "title": "Extras",
+        "skip": { "label": "Not now" },
+        "fields": [{ "key": "phone", "type": "text", "label": "Phone", "validation": { "required": true } }]
+      },
+      { "id": "done", "title": "Done", "fields": [{ "key": "notes", "type": "text", "label": "Notes" }] }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "opens a step on the active path when every earlier step is valid",
+      "values": { "name": "Ada", "kind": "a" },
+      "steps": [
+        { "do": "goToStep", "stepId": "extras", "returns": { "stepId": "extras", "reached": true } },
+        { "expect": { "step": "extras", "errors": {}, "log": [] } },
+        { "do": "goToStep", "stepId": "name", "returns": { "stepId": "name", "reached": true } },
+        { "expect": { "step": "name" } }
+      ]
+    },
+    {
+      "name": "stops at the first invalid step before the target without showing its errors",
+      "steps": [
+        { "do": "goToStep", "stepId": "done", "returns": { "stepId": "name", "reached": false, "reason": "blocked" } },
+        {
+          "expect": {
+            "step": "name",
+            "errors": {},
+            "log": [{ "event": { "type": "step_redirected", "requestedStepId": "done", "stepId": "name", "reason": "blocked" } }]
+          }
+        },
+        { "do": "setValue", "key": "name", "value": "Ada" },
+        { "do": "goToStep", "stepId": "done", "returns": { "stepId": "extras", "reached": false, "reason": "blocked" } },
+        { "expect": { "step": "extras", "errors": {} } }
+      ]
+    },
+    {
+      "name": "stays on the current step for an unknown step id",
+      "values": { "name": "Ada", "kind": "a" },
+      "steps": [
+        { "do": "goToStep", "stepId": "nope", "returns": { "stepId": "name", "reached": false, "reason": "unknown-step" } },
+        {
+          "expect": {
+            "step": "name",
+            "log": [{ "event": { "type": "step_redirected", "requestedStepId": "nope", "stepId": "name", "reason": "unknown-step" } }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "opens the last reachable step before a step off the active path",
+      "values": { "name": "Ada", "kind": "a" },
+      "steps": [
+        { "do": "goToStep", "stepId": "b", "returns": { "stepId": "a", "reached": false, "reason": "not-on-path" } },
+        { "expect": { "step": "a" } }
+      ]
+    },
+    {
+      "name": "passes a skipped step",
+      "values": { "name": "Ada", "kind": "a" },
+      "steps": [
+        { "do": "goToStep", "stepId": "extras", "returns": { "stepId": "extras", "reached": true } },
+        { "do": "skip", "returns": true },
+        { "expect": { "step": "done", "skipped": ["extras"] } },
+        { "do": "goToStep", "stepId": "name", "returns": { "stepId": "name", "reached": true } },
+        { "do": "goToStep", "stepId": "done", "returns": { "stepId": "done", "reached": true } },
+        { "expect": { "step": "done", "skipped": ["extras"] } }
+      ]
+    }
+  ]
+}

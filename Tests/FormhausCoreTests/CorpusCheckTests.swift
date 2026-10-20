@@ -13,7 +13,7 @@ struct CorpusCheckTests {
         "check-outdated-version-1-0", "check-outdated-version-contains", "check-outdated-version-exclusive",
         "check-outdated-version-missing", "check-outdated-version-newer", "check-scale", "check-scale-range",
         "check-section-forward-reference", "check-slow-pattern", "contains-disabled", "contains-limit", "disabled-actions",
-        "duplicate-options", "exclusive-options", "flat-api-steps", "format-version", "group-list-answers",
+        "duplicate-options", "exclusive-options", "file-app-reference", "flat-api-steps", "format-version", "group-list-answers",
         "i18n-empty-overlay", "i18n-exclusive-branches", "i18n-own-properties", "i18n-renderer-labels", "i18n-signup-steps",
         "impossible-dates", "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "options-from",
         "proto-keys", "recall-branches", "recall-groups", "recall-inactive", "recall-limit", "recall-no-reexpansion",

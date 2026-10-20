@@ -14,11 +14,11 @@
       "path": "/fields/0/validation/pattern"
     },
     {
-      "code": "invalid-range",
+      "code": "min-greater-than-max",
       "path": "/fields/1/validation/minLength"
     },
     {
-      "code": "invalid-range",
+      "code": "min-greater-than-max",
       "path": "/fields/2/validation/min"
     },
     {

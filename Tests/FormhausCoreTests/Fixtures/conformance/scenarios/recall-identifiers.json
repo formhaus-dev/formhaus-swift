@@ -126,6 +126,12 @@
               },
               {
                 "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              },
+              {
+                "event": {
                   "type": "field_error",
                   "fieldKey": "city",
                   "error": "This field is required"
