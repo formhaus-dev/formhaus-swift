@@ -10,60 +10,63 @@ public struct Typography: Sendable {
     public init(body: CGFloat, small: CGFloat, heading: CGFloat? = nil, title: CGFloat? = nil, design: Font.Design = .default) {
         self.body = body
         self.small = small
-        self.heading = heading ?? body + 2
-        self.title = title ?? body + 5
+        self.heading = heading ?? body + Typography.headingStep
+        self.title = title ?? body + Typography.titleStep
         self.design = design
     }
 }
 
 public struct Spacing: Sendable {
-    public var s1: CGFloat = 4
-    public var s2: CGFloat = 6
-    public var s3: CGFloat = 8
-    public var s4: CGFloat = 10
-    public var s5: CGFloat = 12
-    public var s6: CGFloat = 14
-    public var s7: CGFloat = 16
-    public var s8: CGFloat = 18
-    public var s9: CGFloat = 20
-    public var s10: CGFloat = 24
-    public var gap: CGFloat = 28
-    public var cardPadding: CGFloat = 24
-
-    public init() {}
+    public var s1: CGFloat
+    public var s2: CGFloat
+    public var s3: CGFloat
+    public var s4: CGFloat
+    public var s5: CGFloat
+    public var s6: CGFloat
+    public var s7: CGFloat
+    public var s8: CGFloat
+    public var s9: CGFloat
+    public var s10: CGFloat
+    public var gap: CGFloat
+    public var cardPadding: CGFloat
 }
 
-public struct Radii: Sendable {
-    public var control: CGFloat = 10
-    public var indicator: CGFloat = 5
-
-    public init() {}
-}
-
-public struct Controls: Sendable {
-    public var height: CGFloat = 46
-    public var hitTarget: CGFloat = 44
-    public var iconButton: CGFloat = 32
-    public var star: CGFloat
-    public var indicator: CGFloat = 18
-    public var optionImageWidth: CGFloat = 200
-    public var textareaHeight: CGFloat = 112
-    public var progressHeight: CGFloat = 4
-    public var maxWidth: CGFloat = 640
-    public var compactWidth: CGFloat = 480
-    public var matrixWidth: CGFloat = 560
-
-    public init(star: CGFloat = 32) {
-        self.star = star
+extension Spacing {
+    public init() {
+        self = .regular
     }
 }
 
-public struct Motion: Sendable {
-    public var quick: Double = 0.14
-    public var standard: Double = 0.15
-    public var progress: Double = 0.2
+public struct Radii: Sendable {
+    public var control: CGFloat
+    public var indicator: CGFloat = NativeMetrics.indicatorRadius
+}
 
-    public init() {}
+extension Radii {
+    public init() {
+        self = .standard
+    }
+}
+
+public struct Controls: Sendable {
+    public var height: CGFloat
+    public var iconButton: CGFloat
+    public var star: CGFloat
+    public var optionImageWidth: CGFloat
+    public var hitTarget: CGFloat = NativeMetrics.hitTarget
+    public var indicator: CGFloat = NativeMetrics.indicator
+    public var textareaHeight: CGFloat = NativeMetrics.textareaHeight
+    public var progressHeight: CGFloat = NativeMetrics.progressHeight
+    public var maxWidth: CGFloat = NativeMetrics.maxWidth
+    public var compactWidth: CGFloat = NativeMetrics.compactWidth
+    public var matrixWidth: CGFloat = NativeMetrics.matrixWidth
+}
+
+extension Controls {
+    public init(star: CGFloat? = nil) {
+        self = .fine
+        if let star { self.star = star }
+    }
 }
 
 public struct FormhausTheme: Sendable {
@@ -92,13 +95,9 @@ public struct FormhausTheme: Sendable {
         self.motion = motion
     }
 
-    public static let pointer = FormhausTheme(typography: Typography(body: 15, small: 13), controls: Controls(star: 32))
+    public static let pointer = FormhausTheme(typography: .fine, spacing: .regular, controls: .fine)
 
-    public static let touch: FormhausTheme = {
-        var spacing = Spacing()
-        spacing.cardPadding = 16
-        return FormhausTheme(typography: Typography(body: 17, small: 15), spacing: spacing, controls: Controls(star: 40))
-    }()
+    public static let touch = FormhausTheme(typography: .coarse, spacing: .compact, controls: .coarse)
 
     #if os(iOS)
         public static let standard = touch

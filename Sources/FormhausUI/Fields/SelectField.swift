@@ -132,6 +132,6 @@ private struct SuggestionList: View {
         .padding(.vertical, tokens.spacing.s1)
         .background(shape.fill(tokens.colors.background))
         .overlay(shape.strokeBorder(tokens.colors.border, lineWidth: 1))
-        .shadow(color: tokens.colors.shadow, radius: 8, y: 2)
+        .shadow(color: tokens.colors.shadow, radius: RaisedShadow.blur, x: RaisedShadow.x, y: RaisedShadow.y)
     }
 }

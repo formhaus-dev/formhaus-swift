@@ -73,7 +73,7 @@ struct ChoiceList: View {
         }
         .onAppear {
             InlineImages.shared.prefetch(
-                context.options.prefix(64).compactMap { option in option.image.map { ImageKey($0, digest: option.imageKey) } })
+                context.options.prefix(64).compactMap { option in option.safeImage.map { ImageKey($0, digest: option.imageKey) } })
         }
         .sheet(item: $zoomed) { zoomed in
             ImageViewer(title: zoomed.label, key: zoomed.image, closeLabel: context.text(forLabel: "close"))
@@ -113,12 +113,13 @@ struct ChoiceList: View {
     private func card(_ option: FieldOption, selected: Set<String>, picture: Bool) -> some View {
         let value = option.value ?? ""
         let selection = ChoiceSelection(context: context)
+        let image = ImageKey(option.safeImage ?? "", digest: option.imageKey)
         return ChoiceCard(
             option: option, shape: shape, selected: selected.contains(value), picture: picture,
             hint: context.helperText ?? "",
             zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
             choose: { selection.choose(value) },
-            zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: ImageKey(option.image ?? "", digest: option.imageKey)) }
+            zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: image) }
         )
         .equatable()
     }

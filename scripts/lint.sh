@@ -49,6 +49,11 @@ run_duplicates() {
   npx --yes "jscpd@$jscpd_version" --config .jscpd.json
 }
 
+run_tokens() {
+  [ -d "$root/tokens-build/node_modules/style-dictionary" ] || npm ci --prefix "$root/tokens-build" --no-audit --no-fund --silent
+  node "$root/tokens-build/build.mjs" --check
+}
+
 run_periphery() {
   periphery=$tools/periphery-$periphery_version/periphery
   scratch=${PERIPHERY_SCRATCH:-$root/.build/periphery}
@@ -73,10 +78,11 @@ case ${1:-all} in
   format) run_format ;;
   swiftlint) install && run_swiftlint ;;
   duplicates) run_duplicates ;;
+  tokens) run_tokens ;;
   periphery) install && run_periphery ;;
-  all) install && run_format && run_swiftlint && run_duplicates && run_periphery ;;
+  all) install && run_format && run_swiftlint && run_duplicates && run_tokens && run_periphery ;;
   *)
-    echo "usage: $0 [all|format|swiftlint|duplicates|periphery|install|versions]" >&2
+    echo "usage: $0 [all|format|swiftlint|duplicates|tokens|periphery|install|versions]" >&2
     exit 1
     ;;
 esac

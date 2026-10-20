@@ -1,0 +1,183 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "recall-identifiers",
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "recall",
+    "title": "Hi {{name}}",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About {{name}}",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          },
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan for {{name}}",
+            "options": [
+              {
+                "value": "pro",
+                "label": "Pro for {{name}}"
+              },
+              {
+                "value": "team",
+                "label": "Team"
+              }
+            ]
+          },
+          {
+            "key": "seats",
+            "type": "number",
+            "label": "Seats for {{name}}",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "pro"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hello",
+        "title": "Hello, {{name}}",
+        "fields": [
+          {
+            "key": "city",
+            "type": "text",
+            "label": "City of {{name}}",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "events and conditions use step ids, field keys and option values",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "start"
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "submit",
+          "handler": []
+        },
+        {
+          "expect": {
+            "step": "hello",
+            "submitValues": {
+              "name": "Ada",
+              "plan": "pro"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "form_viewed"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "about",
+                  "stepIndex": 0
+                }
+              },
+              {
+                "event": {
+                  "type": "field_shown",
+                  "fieldKey": "seats"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "about"
+                }
+              },
+              {
+                "event": {
+                  "type": "step_viewed",
+                  "stepId": "hello",
+                  "stepIndex": 1
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "city",
+                  "error": "This field is required"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "a hidden field message names the field by its label as written",
+      "definition": {
+        "formatVersion": "1.5",
+        "id": "hidden",
+        "title": "",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          },
+          {
+            "key": "ref",
+            "type": "hidden",
+            "label": "Ref for {{name}}",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "validate"
+        },
+        {
+          "expect": {
+            "errors": {
+              "ref": "Ref for {{name}}: This field is required"
+            },
+            "topLevelErrors": ["Ref for {{name}}: This field is required"],
+            "log": []
+          }
+        }
+      ]
+    }
+  ]
+}

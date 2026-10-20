@@ -1,0 +1,46 @@
+{
+  "$description": "Component layer: tokens that belong to one component.",
+  "icon-button": {
+    "$type": "dimension",
+    "size": {
+      "$value": "{size.32}",
+      "$description": "Width and height of the picture Enlarge button and the dialog Close button."
+    }
+  },
+  "option-image": {
+    "$type": "dimension",
+    "width": {
+      "$value": "{size.200}",
+      "$description": "Smallest picture card width when the field has no columns."
+    }
+  },
+  "option-card": {
+    "$type": "color",
+    "border": {
+      "$value": "{color.input.border}",
+      "$description": "Border of radio and multiselect option cards."
+    },
+    "border-hover": {
+      "$value": "{color.input.border-hover}",
+      "$description": "Hover border of radio and multiselect option cards."
+    }
+  },
+  "input": {
+    "$type": "dimension",
+    "padding": {
+      "$description": "Padding inside inputs, emitted as the --fh-input-padding shorthand.",
+      "$extensions": {
+        "dev.formhaus": {
+          "shorthand": ["block", "inline"],
+          "auto": "input-padding"
+        }
+      },
+      "block": {
+        "$value": "{space.4}"
+      },
+      "inline": {
+        "$value": "{space.6}"
+      }
+    }
+  }
+}

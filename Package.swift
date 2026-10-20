@@ -16,7 +16,11 @@ let package = Package(
             dependencies: ["FormhausCore"],
             resources: [.copy("Fixtures")]
         ),
-        .testTarget(name: "FormhausUITests", dependencies: ["FormhausUI", "FormhausCore"]),
+        .testTarget(
+            name: "FormhausUITests",
+            dependencies: ["FormhausUI", "FormhausCore"],
+            resources: [.copy("Fixtures")]
+        ),
     ],
     swiftLanguageModes: [.v6]
 )

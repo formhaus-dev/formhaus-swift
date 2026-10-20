@@ -9,6 +9,9 @@ extension FieldOption {
 extension FieldOption {
     @_spi(Renderer)
     public var imageKey: Int? { imageDigest }
+
+    @_spi(Renderer)
+    public var safeImage: String? { imageSource(image) }
 }
 
 extension FormField {

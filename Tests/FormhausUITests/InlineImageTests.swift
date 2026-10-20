@@ -40,7 +40,7 @@ struct InlineImageTests {
 struct InlineImageViewTests {
     @Test("picture options prefetch their inline images")
     func prefetch() async throws {
-        let source = swatch.replacingOccurrences(of: "image/png", with: "image/pjpeg-png")
+        let source = swatch.replacingOccurrences(of: "image/png", with: "image/png;name=prefetch")
         let json: JSONValue = [
             "id": "p", "title": "P", "submit": ["label": "Send"],
             "fields": [["key": "c", "type": "radio", "label": "C", "options": [["value": "a", "label": "A", "image": .string(source)]]]],

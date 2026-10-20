@@ -1,0 +1,105 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/resolver.json",
+  "name": "Formhaus",
+  "version": "2025.10",
+  "description": "Formhaus design tokens. Resolve with one context per modifier.",
+  "sets": {
+    "foundation": {
+      "description": "Primitive, semantic and component layers.",
+      "sources": [
+        {
+          "$ref": "primitive.tokens.json"
+        },
+        {
+          "$ref": "semantic.tokens.json"
+        },
+        {
+          "$ref": "component.tokens.json"
+        }
+      ]
+    }
+  },
+  "modifiers": {
+    "theme": {
+      "description": "Color theme. Web: data-fh-theme=\"dark\" on the form or an ancestor.",
+      "contexts": {
+        "light": [
+          {
+            "$ref": "modes/theme-light.tokens.json"
+          }
+        ],
+        "dark": [
+          {
+            "$ref": "modes/theme-dark.tokens.json"
+          }
+        ]
+      },
+      "default": "light"
+    },
+    "pointer": {
+      "description": "Primary input. Web: @media (pointer: coarse).",
+      "contexts": {
+        "fine": [
+          {
+            "$ref": "modes/pointer-fine.tokens.json"
+          }
+        ],
+        "coarse": [
+          {
+            "$ref": "modes/pointer-coarse.tokens.json"
+          }
+        ]
+      },
+      "default": "fine"
+    },
+    "width": {
+      "description": "Available width. Web: @media (max-width: 480px).",
+      "contexts": {
+        "regular": [
+          {
+            "$ref": "modes/width-regular.tokens.json"
+          }
+        ],
+        "compact": [
+          {
+            "$ref": "modes/width-compact.tokens.json"
+          }
+        ]
+      },
+      "default": "regular"
+    },
+    "contrast": {
+      "description": "Contrast preference. Web: @media (prefers-contrast: more).",
+      "contexts": {
+        "standard": [
+          {
+            "$ref": "modes/contrast-standard.tokens.json"
+          }
+        ],
+        "more": [
+          {
+            "$ref": "modes/contrast-more.tokens.json"
+          }
+        ]
+      },
+      "default": "standard"
+    }
+  },
+  "resolutionOrder": [
+    {
+      "$ref": "#/sets/foundation"
+    },
+    {
+      "$ref": "#/modifiers/theme"
+    },
+    {
+      "$ref": "#/modifiers/pointer"
+    },
+    {
+      "$ref": "#/modifiers/width"
+    },
+    {
+      "$ref": "#/modifiers/contrast"
+    }
+  ]
+}

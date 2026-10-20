@@ -1,0 +1,12 @@
+{
+  "name": "formhaus-swift-tokens",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs --check"
+  },
+  "devDependencies": {
+    "style-dictionary": "4.4.0"
+  }
+}
