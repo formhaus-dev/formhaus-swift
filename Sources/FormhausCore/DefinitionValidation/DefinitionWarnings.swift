@@ -90,65 +90,6 @@ private func optionWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     ]
 }
 
-private func unit(_ scalar: Unicode.Scalar) -> UInt16 {
-    UInt16(scalar.value)
-}
-
-private let repeaters = Set("*+{".utf16)
-private let quantifiers = Set("*+?|{".utf16)
-
-private struct GroupScan {
-    private var groups: [Bool] = []
-    private(set) var closed = false
-
-    mutating func consume(_ chars: [UInt16], at index: Int) -> Int {
-        closed = false
-        switch chars[index] {
-        case unit("\\"):
-            return index + 1
-        case unit("["):
-            return classEnd(chars, from: index + 1)
-        case unit("("):
-            groups.append(false)
-            return index + 1 < chars.count && chars[index + 1] == unit("?") ? index + 1 : index
-        case unit(")"):
-            closed = groups.popLast() ?? false
-            if closed { markInnermost() }
-            return index
-        case let char where quantifiers.contains(char):
-            markInnermost()
-            return index
-        default:
-            return index
-        }
-    }
-
-    private mutating func markInnermost() {
-        if !groups.isEmpty { groups[groups.count - 1] = true }
-    }
-
-    private func classEnd(_ chars: [UInt16], from start: Int) -> Int {
-        var index = start
-        while index < chars.count && chars[index] != unit("]") {
-            if chars[index] == unit("\\") { index += 1 }
-            index += 1
-        }
-        return index
-    }
-}
-
-func slowPattern(_ pattern: String) -> Bool {
-    let chars = Array(pattern.utf16)
-    guard chars.count <= 1000 else { return false }
-    var scan = GroupScan()
-    var index = 0
-    while index < chars.count {
-        if scan.closed && repeaters.contains(chars[index]) { return true }
-        index = scan.consume(chars, at: index) + 1
-    }
-    return false
-}
-
 private func ruleWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [DefinitionIssue] {
     let field = entry.field
     let rules = field.validation?.json ?? JSONObject()
@@ -166,11 +107,13 @@ private func ruleWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [Defi
     issues += sized.map {
         rule($0, "\"\($0)\" does not apply to \(field.type) fields", numeric ? "Use min and max for numbers" : "Remove \($0)")
     }
-    if let pattern = rules["pattern"]?.stringValue, slowPattern(pattern) {
+    if let pattern = rules["pattern"]?.stringValue, let slow = slowPattern(pattern) {
+        let nested = slow == .nested
+        let problem = nested ? "nests quantifiers" : "repeats overlapping parts next to each other"
         issues.append(
             warning(
-                "slow-pattern", "\(entry.path)/validation/pattern",
-                "the pattern of \"\(field.key)\" nests quantifiers and can be very slow", "Remove the inner or outer quantifier"))
+                "slow-pattern", "\(entry.path)/validation/pattern", "the pattern of \"\(field.key)\" \(problem) and can be very slow",
+                nested ? "Remove the inner or outer quantifier" : "Merge the repeated parts into one"))
     }
     if let validator = rules["validator"]?.stringValue, let validators = context.validators, !validators.contains(validator) {
         issues.append(
