@@ -17,6 +17,7 @@ public struct FormErrorSummary: View {
             let title = model.text(forLabel: "errorSummary")
             VStack(alignment: .leading, spacing: 0) {
                 Text(verbatim: title).formhausText(.label).accessibilityAddTraits(.isHeader).padding(.bottom, tokens.spacing.s1)
+                    .formhausSummaryFocus(model)
                 ForEach(Array(groups.enumerated()), id: \.element.id) { index, group in
                     if groups.count > 1 {
                         Text(verbatim: group.title).formhausText(.helper).accessibilityAddTraits(.isHeader)
@@ -33,6 +34,7 @@ public struct FormErrorSummary: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .overlay(shape.strokeBorder(tokens.colors.error, lineWidth: 1))
             .accessibilityElement(children: .contain)
+            .id(ScrollAnchor.summary(model))
             .onAppear { announce(title) }
         }
     }

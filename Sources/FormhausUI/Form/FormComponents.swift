@@ -32,21 +32,23 @@ public enum StepScroll: Sendable {
 }
 
 public struct FormBehavior: Sendable {
-    public var errorSummary = false
+    public var errorSummary = true
     public var confirmRemove = true
     public var stepErrorMarks = false
     public var backPlacement = BackPlacement.automatic
     public var stepScroll = StepScroll.screenTop
+    public var inlineChoiceLimit = 6
 
     public init(
-        errorSummary: Bool = false, confirmRemove: Bool = true, stepErrorMarks: Bool = false,
-        backPlacement: BackPlacement = .automatic, stepScroll: StepScroll = .screenTop
+        errorSummary: Bool = true, confirmRemove: Bool = true, stepErrorMarks: Bool = false,
+        backPlacement: BackPlacement = .automatic, stepScroll: StepScroll = .screenTop, inlineChoiceLimit: Int = 6
     ) {
         self.errorSummary = errorSummary
         self.confirmRemove = confirmRemove
         self.stepErrorMarks = stepErrorMarks
         self.backPlacement = backPlacement
         self.stepScroll = stepScroll
+        self.inlineChoiceLimit = inlineChoiceLimit
     }
 }
 

@@ -144,4 +144,5 @@ private func nodeSignature(_ nodes: [FormNode]) -> [Int] {
 public struct FocusRequest: Identifiable, Equatable, Sendable {
     public let key: String?
     public let id: Int
+    public let summary: Bool
 }

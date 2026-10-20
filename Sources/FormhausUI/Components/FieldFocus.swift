@@ -1,6 +1,7 @@
 import SwiftUI
 
 private struct FocusRequestReader: ViewModifier {
+    @Environment(\.formhausBehavior) private var behavior
     let state: FieldState
     let model: FormModel
     let disabled: Bool
@@ -22,7 +23,8 @@ private struct FocusRequestReader: ViewModifier {
     private func apply() {
         guard let id = waiting, !disabled else { return }
         waiting = nil
-        if model.focusRequest?.id == id { perform() }
+        guard let request = model.focusRequest, request.id == id, !(request.summary && behavior.errorSummary) else { return }
+        perform()
     }
 }
 
