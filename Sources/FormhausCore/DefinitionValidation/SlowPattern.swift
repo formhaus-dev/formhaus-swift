@@ -7,7 +7,17 @@ private struct PatternGroup {
     var start: Int
     var look = false
     var inner = false
+    var alternated = false
+    var entry: Set<UInt16>?
     var previous: Set<UInt16>?
+}
+
+extension PatternGroup {
+    mutating func separate(alternation: Bool) {
+        inner = inner || alternation
+        alternated = alternated || alternation
+        previous = alternation ? entry : nil
+    }
 }
 
 private enum TokenKind {
@@ -21,6 +31,7 @@ private struct PatternQuantifier {
     var present = false
     var repeats = false
     var unbounded = false
+    var optional = false
 }
 
 private struct PatternLexer {
@@ -97,7 +108,8 @@ private struct PatternLexer {
         var result = PatternQuantifier(end: start)
         guard let char = unit(start) else { return result }
         if [code("*"), code("+"), code("?")].contains(char) {
-            result = PatternQuantifier(end: start + 1, present: true, repeats: char != code("?"), unbounded: char != code("?"))
+            result = PatternQuantifier(
+                end: start + 1, present: true, repeats: char != code("?"), unbounded: char != code("?"), optional: char != code("+"))
         } else if char == code("{"), let braced = braced(at: start) {
             result = braced
         } else {
@@ -117,7 +129,8 @@ private struct PatternLexer {
             open = index == minimumEnd + 1
         }
         guard unit(index) == code("}") else { return nil }
-        return PatternQuantifier(end: index + 1, present: true, repeats: true, unbounded: open)
+        let zero = minimumEnd == start + 2 && unit(start + 1) == code("0")
+        return PatternQuantifier(end: index + 1, present: true, repeats: true, unbounded: open, optional: zero)
     }
 }
 
@@ -137,6 +150,38 @@ private func samples(_ atom: ArraySlice<UInt16>) -> Set<UInt16> {
     return Set((0..<128).filter { pattern.test(String(UnicodeScalar(UInt8($0)))) == true }.map(UInt16.init))
 }
 
+private enum Trailing {
+    case adjacent
+    case previous(Set<UInt16>?)
+}
+
+private func trailing(_ group: PatternGroup, _ quantifier: PatternQuantifier, _ source: ArraySlice<UInt16>) -> Trailing {
+    guard quantifier.unbounded else { return .previous(quantifier.optional ? group.previous : nil) }
+    let repeated = samples(source)
+    if let previous = group.previous, !previous.isDisjoint(with: repeated) { return .adjacent }
+    return .previous(quantifier.optional ? repeated.union(group.previous ?? []) : repeated)
+}
+
+private enum Closing {
+    case invalid
+    case nested
+    case settled
+    case repeated(Range<Int>)
+}
+
+private func close(_ groups: inout [PatternGroup], _ quantifier: PatternQuantifier, _ end: Int) -> Closing {
+    guard groups.count >= 2 else { return .invalid }
+    let closed = groups.removeLast()
+    let parent = groups.count - 1
+    if closed.inner && quantifier.repeats { return .nested }
+    groups[parent].inner = groups[parent].inner || closed.inner
+    guard !closed.look && quantifier.present else {
+        groups[parent].previous = closed.look || closed.alternated ? nil : closed.previous
+        return .settled
+    }
+    return .repeated(closed.start..<end)
+}
+
 func slowPattern(_ pattern: String) -> SlowPattern? {
     let lexer = PatternLexer(Array(pattern.utf16))
     let units = lexer.units
@@ -147,33 +192,31 @@ func slowPattern(_ pattern: String) -> SlowPattern? {
         let (kind, end) = lexer.token(at: index)
         let start = index
         index = end
+        let top = groups.count - 1
         switch kind {
         case .open(let look):
-            groups.append(PatternGroup(start: start, look: look))
-            continue
+            let entry = look ? nil : groups[top].previous
+            groups.append(PatternGroup(start: start, look: look, entry: entry, previous: entry))
         case .other:
-            if units[start] == code("|") { groups[groups.count - 1].inner = true }
-            groups[groups.count - 1].previous = nil
-            continue
+            groups[top].separate(alternation: units[start] == code("|"))
         case .atom(let atomEnd):
             let quantifier = lexer.quantifier(at: atomEnd)
             index = quantifier.end
             var source = start..<atomEnd
             if units[start] == code(")") {
-                guard groups.count >= 2 else { return nil }
-                let closed = groups.removeLast()
-                if closed.inner && quantifier.repeats { return .nested }
-                groups[groups.count - 1].inner = groups[groups.count - 1].inner || closed.inner
-                if closed.look {
-                    groups[groups.count - 1].previous = nil
-                    continue
+                switch close(&groups, quantifier, atomEnd) {
+                case .invalid: return nil
+                case .nested: return .nested
+                case .settled: continue
+                case .repeated(let range): source = range
                 }
-                source = closed.start..<atomEnd
             }
-            groups[groups.count - 1].inner = groups[groups.count - 1].inner || quantifier.present
-            let repeated = quantifier.unbounded ? samples(units[source]) : nil
-            if let repeated, let previous = groups[groups.count - 1].previous, !previous.isDisjoint(with: repeated) { return .adjacent }
-            groups[groups.count - 1].previous = repeated
+            let current = groups.count - 1
+            groups[current].inner = groups[current].inner || quantifier.present
+            switch trailing(groups[current], quantifier, units[source]) {
+            case .adjacent: return .adjacent
+            case .previous(let next): groups[current].previous = next
+            }
         }
     }
     return nil

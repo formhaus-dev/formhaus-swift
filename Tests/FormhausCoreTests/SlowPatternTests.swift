@@ -16,8 +16,11 @@ private func codes(_ patterns: [String]) -> [String] {
 struct SlowPatternTests {
     @Test("adjacent repeated parts that overlap are slow")
     func adjacent() throws {
-        let slow = ["^\\d*\\d*\\d*\\d*\\d*x$", "a*a*b", ".*.*x", "\\d+\\w+", "[a-c]+[c-e]*", "(?:a|b)*a{2,}", "x(?:\\s*\\s+)y"]
-        let fast = ["^\\d+-\\d+$", "[a-z]+@[a-z]+", "a*b*", "\\d*\\D*", "a?a?", "a+(?=a)a+", "\\(a*\\)a*", "^\\d+\\.?\\d*$"]
+        let slow = [
+            "^\\d*\\d*\\d*\\d*\\d*x$", "a*a*b", ".*.*x", "\\d+\\w+", "[a-c]+[c-e]*", "(?:a|b)*a{2,}", "x(?:\\s*\\s+)y",
+            "^\\d+\\.?\\d*$", "a+b{0,3}a+", "\\d+(?:-)?\\d+",
+        ]
+        let fast = ["^\\d+-\\d+$", "[a-z]+@[a-z]+", "a*b*", "\\d*\\D*", "a?a?", "a+(?=a)a+", "\\(a*\\)a*"]
         let issues = checkDefinition(patternForm(slow + fast))
         #expect(issues.map(\.path) == slow.indices.map { "/fields/\($0)/validation/pattern" })
         let first = try #require(issues.first)
