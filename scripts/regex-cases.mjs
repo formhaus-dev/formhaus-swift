@@ -224,6 +224,12 @@ for (let index = 0; index < fuzzPatterns; index += 1) {
   const pattern = disjunction(0)
   for (let count = 0; count < inputsPerPattern; count += 1) add(pattern, input(), 'fuzz')
 }
+for (let index = 0; index < fuzzPatterns / 3; index += 1) {
+  const pattern = disjunction(0)
+  for (const ending of ['$', 'a', '\\b$', 'ab']) {
+    for (let count = 0; count < inputsPerPattern; count += 1) add(`(?:${pattern})${ending}`, input() + pick(['', 'a', 'ab', 'b']), 'fuzz')
+  }
+}
 
 const counts = { curated: cases.filter((item) => item.kind === 'curated').length, fuzz: cases.filter((item) => item.kind === 'fuzz').length }
 writeFileSync(output, JSON.stringify({ node: process.version, seed, counts, cases }, null, 1) + '\n')

@@ -100,6 +100,10 @@ public func validateSubmission(_ definition: JSONValue, _ values: JSONValue, opt
 public func validateSubmission(_ definition: FormDefinition, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions())
     -> SubmissionResult
 {
+    CallBudget.run { submissionResult(definition, values, options) }
+}
+
+private func submissionResult(_ definition: FormDefinition, _ values: JSONValue, _ options: SubmissionOptions) -> SubmissionResult {
     let fields = definition.allFields
     let source = values.objectValue ?? JSONObject()
     var prepared = prepare(definition, fields, source, options)

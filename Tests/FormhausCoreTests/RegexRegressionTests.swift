@@ -16,7 +16,7 @@ private func randomText(_ count: Int, _ alphabet: [Character], seed: UInt64) -> 
 struct RegexRegressionTests {
     @Test("a reset automaton keeps its start state")
     func resetKeepsStart() throws {
-        let pattern = try #require(JSRegex("[ab]*a[ab]{12}$"))
+        let pattern = try #require(JSRegex("[ab]*a[ab]{12}$(?=)"))
         _ = pattern.test(randomText(maxStringLength, ["a", "b"], seed: 7))
         #expect(pattern.test("a") == false)
         #expect(pattern.test("ab") == false)
@@ -91,7 +91,7 @@ struct RegexRegressionTests {
     func automatonMemory(offsets: Int) throws {
         for offset in 0..<offsets {
             let width = 300 - offset
-            let compiled = try CompiledPattern("[^]*a[^]{\(width)}$")
+            let compiled = try CompiledPattern("[^]*a[^]{\(width)}$(?=)")
             let text = randomText(1600, ["a", "b"], seed: UInt64(offset + 1))
             #expect(compiled.test(text) == (Array(text.utf16)[1600 - width - 1] == UInt16(ascii: "a")))
             #expect(compiled.test(String(text.prefix(width + 1))) == text.hasPrefix("a"))
@@ -109,7 +109,7 @@ struct RegexRegressionTests {
         let pool = MemoryPool(limit: limit)
         try MemoryPool.$current.withValue(pool) {
             let letter = ["c", "d", "e"][round]
-            let patterns = try (0..<count).map { try CompiledPattern("[^]*\(letter)[^]{\(300 - $0)}$") }
+            let patterns = try (0..<count).map { try CompiledPattern("[^]*\(letter)[^]{\(300 - $0)}$(?=)") }
             for (index, pattern) in patterns.enumerated() {
                 _ = pattern.test(randomText(1300, [Character(letter), "b"], seed: UInt64(index + 1)))
                 #expect(AutomatonMemory.reservedTotal <= pool.limit)
@@ -123,7 +123,10 @@ struct RegexRegressionTests {
 
     @Test("threads share automatons without changing results", arguments: Load.sizes(1, heavy: 12))
     func sharedAutomatons(passes: Int) async throws {
-        let sources = ["[ab]*a[ab]{12}$", "[^]*a[^]{100}$", "(?=[ab]*a[ab]{10}$)[ab]+", "(?<=a[ab]{9})b$", "^(?:a|b)*a(?:a|b){11}$"]
+        let sources = [
+            "[ab]*a[ab]{12}$", "[ab]*a[ab]{12}$(?=)", "[^]*a[^]{100}$", "(?=[ab]*a[ab]{10}$)[ab]+", "(?<=a[ab]{9})b$",
+            "^(?:a|b)*a(?:a|b){11}$",
+        ]
         let texts = (0..<6).map { randomText($0 % 2 == 0 ? 20 : 800, ["a", "b"], seed: UInt64($0 + 11)) }
         let expected = try sources.map { source in try texts.map { try CompiledPattern(source).test($0) } }
         let patterns = try sources.map { try #require(JSRegex($0)) }

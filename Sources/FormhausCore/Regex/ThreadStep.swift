@@ -1,3 +1,9 @@
+enum Verdict {
+    case match
+    case miss
+    case undecided
+}
+
 struct ThreadStep: Sendable {
     struct Advance {
         var next: [Int32] = []
@@ -75,17 +81,24 @@ struct ThreadStep: Sendable {
     mutating func matches(_ start: LazyDFA.Key, _ text: [UInt16], from offset: Int, _ context: MatchContext) throws(BudgetExceeded)
         -> Bool
     {
+        try run(start, text, from: offset, to: text.count, context) == .match
+    }
+
+    mutating func run(_ start: LazyDFA.Key, _ text: [UInt16], from origin: Int, to floor: Int, _ context: MatchContext)
+        throws(BudgetExceeded) -> Verdict
+    {
         var pcs = start.pcs
         var previous = start.context
-        var position = offset
+        var position = origin
         while true {
-            let unit = position < text.count ? text[position] : nil
+            let unit = text.nextUnit(from: position, backward: backward)
             let step = try advance(pcs, previous, unit, at: position, context)
-            if step.accepts { return true }
-            guard let unit, !step.next.isEmpty else { return false }
+            if step.accepts { return .match }
+            guard let unit, !step.next.isEmpty else { return .miss }
+            if position == floor { return .undecided }
             pcs = step.next
             previous = UnitContext(unit)
-            position += 1
+            position += backward ? -1 : 1
         }
     }
 

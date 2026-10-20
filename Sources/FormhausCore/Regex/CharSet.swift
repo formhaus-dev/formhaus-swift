@@ -4,11 +4,12 @@ struct CharSet: Sendable, Hashable {
     private var high: UInt64 = 0
 
     init(_ ranges: [ClosedRange<UInt16>]) {
-        self.ranges = Self.normalized(ranges)
+        self.ranges = Self.isNormal(ranges) ? ranges : Self.normalized(ranges)
         for range in self.ranges where range.lowerBound < 128 {
-            for unit in range.lowerBound...min(range.upperBound, 127) {
-                if unit < 64 { low |= 1 << unit } else { high |= 1 << (unit - 64) }
-            }
+            let lower = Int(range.lowerBound)
+            let upper = min(Int(range.upperBound), 127)
+            if lower < 64 { low |= Self.mask(lower, min(upper, 63)) }
+            if upper >= 64 { high |= Self.mask(max(lower, 64) - 64, upper - 64) }
         }
     }
 
@@ -52,9 +53,33 @@ struct CharSet: Sendable, Hashable {
         return CharSet(gaps)
     }
 
+    private static func mask(_ lower: Int, _ upper: Int) -> UInt64 {
+        let width = upper - lower + 1
+        return (width == 64 ? ~0 : (1 << UInt64(width)) - 1) << UInt64(lower)
+    }
+
+    private static func isNormal(_ ranges: [ClosedRange<UInt16>]) -> Bool {
+        zip(ranges, ranges.dropFirst()).allSatisfy { Int($0.upperBound) + 1 < Int($1.lowerBound) }
+    }
+
+    private static func sortedByStart(_ ranges: [ClosedRange<UInt16>]) -> [ClosedRange<UInt16>] {
+        guard ranges.count <= 32 else { return ranges.sorted { $0.lowerBound < $1.lowerBound } }
+        var sorted = ranges
+        for index in sorted.indices.dropFirst() {
+            let range = sorted[index]
+            var slot = index
+            while slot > 0, sorted[slot - 1].lowerBound > range.lowerBound {
+                sorted[slot] = sorted[slot - 1]
+                slot -= 1
+            }
+            sorted[slot] = range
+        }
+        return sorted
+    }
+
     private static func normalized(_ ranges: [ClosedRange<UInt16>]) -> [ClosedRange<UInt16>] {
         var merged: [ClosedRange<UInt16>] = []
-        for range in ranges.sorted(by: { $0.lowerBound < $1.lowerBound }) {
+        for range in sortedByStart(ranges) {
             if let last = merged.last, Int(range.lowerBound) <= Int(last.upperBound) + 1 {
                 merged[merged.count - 1] = last.lowerBound...max(last.upperBound, range.upperBound)
             } else {

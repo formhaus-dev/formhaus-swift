@@ -81,7 +81,7 @@ struct Backtracker {
             case .captures(let index):
                 slots = saved[index]
                 saved.removeSubrange(index...)
-            case .scan(let scan): return resumeScan(scan)
+            case .scan(let scan): return try resumeScan(scan)
             case .extend(let scan):
                 if let resumed = try resumeExtend(scan) { return resumed }
             }
@@ -96,13 +96,10 @@ struct Backtracker {
     private mutating func execute(_ pc: inout Int, _ offset: inout Int) throws(BudgetExceeded) -> Outcome {
         if memoized(pc), memo?.insert((pc - program.memoFrom) * width + offset) == false { return .failure }
         switch program.instructions[pc] {
-        case .unit(let expected, let backward):
-            guard text.nextUnit(from: offset, backward: backward) == expected else { return .failure }
-            offset += backward ? -1 : 1
-        case .set(let index, let backward):
-            guard let unit = text.nextUnit(from: offset, backward: backward), program.sets[index].contains(unit) else { return .failure }
-            offset += backward ? -1 : 1
+        case .unit, .set:
+            return try consume(&pc, &offset) ? .proceed : .failure
         case .split(let first, let second):
+            if case .match = program.instructions[second] { return .success }
             stack.append(.resume(second, offset))
             pc = first
             return .proceed
@@ -126,5 +123,28 @@ struct Backtracker {
         }
         pc += 1
         return .proceed
+    }
+
+    private mutating func consume(_ pc: inout Int, _ offset: inout Int) throws(BudgetExceeded) -> Bool {
+        var steps = 0
+        var matched = true
+        run: while steps == 0 || memo == nil {
+            let step: Int
+            switch program.instructions[pc] {
+            case .unit(let expected, let backward):
+                matched = text.nextUnit(from: offset, backward: backward) == expected
+                step = backward ? -1 : 1
+            case .set(let index, let backward):
+                matched = text.nextUnit(from: offset, backward: backward).map(program.sets[index].contains) ?? false
+                step = backward ? -1 : 1
+            default: break run
+            }
+            guard matched else { break }
+            offset += step
+            pc += 1
+            steps += 1
+        }
+        try context.spend(Swift.max(steps - 1, 0))
+        return matched
     }
 }
