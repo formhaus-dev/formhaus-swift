@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
 const grab = (file, time, [width, height], format) => {
-  const filter = `scale=${width}:${height},fps=30,tpad=stop_mode=clone:stop_duration=3,trim=start=${time.toFixed(3)},setpts=PTS-STARTPTS,format=${format}`;
+  const filter = `scale=${width}:${height},fps=60,tpad=stop_mode=clone:stop_duration=3,trim=start=${time.toFixed(3)},setpts=PTS-STARTPTS,format=${format}`;
   const { stdout } = spawnSync('ffmpeg', ['-v', 'error', '-fflags', '+igndts', '-i', file, '-vf', filter, '-frames:v', '1', '-f', 'rawvideo', '-'], {
     maxBuffer: 64 * 1024 * 1024,
   });

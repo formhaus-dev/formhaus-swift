@@ -20,8 +20,8 @@ To preview in a browser, run `node tools/build.mjs && node tools/serve.mjs`, ope
 
 It writes everything to `footage/`:
 
-- the iOS demo in script mode on a headless simulator. The app writes the time of each mark and tap, with the frame of the tapped field, to its container, and the touch circles are drawn from that file;
-- the same definition in `@formhaus/react`, recorded with headless Chromium. The touch circles and the pointer come from the Playwright click points;
+- the iOS demo in script mode on a headless simulator. The app writes the time of each mark and tap, with the frame of the tapped field, to its container, and the touch circles are drawn from that file. With `-demoTicker` the app draws its display frame number in the top left corner, which the device mask hides. `tools/retime.mjs` reads it to rebuild the clip at a constant 60 fps and writes the frame gaps to `footage/raw/<id>.retime.json`. A clip with a gap over two frames is recorded again;
+- the same definition in `@formhaus/react`, rendered frame by frame in headless Chromium. A fake clock and paused animations advance exactly 1/60 s per frame, and every frame is a PNG at device scale 2. The pointer moves on every frame, and the touch circles come from the click points;
 - a macOS render of the same form, drawn offscreen by `mac/` with `NSHostingView`.
 
 To record one scene again, pass its footage ids from `script.json`:
@@ -33,7 +33,7 @@ To record one scene again, pass its footage ids from `script.json`:
 
 The web side follows the marks in `script.json` (`marks.tour`). They match the iOS timings in `Examples/FormhausDemo/FormhausDemo/Resources/demo-timings.json`. The scenes refer to marks by name, and the footage is mapped to the times the app recorded, so small timing changes need no edit.
 
-On a busy machine, run the steps under `nice -n 15`.
+Record on an idle machine. Before each iOS clip the script waits until the load average drops below 4. Only the encoding steps run under `nice`.
 
 ## Render
 
@@ -41,12 +41,12 @@ On a busy machine, run the steps under `nice -n 15`.
 ./render.sh
 ```
 
-It writes to `out/`:
+It composes every frame at 3840×2160 and writes to `out/`:
 
 - `formhaus-swift.mp4`, H.264 at 3840×2160
-- `formhaus-swift-1080p.mp4`, H.264 at 1920×1080
+- `formhaus-swift-1080p.mp4`, H.264 at 1920×1080 and 60 fps, downscaled from the 4K master with lanczos
 - `formhaus-swift.webm`, VP9 at 1920×1080
 - `formhaus-swift.gif`, 800 px wide at 15 fps, captured without camera moves to stay under 3 MB
 - `poster.png`
 
-`SCALES=1 ./render.sh` skips the 4K capture. All runs are headless.
+All runs are headless.

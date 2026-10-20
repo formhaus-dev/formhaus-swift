@@ -26,6 +26,6 @@ const lines = mode ? [clips.map(([id]) => id).join(' ')] : clips
   .map(([id, clip]) => {
     const marks = config.marks[clip.script];
     const settle = clip.stop ? marks[clip.stop] + 2 : 0;
-    return [id, udid(config.devices[clip.device].simulator), clip.script, clip.stop ?? '-', clip.definition, clip.still ? 'still' : 'video', Math.ceil(clip.still ? settle : clip.length + 3)].join(' ');
+    return [id, udid(config.devices[clip.device].simulator), clip.script, clip.stop ?? '-', clip.definition, clip.still ? 'still' : 'video', Math.ceil(clip.still ? settle : clip.length * 1.25 + 5), clip.speed ?? 1].join(' ');
   });
 console.log(lines.join('\n'));
