@@ -22,28 +22,26 @@ private func conditional(_ last: String) -> JSONValue {
     ]
 }
 
-@Suite("System step stack after a definition replacement", .serialized)
+@Suite("System steps after a definition replacement", .serialized)
 @MainActor
 struct SystemReplaceTests {
-    @Test("an earlier page keeps hiding fields whose conditions are false")
-    func earlierPageFiltered() async throws {
+    @Test("an earlier step keeps hiding fields whose conditions are false")
+    func earlierStepFiltered() async throws {
         let model = FormModel(definition: try FormDefinition(json: conditional("Y")), initialValues: ["x": "1"]) { _, _ in .ok }
         let stage = Stage(model)
         await settle()
         await model.next()
         await settle()
-        #expect(stage.depth == 2)
         model.engine.replaceDefinition(try FormDefinition(json: conditional("Y2")))
         await settle()
-        let pages = stage.navigation?.viewControllers ?? []
-        #expect(pages.count == 2)
-        let first = try #require(pages.first)
-        first.view.frame = stage.window.bounds
-        first.view.layoutIfNeeded()
-        let labels = axLabels(first.view)
+        #expect(stage.depth == 1)
+        #expect(axLabels(stage.window).contains("Y2"))
+        await model.back()
+        await settle()
+        let labels = axLabels(stage.window)
         #expect(labels.contains("X"))
         #expect(!labels.contains("Secret"))
-        #expect(axLabels(stage.window).contains("Y2"))
+        #expect(stage.depth == 1)
         stage.close()
     }
 }

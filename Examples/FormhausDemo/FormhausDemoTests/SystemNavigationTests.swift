@@ -16,32 +16,35 @@ struct SystemNavigationTests {
         #expect(stage.depth == 2)
         await stage.box.model.next()
         await settle()
-        #expect(stage.depth == 3)
+        #expect(stage.depth == 2)
         stage.box.system = false
-        #expect(await eventually { stage.depth == 2 })
         await settle()
         #expect(stage.depth == 2)
+        #expect(stage.fields == ["Y"])
+        stage.box.system = true
+        await settle()
+        #expect(stage.depth == 2)
+        #expect(stage.fields == ["Y"])
         stage.close()
     }
 
-    @Test("picking an earlier step from the back menu goes back to it")
+    @Test("goToStep jumps back to an earlier step")
     func jumpBack() async throws {
         let model = try stepsModel()
         let stage = Stage(model)
         await settle()
         await model.next()
-        await settle()
         await model.next()
         await settle()
-        #expect(stage.depth == 3)
-        stage.navigation?.popToRootViewController(animated: false)
-        #expect(await eventually { model.structure.currentStep?.id == "a" })
+        model.goToStep("a")
         await settle()
+        #expect(model.structure.currentStep?.id == "a")
         #expect(stage.depth == 1)
+        #expect(stage.fields == ["X"])
         stage.close()
     }
 
-    @Test("a jump back stops where onBeforeStepChange refuses")
+    @Test("Back refused by onBeforeStepChange stays on the step")
     func jumpBackRefused() async throws {
         var options = FormEngineOptions()
         options.onBeforeStepChange = { change in change.toStepId == "a" ? false : nil }
@@ -49,14 +52,15 @@ struct SystemNavigationTests {
         let stage = Stage(model)
         await settle()
         await model.next()
-        await settle()
         await model.next()
         await settle()
-        stage.navigation?.popToRootViewController(animated: false)
-        await settle(1500)
+        #expect(stage.tapBack())
+        await settle()
+        #expect(stage.tapBack())
+        await settle()
         #expect(model.structure.currentStep?.id == "b")
-        #expect(await eventually { stage.depth == 2 })
-        #expect(stage.navigation?.topViewController?.navigationItem.title == "Bravo")
+        #expect(stage.depth == 1)
+        #expect(stage.fields == ["Y"])
         stage.close()
     }
 }
