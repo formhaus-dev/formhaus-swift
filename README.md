@@ -203,6 +203,16 @@ Patterns run on a native ECMAScript 2025 regex engine with `new RegExp(p).test(s
 - A label that recalls four answers resolves in 3.7 µs with the identity formatter.
 - A form with 3,000 picture options renders in 152 ms, and a selection takes 3.5 ms.
 
+In the demo app, a 4-step form with picture options, conditions, a rating and a server error:
+
+| Metric | Value |
+| --- | --- |
+| FormhausCore in the app binary | 1.1 MB |
+| FormhausUI in the app binary | 1.6 MB |
+| Peak memory of the whole app | 66 MB |
+
+Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is `phys_footprint_peak` on an iPhone 17 Pro simulator with iOS 27 after the full fill and submit.
+
 Measured on an Apple M5 Pro with macOS 26.6 and Swift 6.4, in a release build, as the package-benchmark median of 2 runs. Each row is one `validateFieldValue` call with a `pattern` rule. It compares `new RegExp(p).test(s)` in JavaScriptCore, the engine the package used before, with the formhaus native engine, on the same patterns and inputs. Long inputs have 10,000 code units.
 
 | Benchmark | JavaScriptCore | formhaus | Difference |
