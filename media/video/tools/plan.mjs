@@ -15,12 +15,13 @@ const udid = (name) => {
   throw new Error(`No available simulator named ${name}`);
 };
 
-const web = process.argv[2] === '--web';
-const wanted = process.argv.slice(web ? 3 : 2);
+const mode = { '--web': ['browser'], '--mac': ['mac'] }[process.argv[2]];
+const wanted = process.argv.slice(mode ? 3 : 2);
+const kinds = mode ?? ['iphone', 'ipad'];
 const clips = Object.entries(config.footage).filter(
-  ([id, clip]) => (config.devices[clip.device].kind === 'browser') === web && (wanted.length === 0 || wanted.includes(id)),
+  ([id, clip]) => kinds.includes(config.devices[clip.device].kind) && (wanted.length === 0 || wanted.includes(id)),
 );
-const lines = web ? [clips.map(([id]) => id).join(' ')] : clips
+const lines = mode ? [clips.map(([id]) => id).join(' ')] : clips
   .sort(([, a], [, b]) => a.device.localeCompare(b.device))
   .map(([id, clip]) => {
     const marks = config.marks[clip.script];

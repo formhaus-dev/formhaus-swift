@@ -18,7 +18,7 @@ trap shutdown EXIT INT TERM
 
 wait_for_builds() {
   tries=0
-  while pgrep -f 'swift-build|xcodebuild|simctl io' >/dev/null; do
+  while pgrep -x xcodebuild >/dev/null || pgrep -x swift-build >/dev/null || pgrep -f 'usr/bin/simctl io' >/dev/null; do
     [ "$tries" -ge 120 ] && { echo "error: another build is still running" >&2; exit 1; }
     [ "$tries" -eq 0 ] && echo "waiting for another build or simulator run to finish"
     tries=$((tries + 1))
@@ -81,6 +81,8 @@ record_device() {
     wait "$recorder" || true
   fi
   timeout 30 "$simctl" terminate "$udid" "$bundle" >/dev/null 2>&1 || true
+  container=$(timeout 30 "$simctl" get_app_container "$udid" "$bundle" data)
+  cp "$container/Documents/demo-timeline.json" "$footage/$id.timeline.json"
   echo "recorded $id"
 }
 
@@ -88,8 +90,10 @@ cd "$here"
 [ -d node_modules ] || npm ci --no-audit --no-fund
 mkdir -p "$footage"
 node tools/definitions.mjs
+timeout 120 node tools/record-mcp.mjs
 plan=$(node tools/plan.mjs "$@")
 web=$(node tools/plan.mjs --web "$@")
+mac=$(node tools/plan.mjs --mac "$@")
 
 if [ -n "$plan" ]; then
   build_app
@@ -98,6 +102,15 @@ if [ -n "$plan" ]; then
     record_device "$id" "$udid" "$script" "$stop" "$definition" "$kind" "$seconds"
   done
   shutdown
+fi
+
+if [ -n "$mac" ]; then
+  wait_for_builds
+  timeout 1500 swift build -c release --package-path mac --scratch-path "$repo/.build/render-mac" --quiet
+  for id in $mac; do
+    timeout 120 "$repo/.build/render-mac/release/RenderMac" "$footage/definitions/base.json" "$footage/$id.png" 880 820
+    echo "rendered $id"
+  done
 fi
 
 if [ -n "$web" ]; then
