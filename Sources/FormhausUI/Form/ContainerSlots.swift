@@ -66,6 +66,22 @@ public struct ProgressContext {
     public let stepTitle: String?
     public let stepDescription: String?
     public let steps: [StepStatus]?
+    public let errorCount: Int
+    public let errorLabel: String?
+
+    init(
+        current: Int, total: Int, counterLabel: String, stepTitle: String?, stepDescription: String?, steps: [StepStatus]?,
+        errorCount: Int = 0, errorLabel: String? = nil
+    ) {
+        self.current = current
+        self.total = total
+        self.counterLabel = counterLabel
+        self.stepTitle = stepTitle
+        self.stepDescription = stepDescription
+        self.steps = steps
+        self.errorCount = errorCount
+        self.errorLabel = errorLabel
+    }
 }
 
 @MainActor
