@@ -189,7 +189,8 @@ Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and 
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
-| 0.1.0 | 0.22.0 | 1.5 |
+| 0.1.3 | 1.0.0 | 1.5 |
+| 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
 Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 73 definition files with their issues, value cases and recall cases, and 429 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
