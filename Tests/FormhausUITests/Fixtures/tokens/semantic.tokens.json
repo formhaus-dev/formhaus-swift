@@ -1,0 +1,91 @@
+{
+  "$description": "Semantic layer: values that do not change between modes.",
+  "color": {
+    "$type": "color",
+    "border": {
+      "focus": {
+        "$value": "{color.primary.default}",
+        "$description": "Focus border and outline of every control.",
+        "$extensions": {
+          "dev.formhaus": {
+            "auto": "border-focus"
+          }
+        }
+      }
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "default": {
+      "$value": "{size.10}",
+      "$description": "Corner radius of controls, cards and dialogs."
+    }
+  },
+  "space": {
+    "$type": "dimension",
+    "1": {
+      "$value": "{size.4}"
+    },
+    "2": {
+      "$value": "{size.6}"
+    },
+    "3": {
+      "$value": "{size.8}"
+    },
+    "4": {
+      "$value": "{size.10}"
+    },
+    "5": {
+      "$value": "{size.12}"
+    },
+    "6": {
+      "$value": "{size.14}"
+    },
+    "7": {
+      "$value": "{size.16}"
+    },
+    "8": {
+      "$value": "{size.18}"
+    },
+    "9": {
+      "$value": "{size.20}"
+    },
+    "10": {
+      "$value": "{size.24}"
+    }
+  },
+  "gap": {
+    "$value": "{size.28}",
+    "$description": "Space between fields, also inside sections and group cards.",
+    "$type": "dimension"
+  },
+  "control": {
+    "$type": "dimension",
+    "height": {
+      "$value": "{size.46}",
+      "$description": "Height of inputs, scale boxes and buttons."
+    }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "raised": {
+      "$value": {
+        "color": "{color.shadow}",
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 2,
+          "unit": "px"
+        },
+        "blur": "{size.8}",
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$description": "Shadow of the picture Enlarge button."
+    }
+  }
+}

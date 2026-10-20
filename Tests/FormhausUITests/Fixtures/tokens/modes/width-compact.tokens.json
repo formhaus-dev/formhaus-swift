@@ -1,0 +1,15 @@
+{
+  "$description": "Compact width, up to 480px.",
+  "card": {
+    "$type": "dimension",
+    "padding": {
+      "$value": "{space.7}",
+      "$description": "Side and bottom padding of group item cards.",
+      "$extensions": {
+        "dev.formhaus": {
+          "auto": "card-padding"
+        }
+      }
+    }
+  }
+}

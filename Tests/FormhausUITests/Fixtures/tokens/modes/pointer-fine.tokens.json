@@ -1,0 +1,59 @@
+{
+  "$description": "Fine pointer (mouse or trackpad) sizes.",
+  "font-size": {
+    "$type": "dimension",
+    "default": {
+      "$value": "{size.15}",
+      "$description": "Labels and inputs."
+    },
+    "small": {
+      "$value": "{size.13}",
+      "$description": "Helpers, errors and item titles."
+    },
+    "heading": {
+      "$value": {
+        "value": 17,
+        "unit": "px"
+      },
+      "$description": "Section headings and dialog titles.",
+      "$extensions": {
+        "dev.formhaus": {
+          "auto": "heading",
+          "add": {
+            "base": "{font-size.default}",
+            "amount": {
+              "value": 2,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "title": {
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$description": "Step titles.",
+      "$extensions": {
+        "dev.formhaus": {
+          "auto": "title",
+          "add": {
+            "base": "{font-size.default}",
+            "amount": {
+              "value": 5,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    }
+  },
+  "star": {
+    "$type": "dimension",
+    "size": {
+      "$value": "{size.32}",
+      "$description": "Size of a rating star."
+    }
+  }
+}

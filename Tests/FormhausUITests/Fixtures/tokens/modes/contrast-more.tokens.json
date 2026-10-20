@@ -1,0 +1,27 @@
+{
+  "$description": "Increased contrast. Inputs use the strong input border colors of the theme, and borders that mark cards and buttons use the input border colors.",
+  "color": {
+    "$type": "color",
+    "input": {
+      "border": {
+        "$value": "{color.input.border-strong}"
+      },
+      "border-hover": {
+        "$value": "{color.input.border-strong-hover}"
+      }
+    },
+    "border": {
+      "default": {
+        "$value": "{color.input.border}"
+      },
+      "hover": {
+        "$value": "{color.input.border-hover}"
+      }
+    },
+    "secondary": {
+      "border": {
+        "$value": "{color.input.border}"
+      }
+    }
+  }
+}

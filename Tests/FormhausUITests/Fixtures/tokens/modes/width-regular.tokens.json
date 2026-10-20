@@ -1,0 +1,15 @@
+{
+  "$description": "Regular width.",
+  "card": {
+    "$type": "dimension",
+    "padding": {
+      "$value": "{space.10}",
+      "$description": "Side and bottom padding of group item cards.",
+      "$extensions": {
+        "dev.formhaus": {
+          "auto": "card-padding"
+        }
+      }
+    }
+  }
+}

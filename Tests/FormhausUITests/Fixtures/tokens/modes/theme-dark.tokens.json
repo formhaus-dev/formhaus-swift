@@ -1,0 +1,162 @@
+{
+  "$description": "Dark theme colors.",
+  "color": {
+    "$type": "color",
+    "text": {
+      "default": {
+        "$value": "{palette.graphite.50}",
+        "$description": "Body text."
+      },
+      "muted": {
+        "$value": "{palette.graphite.300}",
+        "$description": "Helper text, counters and secondary labels."
+      }
+    },
+    "border": {
+      "default": {
+        "$value": "{palette.graphite.700}",
+        "$description": "Option cards, group cards, dividers, matrix rows and dialogs."
+      },
+      "hover": {
+        "$value": "{palette.graphite.600}",
+        "$description": "Hover border of option cards and secondary buttons."
+      }
+    },
+    "input": {
+      "border": {
+        "$value": "{palette.slate.750}",
+        "$description": "Rest border of text inputs, textarea, select, date and time, file fields, scale boxes and the switch track. About 2:1 against color.bg.default."
+      },
+      "border-hover": {
+        "$value": "{palette.slate.650}",
+        "$description": "Hover border of the controls that use color.input.border. About 3:1 against color.bg.default."
+      },
+      "border-strong": {
+        "$value": "{palette.graphite.500}",
+        "$description": "Input border under increased contrast. At least 3:1 against color.bg.default."
+      },
+      "border-strong-hover": {
+        "$value": "{palette.graphite.350}",
+        "$description": "Input hover border under increased contrast."
+      }
+    },
+    "control": {
+      "hover": {
+        "$value": "{palette.graphite.400}",
+        "$description": "Radio and checkbox borders, input placeholders and empty rating stars."
+      }
+    },
+    "error": {
+      "default": {
+        "$value": "{palette.red.400}"
+      },
+      "hover": {
+        "$value": "{palette.red.300}"
+      },
+      "soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.1625, 0.1227, 0.1343],
+          "hex": "#291f22"
+        },
+        "$description": "Hover background of the Remove and danger buttons.",
+        "$extensions": {
+          "dev.formhaus": {
+            "auto": "error-soft",
+            "mix": {
+              "color": "{color.error.default}",
+              "with": "{color.bg.default}",
+              "amount": 0.08
+            },
+            "fallback": {
+              "colorSpace": "srgb",
+              "components": [0.1725, 0.1098, 0.1137],
+              "hex": "#2c1c1d"
+            }
+          }
+        }
+      }
+    },
+    "bg": {
+      "default": {
+        "$value": "{palette.graphite.950}",
+        "$description": "Page and control fill."
+      },
+      "disabled": {
+        "$value": "{palette.graphite.850}"
+      },
+      "hover": {
+        "$value": "{palette.graphite.900}"
+      }
+    },
+    "primary": {
+      "default": {
+        "$value": "{palette.violet.500}"
+      },
+      "text": {
+        "$value": "{palette.white}",
+        "$description": "Text and icons on color.primary.default."
+      },
+      "hover": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.5633, 0.4067, 1.0],
+          "hex": "#9068ff"
+        },
+        "$description": "Primary button hover and checked switch hover.",
+        "$extensions": {
+          "dev.formhaus": {
+            "auto": "primary-hover",
+            "mix": {
+              "color": "{color.primary.default}",
+              "with": "{palette.white}",
+              "amount": 0.85
+            },
+            "fallback": {
+              "colorSpace": "srgb",
+              "components": [0.5529, 0.3882, 1.0],
+              "hex": "#8d63ff"
+            }
+          }
+        }
+      },
+      "soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [0.1294, 0.1128, 0.1899],
+          "hex": "#211d30"
+        },
+        "$description": "Background of a selected option card.",
+        "$extensions": {
+          "dev.formhaus": {
+            "auto": "primary-soft",
+            "mix": {
+              "color": "{color.primary.default}",
+              "with": "{color.bg.default}",
+              "amount": 0.09
+            },
+            "fallback": {
+              "colorSpace": "srgb",
+              "components": [0.1412, 0.102, 0.2392],
+              "hex": "#241a3d"
+            }
+          }
+        }
+      }
+    },
+    "secondary": {
+      "border": {
+        "$value": "{palette.graphite.700}",
+        "$description": "Secondary button and file button border."
+      }
+    },
+    "scrim": {
+      "$value": "{palette.black-alpha.55}",
+      "$description": "Dialog backdrop."
+    },
+    "shadow": {
+      "$value": "{palette.black-alpha.60}",
+      "$description": "Shadow color of raised elements and dialogs."
+    }
+  }
+}
