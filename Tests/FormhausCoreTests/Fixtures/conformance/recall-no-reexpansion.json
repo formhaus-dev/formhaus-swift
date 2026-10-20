@@ -1,0 +1,93 @@
+{
+  "name": "recall-no-reexpansion",
+  "covers": [],
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name"
+      },
+      {
+        "key": "note",
+        "type": "text",
+        "label": "Note"
+      },
+      {
+        "key": "plan",
+        "type": "select",
+        "label": "Plan",
+        "options": [
+          {
+            "value": "pro",
+            "label": "Pro for {{name}}"
+          }
+        ]
+      },
+      {
+        "key": "agree",
+        "type": "checkbox",
+        "label": "I agree, {{name}}"
+      },
+      {
+        "key": "kids",
+        "type": "group",
+        "label": "Kids",
+        "itemLabel": "Kid {{kid}}",
+        "fields": [
+          {
+            "key": "kid",
+            "type": "text",
+            "label": "Kid"
+          }
+        ]
+      },
+      {
+        "key": "summary",
+        "type": "textarea",
+        "label": "Summary",
+        "helperText": "{{name}}|{{note}}|{{plan}}|{{agree}}"
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "recalled text is inserted as written",
+      "values": {
+        "name": "{{note}} {name} \\{{note}}",
+        "note": "Hi {{name}}",
+        "plan": "pro",
+        "agree": true,
+        "kids": [
+          {
+            "kid": "{index} {label} {{name}}"
+          }
+        ]
+      },
+      "texts": [
+        {
+          "address": "fields.summary.helperText",
+          "text": "{{note}} {name} \\{{note}}|Hi {{name}}|Pro for {{name}}|I agree, {{name}}"
+        },
+        {
+          "address": "fields.agree.label",
+          "text": "I agree, {{note}} {name} \\{{note}}"
+        },
+        {
+          "address": "fields.kids.itemLabel",
+          "group": "kids",
+          "item": 0,
+          "text": "Kid {index} {label} {{name}}"
+        }
+      ]
+    }
+  ]
+}

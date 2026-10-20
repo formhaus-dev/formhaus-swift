@@ -15,9 +15,9 @@ struct CorpusCheckTests {
         "disabled-actions", "duplicate-options", "exclusive-options", "flat-api-steps", "format-version", "group-list-answers",
         "i18n-empty-overlay", "i18n-exclusive-branches", "i18n-own-properties", "i18n-renderer-labels", "i18n-signup-steps",
         "impossible-dates", "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "options-from",
-        "proto-keys", "recall-branches", "recall-groups", "recall-inactive", "recall-limit", "recall-sensitive", "recall-steps",
-        "recall-syntax", "recall-translations", "recall-values", "recall-version", "shared-key-branches", "times-and-hidden",
-        "trimmed-conditions", "trimmed-text", "unsupported-format-version",
+        "proto-keys", "recall-branches", "recall-groups", "recall-inactive", "recall-limit", "recall-no-reexpansion",
+        "recall-sensitive", "recall-steps", "recall-syntax", "recall-translations", "recall-values", "recall-version",
+        "shared-key-branches", "times-and-hidden", "trimmed-conditions", "trimmed-text", "unsupported-format-version",
     ]
 
     static let withWarnings = Corpus.names.filter { Corpus.fixture($0).warnings != nil }
