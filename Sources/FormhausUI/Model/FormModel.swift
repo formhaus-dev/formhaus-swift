@@ -39,6 +39,7 @@ public final class FormModel {
     @ObservationIgnored private var focusCounter = 0
     @ObservationIgnored private var pendingFocusKey: String?
     @ObservationIgnored private var emittedValues: JSONObject?
+    @ObservationIgnored let systemStack = StepStore()
 
     public init(engine: FormEngine, options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler) {
         self.engine = engine
@@ -126,9 +127,10 @@ public final class FormModel {
         emitValues()
     }
 
-    func requestFocus(_ key: String?) {
+    func requestFocus(_ key: String?, afterErrors: Bool = false) {
         focusCounter += 1
-        focusRequest = FocusRequest(key: key, id: focusCounter)
+        let summary = afterErrors && key != nil && errorGroups.lazy.flatMap(\.entries).dropFirst().first != nil
+        focusRequest = FocusRequest(key: key, id: focusCounter, summary: summary)
         if let previous = pendingFocusKey, previous != key { fieldStates[previous]?.dropFocusRequest() }
         pendingFocusKey = key
         if let key { field(key).requestFocus(focusCounter) }
@@ -143,7 +145,7 @@ public final class FormModel {
 
     func noteInvalidAttempt() {
         invalidAttempts += 1
-        requestFocus(engine.firstErrorKey())
+        requestFocus(engine.firstErrorKey(), afterErrors: true)
     }
 
     func setActionError(_ message: String?) {
@@ -167,7 +169,7 @@ public final class FormModel {
         for state in fieldStates.values { refreshField(state) }
         for state in groupStates.values { refreshGroup(state) }
         refreshStatus()
-        if previousStep != structure.currentStep?.nodeID { requestFocus(engine.firstErrorKey()) }
+        if previousStep != structure.currentStep?.nodeID { requestFocus(engine.firstErrorKey(), afterErrors: true) }
         if valuesChanged || structureChanged { reloadOptions() }
         if valuesChanged {
             emitValues()

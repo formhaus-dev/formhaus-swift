@@ -39,10 +39,14 @@ private func required(_ value: JSONObject, _ path: String, _ key: String, _ hint
     value.has(key) ? [] : [missing(path, key, hint, severity: .warning)]
 }
 
+private func labeled(_ value: JSONObject, _ path: String, _ hint: String? = nil) -> [DefinitionIssue] {
+    value.has("label") ? [] : [warning("missing-label", "\(path)/label", "missing required property \"label\"", hint)]
+}
+
 private func action(_ value: JSONValue?, _ path: String, disables: Bool = true) -> [DefinitionIssue] {
     guard let object = value?.objectValue else { return [] }
     let ignored = !disables && object.has("disabled")
-    return required(object, path, "label") + unknown(object, path, Properties.action)
+    return labeled(object, path) + unknown(object, path, Properties.action)
         + (ignored
             ? [
                 warning(
@@ -61,12 +65,12 @@ private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     let path = entry.path
     let visible = field.type != "hidden"
     let empty = visible && field.label.map(\.isBlankText) == true
-    var issues = visible ? required(field.json, path, "label", labelHint) : []
-    if empty { issues.append(warning("empty-label", "\(path)/label", "the label of \"\(field.key)\" is empty", labelHint)) }
+    var issues = visible ? labeled(field.json, path, labelHint) : []
+    if empty { issues.append(warning("missing-label", "\(path)/label", "the label of \"\(field.key)\" is empty", labelHint)) }
     issues += unknown(field.json, path, field.isGroup ? Properties.group : Properties.field, hint: misplaced)
     for (index, option) in (field.options ?? []).enumerated() {
         let at = "\(path)/options/\(index)"
-        issues += required(option.json, at, "label") + unknown(option.json, at, Properties.option)
+        issues += labeled(option.json, at) + unknown(option.json, at, Properties.option)
         if let image = option.image, safeImage.test(image) != true {
             issues.append(
                 warning(

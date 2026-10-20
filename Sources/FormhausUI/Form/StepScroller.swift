@@ -12,12 +12,13 @@ struct ScrollTrigger: Equatable {
 }
 
 enum ScrollTarget: Equatable {
+    case summary
     case field(String)
     case formTop
     case screenTop
 
-    static func resolve(from old: ScrollTrigger, to new: ScrollTrigger, mode: StepScroll) -> ScrollTarget? {
-        if new.focus != old.focus, let key = new.focus?.key { return .field(key) }
+    static func resolve(from old: ScrollTrigger, to new: ScrollTrigger, mode: StepScroll, summary: Bool = true) -> ScrollTarget? {
+        if new.focus != old.focus, let focus = new.focus, let key = focus.key { return focus.summary && summary ? .summary : .field(key) }
         guard new.step != old.step else { return nil }
         switch mode {
         case .screenTop: return .screenTop
@@ -47,6 +48,10 @@ enum ScrollAnchor {
         "formhaus.top.\(ObjectIdentifier(model).hashValue)"
     }
 
+    @MainActor static func summary(_ model: FormModel) -> String {
+        "formhaus.summary.\(ObjectIdentifier(model).hashValue)"
+    }
+
     @MainActor static func screenTop(_ model: FormModel) -> String {
         "formhaus.screen.\(ObjectIdentifier(model).hashValue)"
     }
@@ -63,8 +68,8 @@ struct StepScroller: ViewModifier {
         content
             .background(alignment: .top) { Color.clear.frame(height: 1).id(ScrollAnchor.formTop(model)).accessibilityHidden(true) }
             .onChange(of: ScrollTrigger(model)) { old, new in
-                guard let target = ScrollTarget.resolve(from: old, to: new, mode: behavior.stepScroll) else { return }
-                scroll(to: target)
+                let target = ScrollTarget.resolve(from: old, to: new, mode: behavior.stepScroll, summary: behavior.errorSummary)
+                if let target { scroll(to: target) }
             }
     }
 
@@ -75,6 +80,7 @@ struct StepScroller: ViewModifier {
         }
         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
             switch target {
+            case .summary: proxy.scrollTo(ScrollAnchor.summary(model), anchor: .top)
             case .field(let key): proxy.scrollTo(key, anchor: .center)
             case .formTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: .top)
             case .screenTop: proxy.scrollTo(ScrollAnchor.formTop(model), anchor: UnitPoint(x: 0.5, y: ScrollAnchor.screenReach))

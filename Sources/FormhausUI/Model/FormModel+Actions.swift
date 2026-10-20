@@ -58,7 +58,12 @@ extension FormModel {
 
     public func setErrors(_ errors: FieldErrors) {
         engine.setErrors(errors)
-        if !errors.isEmpty { requestFocus(engine.firstErrorKey()) }
+        if !errors.isEmpty { requestFocus(engine.firstErrorKey(), afterErrors: true) }
+    }
+
+    @discardableResult
+    public func goToStep(_ stepId: String) -> GoToStepResult {
+        engine.goToStep(stepId)
     }
 
     public func focus(field key: String) {

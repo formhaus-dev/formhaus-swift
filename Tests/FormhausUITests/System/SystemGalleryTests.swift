@@ -67,6 +67,29 @@ struct SystemGalleryTests {
         try renderSystem("rows-error", invalid, height: 1300, behavior: FormBehavior(errorSummary: true))
     }
 
+    @Test("a step with short choice lists, empty and filled")
+    func stepChoices() throws {
+        let step: JSONValue = [
+            "id": "start", "title": "Start a project", "submit": ["label": "Send request"],
+            "steps": [
+                [
+                    "id": "scope", "title": "Scope", "description": "Tell us what you need and we reply within a day.",
+                    "fields": [
+                        [
+                            "key": "services", "type": "multiselect", "label": "Services", "validation": ["required": true],
+                            "options": [["value": "d", "label": "Design"], ["value": "v", "label": "Development"]],
+                        ],
+                        ["key": "budget", "type": "radio", "label": "Budget", "options": planOptions],
+                        ["key": "plan", "type": "select", "label": "Plan", "options": planOptions],
+                    ],
+                ],
+                ["id": "contact", "title": "Contact", "fields": [["key": "email", "type": "email", "label": "Email"]]],
+            ],
+        ]
+        try renderSystem("step-empty", try model(step), height: 1000)
+        try renderSystem("step-filled", try model(step, values: ["services": ["d", "v"], "budget": "pro"]), height: 1000)
+    }
+
     @Test("block fields, empty, filled and invalid")
     func blockFields() async throws {
         _ = await OptionImages.shared.image(ImageKey(swatch))

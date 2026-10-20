@@ -4,7 +4,7 @@ private func rangeIssue(_ rules: FieldValidation, _ path: String, _ min: String,
     guard let low = rules.json[min]?.numberValue, let high = rules.json[max]?.numberValue, low > high else { return [] }
     return [
         error(
-            "invalid-range", "\(path)/validation/\(min)",
+            "min-greater-than-max", "\(path)/validation/\(min)",
             "\(min) (\(jsNumberString(low))) is greater than \(max) (\(jsNumberString(high)))", "Lower \(min) or raise \(max)")
     ]
 }
@@ -34,7 +34,7 @@ private func ruleIssues(_ context: CheckContext, _ entry: FieldEntry) -> [Defini
     if let items, let max = rules.maxLength, items > max {
         issues.append(
             error(
-                "invalid-range", "\(path)/defaultItems",
+                "default-items-greater-than-max", "\(path)/defaultItems",
                 "defaultItems (\(jsNumberString(items))) is greater than maxLength (\(jsNumberString(max)))",
                 "Lower defaultItems or raise maxLength"))
     }
@@ -50,13 +50,13 @@ func itemLimitWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     if let max, max > Double(maxGroupItems) {
         issues.append(
             warning(
-                "invalid-range", "\(entry.path)/validation/maxLength", "maxLength (\(jsNumberString(max))) is greater than \(limit)",
+                "group-item-limit", "\(entry.path)/validation/maxLength", "maxLength (\(jsNumberString(max))) is greater than \(limit)",
                 "Lower maxLength to \(maxGroupItems)"))
     }
     if let items = field.defaultItems, items > field.maxItems, max.map({ items <= $0 }) ?? true {
         issues.append(
             warning(
-                "invalid-range", "\(entry.path)/defaultItems", "defaultItems (\(jsNumberString(items))) is greater than \(limit)",
+                "group-item-limit", "\(entry.path)/defaultItems", "defaultItems (\(jsNumberString(items))) is greater than \(limit)",
                 max == nil ? "Lower defaultItems or set validation.maxLength" : "Lower defaultItems to \(maxGroupItems)"))
     }
     return issues

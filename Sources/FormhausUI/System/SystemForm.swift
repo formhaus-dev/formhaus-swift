@@ -1,18 +1,32 @@
 @_spi(Renderer) import FormhausCore
 import SwiftUI
 
+@MainActor
+private final class ShownModel {
+    weak var model: FormModel?
+}
+
 struct SystemForm: View {
-    #if os(iOS)
-        @State private var store = StepStore()
-    #endif
+    @State private var shown = ShownModel()
     let model: FormModel
 
     var body: some View {
+        let store = model.systemStack
+        page(store)
+            .onAppear { show() }
+            .onChange(of: model.structure) { store.sync(model) }
+            .onChange(of: ObjectIdentifier(model)) { show() }
+    }
+
+    private func show() {
+        if let previous = shown.model, previous !== model { previous.systemStack.release() }
+        shown.model = model
+        model.systemStack.sync(model)
+    }
+
+    @ViewBuilder private func page(_ store: StepStore) -> some View {
         #if os(iOS)
             SystemStepPage(model: model, level: 0, owner: store.token, store: store)
-                .onAppear { store.sync(model) }
-                .onChange(of: model.structure) { store.sync(model) }
-                .onChange(of: ObjectIdentifier(model)) { store.sync(model) }
         #else
             SystemPage(
                 model: model, nodes: model.structure.nodes, step: model.structure.currentStep, level: model.structure.stepIndex,
@@ -68,6 +82,7 @@ struct SystemForm: View {
 
 struct SystemPage: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.formhausBehavior) private var behavior
     @Environment(\.formhausComponents) private var components
     @State private var dismissed = -1
     let model: FormModel
@@ -80,12 +95,8 @@ struct SystemPage: View {
         ScrollViewReader { proxy in
             Form {
                 if current, components.slots.progress != nil { Section { FormProgress(model: model).listRowBackground(Color.clear) } }
-                if let description = step.map({ model.texts(for: $0) })?.description, !description.isEmpty {
-                    Section {
-                    } header: {
-                        Text(verbatim: description).font(.body).textCase(nil).systemSecondaryText()
-                    }
-                }
+                SystemStepHeader(model: model, step: step, level: level)
+                if current { SystemErrorSummary(model: model) }
                 SystemNodes(nodes: nodes.filter { $0.type != "hidden" }, model: model).id(model.structure.revision)
                 if current { SystemSkip(model: model) }
                 if current, let custom = components.slots.actions {
@@ -100,19 +111,22 @@ struct SystemPage: View {
             .scrollDismissesKeyboard(.interactively)
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
             .onChange(of: model.focusRequest) { _, request in
-                guard current, let key = request?.key else { return }
-                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { proxy.scrollTo(key, anchor: .center) }
+                guard current, let request, let key = request.key else { return }
+                let summary = request.summary && behavior.errorSummary
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+                    proxy.scrollTo(summary ? ScrollAnchor.summary(model) : key, anchor: summary ? .top : .center)
+                }
             }
             .onChange(of: current) { _, now in
-                guard now, let key = model.focusRequest?.key else { return }
+                guard now, let request = model.focusRequest, let key = request.key else { return }
                 Task {
                     try? await Task.sleep(for: .milliseconds(400))
                     guard model.focusRequest?.key == key else { return }
-                    model.requestFocus(key)
+                    model.requestFocus(key, afterErrors: request.summary)
                 }
             }
         }
-        .modifier(SystemStepTitle(model: model, step: step, level: level))
+        .modifier(SystemStepTitle(title: model.definition.title))
         #if os(iOS)
             .modifier(SystemToolbar(context: actions, first: level == 0, empty: nodes.isEmpty, custom: components.slots.actions != nil))
         #endif
@@ -139,20 +153,14 @@ struct SystemPage: View {
 }
 
 private struct SystemStepTitle: ViewModifier {
-    @Environment(\.dynamicTypeSize) private var typeSize
-    let model: FormModel
-    let step: FormStep?
-    let level: Int
+    let title: String?
 
     func body(content: Content) -> some View {
-        if let step = step.map({ model.texts(for: $0) }), model.structure.isMultiStep {
-            let subtitle = model.text(forLabel: "stepTitle", ["index": .number(Double(level + 1))])
-            if #available(iOS 26, macOS 14, *), !typeSize.isAccessibilitySize {
-                content.navigationTitle(Text(verbatim: step.title ?? subtitle)).navigationSubtitle(
-                    Text(verbatim: step.title == nil ? "" : subtitle))
-            } else {
-                content.navigationTitle(Text(verbatim: step.title ?? subtitle))
-            }
+        if let title, !title.isEmpty {
+            content.navigationTitle(Text(verbatim: title))
+                #if os(iOS)
+                    .navigationBarTitleDisplayMode(.large)
+                #endif
         } else {
             content
         }

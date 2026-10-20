@@ -27,7 +27,7 @@
       "path": "/fields/1/fields/3/type"
     },
     {
-      "code": "invalid-range",
+      "code": "default-items-greater-than-max",
       "path": "/fields/2/defaultItems"
     }
   ],

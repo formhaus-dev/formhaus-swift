@@ -1,0 +1,98 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "file app reference",
+  "definition": {
+    "id": "attachment",
+    "title": "Attachment",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "doc",
+        "type": "file",
+        "label": "Document"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "a file: URL in the initial values is kept",
+      "values": {
+        "doc": "file:///Users/x/a.pdf"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "doc": "file:///Users/x/a.pdf"
+            },
+            "submitValues": {
+              "doc": "file:///Users/x/a.pdf"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "an opaque string in the initial values is kept",
+      "values": {
+        "doc": "upload-123"
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "doc": "upload-123"
+            },
+            "submitValues": {
+              "doc": "upload-123"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "setValue keeps a file: URL",
+      "values": {},
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "doc",
+          "value": "file:///tmp/b.png"
+        },
+        {
+          "expect": {
+            "values": {
+              "doc": "file:///tmp/b.png"
+            },
+            "submitValues": {
+              "doc": "file:///tmp/b.png"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "setValue keeps an opaque string",
+      "values": {},
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "doc",
+          "value": "upload-123"
+        },
+        {
+          "expect": {
+            "values": {
+              "doc": "upload-123"
+            },
+            "submitValues": {
+              "doc": "upload-123"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

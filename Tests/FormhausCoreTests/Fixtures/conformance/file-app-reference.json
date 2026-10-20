@@ -1,0 +1,52 @@
+{
+  "name": "file-app-reference",
+  "issues": [],
+  "definition": {
+    "id": "attachment",
+    "title": "Attachment",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "doc",
+        "type": "file",
+        "label": "Document"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "a file: URL is an app reference",
+      "input": {
+        "values": {
+          "doc": "file:///Users/x/a.pdf"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "doc": "file:///Users/x/a.pdf"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "an opaque string is an app reference",
+      "input": {
+        "values": {
+          "doc": "upload-123"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "doc": "upload-123"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

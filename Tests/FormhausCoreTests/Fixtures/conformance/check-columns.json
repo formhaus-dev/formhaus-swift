@@ -2,11 +2,11 @@
   "name": "check-columns",
   "issues": [
     {
-      "code": "invalid-range",
+      "code": "invalid-columns",
       "path": "/fields/1/columns"
     },
     {
-      "code": "invalid-range",
+      "code": "invalid-columns",
       "path": "/fields/2/columns"
     },
     {
@@ -14,7 +14,7 @@
       "path": "/fields/3/columns"
     },
     {
-      "code": "invalid-range",
+      "code": "invalid-columns",
       "path": "/fields/4/columns"
     }
   ],

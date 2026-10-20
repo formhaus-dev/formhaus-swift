@@ -31,11 +31,12 @@ func systemChunks(_ nodes: [FormNode], alone: (FormField) -> Bool) -> [SystemChu
 
 struct SystemNodes: View {
     @Environment(\.formhausComponents) private var components
+    @Environment(\.formhausBehavior) private var behavior
     let nodes: [FormNode]
     let model: FormModel
 
     var body: some View {
-        ForEach(systemChunks(nodes) { isSystemBlock($0, components) }) { chunk in
+        ForEach(systemChunks(nodes) { isSystemBlock($0, components, limit: behavior.inlineChoiceLimit) }) { chunk in
             switch chunk {
             case .rows(let fields):
                 Section {

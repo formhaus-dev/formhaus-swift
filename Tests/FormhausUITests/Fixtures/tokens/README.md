@@ -51,7 +51,7 @@ Tokens can carry `$extensions["dev.formhaus"]`:
 | `mix` | The token is a mix of two colors. See below. |
 | `add` | The token is `base + amount`. `font-size.heading` is `{font-size.default}` + 2px, `font-size.title` + 5px. |
 | `fallback` | CSS value for browsers without `color-mix()`. Ports ignore it. |
-| `auto` | The CSS variable is set on standalone forms only. Inside `.fh-cloud` the stylesheet reads `--fh-auto-<name>` as the fallback. |
+| `auto` | The CSS variable is set on standalone forms only. Inside `.fh-cloud` the stylesheet reads `--fhi-auto-<name>` as the fallback. |
 | `shorthand` | On a group: the child tokens are written as one CSS value in this order. `input.padding` is `block inline`. |
 
 The `$value` of a derived token is the result of its rule in that mode. The build fails if it does not match.

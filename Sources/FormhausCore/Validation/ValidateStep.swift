@@ -1,13 +1,11 @@
-public func validateStep(
-    _ step: FormStep, _ values: JSONObject, validators: Validators = [:], messages: MessageSource? = nil
-) -> FieldErrors {
-    validateFields(step.fields, values, validators: validators, messages: messages)
+public func validateStep(_ step: FormStep, _ values: JSONObject, options: ValidateOptions = ValidateOptions()) -> FieldErrors {
+    validateFields(step.fields, values, options: options)
 }
 
-public func validateFields(
-    _ fields: [FormNode], _ values: JSONObject, validators: Validators = [:], messages: MessageSource? = nil
-) -> FieldErrors {
-    CallBudget.run { validateShown(fields, values, values, ShownChecks(validators: validators, messages: messages, limits: .standard)) }
+public func validateFields(_ fields: [FormNode], _ values: JSONObject, options: ValidateOptions = ValidateOptions()) -> FieldErrors {
+    CallBudget.run {
+        validateShown(fields, values, values, ShownChecks(validators: options.validators, messages: options.messages, limits: .standard))
+    }
 }
 
 func customRules(_ nodes: [FormNode]) -> Bool {
@@ -18,6 +16,8 @@ struct ShownChecks {
     let validators: Validators
     let messages: MessageSource?
     let limits: ListLimits
+
+    var options: ValidateOptions { ValidateOptions(validators: validators, messages: messages) }
 }
 
 private func validateItems(_ group: FormField, _ values: JSONObject, _ scope: JSONObject, _ checks: ShownChecks) -> FieldErrors {
@@ -26,7 +26,7 @@ private func validateItems(_ group: FormField, _ values: JSONObject, _ scope: JS
         let own = itemScope(group, item, values)
         let shown = itemScope(group, item, scope)
         for field in group.items where isVisible(field, shown, limits: checks.limits) {
-            if let error = validateFieldValue(field, own[field.key], own, validators: checks.validators, messages: checks.messages) {
+            if let error = validateFieldValue(field, own[field.key], own, options: checks.options) {
                 errors[itemPath(group.key, index, field.key)] = error
             }
         }
@@ -37,7 +37,7 @@ private func validateItems(_ group: FormField, _ values: JSONObject, _ scope: JS
 func validateShown(_ fields: [FormNode], _ values: JSONObject, _ scope: JSONObject, _ checks: ShownChecks) -> FieldErrors {
     var errors = FieldErrors()
     for field in shownFields(fields, scope, checks.limits) {
-        if let error = validateFieldValue(field, values[field.key], values, validators: checks.validators, messages: checks.messages) {
+        if let error = validateFieldValue(field, values[field.key], values, options: checks.options) {
             errors[field.key] = error
         }
         if field.isGroup {

@@ -53,7 +53,7 @@ struct CancellationTests {
         let engine = try FormEngine(definition: Self.flat, options: FormEngineOptions(onFormEvent: { events.append($0) }))
         #expect(try await engine.submit { _, _ in throw CancellationError() } == false)
         #expect(!engine.submitting)
-        #expect(events.last == .formSubmitFailed(reason: .error))
+        #expect(events.last == .formSubmitFailed(reason: .error(status: nil)))
     }
 
     @Test("submit returns true when onAfterSubmit throws CancellationError after the submit")

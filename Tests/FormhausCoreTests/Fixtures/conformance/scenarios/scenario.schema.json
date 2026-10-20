@@ -210,6 +210,9 @@
           "$ref": "#/$defs/do-goToStepWithField"
         },
         {
+          "$ref": "#/$defs/do-goToStep"
+        },
+        {
           "$ref": "#/$defs/do-reset"
         },
         {
@@ -665,6 +668,35 @@
         },
         "key": {
           "type": "string"
+        }
+      }
+    },
+    "do-goToStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stepId"],
+      "properties": {
+        "do": {
+          "const": "goToStep"
+        },
+        "stepId": {
+          "type": "string"
+        },
+        "returns": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["stepId", "reached"],
+          "properties": {
+            "stepId": {
+              "type": ["string", "null"]
+            },
+            "reached": {
+              "type": "boolean"
+            },
+            "reason": {
+              "enum": ["unknown-step", "not-on-path", "blocked"]
+            }
+          }
         }
       }
     },

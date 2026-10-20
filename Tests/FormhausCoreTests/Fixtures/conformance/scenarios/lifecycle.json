@@ -521,6 +521,12 @@
             "log": [
               {
                 "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              },
+              {
+                "event": {
                   "type": "field_error",
                   "fieldKey": "name",
                   "error": "This field is required"

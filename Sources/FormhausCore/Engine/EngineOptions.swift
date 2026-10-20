@@ -65,9 +65,27 @@ public struct GroupItem: Sendable, Identifiable, Hashable {
     }
 }
 
-public enum SubmitFailureReason: String, Sendable {
+public enum SubmitFailureReason: Sendable, Equatable {
+    case validation
     case rejected
-    case error
+    case error(status: Int?)
+
+    public var name: String {
+        switch self {
+        case .validation: "validation"
+        case .rejected: "rejected"
+        case .error: "error"
+        }
+    }
+}
+
+public protocol SubmitStatusError: Error {
+    var status: Int? { get }
+}
+
+func submitStatus(_ error: any Error) -> Int? {
+    if let error = error as? any SubmitStatusError { return error.status }
+    return error is URLError ? 0 : nil
 }
 
 public enum FormEvent: Sendable, Equatable {
@@ -81,6 +99,7 @@ public enum FormEvent: Sendable, Equatable {
     case formSubmitted(fieldCount: Int)
     case formSubmitSucceeded
     case formSubmitFailed(reason: SubmitFailureReason)
+    case stepRedirected(requestedStepId: String, stepId: String?, reason: StepRedirectReason)
     case formReset
 
     public var type: String {
@@ -95,6 +114,7 @@ public enum FormEvent: Sendable, Equatable {
         case .formSubmitted: "form_submitted"
         case .formSubmitSucceeded: "form_submit_succeeded"
         case .formSubmitFailed: "form_submit_failed"
+        case .stepRedirected: "step_redirected"
         case .formReset: "form_reset"
         }
     }
@@ -121,7 +141,7 @@ public typealias StepValidateFn = @MainActor @Sendable (String, JSONObject) asyn
 public typealias BeforeStepChangeFn = @MainActor @Sendable (StepChangeContext) async throws -> Bool?
 public typealias AfterStepChangeFn = @MainActor @Sendable (StepChangeContext) async throws -> Void
 public typealias BeforeSubmitFn = @MainActor @Sendable (JSONObject) async throws -> Bool?
-public typealias SubmitFn = @MainActor @Sendable (JSONObject, [String]) async throws -> Void
+public typealias AfterSubmitFn = @MainActor @Sendable (JSONObject, [String]) async throws -> Void
 public typealias SubmitHandler = @MainActor @Sendable (JSONObject, [String]) async throws -> SubmitResult?
 public typealias FormEventFn = @MainActor @Sendable (FormEvent) -> Void
 public typealias WarningFn = @MainActor @Sendable (DefinitionIssue) -> Void
@@ -130,7 +150,7 @@ public struct FormEngineOptions: Sendable {
     public var onBeforeStepChange: BeforeStepChangeFn?
     public var onAfterStepChange: AfterStepChangeFn?
     public var onBeforeSubmit: BeforeSubmitFn?
-    public var onAfterSubmit: SubmitFn?
+    public var onAfterSubmit: AfterSubmitFn?
     public var onStepValidate: StepValidateFn?
     public var onFormEvent: FormEventFn?
     public var onWarning: WarningFn?
@@ -141,7 +161,7 @@ public struct FormEngineOptions: Sendable {
 
     public init(
         onBeforeStepChange: BeforeStepChangeFn? = nil, onAfterStepChange: AfterStepChangeFn? = nil,
-        onBeforeSubmit: BeforeSubmitFn? = nil, onAfterSubmit: SubmitFn? = nil, onStepValidate: StepValidateFn? = nil,
+        onBeforeSubmit: BeforeSubmitFn? = nil, onAfterSubmit: AfterSubmitFn? = nil, onStepValidate: StepValidateFn? = nil,
         onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:], messages: MessageSource? = nil,
         lang: String? = nil, formatRecall: RecallFormatFn? = nil
     ) {

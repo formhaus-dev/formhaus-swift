@@ -60,8 +60,8 @@ struct RegexBudgetTests {
         let field: JSONValue = ["key": "a", "type": "text", "label": "A", "validation": ["validator": "probe"]]
         let nodes = try FormDefinition(json: ["id": "p", "submit": ["label": "S"], "fields": [field]]).fields ?? []
         let first = try #require(nodes.first?.field)
-        #expect(validateFieldValue(first, "x", [:], validators: probe) == nil)
-        #expect(validateFields(nodes, ["a": "x"], validators: probe).isEmpty)
+        #expect(validateFieldValue(first, "x", [:], options: ValidateOptions(validators: probe)) == nil)
+        #expect(validateFields(nodes, ["a": "x"], options: ValidateOptions(validators: probe)).isEmpty)
     }
 
     @Test("one validation tests at most 10,000 values against patterns")

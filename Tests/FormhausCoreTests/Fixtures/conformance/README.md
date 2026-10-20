@@ -6,7 +6,7 @@ Each file holds one `definition`, the issues `checkDefinition` reports for it, a
 {
   "name": "check-field-rules",
   "covers": ["rejects impossible ranges"],
-  "issues": [{ "code": "invalid-range", "path": "/fields/1/validation/minLength" }],
+  "issues": [{ "code": "min-greater-than-max", "path": "/fields/1/validation/minLength" }],
   "warnings": [{ "code": "rule-not-applicable", "path": "/fields/3/validation/min" }],
   "definition": { "id": "f", "title": "F", "submit": { "label": "Submit" }, "fields": [] },
   "cases": []

@@ -2,10 +2,6 @@
     import SwiftUI
     import UIKit
 
-    extension Notification.Name {
-        static let formhausStepsReleased = Notification.Name("formhaus.stepsReleased")
-    }
-
     struct StackReleaser: UIViewControllerRepresentable {
         let owner: UUID
         let level: Int
@@ -47,7 +43,8 @@
                     let navigation = page.navigationController, let index = navigation.viewControllers.firstIndex(of: page),
                     index >= level
                 else { return }
-                navigation.popToViewController(navigation.viewControllers[index - level], animated: true)
+                let root = navigation.viewControllers[index - level]
+                UIView.performWithoutAnimation { navigation.popToViewController(root, animated: false) }
             }
         }
     }

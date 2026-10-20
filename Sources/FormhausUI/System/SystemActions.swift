@@ -10,7 +10,7 @@ struct SystemPrimaryButton: View {
             ProgressView()
         } else if context.state.showPrimary {
             Button(action: context.performPrimaryAction) {
-                Text(verbatim: label)
+                Text(verbatim: context.state.primaryLabel)
                     #if os(iOS)
                         .foregroundStyle(prominent || filled ? AnyShapeStyle(.white) : AnyShapeStyle(.tint))
                         .frame(maxWidth: prominent ? .infinity : nil, minHeight: prominent ? 34 : nil)
@@ -21,12 +21,6 @@ struct SystemPrimaryButton: View {
             .disabled(context.busy || context.state.primaryDisabled)
             .keyboardShortcut(.defaultAction)
         }
-    }
-
-    private var label: String {
-        let state = context.state
-        if prominent || state.isLastStep { return state.primaryLabel }
-        return state.nextAction?.label ?? context.model.text(forLabel: "next")
     }
 
     #if os(iOS)
