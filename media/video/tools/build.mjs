@@ -4,20 +4,19 @@ import { conformance } from './conformance.mjs';
 import { definitions } from './definitions.mjs';
 import { editLines, excerpt } from './excerpt.mjs';
 import { extractAll } from './frames.mjs';
-import { repo, root, script } from './paths.mjs';
+import { footage as footageDir, readJSON, repo, root, script } from './paths.mjs';
 import { resolveColor } from './tokens.mjs';
 
 export const build = () => {
   const config = script();
   const { base, before, after } = definitions();
-  const { transition } = config.output;
   let start = 0;
   const beats = config.beats.map((beat) => {
     const placed = { ...beat, start };
-    start += beat.duration - transition;
+    start += beat.duration;
     return placed;
   });
-  const total = start + transition;
+  const total = start;
   const colors = Object.fromEntries(Object.entries(config.theme.colors).map(([name, value]) => [name, resolveColor(value)]));
   const data = {
     ...config,
@@ -27,7 +26,9 @@ export const build = () => {
     theme: { ...config.theme, colors },
     footage: extractAll(),
     conformance: conformance(),
-    excerpt: excerpt(base, beats.find((beat) => beat.scene === 'schema').field),
+    excerpt: excerpt(base, config.excerpt.field),
+    excerptFile: config.excerpt.file,
+    mcp: readJSON(join(footageDir, 'mcp.json')),
     edit: editLines(base, config.edit, before, after),
   };
   const dir = join(root, 'build');

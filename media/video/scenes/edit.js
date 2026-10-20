@@ -53,7 +53,8 @@ export default async (layer, beat, data) => {
       show(t, 0);
       const count = Math.round(progress(t, beat.editAt, 0.8, (p) => p) * inserted.length);
       typed.innerHTML = json(inserted.slice(0, count));
-      typed.style.background = count ? 'rgba(185, 163, 255, 0.22)' : 'transparent';
+      typed.style.background = count ? 'rgba(185, 163, 255, 0.28)' : 'transparent';
+      line.style.background = `rgba(185, 163, 255, ${0.16 * progress(t, beat.editAt - 0.3, 0.3)})`;
       const typing = t >= beat.editAt && t <= typeEnd;
       const blink = Math.floor(t * 2.5) % 2 === 0;
       caret.style.opacity = typing || (t > beat.editAt - 0.6 && t < swapAt + 0.5 && blink) ? '1' : '0';

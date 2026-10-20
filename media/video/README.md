@@ -2,11 +2,11 @@
 
 The formhaus-swift product video, built from sources. HTML scenes play the recorded footage of the iOS demo and the React form on a timeline driven by a frame number, and Playwright captures every frame.
 
-Requires Xcode with an iOS Simulator runtime, Node 22.12 or later, ffmpeg and gifski (`brew install ffmpeg gifski`). `npm ci` runs on the first call.
+Requires Xcode with an iOS Simulator runtime, Node 22.12 or later, ffmpeg and gifski (`brew install ffmpeg gifski`), and a checkout of [formhaus](https://github.com/formhaus-dev/formhaus) with its packages built, for the builder recording. The checkout is expected next to this repository; set `FORMHAUS_REPO` to use another path. `npm ci` runs on the first call.
 
 ## Edit texts
 
-Every on-screen text, the beat order and durations, the devices and simulators, the edited JSON line of beat 3, the colors and the fonts are in `script.json`. Colors in braces, such as `{color.text.default}`, resolve from the formhaus tokens in `@formhaus/core/tokens`.
+Every on-screen text, the beat order and durations, the devices and simulators, the edited JSON line, the colors and the fonts are in `script.json`. Colors in braces, such as `{color.text.default}`, resolve from the formhaus tokens in `@formhaus/core/tokens`.
 
 After an edit, run `./render.sh`. Texts do not need new footage. The scenario count comes from `Tests/FormhausCoreTests/Fixtures` at build time.
 
@@ -18,14 +18,23 @@ To preview in a browser, run `node tools/build.mjs && node tools/serve.mjs`, ope
 ./record.sh
 ```
 
-It builds the demo app, records the iOS script mode on a headless simulator and the same definition in `@formhaus/react` with headless Chromium, and writes everything to `footage/`. To record one scene again, pass its footage ids from `script.json`:
+It writes everything to `footage/`:
+
+- the iOS demo in script mode on a headless simulator. The app writes the time of each mark and tap, with the frame of the tapped field, to its container, and the touch circles are drawn from that file;
+- the same definition in `@formhaus/react` and the formhaus builder, recorded with headless Chromium. The touch circles come from the Playwright click points;
+- a macOS render of the same form, drawn offscreen by `mac/` with `NSHostingView`;
+- the `validate_definition` result from the formhaus MCP server.
+
+To record one scene again, pass its footage ids from `script.json`:
 
 ```sh
 ./record.sh ios-styles
 ./record.sh web-tour web-variant
 ```
 
-The web side follows the marks in `script.json` (`marks.tour`). They match the iOS timings in `Examples/FormhausDemo/FormhausDemo/Resources/demo-timings.json`. If the demo script or its timings change, update the marks.
+The web side follows the marks in `script.json` (`marks.tour`). They match the iOS timings in `Examples/FormhausDemo/FormhausDemo/Resources/demo-timings.json`. The scenes refer to marks by name, and the footage is mapped to the times the app recorded, so small timing changes need no edit.
+
+On a busy machine, run the steps under `nice -n 15`.
 
 ## Render
 

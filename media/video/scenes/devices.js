@@ -34,7 +34,22 @@ const browser = (parent, spec, { frame = false } = {}) => {
   return { ...sized(root, w + 2, h + bar + 2, { '--w': w, '--h': h }), img: media, screen };
 };
 
+const mac = (parent, spec) => {
+  const [w, h] = spec.window;
+  const bar = 52;
+  const root = el('div', 'device mac', parent);
+  const top = el('div', 'mac__bar', root);
+  const dots = el('span', 'mac__dots', top);
+  for (let index = 0; index < 3; index += 1) el('i', null, dots);
+  el('span', 'mac__title', top, spec.title);
+  const screen = el('div', 'device__screen', root);
+  const img = el('img', null, screen);
+  img.alt = '';
+  return { ...sized(root, w + 2, h + bar + 2, { '--w': w, '--h': h }), img, screen };
+};
+
 export const device = (parent, spec, options) => {
+  if (spec.kind === 'mac') return mac(parent, spec);
   if (spec.kind === 'iphone') return phone(parent, spec, 14, 'iphone');
   if (spec.kind === 'ipad') return phone(parent, spec, 22, 'ipad');
   return browser(parent, spec, options);

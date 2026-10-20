@@ -331,7 +331,10 @@ body {
 }
 
 .proof-label {
-  font-size: 52px;
+  width: 760px;
+  font-size: 48px;
+  line-height: 1.15;
+  white-space: normal;
   font-weight: 700;
   letter-spacing: -0.03em;
 }
@@ -419,4 +422,279 @@ body {
 .end-link--main {
   color: var(--c-text);
   font-weight: 700;
+}
+
+.touch {
+  position: absolute;
+  display: none;
+  width: 46px;
+  height: 46px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: rgba(13, 13, 21, 0.22);
+  box-shadow: 0 2px 10px rgba(13, 13, 21, 0.25);
+  pointer-events: none;
+}
+
+.browser .touch {
+  width: 40px;
+  height: 40px;
+}
+
+.launch-title {
+  font-size: 80px;
+  letter-spacing: -0.04em;
+}
+
+.launch-sub {
+  font-size: 36px;
+}
+
+.mock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: #222;
+}
+
+.mock__title {
+  margin-bottom: 28px;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.mock__label {
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+.mock__input {
+  height: 46px;
+  margin-bottom: 22px;
+}
+
+.mock__error {
+  margin: -12px 0 18px;
+  color: #d0021b;
+  font-size: 16px;
+}
+
+.mock__button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mock__button .touch {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mock__alert,
+.mock__pass {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  opacity: 0;
+}
+
+.mock--browser {
+  zoom: 1.45;
+  padding: 44px 48px;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.mock--browser .mock__input {
+  border: 1px solid #9a9a9a;
+}
+
+.mock--browser .mock__button {
+  align-self: flex-start;
+  width: 140px;
+  border-radius: 3px;
+  background: #1f6feb;
+}
+
+.mock--iphone {
+  zoom: 1.3;
+  padding: 72px 18px 0;
+  background: #f2f2f7;
+  font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+}
+
+.mock--iphone .mock__input {
+  border-radius: 12px;
+  background: #fff;
+}
+
+.mock--iphone .mock__button {
+  border-radius: 24px;
+  background: #34a853;
+}
+
+.mock--iphone .mock__alert {
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.mock--iphone .mock__alert b,
+.mock--iphone .mock__alert span {
+  width: 270px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 17px;
+  text-align: center;
+}
+
+.mock--iphone .mock__alert span {
+  margin-top: -18px;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 14px 14px;
+  color: #0a7aff;
+}
+
+.mock--ipad {
+  zoom: 1.9;
+  padding: 70px 70px;
+  background: #fffaf3;
+  font-family: 'Avenir Next', Helvetica, Arial, sans-serif;
+}
+
+.mock--ipad .mock__input {
+  border-bottom: 2px solid #c9b8a0;
+}
+
+.mock--ipad .mock__button {
+  background: #e8710a;
+}
+
+.mock--ipad .mock__pass {
+  background: #fffaf3;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.mock--ipad .mock__pass b {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #e8710a;
+  color: #fff;
+  font-size: 48px;
+}
+
+.mock--iphone .mock__error,
+.mock--ipad .mock__error {
+  display: none;
+}
+
+.assistant {
+  width: 760px;
+  padding: 0 0 28px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--c-code);
+  color: var(--c-codeText);
+  box-shadow: 0 40px 80px -40px rgba(13, 13, 21, 0.5);
+}
+
+.assistant__bar {
+  padding: 18px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--c-codeMuted);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.assistant__prompt {
+  margin: 26px 28px 0;
+  padding: 18px 22px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 22px;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+.assistant__tool {
+  margin: 22px 28px 0;
+  color: var(--c-codeMuted);
+  font-family: var(--font-mono);
+  font-size: 18px;
+}
+
+.assistant__result {
+  margin: 10px 28px 0;
+  color: var(--c-codeString);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  white-space: pre;
+}
+
+.mac {
+  width: calc(var(--w) + 2px);
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  border-radius: 14px;
+  background: var(--c-surface);
+  box-shadow:
+    0 50px 90px -45px rgba(13, 13, 21, 0.35),
+    0 16px 34px -18px rgba(13, 13, 21, 0.18);
+}
+
+.mac .device__screen {
+  --r: 0px;
+}
+
+.mac__bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-background);
+}
+
+.mac__dots {
+  display: flex;
+  gap: 8px;
+}
+
+.mac__dots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+}
+
+.mac__dots i:nth-child(2) {
+  background: #febc2e;
+}
+
+.mac__dots i:nth-child(3) {
+  background: #28c840;
+}
+
+.mac__title {
+  position: absolute;
+  left: 50%;
+  color: var(--c-text);
+  font-size: 15px;
+  font-weight: 600;
+  transform: translateX(-50%);
 }

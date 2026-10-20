@@ -25,17 +25,25 @@ const scenes = await Promise.all(
 );
 
 const cut = params.has('calm');
-const visible = ({ beat, index }, t) => t >= beat.start + (cut && index > 0 ? transition / 2 : 0) && t < beat.start + beat.duration;
+const last = data.beats.length - 1;
+const visible = ({ beat, index }, t) => t >= beat.start && (t < beat.start + beat.duration || index === last);
+
+const fade = ({ beat, index }, local) => {
+  if (cut) return 1;
+  const enter = index === 0 ? 1 : progress(local, 0, transition);
+  const leave = index === last ? 0 : progress(local, beat.duration - transition, transition);
+  return Math.min(enter, 1 - leave);
+};
 
 export const renderFrame = async (frame) => {
   const t = frame / fps;
   const pending = [];
   for (const entry of scenes) {
-    const show = visible(entry, t) || (entry.index === scenes.length - 1 && t >= entry.beat.start);
+    const show = visible(entry, t);
     entry.layer.style.display = show ? 'block' : 'none';
     if (!show) continue;
     const local = t - entry.beat.start;
-    entry.layer.style.opacity = entry.index === 0 || cut ? '1' : String(progress(local, 0, transition));
+    entry.layer.style.opacity = String(fade(entry, local));
     pending.push(entry.scene.update(local));
   }
   await Promise.all(pending);

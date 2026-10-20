@@ -18,7 +18,7 @@ rmSync(dir, { recursive: true, force: true });
 mkdirSync(dir, { recursive: true });
 run('ffmpeg', ['-v', 'error', '-i', source, '-vf', `scale=${gif.width}:-2:flags=lanczos`, join(dir, '%05d.png')]);
 const frames = readdirSync(dir).map((file) => join(dir, file)).sort();
-for (const quality of [100, 95, 90, 85, 80]) {
+for (const quality of [100, 95, 90, 85, 80, 75, 70]) {
   run('gifski', ['--quiet', '--fps', String(gif.fps), '--width', String(gif.width), '--quality', String(quality), '-o', target, ...frames]);
   const size = statSync(target).size;
   console.log(`gif quality ${quality}: ${(size / 1e6).toFixed(2)} MB`);

@@ -8,11 +8,12 @@ const jsonFiles = (dir) =>
     .sort();
 
 export const conformance = () => {
-  const corpus = jsonFiles(fixtures).map((name) => `definition · ${readJSON(join(fixtures, name)).name}`);
+  const words = (text) => text.replace(/-/g, ' ');
+  const corpus = jsonFiles(fixtures).map((name) => `definition · ${words(readJSON(join(fixtures, name)).name)}`);
   const dir = join(fixtures, 'scenarios');
   const engine = jsonFiles(dir).flatMap((name) => {
     const file = name.replace(/\.json$/, '');
-    return (readJSON(join(dir, name)).scenarios ?? []).map((scenario) => `${file} · ${scenario.name}`);
+    return (readJSON(join(dir, name)).scenarios ?? []).map((scenario) => `${words(file)} · ${scenario.name.replace(/ - /g, ', ')}`);
   });
   const names = [...engine, ...corpus];
   return { count: names.length, names };
