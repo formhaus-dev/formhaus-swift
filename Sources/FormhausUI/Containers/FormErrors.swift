@@ -35,6 +35,7 @@ public struct FormErrorSummary: View {
             .overlay(shape.strokeBorder(tokens.colors.error, lineWidth: 1))
             .accessibilityElement(children: .contain)
             .id(ScrollAnchor.summary(model))
+            .measured("summary")
             .onAppear { announce(title) }
         }
     }

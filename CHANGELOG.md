@@ -6,6 +6,7 @@
 
 - Switching from the system set to another set inside a `NavigationStack` shows Back only in the navigation bar.
 - Focusing the error summary scrolls only as far as needed to show it, in every component set. A summary that is already on screen no longer moves the page.
+- The formhaus set shows the error summary below the fields, before the actions, as in the web renderers.
 
 ## 0.1.1
 

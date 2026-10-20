@@ -147,9 +147,9 @@ private struct FormStack: View {
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.gap) {
             FormProgress(model: model)
-            if behavior.errorSummary { FormErrorSummary(model: model) }
-            FormTopLevelErrors(model: model)
             FormFields(model: model)
+            FormTopLevelErrors(model: model)
+            if behavior.errorSummary { FormErrorSummary(model: model) }
             FormActionsSlot(model: model)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
