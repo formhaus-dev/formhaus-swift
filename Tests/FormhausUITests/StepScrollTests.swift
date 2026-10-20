@@ -125,6 +125,7 @@ private func hostedOffset(
     let window = NSWindow(contentRect: view.frame, styleMask: [.borderless], backing: .buffered, defer: false)
     window.contentView = view
     settle(view)
+    #expect(!window.isVisible && !window.isKeyWindow)
     let scroller = try #require(scrollView(in: view))
     scroller.contentView.scroll(to: CGPoint(x: 0, y: start))
     scroller.reflectScrolledClipView(scroller.contentView)
