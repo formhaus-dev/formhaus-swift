@@ -43,7 +43,7 @@ struct SystemNodes: View {
                 } footer: {
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(fields, id: \.nodeID) { field in
-                            SystemFooterError(state: model.field(field.key), label: fields.count > 1 ? field.label : nil)
+                            SystemFooterError(state: model.field(field.key), model: model, labeled: fields.count > 1 && field.label != nil)
                         }
                     }
                 }
@@ -78,11 +78,12 @@ struct SystemNodeRow: View {
 
 private struct SystemFooterError: View {
     let state: FieldState
-    let label: String?
+    let model: FormModel
+    let labeled: Bool
 
     var body: some View {
         if let error = state.error, !error.isEmpty {
-            SystemErrorText(text: label.map { summaryLine($0, error) } ?? error)
+            SystemErrorText(text: labeled ? model.errorText(forKey: state.key) ?? error : error)
         }
     }
 }

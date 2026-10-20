@@ -38,7 +38,7 @@ struct SystemForm: View {
 
         @ViewBuilder private var page: some View {
             if let active = store {
-                let snapshot = active.snapshot(level, model.structure)
+                let snapshot = active.snapshot(level, model)
                 SystemPage(
                     model: model, nodes: snapshot.nodes, step: snapshot.step, level: level, current: active.history.count == level + 1
                 )
@@ -86,7 +86,7 @@ struct SystemPage: View {
                         Text(description).font(.body).textCase(nil).systemSecondaryText()
                     }
                 }
-                SystemNodes(nodes: nodes.filter { $0.type != "hidden" }, model: model)
+                SystemNodes(nodes: nodes.filter { $0.type != "hidden" }, model: model).id(model.structure.revision)
                 if current { SystemSkip(model: model) }
                 if current, let custom = components.slots.actions {
                     Section { custom(actions).listRowBackground(Color.clear) }

@@ -18,6 +18,16 @@ func fires(_ read: () -> Void, when change: () -> Void) -> Bool {
 }
 
 @MainActor
+func eventually(within limit: Duration = .seconds(5), _ condition: @MainActor () -> Bool) async -> Bool {
+    let deadline = ContinuousClock.now + limit
+    while !condition() {
+        guard ContinuousClock.now < deadline else { return false }
+        try? await Task.sleep(for: .milliseconds(5))
+    }
+    return true
+}
+
+@MainActor
 func model(
     _ definition: JSONValue, values: JSONObject = [:], options: FormRendererOptions = FormRendererOptions(),
     onSubmit: @escaping SubmitHandler = { _, _ in nil }

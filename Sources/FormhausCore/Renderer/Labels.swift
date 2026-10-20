@@ -78,11 +78,6 @@ extension FormEngine {
     }
 
     @_spi(Renderer)
-    public func errorEntries(_ source: LabelSource?) -> [ErrorEntry] {
-        errorGroups(source).flatMap(\.entries)
-    }
-
-    @_spi(Renderer)
     public func errorGroups(_ source: LabelSource?) -> [ErrorGroup] {
         let errors = core.errors
         guard !errors.isEmpty else { return [] }

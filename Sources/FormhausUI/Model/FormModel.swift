@@ -14,7 +14,7 @@ public final class FormModel {
     public private(set) var stepValidating = false
     public private(set) var submitting = false
     public private(set) var topLevelErrors: [String] = []
-    public private(set) var errorEntries: [ErrorEntry] = []
+    public private(set) var errorGroups: [ErrorGroup] = []
     public private(set) var stepErrorCounts: [String: Int] = [:]
     public private(set) var actions: FormActionsState
     public private(set) var actionError: String?
@@ -33,6 +33,7 @@ public final class FormModel {
     @ObservationIgnored private var fieldStates: [String: FieldState] = [:]
     @ObservationIgnored private var groupStates: [String: GroupState] = [:]
     @ObservationIgnored var optionStates: [String: OptionsState] = [:]
+    @ObservationIgnored var optionsRevision = -1
     @ObservationIgnored private var lastValues: JSONObject
     @ObservationIgnored private var lastErrors: FieldErrors
     @ObservationIgnored private var focusCounter = 0
@@ -115,6 +116,10 @@ public final class FormModel {
         return formatTemplate(fallback, params)
     }
 
+    func errorText(forKey key: String) -> String? {
+        errorGroups.lazy.flatMap(\.entries).first { $0.key == key }?.text
+    }
+
     public func start() {
         engine.start()
         reloadOptions()
@@ -195,10 +200,10 @@ public final class FormModel {
         }
         assign(\.actions, engine.actionsState(options.labels))
         let errors = engine.errors
-        if errors != lastErrors || errorEntries.isEmpty != errors.isEmpty || structureVersion != lastStructureVersion {
+        if errors != lastErrors || errorGroups.isEmpty != errors.isEmpty || structureVersion != lastStructureVersion {
             lastErrors = errors
             lastStructureVersion = structureVersion
-            assign(\.errorEntries, engine.errorEntries(options.labels))
+            assign(\.errorGroups, engine.errorGroups(options.labels))
             assign(\.stepErrorCounts, engine.stepErrors.reduce(into: [:]) { $0[$1.key] = $1.value.count })
         }
         refreshDisabled()

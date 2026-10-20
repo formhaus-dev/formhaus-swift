@@ -64,6 +64,14 @@ extension FormEngine {
     public var errorsVersion: Int { core.errorsGeneration }
 
     @_spi(Renderer)
+    public var definitionRevision: Int { core.definitionGeneration }
+
+    @_spi(Renderer)
+    public func visibleNodes(of step: FormStep) -> [FormNode] {
+        core.visibility.shownNodes(step.fields, core.values.json)
+    }
+
+    @_spi(Renderer)
     @discardableResult
     public func autoAdvance() async throws -> Bool {
         try await advance(.autoAdvance)

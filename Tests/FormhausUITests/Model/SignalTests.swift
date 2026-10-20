@@ -16,7 +16,7 @@ struct SignalTests {
             _ = name.loading
             _ = form.structure
             _ = form.actions
-            _ = form.errorEntries
+            _ = form.errorGroups
         }
         #expect(!fires(others, when: { form.setValue("a", forKey: "email") }))
         #expect(fires({ _ = email.value }, when: { form.setValue("ab", forKey: "email") }))
@@ -79,7 +79,7 @@ struct SignalTests {
         #expect(form.invalidAttempts == 1)
         #expect(form.focusRequest?.key == "email")
         #expect(form.field("email").error == "This field is required")
-        #expect(form.errorEntries.map(\.label) == ["Email"])
+        #expect(form.errorGroups.flatMap(\.entries).map(\.label) == ["Email"])
         await form.submit()
         #expect(form.invalidAttempts == 2)
     }

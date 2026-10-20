@@ -9,7 +9,7 @@ public struct FormFields: View {
     }
 
     public var body: some View {
-        NodeStack(nodes: model.structure.nodes.filter { $0.type != "hidden" }, model: model)
+        NodeStack(nodes: model.structure.nodes.filter { $0.type != "hidden" }, model: model).id(model.structure.revision)
     }
 }
 

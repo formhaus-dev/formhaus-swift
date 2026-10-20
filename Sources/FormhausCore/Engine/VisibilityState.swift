@@ -98,12 +98,20 @@ final class VisibilityState {
         let limits = limits(values)
         view = VisibilityView(
             visibleSteps: steps, currentStep: current, visibleFields: shownFields(source, active, limits),
-            visibleNodes: source.filter { isVisible($0, active, limits: limits) }.map { node in
-                guard let section = node.section else { return node }
-                return .section(section.filtered { isVisible($0, active, limits: limits) })
-            }
+            visibleNodes: shownNodes(source, active, limits)
         )
         return view
+    }
+
+    func shownNodes(_ source: [FormNode], _ values: JSONObject) -> [FormNode] {
+        shownNodes(source, scope(values), limits(values))
+    }
+
+    private func shownNodes(_ source: [FormNode], _ active: JSONObject, _ limits: ListLimits) -> [FormNode] {
+        source.filter { isVisible($0, active, limits: limits) }.map { node in
+            guard let section = node.section else { return node }
+            return .section(section.filtered { isVisible($0, active, limits: limits) })
+        }
     }
 
     func markChanged(_ structureChanged: Bool, _ valuesChanged: Bool) {
