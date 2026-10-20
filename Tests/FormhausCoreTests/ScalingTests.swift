@@ -36,22 +36,31 @@ struct ScalingTests {
         return (["id": "f", "title": "F", "submit": ["label": "S"], "fields": .array(fields)], .object(values))
     }
 
-    @Test("a million array elements parse in linear time")
+    @Test("a 200k-element array parses to every element")
+    func largeArray() throws {
+        let items = try #require(JSONValue(parsing: array(200_000)).arrayValue)
+        #expect(items.count == 200_000)
+        #expect(items.allSatisfy { $0 == 1 })
+    }
+
+    @Test("80k descending numeric keys parse in ascending order before named keys")
+    func descendingKeys() throws {
+        let object = try #require(JSONValue(parsing: self.object(80_000)).objectValue)
+        #expect(object.keys == (0..<80_000).map(String.init) + (0..<80_000).reversed().map { "k\($0)" })
+        #expect(object["79999"] == 1)
+    }
+
+    @Test("a million array elements parse in linear time", .heavy)
     func arrays() throws {
         let short = array(125_000)
         let long = array(1_000_000)
-        #expect(try JSONValue(parsing: long).arrayValue?.count == 1_000_000)
         #expect(growth(short: { _ = try? JSONValue(parsing: short) }, long: { _ = try? JSONValue(parsing: long) }) < 32)
     }
 
-    @Test("a hundred thousand object keys parse in linear time")
+    @Test("a hundred thousand object keys parse in linear time", .heavy)
     func objects() throws {
         let short = object(6_250)
         let long = object(50_000)
-        let keys = try #require(JSONValue(parsing: long).objectValue?.keys)
-        #expect(keys.count == 100_000)
-        #expect(keys.prefix(3) == ["0", "1", "2"])
-        #expect(keys[50_000...].prefix(2) == ["k49999", "k49998"])
         #expect(growth(short: { _ = try? JSONValue(parsing: short) }, long: { _ = try? JSONValue(parsing: long) }) < 32)
     }
 
@@ -66,11 +75,18 @@ struct ScalingTests {
         #expect(copy.keys == ["0", "1", "2", "10", "b", "a", "01", "4294967295", "c"])
     }
 
-    @Test("validateSubmission scales linearly with the field count")
-    func submissions() throws {
+    @Test("2,000 chained fields validate without errors")
+    func manyFields() throws {
+        let form = form(2_000)
+        let result = try validateSubmission(form.definition, form.values)
+        #expect(result.errors.isEmpty)
+        #expect(result.values.count == 2_000)
+    }
+
+    @Test("validateSubmission scales linearly with the field count", .heavy)
+    func submissions() {
         let short = form(250)
         let long = form(2_000)
-        #expect(try validateSubmission(long.definition, long.values).errors.isEmpty)
         let ratio = growth(
             short: { _ = try? validateSubmission(short.definition, short.values) },
             long: { _ = try? validateSubmission(long.definition, long.values) })
