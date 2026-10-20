@@ -17,9 +17,9 @@ struct JSONParserTests {
         String(repeating: "[", count: depth) + String(repeating: "]", count: depth)
     }
 
-    @Test("200,000 nested arrays fail cleanly on a background thread")
-    func deepNesting() async {
-        let text = nested(200_000)
+    @Test("deeply nested arrays fail cleanly on a background thread", arguments: Load.sizes(20_000, heavy: 200_000))
+    func deepNesting(depth: Int) async {
+        let text = nested(depth)
         let outcome = await onSmallStack {
             do throws(JSONParseError) {
                 _ = try JSONValue(parsing: text)

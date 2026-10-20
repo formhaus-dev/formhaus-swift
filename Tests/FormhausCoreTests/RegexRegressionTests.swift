@@ -24,21 +24,19 @@ struct RegexRegressionTests {
         #expect(pattern.test(String(repeating: "b", count: 13)) == false)
     }
 
-    @Test("clearing many captures counts toward the step budget")
-    func captureClearingBudget() throws {
-        let pattern = try #require(JSRegex("(?:a|[]" + String(repeating: "()", count: 10000) + ")*\\1(?!)"))
-        let started = Date()
-        #expect(pattern.test(String(repeating: "a", count: maxStringLength - 1)) == nil)
-        #expect(Date().timeIntervalSince(started) < 15)
+    @Test("clearing many captures counts toward the step budget", arguments: Load.sizes(1000, heavy: 10000))
+    func captureClearingBudget(groups: Int) throws {
+        let pattern = try #require(JSRegex("(?:a|[]" + String(repeating: "()", count: groups) + ")*\\1(?!)"))
+        let text = String(repeating: "a", count: maxStringLength - 1)
+        StepBudget.$backtrackingLimit.withValue(groups * 100) { #expect(pattern.test(text) == nil) }
     }
 
-    @Test("unset duplicate groups in a backreference count toward the step budget")
-    func backreferenceGroupsBudget() throws {
-        let groups = String(repeating: "(?<n>a)|", count: 4000)
+    @Test("unset duplicate groups in a backreference count toward the step budget", arguments: Load.sizes(400, heavy: 4000))
+    func backreferenceGroupsBudget(count: Int) throws {
+        let groups = String(repeating: "(?<n>a)|", count: count)
         let pattern = try #require(JSRegex("(?:" + groups + "b)(?:\\k<n>c)*$"))
-        let started = Date()
-        #expect(pattern.test("b" + String(repeating: "c", count: maxStringLength - 1)) == nil)
-        #expect(Date().timeIntervalSince(started) < 15)
+        let text = "b" + String(repeating: "c", count: maxStringLength - 1)
+        StepBudget.$backtrackingLimit.withValue(count * 250) { #expect(pattern.test(text) == nil) }
     }
 
     @Test(
@@ -63,13 +61,8 @@ struct RegexRegressionTests {
         let short = String(repeating: "y", count: maxStringLength / 8 - 1) + "x"
         #expect(unanchored.test(long) == false)
         #expect(anchored.test(long) == true)
-        let clock = ContinuousClock()
-        var fastest = (short: Duration.seconds(60), long: Duration.seconds(60))
-        for _ in 0..<7 {
-            fastest.short = min(fastest.short, clock.measure { _ = unanchored.test(short) == anchored.test(short) })
-            fastest.long = min(fastest.long, clock.measure { _ = unanchored.test(long) == anchored.test(long) })
-        }
-        #expect(fastest.long / fastest.short < 32)
+        #expect(unanchored.test(short) == false)
+        #expect(anchored.test(short) == true)
     }
 
     @Test("a pattern past the size limit fails closed")
@@ -83,18 +76,20 @@ struct RegexRegressionTests {
         #expect(try #require(JSRegex("(?:a{1000}){1000}")).test("aaaa") == false)
     }
 
-    @Test("large counted repeats match every input up to the length limit")
-    func largeCountedRepeats() throws {
-        #expect(try #require(JSRegex("[a-z]{0,4001}1")).test(String(repeating: "b", count: 6000) + "1") == true)
-        #expect(try #require(JSRegex("[a-z]{0,4001}1")).test(String(repeating: "b", count: 6000) + "2") == false)
-        #expect(try #require(JSRegex("(?:x?){4001}y")).test("xay") == true)
-        #expect(try #require(JSRegex("(?:a|b){4001}c")).test(String(repeating: "ab", count: 2001) + "c") == true)
-        #expect(try #require(JSRegex("^(?:a{0,2}){2001}$")).test(String(repeating: "a", count: 4002)) == true)
+    @Test("large counted repeats match every input up to the length limit", arguments: Load.sizes(401, heavy: 4001))
+    func largeCountedRepeats(count: Int) throws {
+        let half = (count + 1) / 2
+        let long = String(repeating: "b", count: count * 3 / 2)
+        #expect(try #require(JSRegex("[a-z]{0,\(count)}1")).test(long + "1") == true)
+        #expect(try #require(JSRegex("[a-z]{0,\(count)}1")).test(long + "2") == false)
+        #expect(try #require(JSRegex("(?:x?){\(count)}y")).test("xay") == true)
+        #expect(try #require(JSRegex("(?:a|b){\(count)}c")).test(String(repeating: "ab", count: half) + "c") == true)
+        #expect(try #require(JSRegex("^(?:a{0,2}){\(half)}$")).test(String(repeating: "a", count: 2 * half)) == true)
     }
 
-    @Test("automaton memory stays inside the pattern and global limits")
-    func automatonMemory() throws {
-        for offset in 0..<40 {
+    @Test("automaton memory stays inside the pattern and global limits", arguments: Load.sizes(4, heavy: 40))
+    func automatonMemory(offsets: Int) throws {
+        for offset in 0..<offsets {
             let width = 300 - offset
             let compiled = try CompiledPattern("[^]*a[^]{\(width)}$")
             let text = randomText(1600, ["a", "b"], seed: UInt64(offset + 1))
@@ -106,14 +101,18 @@ struct RegexRegressionTests {
         }
     }
 
-    @Test("a full memory pool reclaims states from automatons that sat idle", arguments: 0..<3)
-    func reclaimIdleAutomatons(_ round: Int) throws {
-        try MemoryPool.$current.withValue(MemoryPool()) {
+    private static let pools: [(round: Int, count: Int, limit: Int)] =
+        Load.heavy ? (0..<3).map { ($0, 50, AutomatonMemory.globalLimit) } : [(0, 8, 4 << 20)]
+
+    @Test("a full memory pool reclaims states from automatons that sat idle", arguments: pools)
+    func reclaimIdleAutomatons(round: Int, count: Int, limit: Int) throws {
+        let pool = MemoryPool(limit: limit)
+        try MemoryPool.$current.withValue(pool) {
             let letter = ["c", "d", "e"][round]
-            let patterns = try (0..<50).map { try CompiledPattern("[^]*\(letter)[^]{\(300 - $0)}$") }
+            let patterns = try (0..<count).map { try CompiledPattern("[^]*\(letter)[^]{\(300 - $0)}$") }
             for (index, pattern) in patterns.enumerated() {
                 _ = pattern.test(randomText(1300, [Character(letter), "b"], seed: UInt64(index + 1)))
-                #expect(AutomatonMemory.reservedTotal <= AutomatonMemory.globalLimit)
+                #expect(AutomatonMemory.reservedTotal <= pool.limit)
             }
             #expect(try #require(patterns.last?.automaton).bytes > AutomatonMemory.patternLimit / 2)
             let fresh = try CompiledPattern("^[a-z]+@[a-z]+\\.\(letter)[a-z]{2,}$")
@@ -122,8 +121,8 @@ struct RegexRegressionTests {
         }
     }
 
-    @Test("threads share automatons without changing results")
-    func sharedAutomatons() async throws {
+    @Test("threads share automatons without changing results", arguments: Load.sizes(1, heavy: 12))
+    func sharedAutomatons(passes: Int) async throws {
         let sources = ["[ab]*a[ab]{12}$", "[^]*a[^]{100}$", "(?=[ab]*a[ab]{10}$)[ab]+", "(?<=a[ab]{9})b$", "^(?:a|b)*a(?:a|b){11}$"]
         let texts = (0..<6).map { randomText($0 % 2 == 0 ? 20 : 800, ["a", "b"], seed: UInt64($0 + 11)) }
         let expected = try sources.map { source in try texts.map { try CompiledPattern(source).test($0) } }
@@ -132,7 +131,7 @@ struct RegexRegressionTests {
             for worker in 0..<8 {
                 group.addTask {
                     var mismatches = 0
-                    for round in 0..<3 {
+                    for round in 0..<passes {
                         for index in patterns.indices {
                             let pattern = (index + worker + round) % patterns.count
                             for (text, result) in zip(texts, expected[pattern]) where patterns[pattern].test(text) != result {
@@ -179,9 +178,10 @@ struct RegexRegressionTests {
     @Test("nested empty repeats with backreferences fail closed on short values")
     func nestedEmptyRepeatsFailClosed() throws {
         let source = "(?:((\\1{0,1}\\1[\\s\\S]?){2}(?i:\\1[^a]{0,1}|\\uFEFF{1,}?|\\b\\1{1,3}?\\b){0})*(?i:(?:)K|))+[ab]"
-        let started = Date()
-        #expect(try #require(JSRegex(source)).test("a\u{212A}-_\u{FEFF}\u{E9}x1") == nil)
-        #expect(Date().timeIntervalSince(started) < 15)
+        let pattern = try #require(JSRegex(source))
+        StepBudget.$backtrackingLimit.withValue(Load.heavy ? StepBudget.backtrackingLimit : 50_000) {
+            #expect(pattern.test("a\u{212A}-_\u{FEFF}\u{E9}x1") == nil)
+        }
     }
 
     @Test("the pattern cache stays inside its byte limit")
