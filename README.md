@@ -207,8 +207,8 @@ In the demo app, a 4-step form with picture options, conditions, a rating and a 
 
 | Metric | Value |
 | --- | --- |
-| FormhausCore in the app binary | 1.1 MB |
-| FormhausUI in the app binary | 1.6 MB |
+| FormhausCore in the app binary | 1.1 MiB |
+| FormhausUI in the app binary | 1.6 MiB |
 | Peak memory of the whole app | 66 MB |
 
 Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is `phys_footprint_peak` on an iPhone 17 Pro simulator with iOS 27 after the full fill and submit.
