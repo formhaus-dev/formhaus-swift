@@ -1,0 +1,582 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "pattern test limit",
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "codes",
+    "title": "Codes",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "codes",
+        "type": "group",
+        "label": "Codes",
+        "defaultItems": 1000,
+        "validation": {
+          "maxLength": 1000
+        },
+        "fields": [
+          {
+            "key": "c0",
+            "type": "text",
+            "label": "Code 0",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c1",
+            "type": "text",
+            "label": "Code 1",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c2",
+            "type": "text",
+            "label": "Code 2",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c3",
+            "type": "text",
+            "label": "Code 3",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c4",
+            "type": "text",
+            "label": "Code 4",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c5",
+            "type": "text",
+            "label": "Code 5",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c6",
+            "type": "text",
+            "label": "Code 6",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c7",
+            "type": "text",
+            "label": "Code 7",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c8",
+            "type": "text",
+            "label": "Code 8",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "c9",
+            "type": "text",
+            "label": "Code 9",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          }
+        ]
+      },
+      {
+        "key": "more",
+        "type": "group",
+        "label": "More",
+        "defaultItems": 1,
+        "validation": {
+          "maxLength": 1
+        },
+        "fields": [
+          {
+            "key": "c0",
+            "type": "text",
+            "label": "Code 0",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          }
+        ]
+      },
+      {
+        "key": "last",
+        "type": "text",
+        "label": "Last",
+        "defaultValue": "x",
+        "validation": {
+          "pattern": "^x$"
+        }
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "fails pattern checks after 10,000 tests in one validation",
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "more.0.c0": "Invalid format",
+            "last": "Invalid format"
+          }
+        }
+      ]
+    },
+    {
+      "name": "runs 10,000 pattern tests in one validation",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "codes",
+        "title": "Codes",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "codes",
+            "type": "group",
+            "label": "Codes",
+            "defaultItems": 999,
+            "validation": {
+              "maxLength": 999
+            },
+            "fields": [
+              {
+                "key": "c0",
+                "type": "text",
+                "label": "Code 0",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c1",
+                "type": "text",
+                "label": "Code 1",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c2",
+                "type": "text",
+                "label": "Code 2",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c3",
+                "type": "text",
+                "label": "Code 3",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c4",
+                "type": "text",
+                "label": "Code 4",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c5",
+                "type": "text",
+                "label": "Code 5",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c6",
+                "type": "text",
+                "label": "Code 6",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c7",
+                "type": "text",
+                "label": "Code 7",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c8",
+                "type": "text",
+                "label": "Code 8",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c9",
+                "type": "text",
+                "label": "Code 9",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              }
+            ]
+          },
+          {
+            "key": "tail",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t0",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t1",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t2",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t3",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t4",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t5",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t6",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t7",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t8",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    },
+    {
+      "name": "starts a new count on each validation",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "codes",
+        "title": "Codes",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "codes",
+            "type": "group",
+            "label": "Codes",
+            "defaultItems": 999,
+            "validation": {
+              "maxLength": 999
+            },
+            "fields": [
+              {
+                "key": "c0",
+                "type": "text",
+                "label": "Code 0",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c1",
+                "type": "text",
+                "label": "Code 1",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c2",
+                "type": "text",
+                "label": "Code 2",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c3",
+                "type": "text",
+                "label": "Code 3",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c4",
+                "type": "text",
+                "label": "Code 4",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c5",
+                "type": "text",
+                "label": "Code 5",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c6",
+                "type": "text",
+                "label": "Code 6",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c7",
+                "type": "text",
+                "label": "Code 7",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c8",
+                "type": "text",
+                "label": "Code 8",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              },
+              {
+                "key": "c9",
+                "type": "text",
+                "label": "Code 9",
+                "defaultValue": "x",
+                "validation": {
+                  "pattern": "^x$"
+                }
+              }
+            ]
+          },
+          {
+            "key": "tail",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t0",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t1",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t2",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t3",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t4",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t5",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t6",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t7",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          },
+          {
+            "key": "t8",
+            "type": "text",
+            "label": "Last",
+            "defaultValue": "x",
+            "validation": {
+              "pattern": "^x$"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {}
+        },
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    }
+  ]
+}

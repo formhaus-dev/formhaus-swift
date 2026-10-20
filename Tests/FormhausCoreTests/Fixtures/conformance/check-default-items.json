@@ -1,0 +1,59 @@
+{
+  "name": "check-default-items",
+  "issues": [],
+  "warnings": [
+    {
+      "code": "invalid-range",
+      "path": "/fields/0/defaultItems"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "check-default-items",
+    "title": "Default items over the limit",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "crew",
+        "type": "group",
+        "label": "Crew",
+        "defaultItems": 1000000,
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "accepts up to the item limit",
+      "input": {
+        "values": {
+          "crew": [
+            {
+              "name": "Ann"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "crew": [
+            {
+              "name": "Ann"
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

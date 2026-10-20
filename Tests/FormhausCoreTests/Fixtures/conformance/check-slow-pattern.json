@@ -1,6 +1,9 @@
 {
   "name": "check-slow-pattern",
-  "covers": ["warns about a pattern that repeats a group with a quantifier or alternation"],
+  "covers": [
+    "warns about a pattern that repeats a group with a quantifier or alternation",
+    "warns about overlapping repeats split by optional parts or groups"
+  ],
   "issues": [],
   "warnings": [
     {
@@ -22,6 +25,22 @@
     {
       "code": "slow-pattern",
       "path": "/fields/4/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/13/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/14/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/15/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/16/validation/pattern"
     }
   ],
   "definition": {
@@ -133,6 +152,38 @@
         "label": "code12",
         "validation": {
           "pattern": "(a)+"
+        }
+      },
+      {
+        "key": "code13",
+        "type": "text",
+        "label": "code13",
+        "validation": {
+          "pattern": "^[0-9]+\\s?[0-9]+$"
+        }
+      },
+      {
+        "key": "code14",
+        "type": "text",
+        "label": "code14",
+        "validation": {
+          "pattern": "^(\\d+)(\\d+)x"
+        }
+      },
+      {
+        "key": "code15",
+        "type": "text",
+        "label": "code15",
+        "validation": {
+          "pattern": "^(?:\\d+)(?:\\d+)x"
+        }
+      },
+      {
+        "key": "code16",
+        "type": "text",
+        "label": "code16",
+        "validation": {
+          "pattern": "^\\w+.?\\w+@"
         }
       }
     ]
