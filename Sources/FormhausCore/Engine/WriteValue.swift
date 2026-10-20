@@ -44,12 +44,6 @@ extension EngineCore {
         return field
     }
 
-    func itemLimits(_ group: FormField) -> (min: Double, max: Double) {
-        let rules = group.validation
-        let required = rules?.required?.isTruthy == true
-        return (rules?.minLength ?? (required ? 1 : 0), rules?.maxLength ?? 100)
-    }
-
     func items(_ key: String) -> [GroupItem] {
         guard let group = activeGroup(key) else { return [] }
         return itemsOf(values[key]).enumerated().map { index, item in
@@ -60,7 +54,7 @@ extension EngineCore {
 
     func addItem(_ key: String) -> Bool {
         let items = itemsOf(values[key])
-        guard let group = activeGroup(key), Double(items.count) < itemLimits(group).max else { return false }
+        guard let group = activeGroup(key), Double(items.count) < group.itemLimits.max else { return false }
         let id = freshToken()
         let item = JSONValue.object(createItem(group.items))
         visibility.starts.seedItems(ValueSlot(.array([item]), ref: Ref(token: 0, items: [id])))
@@ -81,7 +75,7 @@ extension EngineCore {
 
     func removeItem(_ key: String, _ index: Int) -> Bool {
         let items = itemsOf(values[key])
-        guard let group = activeGroup(key), items.indices.contains(index), Double(items.count) > itemLimits(group).min else { return false }
+        guard let group = activeGroup(key), items.indices.contains(index), Double(items.count) > group.itemLimits.min else { return false }
         var ids = values.itemIds(key)
         visibility.starts.dropItem(values.itemId(key, index))
         shift(&errors, key, index)
@@ -119,5 +113,12 @@ extension EngineCore {
         writeValue(key, slot, own: false) {
             _ = clearResolvedMatchErrors(fieldKey, item: ItemField(group: group, index: index, field: field))
         }
+    }
+}
+
+extension FormField {
+    var itemLimits: (min: Double, max: Double) {
+        let required = validation?.required?.isTruthy == true
+        return (validation?.minLength ?? (required ? 1 : 0), validation?.maxLength ?? 100)
     }
 }

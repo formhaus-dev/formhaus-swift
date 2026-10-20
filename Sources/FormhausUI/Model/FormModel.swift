@@ -41,6 +41,7 @@ public final class FormModel {
     @ObservationIgnored private var emittedValues: JSONObject?
 
     public init(engine: FormEngine, options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler) {
+        dropForeignFiles(engine)
         self.engine = engine
         self.options = options
         submitHandler = onSubmit
@@ -152,6 +153,7 @@ public final class FormModel {
     }
 
     private func refresh() {
+        dropForeignFiles(engine)
         version = engine.version
         let previousStep = structure.currentStep?.nodeID
         let nextStructure = FormStructure(engine)
@@ -173,11 +175,6 @@ public final class FormModel {
             emitValues()
             pruneUploads(values)
         }
-    }
-
-    private func pruneUploads(_ values: JSONObject) {
-        let files = Set(values.compactMap { $0.value.stringValue }.filter { $0.hasPrefix("file:") })
-        UploadStore.prune(owner: ObjectIdentifier(self), keeping: files)
     }
 
     private func refreshGroup(_ state: GroupState) {

@@ -96,7 +96,7 @@ extension FormEngine {
 
     @_spi(Renderer)
     public func itemLimits(_ group: FormField) -> (min: Int, max: Int) {
-        let limits = core.itemLimits(group)
+        let limits = group.itemLimits
         return (clampedInt(limits.min, 0...1_000_000) ?? 0, clampedInt(limits.max, 0...1_000_000) ?? maxGroupItems)
     }
 

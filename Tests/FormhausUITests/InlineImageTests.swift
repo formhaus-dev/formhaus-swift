@@ -9,9 +9,9 @@ struct InlineImageTests {
     @Test("data images decode once and come from the cache")
     func decode() async {
         let key = ImageKey(swatch)
-        #expect(await InlineImages.shared.image(key) != nil)
-        #expect(InlineImages.shared.cached(key) != nil)
-        #expect(await InlineImages.shared.image(ImageKey("data:image/png;base64,AA==")) == nil)
+        #expect(await OptionImages.shared.image(key) != nil)
+        #expect(OptionImages.shared.cached(key) != nil)
+        #expect(await OptionImages.shared.image(ImageKey("data:image/png;base64,AA==")) == nil)
     }
 
     @Test("sources that share their length, start and end never share a cache entry")
@@ -26,12 +26,12 @@ struct InlineImageTests {
         let firstKey = ImageKey(first, digest: one.imageKey)
         let secondKey = ImageKey(second, digest: two.imageKey)
         #expect(firstKey != secondKey)
-        #expect(InlineImages.shared.entry(firstKey) !== InlineImages.shared.entry(secondKey))
+        #expect(OptionImages.shared.entry(firstKey) !== OptionImages.shared.entry(secondKey))
         #expect(ImageKey(first) == firstKey)
         let pictured = swatch.replacingOccurrences(of: "image/png", with: "image/x-png")
-        let decoded = await InlineImages.shared.image(ImageKey(pictured))
+        let decoded = await OptionImages.shared.image(ImageKey(pictured))
         #expect(decoded != nil)
-        #expect(InlineImages.shared.cached(ImageKey(swatch)) !== decoded)
+        #expect(OptionImages.shared.cached(ImageKey(swatch)) !== decoded)
     }
 }
 
@@ -47,8 +47,8 @@ struct InlineImageViewTests {
         ]
         let model = FormModel(definition: try FormDefinition(json: json)) { _, _ in nil }
         let view = host(FormhausFormContent(model: model))
-        for _ in 0..<40 where InlineImages.shared.cached(ImageKey(source)) == nil { try await Task.sleep(for: .milliseconds(50)) }
+        for _ in 0..<40 where OptionImages.shared.cached(ImageKey(source)) == nil { try await Task.sleep(for: .milliseconds(50)) }
         settle(view)
-        #expect(InlineImages.shared.cached(ImageKey(source)) != nil)
+        #expect(OptionImages.shared.cached(ImageKey(source)) != nil)
     }
 }

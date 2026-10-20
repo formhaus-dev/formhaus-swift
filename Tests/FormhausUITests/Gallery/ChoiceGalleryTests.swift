@@ -44,7 +44,7 @@ struct ChoiceGalleryTests {
 
     @Test("toggles, autocomplete and picture options in every state")
     func toggles() async throws {
-        _ = await InlineImages.shared.image(ImageKey(swatch))
+        _ = await OptionImages.shared.image(ImageKey(swatch))
         try renderEntries(
             "choice",
             [
