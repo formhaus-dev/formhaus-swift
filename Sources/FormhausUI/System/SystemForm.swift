@@ -2,133 +2,33 @@
 import SwiftUI
 
 @MainActor
-private final class ShownModel {
-    weak var model: FormModel?
+private final class StepDirection {
+    var index = 0
+    var forward = true
 }
 
 struct SystemForm: View {
-    @State private var shown = ShownModel()
-    let model: FormModel
-
-    var body: some View {
-        let store = model.systemStack
-        page(store)
-            .onAppear { show() }
-            .onChange(of: model.structure) { store.sync(model) }
-            .onChange(of: ObjectIdentifier(model)) { show() }
-    }
-
-    private func show() {
-        if let previous = shown.model, previous !== model { previous.systemStack.release() }
-        shown.model = model
-        model.systemStack.sync(model)
-    }
-
-    @ViewBuilder private func page(_ store: StepStore) -> some View {
-        #if os(iOS)
-            SystemStepPage(model: model, level: 0, owner: store.token, store: store)
-        #else
-            SystemPage(
-                model: model, nodes: model.structure.nodes, step: model.structure.currentStep, level: model.structure.stepIndex,
-                current: true)
-        #endif
-    }
-}
-
-#if os(iOS)
-    private struct SystemStepPage: View {
-        @Environment(\.formhausComponents) private var components
-        @Environment(\.formhausBehavior) private var behavior
-        @Environment(\.formhausTheme) private var theme
-        @Environment(\.locale) private var locale
-        let model: FormModel
-        let level: Int
-        let owner: UUID
-        weak var store: StepStore?
-
-        var body: some View {
-            page.background { if level > 0 { StackReleaser(owner: owner, level: level) } }
-        }
-
-        @ViewBuilder private var page: some View {
-            if let active = store {
-                let snapshot = active.snapshot(level, model)
-                SystemPage(
-                    model: model, nodes: snapshot.nodes, step: snapshot.step, level: level, current: active.history.count == level + 1
-                )
-                .navigationDestination(isPresented: pushed) {
-                    SystemStepPage(model: model, level: level + 1, owner: owner, store: self.store)
-                        .formhausComponents(components)
-                        .formhausBehavior(behavior)
-                        .formhausTheme(theme)
-                        .environment(\.locale, locale)
-                        .resolveFormhausTokens()
-                }
-            } else {
-                Color.clear
-            }
-        }
-
-        private var pushed: Binding<Bool> {
-            Binding(
-                get: { [weak store] in (store?.history.count ?? 0) > level + 1 },
-                set: { [weak store] shown in
-                    guard !shown, let store, store.history.count > level + 1 else { return }
-                    store.pop(to: level, model)
-                })
-        }
-    }
-#endif
-
-struct SystemPage: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.formhausBehavior) private var behavior
-    @Environment(\.formhausComponents) private var components
+    @State private var direction = StepDirection()
     @State private var dismissed = -1
     let model: FormModel
-    let nodes: [FormNode]
-    let step: FormStep?
-    let level: Int
-    let current: Bool
 
     var body: some View {
-        ScrollViewReader { proxy in
-            Form {
-                if current, components.slots.progress != nil { Section { FormProgress(model: model).listRowBackground(Color.clear) } }
-                SystemStepHeader(model: model, step: step, level: level)
-                if current { SystemErrorSummary(model: model) }
-                SystemNodes(nodes: nodes.filter { $0.type != "hidden" }, model: model).id(model.structure.revision)
-                if current { SystemSkip(model: model) }
-                if current, let custom = components.slots.actions {
-                    Section { custom(actions).listRowBackground(Color.clear) }
-                } else if current {
-                    #if os(macOS)
-                        SystemBottomRow(context: actions)
-                    #endif
-                }
-            }
-            .formStyle(.grouped)
-            .scrollDismissesKeyboard(.interactively)
-            .sensoryFeedback(.error, trigger: model.invalidAttempts)
-            .onChange(of: model.focusRequest) { _, request in
-                guard current, let request, let key = request.key else { return }
-                let summary = request.summary && behavior.errorSummary
-                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
-                    proxy.scrollTo(summary ? ScrollAnchor.summary(model) : key, anchor: summary ? .top : .center)
-                }
-            }
-            .onChange(of: current) { _, now in
-                guard now, let request = model.focusRequest, let key = request.key else { return }
-                Task {
-                    try? await Task.sleep(for: .milliseconds(400))
-                    guard model.focusRequest?.key == key else { return }
-                    model.requestFocus(key, afterErrors: request.summary)
-                }
-            }
+        let structure = model.structure
+        let index = structure.stepIndex
+        if index != direction.index {
+            direction.forward = index > direction.index
+            direction.index = index
         }
+        return ZStack {
+            SystemPage(model: model, actions: actions, nodes: structure.nodes, step: structure.currentStep, level: index)
+                .id(index)
+                .transition(StepSlide(direction: direction))
+        }
+        .animation(reduceMotion ? nil : .smooth(duration: 0.35), value: index)
         .modifier(SystemStepTitle(title: model.definition.title))
         #if os(iOS)
-            .modifier(SystemToolbar(context: actions, first: level == 0, empty: nodes.isEmpty, custom: components.slots.actions != nil))
+            .modifier(SystemToolbar(context: actions, first: index == 0, empty: structure.nodes.isEmpty))
         #endif
         .alert(errors.first ?? "", isPresented: alertShown) {
             Button(model.text(forLabel: "close"), role: .cancel) { dismissed = model.alertVersion }
@@ -147,8 +47,58 @@ struct SystemPage: View {
 
     private var alertShown: Binding<Bool> {
         Binding(
-            get: { current && !errors.isEmpty && model.alertVersion != dismissed },
+            get: { !errors.isEmpty && model.alertVersion != dismissed },
             set: { shown in if !shown { dismissed = model.alertVersion } })
+    }
+}
+
+private struct StepSlide: Transition {
+    let direction: StepDirection
+
+    func body(content: Content, phase: TransitionPhase) -> some View {
+        let sign: CGFloat = direction.forward ? 1 : -1
+        let shift = phase == .willAppear ? sign : phase == .didDisappear ? -sign * 0.3 : 0
+        content
+            .visualEffect { view, proxy in view.offset(x: proxy.size.width * shift) }
+            .zIndex(phase == .didDisappear ? 0 : 1)
+    }
+}
+
+struct SystemPage: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.formhausBehavior) private var behavior
+    @Environment(\.formhausComponents) private var components
+    let model: FormModel
+    let actions: ActionsContext
+    let nodes: [FormNode]
+    let step: FormStep?
+    let level: Int
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            Form {
+                if components.slots.progress != nil { Section { FormProgress(model: model).listRowBackground(Color.clear) } }
+                SystemStepHeader(model: model, step: step, level: level)
+                SystemErrorSummary(model: model)
+                SystemNodes(nodes: nodes.filter { $0.type != "hidden" }, model: model).id(model.structure.revision)
+                SystemSkip(model: model)
+                if let custom = components.slots.actions {
+                    Section { custom(actions).listRowBackground(Color.clear) }
+                } else {
+                    SystemBottomRow(context: actions)
+                }
+            }
+            .formStyle(.grouped)
+            .scrollDismissesKeyboard(.interactively)
+            .sensoryFeedback(.error, trigger: model.invalidAttempts)
+            .onChange(of: model.focusRequest) { _, request in
+                guard let request, let key = request.key else { return }
+                let summary = request.summary && behavior.errorSummary
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+                    proxy.scrollTo(summary ? ScrollAnchor.summary(model) : key, anchor: summary ? .top : .center)
+                }
+            }
+        }
     }
 }
 

@@ -131,7 +131,6 @@ public struct FormhausFormContent: View {
                         .modifier(StepScroller(model: model, proxy: proxy))
                         .sensoryFeedback(.error, trigger: model.invalidAttempts)
                 }
-                .onAppear { model.systemStack.release() }
             }
         }
         .formLocale(model.definition.lang)
