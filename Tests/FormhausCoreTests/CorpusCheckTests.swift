@@ -4,22 +4,20 @@ import Testing
 @Suite("Conformance corpus: definition checks")
 struct CorpusCheckTests {
     static let audited = [
-        "check-clean", "check-columns", "check-columns-not-applicable", "check-conditions", "check-container-conditions",
-        "check-container-keys", "check-container-nesting",
-        "check-container-scope", "check-container-shape", "check-contains-not-list", "check-contains-options", "check-custom-type-names",
-        "check-disabled-not-applicable",
-        "check-escaped-property", "check-field-rules", "check-group-scope", "check-image-urls", "check-matrix", "check-missing-required",
-        "check-null-lists",
-        "check-numeric-id", "check-outdated-version-1-0", "check-outdated-version-contains", "check-outdated-version-missing",
-        "check-outdated-version-newer", "check-scale",
-        "check-scale-range",
-        "check-section-forward-reference", "check-slow-pattern", "contains-disabled", "contains-limit", "disabled-actions",
-        "duplicate-options",
-        "flat-api-steps", "format-version",
+        "check-autocomplete", "check-autocomplete-type", "check-autocomplete-version", "check-clean", "check-columns",
+        "check-columns-not-applicable", "check-conditions", "check-container-conditions", "check-container-keys",
+        "check-container-nesting", "check-container-scope", "check-container-shape", "check-contains-not-list",
+        "check-contains-options", "check-custom-type-names", "check-disabled-not-applicable", "check-escaped-property",
+        "check-exclusive", "check-field-rules", "check-group-scope", "check-image-urls", "check-matrix", "check-missing-required",
+        "check-null-lists", "check-numeric-id", "check-outdated-version-1-0", "check-outdated-version-contains",
+        "check-outdated-version-exclusive", "check-outdated-version-missing", "check-outdated-version-newer", "check-scale",
+        "check-scale-range", "check-section-forward-reference", "check-slow-pattern", "contains-disabled", "contains-limit",
+        "disabled-actions", "duplicate-options", "exclusive-options", "flat-api-steps", "format-version", "group-list-answers",
         "i18n-empty-overlay", "i18n-exclusive-branches", "i18n-own-properties", "i18n-renderer-labels", "i18n-signup-steps",
-        "impossible-dates",
-        "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "options-from", "proto-keys",
-        "shared-key-branches", "times-and-hidden", "trimmed-conditions", "trimmed-text", "unsupported-format-version",
+        "impossible-dates", "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "options-from",
+        "proto-keys", "recall-branches", "recall-groups", "recall-inactive", "recall-limit", "recall-sensitive", "recall-steps",
+        "recall-syntax", "recall-translations", "recall-values", "recall-version", "shared-key-branches", "times-and-hidden",
+        "trimmed-conditions", "trimmed-text", "unsupported-format-version",
     ]
 
     static let withWarnings = Corpus.names.filter { Corpus.fixture($0).warnings != nil }
