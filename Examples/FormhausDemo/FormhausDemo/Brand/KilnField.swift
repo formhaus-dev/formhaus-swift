@@ -49,7 +49,7 @@ struct KilnTextField: View {
     var body: some View {
         KilnFieldFrame(context: context) {
             TextField(
-                text: context.textBinding, prompt: Text(verbatim: context.field.placeholder ?? "").foregroundStyle(tokens.colors.control)
+                text: context.textBinding, prompt: Text(verbatim: context.placeholder ?? "").foregroundStyle(tokens.colors.control)
             ) {
                 Text(verbatim: context.accessibilityName)
             }

@@ -13,18 +13,18 @@ extension FormModel {
         }
     }
 
-    public func recalled(_ field: FormField, at key: String? = nil) -> FormField {
+    public func texts(for field: FormField, at key: String? = nil) -> RecalledTexts {
         track(engine.recallDependencies(field, at: key))
-        return engine.recalled(field, at: key)
+        return engine.recalledTexts(field, at: key)
     }
 
-    public func recalled(_ section: FormSection) -> FormSection {
+    public func texts(for section: FormSection) -> RecalledTexts {
         track(engine.recallDependencies(section))
-        return engine.recalled(section)
+        return engine.recalledTexts(section)
     }
 
-    public func recalled(_ step: FormStep) -> FormStep {
+    public func texts(for step: FormStep) -> RecalledTexts {
         track(engine.recallDependencies(step))
-        return engine.recalled(step)
+        return engine.recalledTexts(step)
     }
 }

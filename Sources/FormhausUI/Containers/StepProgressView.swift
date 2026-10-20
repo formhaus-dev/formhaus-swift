@@ -9,7 +9,7 @@ struct FormProgress: View {
     var body: some View {
         let structure = model.structure
         if structure.isMultiStep {
-            let step = structure.currentStep.map(model.recalled)
+            let step = structure.currentStep.map { model.texts(for: $0) }
             let context = ProgressContext(
                 current: structure.progress.current, total: structure.progress.total,
                 counterLabel: model.text(
@@ -28,11 +28,11 @@ struct FormProgress: View {
     private func marks(_ structure: FormStructure) -> [StepStatus]? {
         guard behavior.stepErrorMarks else { return nil }
         let counts = model.stepErrorCounts
-        return structure.steps.enumerated().map { index, source in
-            let step = model.recalled(source)
+        return structure.steps.enumerated().map { index, step in
             let count = counts[step.id] ?? 0
             return StepStatus(
-                id: step.id, title: step.title ?? model.text(forLabel: "stepTitle", ["index": .number(Double(index + 1))]),
+                id: step.id,
+                title: model.texts(for: step).title ?? model.text(forLabel: "stepTitle", ["index": .number(Double(index + 1))]),
                 errorCount: count,
                 errorLabel: count > 0 ? model.text(forLabel: "stepErrors", ["count": .number(Double(count))]) : nil)
         }

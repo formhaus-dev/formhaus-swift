@@ -51,9 +51,9 @@ struct GroupNode: View {
     private func groupContext(_ items: [GroupItem]) -> GroupContext {
         let limits = model.engine.itemLimits(group)
         let entries = items.enumerated().map { index, item in itemContext(item, index, canRemove: items.count > limits.min) }
-        let shown = model.recalled(group)
+        let texts = model.texts(for: group)
         return GroupContext(
-            group: shown, label: shown.label ?? "", helperText: shown.helperText, error: model.field(group.key).error, items: entries,
+            group: group, label: texts.label ?? "", helperText: texts.helperText, error: model.field(group.key).error, items: entries,
             canAdd: items.count < limits.max, addLabel: group.addLabel ?? model.text(forLabel: "addItem"), disabled: model.disabled,
             add: { model.addItem(toGroup: group.key) }, model: model)
     }

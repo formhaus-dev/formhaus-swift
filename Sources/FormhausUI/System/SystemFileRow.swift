@@ -13,7 +13,7 @@ struct SystemFileRow: View {
                 HStack {
                     SystemRowLabel(context: context)
                     Spacer(minLength: 12)
-                    Text(verbatim: context.fileName ?? context.field.placeholder ?? context.text(forLabel: "chooseFile"))
+                    Text(verbatim: context.fileName ?? context.placeholder ?? context.text(forLabel: "chooseFile"))
                         .systemSecondaryText()
                         .lineLimit(1)
                         .truncationMode(.middle)

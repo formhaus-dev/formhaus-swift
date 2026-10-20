@@ -42,7 +42,7 @@ private func prepare(_ id: Int, _ format: RecallFormatFn?) throws {
 @MainActor
 private func recall(_ id: Int, field index: Int, _ iterations: Range<Int>) {
     guard let engine = engines[id], let field = engine.definition.steps?[1].fields[index].field else { return }
-    for _ in iterations { blackHole(engine.recalled(field)) }
+    for _ in iterations { blackHole(engine.recalledTexts(field)) }
 }
 
 private func measure(_ benchmark: Benchmark, _ id: Int, _ format: RecallFormatFn?, field: Int) async throws {

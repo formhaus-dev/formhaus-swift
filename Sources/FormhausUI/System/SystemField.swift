@@ -127,10 +127,10 @@ struct SystemBlock<Content: View>: View {
 
 extension FieldContext {
     var prompt: String {
-        field.placeholder ?? field.mask?.stringValue ?? ""
+        placeholder ?? field.mask?.stringValue ?? ""
     }
 
     var choicePrompt: String {
-        field.placeholder ?? text(forLabel: "select")
+        placeholder ?? text(forLabel: "select")
     }
 }

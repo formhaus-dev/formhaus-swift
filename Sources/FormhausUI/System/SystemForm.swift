@@ -80,7 +80,7 @@ struct SystemPage: View {
         ScrollViewReader { proxy in
             Form {
                 if current, components.slots.progress != nil { Section { FormProgress(model: model).listRowBackground(Color.clear) } }
-                if let description = step.map(model.recalled)?.description, !description.isEmpty {
+                if let description = step.map({ model.texts(for: $0) })?.description, !description.isEmpty {
                     Section {
                     } header: {
                         Text(verbatim: description).font(.body).textCase(nil).systemSecondaryText()
@@ -145,7 +145,7 @@ private struct SystemStepTitle: ViewModifier {
     let level: Int
 
     func body(content: Content) -> some View {
-        if let step = step.map(model.recalled), model.structure.isMultiStep {
+        if let step = step.map({ model.texts(for: $0) }), model.structure.isMultiStep {
             let subtitle = model.text(forLabel: "stepTitle", ["index": .number(Double(level + 1))])
             if #available(iOS 26, macOS 14, *), !typeSize.isAccessibilitySize {
                 content.navigationTitle(Text(verbatim: step.title ?? subtitle)).navigationSubtitle(

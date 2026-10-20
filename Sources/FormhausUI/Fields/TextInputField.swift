@@ -41,7 +41,7 @@ public struct TextInputField: View {
     private var kind: InputKind { InputKind(context.field) }
 
     private var prompt: String? {
-        context.field.placeholder ?? context.field.mask?.stringValue
+        context.placeholder ?? context.field.mask?.stringValue
     }
 
     private var binding: Binding<String> {

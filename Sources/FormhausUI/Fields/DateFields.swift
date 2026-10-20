@@ -86,7 +86,7 @@ public struct DateField: View {
 
     private var summary: some View {
         HStack(spacing: tokens.spacing.s3) {
-            Text(verbatim: display ?? context.field.placeholder ?? kind.pattern(locale))
+            Text(verbatim: display ?? context.placeholder ?? kind.pattern(locale))
                 .formhausText(.body, colored: false)
                 .foregroundStyle(
                     display == nil ? tokens.colors.control : context.isLocked ? tokens.colors.textMuted : tokens.colors.text

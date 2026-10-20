@@ -32,7 +32,7 @@ struct SystemPickerRow: View {
     #if os(iOS)
         private var link: some View {
             NavigationLink {
-                SystemOptionList(field: context.source, key: context.key, model: context.model)
+                SystemOptionList(field: context.field, key: context.key, model: context.model)
                     .formhausTheme(theme)
                     .environment(\.locale, locale)
                     .resolveFormhausTokens()

@@ -1,10 +1,18 @@
-protocol RecallNode {
-    var json: JSONObject { get set }
-}
+public struct RecalledTexts: Sendable, Hashable {
+    public let title: String?
+    public let description: String?
+    public let label: String?
+    public let helperText: String?
+    public let placeholder: String?
 
-extension FormField: RecallNode {}
-extension FormSection: RecallNode {}
-extension FormStep: RecallNode {}
+    init(_ json: JSONObject) {
+        title = json["title"]?.stringValue
+        description = json["description"]?.stringValue
+        label = json["label"]?.stringValue
+        helperText = json["helperText"]?.stringValue
+        placeholder = json["placeholder"]?.stringValue
+    }
+}
 
 extension FormEngine {
     private func scope() -> RecallScope {
@@ -29,29 +37,29 @@ extension FormEngine {
         return result
     }
 
-    private func recalled<Node: RecallNode>(_ node: Node, _ item: RecallItem?) -> Node {
-        var copy = node
-        copy.json = recalledSlots(node.json, item)
-        return copy
-    }
-
     public func recallText(_ text: String, options: RecallOptions = RecallOptions()) -> String {
         substitute(definition, text) { scope().resolver(options) }
     }
 
-    @_spi(Renderer)
-    public func recalled(_ field: FormField, at key: String? = nil) -> FormField {
-        recalled(field, key.flatMap(core.visibility.parse).map { RecallItem(group: $0.group, index: $0.index) })
+    func recalled(_ field: FormField, at key: String? = nil) -> FormField {
+        var copy = field
+        copy.json = recalledSlots(field.json, key.flatMap(core.visibility.parse).map { RecallItem(group: $0.group, index: $0.index) })
+        return copy
     }
 
     @_spi(Renderer)
-    public func recalled(_ section: FormSection) -> FormSection {
-        recalled(section, nil)
+    public func recalledTexts(_ field: FormField, at key: String? = nil) -> RecalledTexts {
+        RecalledTexts(recalled(field, at: key).json)
     }
 
     @_spi(Renderer)
-    public func recalled(_ step: FormStep) -> FormStep {
-        recalled(step, nil)
+    public func recalledTexts(_ section: FormSection) -> RecalledTexts {
+        RecalledTexts(recalledSlots(section.json, nil))
+    }
+
+    @_spi(Renderer)
+    public func recalledTexts(_ step: FormStep) -> RecalledTexts {
+        RecalledTexts(recalledSlots(step.json, nil))
     }
 
     func recalledTitle(_ json: JSONObject) -> String? {

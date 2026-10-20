@@ -16,7 +16,7 @@ public struct TextAreaField: View {
                 TextField(text: context.textBinding, prompt: Text(verbatim: ""), axis: .vertical) {
                     Text(verbatim: context.accessibilityName)
                 }
-                .placeholder(context.field.placeholder, visible: context.text.isEmpty)
+                .placeholder(context.placeholder, visible: context.text.isEmpty)
                 .textFieldStyle(.plain)
                 .lineLimit(rows...)
                 .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)

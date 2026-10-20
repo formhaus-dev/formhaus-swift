@@ -11,9 +11,9 @@ public struct FieldContext {
     public let disabled: Bool
     public let options: [FieldOption]
     public let model: FormModel
-    #if os(iOS)
-        let source: FormField
-    #endif
+    public let label: String
+    public let placeholder: String?
+    private let helper: String?
     let state: FieldState
 
     public init(field: FormField, key: String? = nil, model: FormModel) {
@@ -22,10 +22,11 @@ public struct FieldContext {
     }
 
     init(field: FormField, key: String, state: FieldState, model: FormModel) {
-        #if os(iOS)
-            source = field
-        #endif
-        self.field = model.recalled(field, at: key)
+        self.field = field
+        let texts = model.texts(for: field, at: key)
+        label = texts.label ?? ""
+        placeholder = texts.placeholder
+        helper = texts.helperText
         self.key = key
         self.state = state
         self.model = model
@@ -39,13 +40,11 @@ public struct FieldContext {
     public var isItem: Bool { key != field.key }
     public var isInvalid: Bool { error?.isEmpty == false }
     public var isLocked: Bool { disabled || loading }
-    public var label: String { field.label ?? "" }
     public var accessibilityName: String {
         isRequired ? "\(label), \(text(forLabel: "required"))" : label
     }
 
-    public var helperText: String? { field.helperText.flatMap { $0.isEmpty ? nil : $0 } }
-    public var placeholder: String? { field.placeholder.flatMap { $0.isEmpty ? nil : $0 } }
+    public var helperText: String? { helper.flatMap { $0.isEmpty ? nil : $0 } }
     public var isRequired: Bool { field.isRequired }
     public var advancesOnCommit: Bool { !isItem && field.advancesOnCommit }
 

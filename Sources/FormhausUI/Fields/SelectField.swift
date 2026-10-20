@@ -13,7 +13,7 @@ public struct SelectField: View {
     public var body: some View {
         FieldShell(context) {
             HStack(spacing: tokens.spacing.s3) {
-                Text(verbatim: selectedLabel ?? context.field.placeholder ?? "")
+                Text(verbatim: selectedLabel ?? context.placeholder ?? "")
                     .formhausText(.body, colored: false)
                     .foregroundStyle(textColor)
                     .lineLimit(1)
@@ -83,7 +83,7 @@ public struct AutocompleteField: View {
                     TextField(text: context.textBinding, prompt: Text(verbatim: "")) { Text(verbatim: context.accessibilityName) }
                         .textFieldStyle(.plain)
                         .autocorrectionDisabled()
-                        .placeholder(context.field.placeholder, visible: context.text.isEmpty)
+                        .placeholder(context.placeholder, visible: context.text.isEmpty)
                         .onSubmit { context.performPrimaryAction() }
                     LoadingIndicator(visible: context.loading)
                 }
