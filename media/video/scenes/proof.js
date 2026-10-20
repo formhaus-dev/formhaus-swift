@@ -26,7 +26,7 @@ export default async (layer, beat, data) => {
 
   return {
     update(t) {
-      const counted = Math.max(1, Math.round(progress(t, 0, 1.4) * count));
+      const counted = Math.max(1, Math.round(progress(t, 0, beat.duration - 0.6) * count));
       number.textContent = String(counted);
       place(number, { x: 140, y: 170, opacity: progress(t, 0, 0.5) });
       place(label, { x: 150, y: 520, opacity: progress(t, 0, 0.4) });

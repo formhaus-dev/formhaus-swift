@@ -509,24 +509,6 @@ body {
   font-size: 32px;
 }
 
-.lens {
-  overflow: hidden;
-  border: 1px solid var(--c-border);
-  border-radius: 28px;
-  background: var(--c-surface);
-  box-shadow: 0 30px 70px -40px rgba(13, 13, 21, 0.35);
-}
-
-.lens img {
-  position: absolute;
-  max-width: none;
-}
-
-.lens--fade {
-  -webkit-mask-image: linear-gradient(transparent, #000 140px);
-  mask-image: linear-gradient(transparent, #000 140px);
-}
-
 .look-layer {
   position: absolute;
   inset: 0;
@@ -535,23 +517,4 @@ body {
 .pill--large {
   font-size: 34px;
   font-weight: 650;
-}
-
-.tour-stage {
-  width: 1920px;
-  height: 1080px;
-  -webkit-mask-image: linear-gradient(transparent, #000 120px, #000 960px, transparent);
-  mask-image: linear-gradient(transparent, #000 120px, #000 960px, transparent);
-}
-
-.lens--fade-both {
-  -webkit-mask-image: linear-gradient(transparent, #000 140px, #000 calc(100% - 100px), transparent);
-  mask-image: linear-gradient(transparent, #000 140px, #000 calc(100% - 100px), transparent);
-}
-
-.looks-stage {
-  width: 1920px;
-  height: 1080px;
-  -webkit-mask-image: linear-gradient(#000 840px, transparent 950px);
-  mask-image: linear-gradient(#000 840px, transparent 950px);
 }

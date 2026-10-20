@@ -1,11 +1,18 @@
-import { fieldByKey } from './definitions.mjs';
-
 const q = JSON.stringify;
+const inline = (value) =>
+  q(value).replace(/":/g, '": ').replace(/,"/g, ', "').replace(/\{"/g, '{ "').replace(/"\}/g, '" }');
 
-export const editLines = (definition, edit, before, after) => {
-  const field = fieldByKey(definition, edit.field);
-  const [, , property] = edit.property.split('.');
-  const list = (values) => `[${values.map((value) => q(value)).join(', ')}]`;
-  const prefix = `"show": [{ …, ${q(property)}: `;
-  return { key: `"key": ${q(field.key)},`, prefix, before: list(before), after: list(after), suffix: ' }],' };
+export const editLines = (definition, edit) => {
+  const step = definition.steps.find((item) => item.id === edit.step);
+  const [list, index, property] = edit.property.split('.');
+  const entry = step[list][Number(index)];
+  const rest = Object.entries(entry).filter(([name]) => name !== property);
+  return {
+    open: `${q(list)}: [{`,
+    key: `  ${q(property)}: `,
+    before: q(entry[property]),
+    after: q(edit.value),
+    rest: rest.map(([name, value]) => `  ${q(name)}: ${inline(value)}`),
+    close: '}]',
+  };
 };

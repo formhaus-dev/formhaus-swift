@@ -20,14 +20,8 @@ body {
 }
 
 h1 {
-  margin: 0 0 8px;
+  margin: 0 0 24px;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-
-.lead {
-  margin: 0 0 28px;
-  color: var(--fh-color-text-muted, #5f5f68);
-  font-size: 17px;
 }

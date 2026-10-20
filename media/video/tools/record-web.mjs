@@ -29,7 +29,7 @@ const wait = (ms) => new Promise((done) => setTimeout(done, Math.max(0, ms)));
 
 const record = async (browser, origin, id, clip, config) => {
   const [width, height] = config.devices[clip.device].viewport;
-  const scale = config.devices[clip.device].scale;
+  const { scale, pageZoom = 1 } = config.devices[clip.device];
   const dir = join(footage, 'web-tmp', id);
   rmSync(dir, { recursive: true, force: true });
   const context = await browser.newContext({
@@ -39,7 +39,7 @@ const record = async (browser, origin, id, clip, config) => {
     recordVideo: { dir, size: { width: width * scale, height: height * scale } },
   });
   const page = await context.newPage();
-  await page.goto(`${origin}/web/dist/index.html?def=${clip.definition}&zoom=${scale}`);
+  await page.goto(`${origin}/web/dist/index.html?def=${clip.definition}&zoom=${scale * pageZoom}`);
   await page.waitForSelector('html[data-ready="true"]', { state: 'attached', timeout: 60000 });
   await page.waitForTimeout(200);
   await page.evaluate(() => document.fonts.ready);

@@ -42,6 +42,7 @@ boot() {
   timeout 120 "$simctl" boot "$1" >/dev/null 2>&1 || true
   timeout 300 "$simctl" bootstatus "$1" -b >/dev/null
   timeout 30 "$simctl" ui "$1" appearance light
+  timeout 30 "$simctl" ui "$1" content_size "$(node -p "require('./script.json').devices.iphone.contentSize")"
   timeout 30 "$simctl" status_bar "$1" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
     --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
   booted=$1
@@ -107,7 +108,9 @@ if [ -n "$mac" ]; then
   wait_for_builds
   timeout 1500 swift build -c release --package-path mac --scratch-path "$repo/.build/render-mac" --quiet
   for id in $mac; do
-    timeout 120 "$repo/.build/render-mac/release/RenderMac" "$footage/definitions/base.json" "$footage/$id.png" 880 820
+    width=$(node -p "require('./script.json').devices.mac.window[0]")
+    height=$(node -p "require('./script.json').devices.mac.window[1]")
+    timeout 120 "$repo/.build/render-mac/release/RenderMac" "$footage/definitions/base.json" "$footage/$id.png" "$width" "$height"
     echo "rendered $id"
   done
 fi

@@ -1,9 +1,9 @@
-import { twoUp } from './camera.js';
 import { footage } from './footage.js';
 import { easeOut, el, place, progress } from './kit.js';
+import { pair } from './pair.js';
 
 export default async (layer, beat, data) => {
-  const { sides, frame } = twoUp(layer, data, beat, { top: 290, height: 750 }, 70);
+  const { sides, frame } = pair(layer, data, beat, { gap: 48, top: 290, height: 742 });
   const stills = Object.entries(sides).map(([side, item]) => footage(data, beat.stills[side], item.node.img));
   const title = el('h1', 'headline headline--center launch-title abs', layer, beat.title);
   const subline = el('p', 'sub launch-sub abs', layer, beat.subline);

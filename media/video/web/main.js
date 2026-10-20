@@ -18,8 +18,7 @@ function Page() {
     'div',
     { className: 'page' },
     h('h1', null, definition.title),
-    h('p', { className: 'lead' }, definition.description),
-    h(FormRenderer, { definition, errorSummary: true, onSubmit: async () => {} }),
+    h(FormRenderer, { definition, onSubmit: async () => {} }),
   );
 }
 
