@@ -1,0 +1,32 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { definitionSource, footage, readJSON, script } from './paths.mjs';
+
+export const fieldByKey = (definition, key) =>
+  definition.steps.flatMap((step) => step.fields).find((field) => field.key === key);
+
+const setPath = (target, path, value) => {
+  const keys = path.split('.');
+  const last = keys.pop();
+  const parent = keys.reduce((node, key) => node[key], target);
+  parent[last] = value;
+};
+
+const getPath = (target, path) => path.split('.').reduce((node, key) => node[key], target);
+
+export const definitions = () => {
+  const { edit } = script();
+  const base = readJSON(definitionSource);
+  const variant = structuredClone(base);
+  const before = getPath(fieldByKey(base, edit.field), edit.property);
+  setPath(fieldByKey(variant, edit.field), edit.property, edit.value);
+  return { base, variant, before, after: edit.value };
+};
+
+if (process.argv[1] && process.argv[1].endsWith('definitions.mjs')) {
+  const dir = join(footage, 'definitions');
+  mkdirSync(dir, { recursive: true });
+  const { base, variant } = definitions();
+  writeFileSync(join(dir, 'base.json'), JSON.stringify(base));
+  writeFileSync(join(dir, 'variant.json'), JSON.stringify(variant, null, 2));
+}
