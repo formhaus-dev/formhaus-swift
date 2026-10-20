@@ -10,13 +10,14 @@ struct JSKey: Hashable, Sendable {
     }
 
     func hash(into hasher: inout Hasher) {
-        for byte in text.utf8 { hasher.combine(byte) }
+        var text = text
+        text.withUTF8 { hasher.combine(bytes: UnsafeRawBufferPointer($0)) }
         hasher.combine(0xFF as UInt8)
     }
 }
 
 func sameText(_ lhs: String, _ rhs: String) -> Bool {
-    lhs.utf8.elementsEqual(rhs.utf8)
+    lhs.utf8.count == rhs.utf8.count && lhs.utf8.elementsEqual(rhs.utf8)
 }
 
 func hasTextPrefix(_ text: String, _ prefix: String) -> Bool {
