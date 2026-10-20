@@ -16,3 +16,21 @@ export const swift = (text) =>
     if (type) return span('type', type);
     return escape(rest);
   });
+
+const keywords = {
+  tsx: ['export', 'function', 'if', 'return', 'null', 'const'],
+  swift: ['func', 'if', 'return', 'nil', 'let', 'guard', 'else'],
+  kotlin: ['fun', 'if', 'return', 'null', 'val'],
+};
+
+export const source = (text, language) => {
+  const words = new Set(keywords[language]);
+  return text.replace(/("(?:[^"\\]|\\.)*")|(\b\d+\b)|([A-Za-z_]\w*)|([^"\w]+)/g, (match, string, number, word, rest) => {
+    if (string) return span('string', string);
+    if (number) return span('number', number);
+    if (word && words.has(word)) return span('method', word);
+    if (word && /^[A-Z]/.test(word)) return span('type', word);
+    if (word) return escape(word);
+    return span('punct', rest);
+  });
+};

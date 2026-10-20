@@ -17,7 +17,7 @@ const udid = (name) => {
 
 const mode = { '--web': ['browser'], '--mac': ['mac'] }[process.argv[2]];
 const wanted = process.argv.slice(mode ? 3 : 2);
-const kinds = mode ?? ['iphone', 'ipad'];
+const kinds = mode ?? ['iphone'];
 const clips = Object.entries(config.footage).filter(
   ([id, clip]) => kinds.includes(config.devices[clip.device].kind) && (wanted.length === 0 || wanted.includes(id)),
 );

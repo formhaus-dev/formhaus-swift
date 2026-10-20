@@ -32,12 +32,12 @@
       "codeMuted": "{palette.graphite.400}",
       "codeKey": "#b9a3ff",
       "codeString": "#9fe0c0",
+      "codeError": "{palette.red.400}",
       "success": "#1f9d55"
     }
   },
   "devices": {
     "iphone": { "kind": "iphone", "simulator": "iPhone 17 Pro", "screen": [402, 874], "radius": 62 },
-    "ipad": { "kind": "ipad", "simulator": "iPad Pro 11-inch (M5)", "screen": [834, 1210], "radius": 18 },
     "browser": { "kind": "browser", "viewport": [720, 960], "scale": 2, "url": "northwind.studio/start" },
     "builder": { "kind": "browser", "viewport": [1280, 800], "scale": 1.5, "url": "Formhaus builder" },
     "mac": { "kind": "mac", "window": [880, 820], "title": "Start a project" }
@@ -70,20 +70,51 @@
       "scene": "problem",
       "duration": 4.2,
       "caption": "Stop building the same form twice.",
-      "pressAt": 1.4,
-      "form": { "title": "Create account", "email": "Email", "password": "Password", "button": "Next" },
-      "screens": [
-        { "device": "browser", "label": "Web build", "result": "error", "message": "Must be at least 8 characters" },
-        { "device": "iphone", "label": "iPhone build", "result": "alert", "message": "Password too short" },
-        { "device": "ipad", "label": "iPad build", "result": "pass", "message": "Welcome aboard" }
+      "panels": [
+        {
+          "file": "SignupForm.tsx",
+          "language": "tsx",
+          "lines": [
+            "export function validate(email: string, password: string) {",
+            "  if (password.length < 8) return \"Must be at least 8 characters\";",
+            "  if (!email.includes(\"@\")) return \"Enter a valid email\";",
+            "  return null;",
+            "}"
+          ],
+          "drift": { "line": 2, "at": 1.2, "marker": "8 characters" }
+        },
+        {
+          "file": "SignupView.swift",
+          "language": "swift",
+          "lines": [
+            "func validate(email: String, password: String) -> String? {",
+            "    if password.count < 6 { return \"Password too short\" }",
+            "    if !email.contains(\"@\") { return \"Enter a valid email\" }",
+            "    return nil",
+            "}"
+          ],
+          "drift": { "line": 2, "at": 1.65, "marker": "6 characters" }
+        },
+        {
+          "file": "SignupScreen.kt",
+          "language": "kotlin",
+          "lines": [
+            "fun validate(email: String, password: String): String? {",
+            "    if (password.length < 8) return \"Must be at least 8 characters\"",
+            "    return null",
+            "}"
+          ],
+          "drift": { "line": 3, "at": 2.1, "marker": "No email check" }
+        }
       ]
     },
     {
       "id": "create",
       "scene": "create",
-      "duration": 5.4,
+      "duration": 5.8,
+      "continues": true,
       "caption": "Create it with AI or the builder.",
-      "cut": 2.7,
+      "cut": 3.1,
       "assistant": {
         "title": "Assistant",
         "prompt": "A project inquiry form: type of site, current URL for redesigns, services, contact.",

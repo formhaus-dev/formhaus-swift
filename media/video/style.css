@@ -101,8 +101,7 @@ body {
   transform-origin: 0 0;
 }
 
-.iphone,
-.ipad {
+.iphone {
   width: calc(var(--w) + var(--bezel) * 2);
   height: calc(var(--h) + var(--bezel) * 2);
   padding: var(--bezel);
@@ -116,8 +115,7 @@ body {
     0 18px 36px -18px rgba(13, 13, 21, 0.25);
 }
 
-.iphone__button,
-.ipad__button {
+.iphone__button {
   position: absolute;
   width: 4px;
   border-radius: 2px;
@@ -128,10 +126,6 @@ body {
 .iphone__button--up { left: -3px; top: 250px; height: 62px; }
 .iphone__button--down { left: -3px; top: 326px; height: 62px; }
 .iphone__button--power { right: -3px; top: 270px; height: 100px; }
-.ipad__button--action { display: none; }
-.ipad__button--down { display: none; }
-.ipad__button--up { right: 80px; top: -3px; width: 70px; height: 4px; }
-.ipad__button--power { right: -3px; top: 90px; height: 70px; }
 
 .device__screen {
   position: relative;
@@ -450,158 +444,6 @@ body {
   font-size: 36px;
 }
 
-.mock {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  color: #222;
-}
-
-.mock__title {
-  margin-bottom: 28px;
-  font-size: 30px;
-  font-weight: 700;
-}
-
-.mock__label {
-  margin-bottom: 8px;
-  font-size: 17px;
-}
-
-.mock__input {
-  height: 46px;
-  margin-bottom: 22px;
-}
-
-.mock__error {
-  margin: -12px 0 18px;
-  color: #d0021b;
-  font-size: 16px;
-}
-
-.mock__button {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.mock__button .touch {
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.mock__alert,
-.mock__pass {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  opacity: 0;
-}
-
-.mock--browser {
-  zoom: 1.45;
-  padding: 44px 48px;
-  font-family: Georgia, 'Times New Roman', serif;
-}
-
-.mock--browser .mock__input {
-  border: 1px solid #9a9a9a;
-}
-
-.mock--browser .mock__button {
-  align-self: flex-start;
-  width: 140px;
-  border-radius: 3px;
-  background: #1f6feb;
-}
-
-.mock--iphone {
-  zoom: 1.3;
-  padding: 72px 18px 0;
-  background: #f2f2f7;
-  font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
-}
-
-.mock--iphone .mock__input {
-  border-radius: 12px;
-  background: #fff;
-}
-
-.mock--iphone .mock__button {
-  border-radius: 24px;
-  background: #34a853;
-}
-
-.mock--iphone .mock__alert {
-  background: rgba(0, 0, 0, 0.32);
-}
-
-.mock--iphone .mock__alert b,
-.mock--iphone .mock__alert span {
-  width: 270px;
-  padding: 18px;
-  border-radius: 14px;
-  background: #fff;
-  font-size: 17px;
-  text-align: center;
-}
-
-.mock--iphone .mock__alert span {
-  margin-top: -18px;
-  border-top: 1px solid #ddd;
-  border-radius: 0 0 14px 14px;
-  color: #0a7aff;
-}
-
-.mock--ipad {
-  zoom: 1.9;
-  padding: 70px 70px;
-  background: #fffaf3;
-  font-family: 'Avenir Next', Helvetica, Arial, sans-serif;
-}
-
-.mock--ipad .mock__input {
-  border-bottom: 2px solid #c9b8a0;
-}
-
-.mock--ipad .mock__button {
-  background: #e8710a;
-}
-
-.mock--ipad .mock__pass {
-  background: #fffaf3;
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.mock--ipad .mock__pass b {
-  display: grid;
-  place-items: center;
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: #e8710a;
-  color: #fff;
-  font-size: 48px;
-}
-
-.mock--iphone .mock__error,
-.mock--ipad .mock__error {
-  display: none;
-}
-
 .assistant {
   width: 760px;
   padding: 0 0 28px;
@@ -697,4 +539,29 @@ body {
   font-size: 15px;
   font-weight: 600;
   transform: translateX(-50%);
+}
+
+.code-panel .card__tab {
+  padding-top: 20px;
+  font-size: 19px;
+}
+
+.code-panel .code {
+  padding: 22px 32px 28px;
+  font-size: 26px;
+}
+
+.drift-marker {
+  position: absolute;
+  right: 32px;
+  height: 41.6px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: rgba(242, 115, 106, 0.16);
+  color: var(--c-codeError);
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 41.6px;
+  opacity: 0;
 }

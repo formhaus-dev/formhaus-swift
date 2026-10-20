@@ -30,8 +30,8 @@ const visible = ({ beat, index }, t) => t >= beat.start && (t < beat.start + bea
 
 const fade = ({ beat, index }, local) => {
   if (cut) return 1;
-  const enter = index === 0 ? 1 : progress(local, 0, transition);
-  const leave = index === last ? 0 : progress(local, beat.duration - transition, transition);
+  const enter = index === 0 || beat.continues ? 1 : progress(local, 0, transition);
+  const leave = index === last || data.beats[index + 1].continues ? 0 : progress(local, beat.duration - transition, transition);
   return Math.min(enter, 1 - leave);
 };
 

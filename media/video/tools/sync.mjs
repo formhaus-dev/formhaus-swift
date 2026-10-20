@@ -7,7 +7,7 @@ import { resolveColor } from './tokens.mjs';
 
 const config = script();
 const manifestPath = join(footage, 'manifest.json');
-const manifest = existsSync(manifestPath) ? readJSON(manifestPath) : {};
+const manifest = {};
 
 const source = (id) => ['mov', 'webm', 'png'].map((ext) => join(footage, `${id}.${ext}`)).find(existsSync);
 

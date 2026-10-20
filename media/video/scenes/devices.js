@@ -51,6 +51,5 @@ const mac = (parent, spec) => {
 export const device = (parent, spec, options) => {
   if (spec.kind === 'mac') return mac(parent, spec);
   if (spec.kind === 'iphone') return phone(parent, spec, 14, 'iphone');
-  if (spec.kind === 'ipad') return phone(parent, spec, 22, 'ipad');
   return browser(parent, spec, options);
 };
