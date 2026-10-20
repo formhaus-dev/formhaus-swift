@@ -1,2 +1,4 @@
 retain_public: true
 strict: true
+index_exclude:
+  - media/**

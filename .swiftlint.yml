@@ -6,6 +6,7 @@ included:
 excluded:
   - Tests/FormhausCoreTests/Fixtures
   - .build
+  - media
 
 disabled_rules:
   - trailing_comma
