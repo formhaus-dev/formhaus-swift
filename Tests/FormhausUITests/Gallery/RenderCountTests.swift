@@ -34,12 +34,7 @@ struct RenderCountTests {
                 ["key": "c", "type": "text", "label": "C"],
             ],
         ]
-        let form = FormModel(definition: try FormDefinition(json: definition)) { _, _ in nil }
-        let counter = BodyCounter()
-        let components = (system ? FormComponents.system : .standard).field("probe") { Probe(context: $0, counter: counter) }
-        let host = NSHostingView(rootView: FormhausFormContent(model: form).formhausComponents(components).frame(width: 400))
-        host.frame = CGRect(x: 0, y: 0, width: 400, height: 600)
-        settle(host)
+        let (form, counter, host) = try probed(definition, system: system)
         let start = counter.counts
         #expect(start["a", default: 0] > 0)
         #expect(start["a"] == start["b"])
@@ -65,12 +60,7 @@ struct RenderCountTests {
                 ["key": "late", "type": "probe", "label": "Late", "helperText": "From {{other}}"],
             ],
         ]
-        let form = FormModel(definition: try FormDefinition(json: definition)) { _, _ in nil }
-        let counter = BodyCounter()
-        let components = (system ? FormComponents.system : .standard).field("probe") { Probe(context: $0, counter: counter) }
-        let host = NSHostingView(rootView: FormhausFormContent(model: form).formhausComponents(components).frame(width: 400))
-        host.frame = CGRect(x: 0, y: 0, width: 400, height: 600)
-        settle(host)
+        let (form, counter, host) = try probed(definition, system: system)
         let start = counter.counts
         #expect(counter.helpers["greet"] == "Hi ")
         form.setValue("Ada", forKey: "name")
@@ -86,6 +76,16 @@ struct RenderCountTests {
         #expect(counter.counts["greet"] == typed["greet"])
         #expect(counter.counts["name"] == typed["name"])
         #expect(counter.helpers["late"] == "From x")
+    }
+
+    private func probed(_ definition: JSONValue, system: Bool) throws -> (FormModel, BodyCounter, NSView) {
+        let form = FormModel(definition: try FormDefinition(json: definition)) { _, _ in nil }
+        let counter = BodyCounter()
+        let components = (system ? FormComponents.system : .standard).field("probe") { Probe(context: $0, counter: counter) }
+        let host = NSHostingView(rootView: FormhausFormContent(model: form).formhausComponents(components).frame(width: 400))
+        host.frame = CGRect(x: 0, y: 0, width: 400, height: 600)
+        settle(host)
+        return (form, counter, host)
     }
 
     private func settle(_ host: NSView) {
