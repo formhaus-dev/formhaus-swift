@@ -17,6 +17,8 @@ final class VisibilityState {
     let groups: [FormField]
     let paths: PathCache
     let reconciled = ItemCache<JSONValue>()
+    let listed = ItemCache<GroupItem>()
+    let filled = ItemCache<Bool>()
     let shown: ShownCache
     let conditional: [FormField]
     let customSteps: [Int]

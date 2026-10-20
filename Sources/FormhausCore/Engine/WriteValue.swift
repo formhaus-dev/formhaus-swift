@@ -50,10 +50,17 @@ extension EngineCore {
 
     func items(_ key: String) -> [GroupItem] {
         guard let group = activeGroup(key) else { return [] }
-        return itemsOf(values[key]).enumerated().map { index, item in
+        let fields = group.items
+        let scope = visibility.scope(values.json)
+        let limits = visibility.limits(values.json)
+        let listed = visibility.listed
+        let context = listed.context(group, scope, limits)
+        return listed.map(group, itemsOf(values[key]), ids: values.itemIds(key), context: context, sharing: true) { index, item in
             let id = item.objectValue != nil ? values.itemId(key, index).map { "i\($0)" } ?? "\(index)" : "\(index)"
-            return GroupItem(id: id, fields: visibility.itemFields(group, item, values.json))
-        }
+            let inner = itemScope(fields, item, scope)
+            let shown = fields.filter { isVisible($0, inner, limits: limits) }
+            return (GroupItem(id: id, fields: shown.count == fields.count ? fields : shown), true)
+        }.items
     }
 
     func addItem(_ key: String) -> Bool {

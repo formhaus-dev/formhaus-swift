@@ -1,10 +1,12 @@
 struct ItemContext: Equatable {
+    static let fixed = ItemContext(values: [], lengths: [], epoch: 0)
+
     var values: [JSONValue?]
     var lengths: [Int?]
     var epoch: Int
 }
 
-final class ItemCache<Output> {
+final class ItemCache<Output: Equatable> {
     private struct Sources {
         let outer: [String]
         let all: [String]
@@ -45,13 +47,14 @@ final class ItemCache<Output> {
     }
 
     func map(
-        _ group: FormField, _ items: [JSONValue], ids: [Int] = [], context: ItemContext,
+        _ group: FormField, _ items: [JSONValue], ids: [Int] = [], context: ItemContext, sharing: Bool = false,
         _ transform: (Int, JSONValue) -> (value: Output, keep: Bool)
     ) -> (items: [Output], reused: Bool) {
         let previous = entries[group.ordinal].flatMap { $0.context == context ? $0 : nil }
         if let previous, let whole = previous.whole, previous.inputs == items, previous.ids == ids { return (whole, true) }
         var outputs: [Output?] = []
         var result: [Output] = []
+        var changed: [Int] = []
         outputs.reserveCapacity(items.count)
         result.reserveCapacity(items.count)
         for (position, item) in items.enumerated() {
@@ -63,6 +66,10 @@ final class ItemCache<Output> {
             let mapped = transform(position, item)
             outputs.append(mapped.keep ? mapped.value : nil)
             result.append(mapped.value)
+            changed.append(position)
+        }
+        if sharing, let whole = previous?.whole, whole.count == result.count, changed.allSatisfy({ whole[$0] == result[$0] }) {
+            result = whole
         }
         let complete = outputs.allSatisfy { $0 != nil }
         entries[group.ordinal] = Entry(context: context, ids: ids, inputs: items, outputs: outputs, whole: complete ? result : nil)
