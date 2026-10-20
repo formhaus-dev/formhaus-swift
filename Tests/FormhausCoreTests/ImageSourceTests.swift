@@ -17,7 +17,7 @@ struct ImageSourceTests {
         let refused: [String?] = [
             nil, "", " ", "javascript:alert(1)", " JaVa\tScRiPt:alert(1)", "\u{1}javascript:alert(1)", "vbscript:msgbox(1)",
             "data:text/html,<script>", "data:image/svg+xml;base64,PHN2Zz4=", "file:///etc/hosts", "https://user:pass@example.com/a.png",
-            "http:user@example.com/a.png", "//user@example.com/a.png",
+            "http:user@example.com/a.png", "//user@example.com/a.png", "https://h\\@evil.example/x.png",
         ]
         #expect(refused.map(imageSource).allSatisfy { $0 == nil })
     }

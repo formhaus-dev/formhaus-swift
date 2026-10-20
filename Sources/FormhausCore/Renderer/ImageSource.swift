@@ -1,3 +1,5 @@
+import Foundation
+
 private let specialSchemes: Set<String> = ["ftp", "file", "http", "https", "ws", "wss"]
 private let rasterData = JSRegex(unchecked: "^image\\/(?:png|jpeg|webp|gif)[;,]")
 
@@ -52,7 +54,7 @@ private func isScheme(_ name: ArraySlice<Unicode.Scalar>) -> Bool {
 public func imageSource(_ image: String?) -> String? {
     guard let image, !image.jsTrimmed.isEmpty else { return nil }
     let url = ImageURL(image)
-    guard !url.credentials else { return nil }
+    guard !url.credentials, URL(string: image)?.user == nil else { return nil }
     switch url.scheme {
     case "http", "https": return url.emptyHost ? nil : image
     case "blob": return image
