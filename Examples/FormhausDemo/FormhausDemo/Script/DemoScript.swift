@@ -4,6 +4,7 @@ enum Beat: Sendable {
     case wait(Pace)
     case mark(String)
     case type(String, String)
+    case fill(String, String)
     case clear(String)
     case pick(String, JSONValue)
     case toggle(String, String)
@@ -35,7 +36,7 @@ struct DemoScript: Sendable {
             .pick("projectType", "landing-page"), .mark("landing"), .wait(.beat),
             .next, .mark("branch"), .wait(.hold),
             .submit, .mark("errors"), .wait(.beat), .wait(.short),
-            .mark("typing"), .type("name", "Ada Lovelace"), .wait(.hold),
+            .mark("typing"), .fill("name", "Ada Lovelace"), .wait(.hold),
         ])
 
     static let edit = DemoScript(
@@ -58,13 +59,13 @@ struct DemoScript: Sendable {
     private static let walkthrough: [Beat] = [
         .pick("projectType", "redesign"), .mark("condition"), .wait(.beat),
         .next, .mark("site"), .wait(.short),
-        .mark("typing"), .type("currentSite", "https://northwind.studio"), .wait(.short),
+        .mark("typing"), .fill("currentSite", "https://northwind.studio"), .wait(.short),
         .pick("siteRating", 5), .mark("project"), .wait(.beat),
         .next, .mark("scope"), .wait(.beat),
         .toggle("services", "design"), .wait(.short), .toggle("services", "development"), .mark("services"), .wait(.short),
         .pick("urgency", 4), .mark("scoped"), .wait(.beat),
         .next, .mark("contact"), .wait(.beat),
-        .type("name", "Ada Lovelace"), .wait(.short), .type("email", "ada@lovelace.dev"), .wait(.short),
+        .fill("name", "Ada Lovelace"), .wait(.short), .type("email", "ada@lovelace.dev"), .wait(.short),
         .submit, .mark("server"), .wait(.hold),
         .clear("email"), .wait(.short), .type("email", "ada@northwind.studio"), .wait(.short),
         .submit, .mark("success"), .wait(.hold),

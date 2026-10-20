@@ -21,6 +21,7 @@ final class DemoSession {
     var style: DemoStyle
     private(set) var model: FormModel
     private(set) var phase = Phase.form
+    private(set) var titled = true
     @ObservationIgnored let timings: ScriptTimings
     @ObservationIgnored let launch: LaunchOptions
     @ObservationIgnored let frames = FieldFrames()
@@ -65,6 +66,7 @@ final class DemoSession {
         registered = Self.preregistered
         model = Self.makeModel(source, language, relay: relay)
         phase = .form
+        titled = true
     }
 
     private static let preregistered: Set<String> = ["ada@lovelace.dev"]
@@ -99,7 +101,11 @@ final class DemoSession {
         let receipt = Receipt(
             name: values["name"]?.stringValue ?? "", email: values["email"]?.stringValue ?? "",
             project: optionLabel("projectType", project) ?? project)
-        withAnimation(.snappy) { phase = .done(receipt) }
+        titled = false
+        Task {
+            try? await Task.sleep(for: .seconds(0.05))
+            withAnimation(.snappy) { phase = .done(receipt) }
+        }
     }
 
     private func optionLabel(_ key: String, _ value: String) -> String? {

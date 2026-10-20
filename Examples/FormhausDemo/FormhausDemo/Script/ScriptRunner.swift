@@ -31,7 +31,7 @@ struct ScriptRunner {
     private func record(_ beat: Beat, on timeline: ScriptTimeline) {
         switch beat {
         case .mark(let name): timeline.mark(name)
-        case .type(let key, _): field("type", key, on: timeline)
+        case .type(let key, _), .fill(let key, _): field("type", key, on: timeline)
         case .pick(let key, _): field("pick", key, on: timeline)
         case .toggle(let key, _): field("toggle", key, on: timeline)
         case .next: timeline.tap("next")
@@ -55,7 +55,8 @@ struct ScriptRunner {
         switch beat {
         case .wait(let pace): await pause(timings.duration(pace))
         case .mark: break
-        case .type(let key, let text): await type(text, into: key)
+        case .type(let key, let text): await type(text, into: key, focus: true)
+        case .fill(let key, let text): await type(text, into: key, focus: false)
         case .clear(let key): model.setValue(.null, forKey: key)
         case .pick(let key, let value): model.commitValue(value, forKey: key)
         case .toggle(let key, let option): toggle(option, in: key)
@@ -67,7 +68,11 @@ struct ScriptRunner {
         }
     }
 
-    private func type(_ text: String, into key: String) async {
+    private func type(_ text: String, into key: String, focus: Bool) async {
+        if focus {
+            stage.model.focus(field: key)
+            await pause(0.15)
+        }
         var typed = ""
         for character in text {
             if Task.isCancelled { return }

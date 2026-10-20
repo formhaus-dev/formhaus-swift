@@ -11,7 +11,7 @@ struct RootView: View {
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle(session.phase == .form ? session.title : "")
+                .navigationTitle(session.titled ? session.title : "")
                 #if os(iOS)
                     .navigationBarTitleDisplayMode(.large)
                 #endif
@@ -27,7 +27,7 @@ struct RootView: View {
             FormScreen(session: session).transition(.opacity)
         case .done(let receipt):
             SuccessView(receipt: receipt, copy: session.copy) { session.restart() }
-                .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                .transition(.opacity)
         }
     }
 
