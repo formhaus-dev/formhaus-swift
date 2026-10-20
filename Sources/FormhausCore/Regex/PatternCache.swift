@@ -36,7 +36,7 @@ private struct RecentPatterns {
     private(set) var bytes = 0
     private var nodes: [Node] = []
     private var free: [Int] = []
-    private var positions: [String: Int] = [:]
+    private var positions: [JSKey: Int] = [:]
     private var newest = -1
     private var oldest = -1
 
@@ -46,14 +46,14 @@ private struct RecentPatterns {
     }
 
     mutating func lookup(_ key: String) -> CompiledPattern?? {
-        guard let position = positions[key] else { return nil }
+        guard let position = positions[JSKey(key)] else { return nil }
         promote(position)
         return .some(nodes[position].pattern)
     }
 
     mutating func insert(_ key: String, _ pattern: CompiledPattern?) -> [CompiledPattern?] {
         let size = key.utf8.count + (pattern?.bytes ?? 0)
-        guard positions[key] == nil, size <= byteLimit else { return [] }
+        guard positions[JSKey(key)] == nil, size <= byteLimit else { return [] }
         var evicted: [CompiledPattern?] = []
         while oldest >= 0, positions.count >= limit || bytes + size > byteLimit { evicted.append(evict(oldest)) }
         let node = Node(key: key, pattern: pattern, bytes: size)
@@ -65,7 +65,7 @@ private struct RecentPatterns {
             position = nodes.count
             nodes.append(node)
         }
-        positions[key] = position
+        positions[JSKey(key)] = position
         bytes += size
         link(position)
         return evicted
@@ -74,7 +74,7 @@ private struct RecentPatterns {
     private mutating func evict(_ position: Int) -> CompiledPattern? {
         unlink(position)
         let node = nodes[position]
-        positions[node.key] = nil
+        positions[JSKey(node.key)] = nil
         bytes -= node.bytes
         nodes[position] = Node(key: "", pattern: nil, bytes: 0)
         free.append(position)
