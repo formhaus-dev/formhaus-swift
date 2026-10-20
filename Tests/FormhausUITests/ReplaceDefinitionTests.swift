@@ -49,9 +49,12 @@ struct ReplaceDefinitionTests {
     @Test("a new options provider replaces the old one and drops its pending response")
     func providerSwap() async throws {
         let gate = Gate()
+        let log = CallLog()
         let providers: [String: OptionsProvider] = [
             "citiesA": { _ in
+                log.calls.append("a:started")
                 await gate.wait()
+                defer { log.calls.append("a:returned") }
                 return [FieldOption(value: "a", label: "Amsterdam")]
             },
             "citiesB": { _ in [FieldOption(value: "b", label: "Berlin")] },
@@ -61,12 +64,12 @@ struct ReplaceDefinitionTests {
             options: FormRendererOptions(optionsProviders: providers)
         ) { _, _ in nil }
         form.start()
-        await Task.yield()
+        #expect(await eventually { log.calls == ["a:started"] })
         form.engine.replaceDefinition(try single(["key": "city", "type": "select", "label": "City", "optionsFrom": "citiesB"]))
-        for _ in 0..<20 where form.options(for: "city") == nil { await Task.yield() }
+        #expect(await eventually { form.options(for: "city") != nil })
         #expect(form.options(for: "city")?.map(\.label) == ["Berlin"])
         gate.open()
-        for _ in 0..<20 { await Task.yield() }
+        #expect(await eventually { log.calls.last == "a:returned" })
         #expect(form.options(for: "city")?.map(\.label) == ["Berlin"])
     }
 
@@ -78,7 +81,7 @@ struct ReplaceDefinitionTests {
             options: FormRendererOptions(optionsProviders: providers)
         ) { _, _ in nil }
         form.start()
-        for _ in 0..<20 where form.options(for: "city") == nil { await Task.yield() }
+        #expect(await eventually { form.options(for: "city") != nil })
         #expect(form.options(for: "city")?.map(\.label) == ["Berlin"])
         form.engine.replaceDefinition(
             try single(["key": "city", "type": "select", "label": "City", "options": [["value": "r", "label": "Rome"]]]))
