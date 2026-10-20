@@ -10,13 +10,16 @@ struct FormProgress: View {
         let structure = model.structure
         if structure.isMultiStep {
             let step = structure.currentStep.map { model.texts(for: $0) }
+            let errorCount = structure.currentStep.flatMap { model.stepErrorCounts[$0.id] } ?? 0
             let context = ProgressContext(
                 current: structure.progress.current, total: structure.progress.total,
                 counterLabel: model.text(
                     forLabel:
                         "stepOf",
                     ["current": .number(Double(structure.progress.current)), "total": .number(Double(structure.progress.total))]),
-                stepTitle: step?.title, stepDescription: step?.description, steps: marks(structure))
+                stepTitle: step?.title, stepDescription: step?.description, steps: marks(structure),
+                errorCount: errorCount,
+                errorLabel: errorCount > 0 ? model.text(forLabel: "stepErrors", ["count": .number(Double(errorCount))]) : nil)
             if let custom = components.slots.progress {
                 custom(context)
             } else {
@@ -66,8 +69,11 @@ public struct StepProgressView: View {
                 }
             }
             if let title = context.stepTitle, !title.isEmpty {
-                Text(verbatim: title).formhausText(.title).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: title).formhausText(.title, colored: false)
+                    .foregroundStyle(context.errorCount > 0 ? tokens.colors.error : tokens.colors.text)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, tokens.spacing.s1)
+                    .accessibilityValue(context.errorLabel ?? "")
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityFocused($headingFocused)
             }
