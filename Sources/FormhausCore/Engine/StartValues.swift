@@ -5,13 +5,16 @@ struct StartValues {
     private var memory = StringMap<ValueSlot>(insertionOrder: true)
     private var itemSeeds: [Int: JSONObject] = [:]
     private var itemMemory: [Int: JSONObject] = [:]
+    private(set) var itemEpoch = 0
 
     private mutating func forgetItems() {
         itemSeeds = [:]
         itemMemory = [:]
+        itemEpoch += 1
     }
 
     mutating func seedItems(_ slot: ValueSlot) {
+        itemEpoch += 1
         let ids = slot.ref?.items ?? []
         for (index, item) in itemsOf(slot.value).enumerated() {
             if let entry = item.objectValue, ids.indices.contains(index) { itemSeeds[ids[index]] = entry }
