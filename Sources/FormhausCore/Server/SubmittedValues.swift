@@ -2,9 +2,19 @@ struct ActiveValues {
     var values = JSONObject()
     var active: [(key: String, field: FormField)] = []
     var invalid: [(key: String, value: JSONValue?)] = []
+    private var activeByKey = StringMap<FormField>(insertionOrder: true)
+
+    init() {}
+
+    init(values: JSONObject, active: [(key: String, field: FormField)], invalid: [(key: String, value: JSONValue?)]) {
+        self.values = values
+        self.active = active
+        self.invalid = invalid
+        for (key, field) in active where !activeByKey.has(key) { activeByKey[key] = field }
+    }
 
     func field(_ key: String) -> FormField? {
-        active.first { sameText($0.key, key) }?.field
+        activeByKey[key]
     }
 }
 
@@ -40,10 +50,9 @@ func activeValues(_ visibility: VisibilityState, _ fields: [FormField], _ source
         for key in keys {
             if let field = visibility.activeField(key, values) { active.append((key, field)) }
         }
-        let settled = keys.allSatisfy { key in
-            active.first { sameText($0.key, key) }?.field.ordinal == result.field(key)?.ordinal
-        }
-        result = ActiveValues(values: values, active: active, invalid: invalid)
+        let next = ActiveValues(values: values, active: active, invalid: invalid)
+        let settled = keys.allSatisfy { key in next.field(key)?.ordinal == result.field(key)?.ordinal }
+        result = next
         if settled { break }
     }
     return result

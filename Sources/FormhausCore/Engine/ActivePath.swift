@@ -6,7 +6,7 @@ private func addStepValues(_ nodes: [FormNode], _ values: JSONObject, _ target: 
     let shown = shownFields(nodes, target, limits).filter { values[$0.key] != nil }.map { field in
         (field.key, field.isGroup ? cleanItems(field, values[field.key], target, limits) : trimValue(field, values[field.key]))
     }
-    for (key, value) in saved { target[key] = value }
+    for (key, value) in saved.reversed() { target[key] = value }
     for (key, value) in shown { target[key] = value }
 }
 
@@ -69,10 +69,10 @@ final class PathCache {
 
     func path(_ values: JSONObject) -> ActivePath {
         if source != values {
-            source = values
             path = ActivePath.walk(definition, values)
             ordered = nil
         }
+        source = values
         return path
     }
 
