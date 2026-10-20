@@ -28,7 +28,7 @@ const actions = {
     landing: ['pick', option('A landing page')],
     branch: ['next', primary],
     errors: ['submit', primary],
-    typing: ['type', input('name'), 'Ada Lovelace'],
+    typing: ['fill', input('name'), 'Ada Lovelace'],
   },
 };
 
@@ -128,8 +128,8 @@ const record = async (browser, origin, id, clip, config) => {
     if (upcoming && time >= upcoming.time) {
       const [kind, locate, text] = upcoming.action;
       timeline.marks.push({ name: upcoming.mark, time });
-      timeline.taps.push({ time, kind, x: target.x, y: target.y });
-      if (kind === 'type') {
+      timeline.taps.push({ time, kind: kind === 'fill' ? 'type' : kind, x: target.x, y: target.y });
+      if (kind === 'fill') {
         const handle = await locate(page).elementHandle();
         typing.push(...keystrokes(text, timings, speed).map((key) => ({ ...key, at: time + key.at, handle })));
       } else {

@@ -48,6 +48,7 @@ boot() {
   timeout 30 "$simctl" ui "$1" content_size "$(node -p "require('./script.json').devices.iphone.contentSize")"
   timeout 30 "$simctl" status_bar "$1" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
     --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+  sleep 45
   booted=$1
 }
 
@@ -120,7 +121,7 @@ if [ -n "$plan" ]; then
     attempt=1
     while :; do
       record_device "$id" "$udid" "$script" "$stop" "$definition" "$kind" "$seconds" "$speed"
-      [ "$kind" = still ] || smooth "$id" || [ "$attempt" -ge 2 ] || { attempt=$((attempt + 1)); echo "frame gap in $id, recording again"; continue; }
+      [ "$kind" = still ] || smooth "$id" || [ "$attempt" -ge "${ATTEMPTS:-2}" ] || { attempt=$((attempt + 1)); echo "frame gap in $id, recording again"; continue; }
       break
     done
   done

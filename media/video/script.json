@@ -88,32 +88,32 @@
     "showcase": {
       "first": 1.069,
       "condition": 1.069,
-      "site": 1.693,
-      "typing": 2.009,
-      "project": 3.579,
-      "scope": 4.245,
-      "services": 5.178,
-      "scoped": 5.481,
-      "contact": 6.121,
-      "server": 9.845,
-      "success": 14.026,
-      "end": 15.426
+      "site": 1.732,
+      "typing": 2.051,
+      "project": 3.631,
+      "scope": 4.26,
+      "services": 5.173,
+      "scoped": 5.484,
+      "contact": 6.155,
+      "server": 10.074,
+      "success": 14.445,
+      "end": 15.845
     },
     "styles": {
-      "first": 7.31,
-      "filled": 7.31,
-      "system": 9.59,
-      "brand": 13.013,
-      "formhaus": 16.611,
-      "end": 18.011
+      "first": 7.41,
+      "filled": 7.41,
+      "system": 9.646,
+      "brand": 13.107,
+      "formhaus": 16.519,
+      "end": 17.919
     },
     "branch": {
-      "first": 1.077,
-      "landing": 1.077,
-      "branch": 1.757,
-      "errors": 3.298,
-      "typing": 4.224,
-      "end": 5.624
+      "first": 1.135,
+      "landing": 1.135,
+      "branch": 1.813,
+      "errors": 3.318,
+      "typing": 4.253,
+      "end": 5.653
     },
     "edit": {
       "first": 1.095,
