@@ -33,6 +33,6 @@ A behaviour change starts as a fixture in the formhaus repository. When the Swif
 
 1. Fork the repo and create a branch from `main`.
 2. Make your changes, keeping files under 250 lines and the code free of comments.
-3. Make sure `swift test` and `scripts/lint.sh` pass.
+3. Make sure `swift test` and `scripts/lint.sh` pass. After changes to the renderer, the regex engine or the engine core, also run `scripts/heavy-tests.sh`.
 4. Commit using [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`).
 5. Open a pull request against `main`.
