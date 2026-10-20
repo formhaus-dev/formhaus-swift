@@ -105,7 +105,7 @@ FormhausForm(definition: definition, renderer: FormRendererOptions(labels: .cata
 - `FormhausForm(model:)` scrolls, moves focus to the first invalid field and scrolls to the top on a step change. `FormhausForm(definition:…)` builds a new model when the definition changes and always calls the latest handlers. An equal definition keeps the values and progress; to start over, give the form a new `.id()`. Pending actions are cancelled when the model is replaced or the form leaves the view tree, not when it is only hidden by navigation or a tab switch. `FormhausFormContent(model:)` is the same form without the scroll view. Inside an app's own `ScrollView` it scrolls to errors and to the top the same way. `FormFields`, `FormhausField`, `StepProgressView`, `FormActionsBar`, `FormErrorSummary` and `FormTopLevelErrors` are the building blocks.
 - `FormComponents` maps field types to views: `.standard.field("x-color") { ColorField($0) }`. A view gets a `FieldContext` with the field, value, error, options, `setValue` and `commitValue`. `FieldContext(field:key:model:)` builds one for previews and tests. Custom controls join focus-to-error with `.formhausFocus(context, $focused)` or `.onFormhausFocus(context) { … }`, and scrolling with `.formhausScrollAnchor(context)`; `FieldShell` does both. `.section`, `.group`, `.groupItem`, `.confirmDialog`, `.progress` and `.actions` replace the containers. `FormComponents.headless` has no built-in fields.
 - `FormComponents.system` renders the form as a native grouped `Form`, like a Settings screen. Put it in a `NavigationStack`. On iOS each step is a pushed screen with the step title and a "Step N" subtitle; Next or Submit sits in the toolbar, Cancel only on the first step, and the back button or a swipe goes back a step. On macOS the step content swaps in place, with Cancel, Back and Next in a bottom row. Text fields are labeled rows, select, radio and multiselect are navigation rows to a checklist on iOS and menus or checkboxes on macOS, checkbox and switch are toggles, dates expand inline on iOS, a scale is a wrapping row of numbered round buttons, and picture options, ratings and long text get their own section. A step description sits above its fields. Field errors are red section footers, and errors that belong to no field open an alert. The theme sets the accent and error colours. Registered fields and the `.section`, `.group`, `.groupItem`, `.progress` and `.actions` builders replace the native rows and containers; a section builder's view goes straight into the grouped `Form`, so return a `Section`. In a matrix section the rows stay native pickers even when `radio` is overridden, in this set and in the built-in one.
-- `FormhausTheme` holds the tokens of `style.css`: palettes for light and dark, type sizes, spacing, radii, control sizes and motion. `.pointer` follows the desktop values, `.touch` the coarse-pointer values, and `.standard` picks one per platform. Sizes follow Dynamic Type, and motion stops with Reduce Motion. Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and style text with `.formhausText(_:)`. `TextRole` is a struct, so apps can define their own roles.
+- `FormhausTheme` holds the design tokens of `@formhaus/core`: palettes for light and dark, type sizes, spacing, radii, control sizes and motion. `.pointer` uses the fine-pointer and regular-width values, `.touch` the coarse-pointer and compact-width values, and `.standard` picks one per platform. Under Increase Contrast the formhaus palettes use the `contrast: more` values. Sizes follow Dynamic Type, and motion stops with Reduce Motion. Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and style text with `.formhausText(_:)`. `TextRole` is a struct, so apps can define their own roles.
 
 Differences from the web renderer:
 
@@ -178,13 +178,39 @@ Script mode plays a fixed interaction through the public `FormModel` API, for sc
 
 In script mode the iOS keyboard stays hidden. The timings are in `FormhausDemo/Resources/demo-timings.json`. `scripts/render-assets.sh` renders the app icon from the formhaus logo and draws the option pictures into the definition.
 
+## Design tokens
+
+The colours, type sizes, spacing, radii and control sizes come from the [DTCG design tokens](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/tokens) of `@formhaus/core`. `scripts/sync-fixtures.sh` copies them into `Tests/FormhausUITests/Fixtures/tokens`, next to a `VERSION` file with the ref and sha. `tokens-build` resolves every context of `formhaus.resolver.json` with Style Dictionary and writes `Sources/FormhausUI/Theme/FormhausTokens.generated.swift`:
+
+| Tokens | Swift |
+|---|---|
+| `theme` light and dark | `Palette.light`, `Palette.dark` |
+| `theme` with `contrast: more` | the palettes under Increase Contrast |
+| `pointer` fine and coarse | type sizes and star size of `.pointer` and `.touch` |
+| `width` regular and compact | card padding of `.pointer` and `.touch` |
+
+To regenerate after a sync:
+
+```sh
+npm ci --prefix tokens-build
+npm --prefix tokens-build run build
+```
+
+`scripts/lint.sh tokens` fails when the generated file differs from the tokens. Values with no token, such as the 44 pt hit target, live in `Theme/NativeMetrics.swift`.
+
+## Accessibility
+
+- Increase Contrast maps to `contrast: more`. Input, card and secondary borders then use `color.input.border-strong`, about 3.7:1 against the background, and muted text, placeholders, errors and the primary colour are raised to the native targets.
+- At standard contrast the input border is about 2.0:1 against the background, below the 3:1 of WCAG 1.4.11. This is a deliberate deviation that matches the web renderer. The hover border is about 3:1, and Increase Contrast restores 3:1.
+- Sizes follow Dynamic Type, and motion stops with Reduce Motion.
+
 ## Status
 
 - Definition corpus: passing. `checkDefinition` errors and warnings, overlays, text slots and value cases for the server and the browser engine.
 - Answer recall: passing. Every `recall` case resolves its texts through `FormEngine.recallText` with the identity formatter.
 - Engine scenarios: passing. Every scenario in `Fixtures/conformance/scenarios` runs through `FormEngine` as its own test, named `<file>: <scenario>`.
 
-The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.21.0`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
+The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.21.1`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
 
 ```sh
 scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
