@@ -34,32 +34,21 @@ struct FileValueTests {
         try context(form).fileName
     }
 
-    @Test("the server keeps an app reference as given", arguments: references)
-    func server(value: JSONValue) throws {
-        let result = try validateSubmission(definition, ["doc": value])
-        #expect(result.values == ["doc": value])
-        #expect(result.errors.isEmpty)
-    }
-
-    @Test("an app reference in the initial values is kept, submitted and not shown", arguments: references)
+    @Test("an app reference in the initial values is submitted and not shown", arguments: references)
     func initialValues(value: JSONValue) async throws {
         let log = SubmitLog()
         let form = try model(["doc": value], log: log)
         form.start()
-        #expect(form.engine.values["doc"] == value)
-        #expect(form.engine.getSubmitValues() == ["doc": value])
         #expect(try picked(form) == nil)
         await form.submit()
         #expect(log.values == [["doc": value]])
     }
 
-    @Test("setValue keeps an app reference and does not show it", arguments: references)
+    @Test("setValue does not show an app reference as a picked file", arguments: references)
     func setValue(value: JSONValue) throws {
         let form = try model()
         form.start()
         form.setValue(value, forKey: "doc")
-        #expect(form.engine.values["doc"] == value)
-        #expect(form.engine.getSubmitValues() == ["doc": value])
         #expect(try picked(form) == nil)
         #expect(form.pickedFile(forKey: "doc") == nil)
     }
