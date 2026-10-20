@@ -30,13 +30,14 @@ private struct Probe: View {
 }
 
 @MainActor
-private func topInk(_ host: NSView) -> Int? {
+private func topInk(_ host: NSView) -> CGFloat? {
     guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return nil }
     host.cacheDisplay(in: host.bounds, to: rep)
-    return (0..<rep.pixelsHigh).first { row in
+    let row = (0..<rep.pixelsHigh).first { row in
         guard let color = rep.colorAt(x: rep.pixelsWide / 2, y: row)?.usingColorSpace(.sRGB) else { return false }
         return color.redComponent + color.greenComponent + color.blueComponent < 2.9
     }
+    return row.map { CGFloat($0) * host.bounds.height / CGFloat(rep.pixelsHigh) }
 }
 
 @MainActor
@@ -74,9 +75,9 @@ struct LayoutMotionTests {
         let content = try #require(cases[name])
         let settled = try #require(topInk(render(moved: true, content).1))
         let (shift, host) = render(moved: false, content)
-        #expect(try abs(#require(topInk(host)) - settled) > 100)
+        #expect(try abs(#require(topInk(host)) - settled) > 50)
         shift.moved = true
         host.layoutSubtreeIfNeeded()
-        #expect(try abs(#require(topInk(host)) - settled) < 8)
+        #expect(try abs(#require(topInk(host)) - settled) < 4)
     }
 }
