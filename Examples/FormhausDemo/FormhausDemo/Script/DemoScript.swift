@@ -23,11 +23,19 @@ struct DemoScript: Sendable {
         all.first { $0.name == name }
     }
 
-    static let all = [tour, showcase, languages, styles]
+    static let all = [tour, showcase, branch, languages, styles]
 
     static let tour = DemoScript(name: "tour", beats: prelude + walkthrough)
 
     static let showcase = DemoScript(name: "showcase", beats: [.mark("start"), .wait(.intro)] + walkthrough)
+
+    static let branch = DemoScript(
+        name: "branch",
+        beats: [
+            .mark("start"), .wait(.intro),
+            .pick("projectType", "landing-page"), .mark("landing"), .wait(.beat),
+            .next, .mark("branch"), .wait(.hold),
+        ])
 
     private static let prelude: [Beat] = [
         .mark("start"), .wait(.intro),
