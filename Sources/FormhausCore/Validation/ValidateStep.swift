@@ -7,7 +7,7 @@ public func validateStep(
 public func validateFields(
     _ fields: [FormNode], _ values: JSONObject, validators: Validators = [:], messages: MessageSource? = nil
 ) -> FieldErrors {
-    validateShown(fields, values, values, ShownChecks(validators: validators, messages: messages, limits: .standard))
+    CallBudget.run { validateShown(fields, values, values, ShownChecks(validators: validators, messages: messages, limits: .standard)) }
 }
 
 func customRules(_ nodes: [FormNode]) -> Bool {

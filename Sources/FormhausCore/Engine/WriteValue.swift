@@ -119,6 +119,6 @@ extension EngineCore {
 extension FormField {
     var itemLimits: (min: Double, max: Double) {
         let required = validation?.required?.isTruthy == true
-        return (validation?.minLength ?? (required ? 1 : 0), validation?.maxLength ?? 100)
+        return (validation?.minLength ?? (required ? 1 : 0), maxItems)
     }
 }

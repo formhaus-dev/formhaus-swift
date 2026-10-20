@@ -13,7 +13,7 @@ func createValues(
         if let value = field.defaultValue {
             values.set(field.key, ValueSlot(value, ref: Ref.preset(value, field.ordinal)))
         } else if field.isGroup, let count = field.defaultItems, count > 0 {
-            let length = Int(max(0, min(count, field.itemLimits.max, 1e6)))
+            let length = Int(max(0, min(count, field.itemLimits.max)))
             let items = (0..<length).map { _ in JSONValue.object(createItem(field.items)) }
             values.set(field.key, .fresh(.array(items)))
         }

@@ -14,5 +14,6 @@ struct APISurfaceTests {
         let field = FormhausField(model.structure.visibleFields[0], model: model)
         let views: [any View] = [form, FormhausForm(model: model), field, form.body, field.body]
         #expect(views.count == 5)
+        #expect(model.pickedFile(forKey: model.structure.visibleFields[0].key) == nil)
     }
 }

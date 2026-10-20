@@ -10,7 +10,8 @@ let listTypes = ["multiselect"]
 let maxStringLength = 10000
 let maxHiddenLength = 2000
 private let maxEmailLength = 254
-let maxGroupItems = 100
+let maxGroupItems = 1000
+private let defaultGroupItems = 100.0
 
 private let emailPattern = JSRegex(unchecked: "^[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+$")
 private let decimal = JSRegex(unchecked: "^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?$")
@@ -84,7 +85,7 @@ func normalizeValue(_ field: FormField, _ input: JSONValue?) -> JSONValue? {
 }
 
 private func normalizeItems(_ group: FormField, _ input: JSONValue?) -> JSONValue? {
-    guard let items = input?.arrayValue, Double(items.count) <= group.validation?.maxLength ?? Double(maxGroupItems) else { return input }
+    guard let items = input?.arrayValue, Double(items.count) <= group.maxItems else { return input }
     return .array(
         items.map { item in
             guard let entry = item.objectValue else { return item }
@@ -164,7 +165,7 @@ private func groupError(_ field: FormField, _ value: JSONValue, _ fail: Fail) ->
     if let max, Double(items.count) > max {
         return field.validation?.message("maxLengthMessage") ?? fail("maxItems", ["max": .number(max)])
     }
-    return Double(items.count) > max ?? Double(maxGroupItems) || !items.allSatisfy({ $0.objectValue != nil }) ? fail("value", [:]) : nil
+    return Double(items.count) > field.maxItems || !items.allSatisfy({ $0.objectValue != nil }) ? fail("value", [:]) : nil
 }
 
 func typeError(_ field: FormField, _ input: JSONValue?, _ resolve: @escaping ResolveMessage = messageResolver()) -> String? {
@@ -201,4 +202,8 @@ func typeMessageKeys(_ field: FormField) -> [MessageKey] {
 func clientTypeError(_ field: FormField, _ value: JSONValue?, _ resolve: @escaping ResolveMessage) -> String? {
     if field.type == "file" || (!builtInTypes.contains(field.type) && !field.isGroup) { return nil }
     return typeError(field, value, resolve)
+}
+
+extension FormField {
+    var maxItems: Double { min(validation?.maxLength ?? defaultGroupItems, Double(maxGroupItems)) }
 }

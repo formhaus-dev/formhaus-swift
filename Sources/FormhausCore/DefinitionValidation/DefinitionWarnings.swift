@@ -107,6 +107,7 @@ private func ruleWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [Defi
     issues += sized.map {
         rule($0, "\"\($0)\" does not apply to \(field.type) fields", numeric ? "Use min and max for numbers" : "Remove \($0)")
     }
+    issues += itemLimitWarnings(entry)
     if let pattern = rules["pattern"]?.stringValue, let slow = slowPattern(pattern) {
         let nested = slow == .nested
         let problem = nested ? "nests quantifiers" : "repeats overlapping parts next to each other"

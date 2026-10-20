@@ -111,7 +111,7 @@ Differences from the web renderer:
 
 - `switch` uses the native switch, with the label before it.
 - `date`, `time` and `datetime` show the value as text and open the system picker in a popover on macOS and a sheet on iOS. A date is written when a day is tapped or Done is pressed; a time or date and time only on Done. Closing the picker any other way keeps the old value. Optional fields have a clear button.
-- `file` writes a file URL as a string. The renderer copies the picked file, with its security scope, into `formhaus-uploads` in the temporary directory, so the URL stays readable after the picker closes. It deletes the copy when the field is cleared, another file is picked, the form is reset or the model goes away, and it only ever deletes folders it created. Move the file before the app exits if it must outlive the session. On iOS a field that accepts only images opens the photo picker.
+- `file` writes a file URL as a string. The renderer copies the picked file, with its security scope, into `formhaus-uploads` in the temporary directory, so the URL stays readable after the picker closes. It deletes the copy when the field is cleared, another file is picked, the form is reset or the model goes away, and it only ever deletes folders it created. Move the file before the app exits if it must outlive the session. On iOS a field that accepts only images opens the photo picker. To read a picked file, call `FormModel.pickedFile(forKey:)`. It returns the URL only for a file the renderer copied. Other string values are app references and are never read by the package. The engine keeps and submits them as given, and the field shows them as plain text that can be cleared.
 - The labels `clear`, `chooseFile`, `done`, `required`, `skip`, `submit`, `stepTitle` and `stepErrors` of the 0.20 catalog are available now. Catalogs and overlays set them like any other label.
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - On a step change, VoiceOver moves to the step title. Keyboard focus moves only to an invalid field.
@@ -210,7 +210,7 @@ npm --prefix tokens-build run build
 - Answer recall: passing. Every `recall` case resolves its texts through `FormEngine.recallText` with the identity formatter.
 - Engine scenarios: passing. Every scenario in `Fixtures/conformance/scenarios` runs through `FormEngine` as its own test, named `<file>: <scenario>`.
 
-The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.21.1`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
+The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.21.2`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
 
 ```sh
 scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
@@ -227,7 +227,7 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 - Values are at most 10,000 code units long, so a counted repeat is cut to the number of iterations such a value can use. `^.{0,50000}$` compiles like `^.{0,10000}$`. Such a pattern fails the rule for a longer value. A pattern that still compiles to more than 262,144 instructions fails the rule, unless the value is shorter than any match. A single character or class repeated in a pattern with backreferences, such as `\w{1,5000}`, takes one instruction. V8 rejects literals of 32,768 code units or more, and the native engine accepts them.
 - Patterns with backreferences use a backtracking matcher. A match there that needs more than 10,000,000 steps fails the pattern rule. Clearing captures, copying them for a lookaround and comparing a backreference count as steps. Patterns that nest quantified groups which can match empty and also use backreferences, such as `(?:((\1?\1.?){2})*K?)+[ab]`, can run out of steps even on values of about 10 code units. `@formhaus/core` keeps matching until it finishes.
 - All other patterns match in time proportional to the input length times the compiled pattern size. Such a match also stops after 10,000,000 steps and then fails the pattern rule.
-- One `validateSubmission`, `FormEngine.validate()` or `FormEngine.validateField(_:)` call has 20,000,000 steps for all its patterns. Once they are spent, every further pattern rule in the call fails.
+- One `validateSubmission`, `validateFields`, `validateStep`, `validateFieldValue`, `FormEngine.validate()` or `FormEngine.validateField(_:)` call, or one step check on Continue, has 20,000,000 steps for all its patterns. Once they are spent, every further pattern rule in the call fails. The same call tests at most 10,000 values against patterns, as in `@formhaus/core`.
 - The JSON parser rejects strings with unpaired surrogate escapes such as `"\uD800"`. Swift `String` cannot hold them, and replacing them with U+FFFD would change the value.
 - The JSON parser rejects documents nested deeper than 512 levels (`JSONValue.maxNestingDepth`). Swift compares and frees nested values recursively, so deeper values could overflow the stack.
 - `JSONValue` equality compares structure. A new array or object with the same contents counts as the same value, where JavaScript compares object identity. `FormEngine` keeps the JavaScript rule: every array or object passed to `setValue` or `setItemValue` counts as a change, and group items keep their identity across edits.
@@ -241,7 +241,7 @@ Patterns run on a native ECMAScript regex engine with `new RegExp(p).test(s)` se
 
 Limits:
 
-- A match stops after 10,000,000 steps and fails the pattern rule. One validation call has 20,000,000 steps for all its patterns.
+- A match stops after 10,000,000 steps and fails the pattern rule. One validation call has 20,000,000 steps for all its patterns and tests at most 10,000 values.
 - A pattern that compiles to more than 262,144 instructions fails the rule.
 - Values are at most 10,000 code units long.
 - The pattern cache keeps 256 patterns and 16 MB of compiled programs. Automaton states use at most 1 MB per copy and 32 MB in total.

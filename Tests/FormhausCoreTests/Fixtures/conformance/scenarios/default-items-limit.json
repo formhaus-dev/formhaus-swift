@@ -1,0 +1,222 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "default items limit",
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "crew",
+    "title": "Crew",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "crew",
+        "title": "Crew",
+        "skip": true,
+        "fields": [
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "defaultItems": 1000000,
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "end",
+        "title": "End",
+        "fields": [
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "creates at most 100 items without maxLength",
+      "steps": [
+        {
+          "expect": {
+            "items": {
+              "crew": 100
+            }
+          }
+        },
+        {
+          "do": "addItem",
+          "key": "crew",
+          "returns": false
+        },
+        {
+          "expect": {
+            "items": {
+              "crew": 100
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "creates at most 100 items on reset",
+      "steps": [
+        {
+          "do": "removeItem",
+          "key": "crew",
+          "index": 0,
+          "returns": true
+        },
+        {
+          "expect": {
+            "items": {
+              "crew": 99
+            }
+          }
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "items": {
+              "crew": 100
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "creates at most 100 items when the step is skipped",
+      "steps": [
+        {
+          "do": "removeItem",
+          "key": "crew",
+          "index": 0,
+          "returns": true
+        },
+        {
+          "expect": {
+            "items": {
+              "crew": 99
+            }
+          }
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "items": {
+              "crew": 100
+            },
+            "step": "end"
+          }
+        }
+      ]
+    },
+    {
+      "name": "creates at most maxLength items",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "crew",
+        "title": "Crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "defaultItems": 3,
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ],
+            "validation": {
+              "maxLength": 3
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "items": {
+              "crew": 3
+            }
+          }
+        },
+        {
+          "do": "addItem",
+          "key": "crew",
+          "returns": false
+        }
+      ]
+    },
+    {
+      "name": "creates at most 1000 items whatever maxLength says",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "crew",
+        "title": "Crew",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "defaultItems": 10000000,
+            "validation": {
+              "maxLength": 10000000
+            },
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "items": {
+              "crew": 1000
+            }
+          }
+        },
+        {
+          "do": "addItem",
+          "key": "crew",
+          "returns": false
+        },
+        {
+          "expect": {
+            "items": {
+              "crew": 1000
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

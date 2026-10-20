@@ -12,16 +12,20 @@ public struct FileField: View {
     }
 
     public var body: some View {
-        PickerInput(context: context, active: picking, clearable: !context.text.isEmpty, cleared: .null, label: summary) { picking = true }
-            .filePicker(context, isPresented: $picking)
+        PickerInput(context: context, active: picking, clearable: !context.text.isEmpty, cleared: .null, label: summary) {
+            picking = true
+        }
+        .filePicker(context, isPresented: $picking)
     }
 
     private var summary: some View {
         HStack(spacing: tokens.spacing.s3) {
-            Image(systemName: "paperclip").foregroundStyle(tokens.colors.textMuted)
-            Text(verbatim: context.fileName ?? context.placeholder ?? context.text(forLabel: "chooseFile"))
+            if context.reference == nil {
+                Image(systemName: "paperclip").foregroundStyle(tokens.colors.textMuted)
+            }
+            Text(verbatim: context.fileName ?? context.reference ?? context.placeholder ?? context.text(forLabel: "chooseFile"))
                 .formhausText(.body, colored: false)
-                .foregroundStyle(context.fileName == nil ? tokens.colors.control : tokens.colors.text)
+                .foregroundStyle(summaryColor)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -30,15 +34,27 @@ public struct FileField: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: context.accessibilityName))
-        .accessibilityValue(context.fileName ?? context.text(forLabel: "chooseFile"))
+        .accessibilityValue(context.fileValueText)
         .accessibilityAddTraits(.isButton)
+    }
+
+    private var summaryColor: Color {
+        if context.fileName != nil { return tokens.colors.text }
+        return context.reference == nil ? tokens.colors.control : tokens.colors.textMuted
     }
 }
 
 extension FieldContext {
     var fileName: String? {
-        guard !text.isEmpty else { return nil }
-        return URL(string: text)?.lastPathComponent ?? text
+        UploadStore.owned(text)?.lastPathComponent
+    }
+
+    var reference: String? {
+        text.isEmpty || fileName != nil ? nil : text
+    }
+
+    var fileValueText: String {
+        fileName ?? reference ?? text(forLabel: "chooseFile")
     }
 
     func replaceFile(with url: URL?) {
