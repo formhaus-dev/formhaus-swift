@@ -53,4 +53,31 @@ struct RegexBudgetTests {
         let exhausted = try CallBudget.$current.withValue(CallBudget(limit: 0)) { try validateSubmission(definition, values) }
         #expect(exhausted.errors["f1"] != nil)
     }
+
+    @Test("public validators run in their own budget")
+    func publicBudgets() throws {
+        let probe: Validators = ["probe": { _, _ in CallBudget.current == nil ? "outside" : nil }]
+        let field: JSONValue = ["key": "a", "type": "text", "label": "A", "validation": ["validator": "probe"]]
+        let nodes = try FormDefinition(json: ["id": "p", "submit": ["label": "S"], "fields": [field]]).fields ?? []
+        let first = try #require(nodes.first?.field)
+        #expect(validateFieldValue(first, "x", [:], validators: probe) == nil)
+        #expect(validateFields(nodes, ["a": "x"], validators: probe).isEmpty)
+    }
+
+    @Test("one validation tests at most 10,000 values against patterns")
+    func patternTestLimit() throws {
+        let limit = CallBudget.patternTestLimit
+        let fields: [JSONValue] = (0...limit).map { index in
+            ["key": .string("f\(index)"), "type": "text", "label": "F", "validation": ["pattern": "^a$"]]
+        }
+        let definition = try FormDefinition(json: ["id": "p", "submit": ["label": "S"], "fields": .array(fields)])
+        let nodes = definition.fields ?? []
+        var values = JSONObject()
+        for index in 0...limit { values["f\(index)"] = "a" }
+        for _ in 0..<2 {
+            #expect(validateFields(nodes, values) == ["f\(limit)": "Invalid format"])
+        }
+        let field = try #require(nodes.first?.field)
+        #expect((0...limit).allSatisfy { _ in validateFieldValue(field, "a", values) == nil })
+    }
 }

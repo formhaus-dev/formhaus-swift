@@ -21,7 +21,7 @@ private func patternError(_ value: JSONValue, _ rules: FieldValidation, _ messag
 }
 
 func rejects(_ pattern: JSRegex, _ text: String) -> Bool {
-    text.jsLength > maxStringLength || pattern.test(text) != true
+    text.jsLength > maxStringLength || CallBudget.current?.admitsPatternTest() == false || pattern.test(text) != true
 }
 
 private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: FormField, _ resolve: ResolveMessage) -> String? {
@@ -46,6 +46,12 @@ private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: Fo
 public func validateFieldValue(
     _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, validators: Validators = [:],
     messages: MessageSource? = nil
+) -> String? {
+    CallBudget.run { fieldValueError(field, input, allValues, validators, messages) }
+}
+
+private func fieldValueError(
+    _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, _ validators: Validators, _ messages: MessageSource?
 ) -> String? {
     let value = trimValue(field, input)
     let rules = field.validation ?? FieldValidation(json: JSONObject())
