@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct Palette: Sendable {
+public struct Palette: Sendable, Equatable {
     public var text: Color
     public var textMuted: Color
     public var border: Color
@@ -24,13 +24,14 @@ public struct Palette: Sendable {
     public var inputBorderHover: Color?
 
     public init(
-        text: Color = Color(hex: 0x18181B), textMuted: Color = Color(hex: 0x5F5F68), border: Color = Color(hex: 0xD4D4D8),
-        inputBorder: Color = Color(hex: 0x84848D), borderHover: Color = Color(hex: 0xA1A1AA), control: Color = Color(hex: 0x71717A),
-        error: Color = Color(hex: 0xC0352D),
-        errorHover: Color = Color(hex: 0x9E2A23), background: Color = .white, backgroundDisabled: Color = Color(hex: 0xF4F4F5),
-        backgroundHover: Color = Color(hex: 0xF6F6F7), primary: Color = Color(hex: 0x5502FB), onPrimary: Color = .white,
-        secondaryBorder: Color = Color(hex: 0xD4D4D8), scrim: Color = Color(hex: 0x141416, opacity: 0.32),
-        shadow: Color = Color(hex: 0x141416, opacity: 0.2)
+        text: Color = Palette.light.text, textMuted: Color = Palette.light.textMuted, border: Color = Palette.light.border,
+        inputBorder: Color = Palette.light.inputBorder, borderHover: Color = Palette.light.borderHover,
+        control: Color = Palette.light.control, error: Color = Palette.light.error, errorHover: Color = Palette.light.errorHover,
+        background: Color = Palette.light.background, backgroundDisabled: Color = Palette.light.backgroundDisabled,
+        backgroundHover: Color = Palette.light.backgroundHover, primary: Color = Palette.light.primary,
+        onPrimary: Color = Palette.light.onPrimary, secondaryBorder: Color = Palette.light.secondaryBorder,
+        scrim: Color = Palette.light.scrim, shadow: Color = Palette.light.shadow, focus: Color? = nil, primaryHover: Color? = nil,
+        primarySoft: Color? = nil, errorSoft: Color? = nil, inputBorderHover: Color? = nil
     ) {
         self.text = text
         self.textMuted = textMuted
@@ -48,26 +49,19 @@ public struct Palette: Sendable {
         self.secondaryBorder = secondaryBorder
         self.scrim = scrim
         self.shadow = shadow
+        self.focus = focus
+        self.primaryHover = primaryHover
+        self.primarySoft = primarySoft
+        self.errorSoft = errorSoft
+        self.inputBorderHover = inputBorderHover
     }
+}
 
-    public static let light: Palette = {
-        var palette = Palette()
-        palette.inputBorderHover = Color(hex: 0x5F5F68)
-        return palette
-    }()
-
-    public static let dark: Palette = {
-        var palette = Palette(
-            text: Color(hex: 0xECECEE), textMuted: Color(hex: 0xA8A8B3), border: Color(hex: 0x3A3A41), inputBorder: Color(hex: 0x73737D),
-            borderHover: Color(hex: 0x5A5A63),
-            control: Color(hex: 0x80808B), error: Color(hex: 0xF2736A), errorHover: Color(hex: 0xF6958E), background: Color(hex: 0x18181C),
-            backgroundDisabled: Color(hex: 0x232328), backgroundHover: Color(hex: 0x212126), primary: Color(hex: 0x7C4DFF),
-            onPrimary: .white, secondaryBorder: Color(hex: 0x3A3A41), scrim: Color(hex: 0x000000, opacity: 0.55),
-            shadow: Color(hex: 0x000000, opacity: 0.6)
-        )
-        palette.inputBorderHover = Color(hex: 0x9A9AA5)
-        return palette
-    }()
+struct ColorMixes: Sendable {
+    let primaryHover: Float
+    let primaryHoverWith: Color
+    let primarySoft: Float
+    let errorSoft: Float
 }
 
 public struct ResolvedPalette: Sendable {
@@ -99,6 +93,7 @@ public struct ResolvedPalette: Sendable {
         let background = palette.background.resolve(in: environment)
         let primary = palette.primary.resolve(in: environment)
         let error = palette.error.resolve(in: environment)
+        let mixes = dark ? ColorMixes.dark : .light
         text = palette.text
         textMuted = palette.textMuted
         border = palette.border
@@ -109,14 +104,14 @@ public struct ResolvedPalette: Sendable {
         control = palette.control
         self.error = palette.error
         errorHover = palette.errorHover
-        errorSoft = palette.errorSoft ?? Color(mix(error, background, 0.08))
+        errorSoft = palette.errorSoft ?? Color(mix(error, background, mixes.errorSoft))
         self.background = palette.background
         backgroundDisabled = palette.backgroundDisabled
         backgroundHover = palette.backgroundHover
         self.primary = palette.primary
         onPrimary = palette.onPrimary
-        primaryHover = palette.primaryHover ?? Color(mix(primary, dark ? .white : .black, dark ? 0.85 : 0.82))
-        primarySoft = palette.primarySoft ?? Color(mix(primary, background, 0.09))
+        primaryHover = palette.primaryHover ?? Color(mix(primary, mixes.primaryHoverWith.resolve(in: environment), mixes.primaryHover))
+        primarySoft = palette.primarySoft ?? Color(mix(primary, background, mixes.primarySoft))
         primaryOnSoft = dark ? Color(mix(primary, .white, 0.6)) : palette.primary
         primaryDisabled = Color(mix(primary, background, dark ? 0.3 : 0.1))
         secondaryBorder = palette.secondaryBorder
@@ -136,7 +131,6 @@ func mix(_ color: Color.Resolved, _ other: Color.Resolved, _ amount: Float) -> C
 
 extension Color.Resolved {
     fileprivate static let white = Color.Resolved(red: 1, green: 1, blue: 1)
-    fileprivate static let black = Color.Resolved(red: 0, green: 0, blue: 0)
 }
 
 extension Color {

@@ -10,37 +10,47 @@ extension FormhausTheme {
     func palette(dark: Bool, increasedContrast: Bool, environment: EnvironmentValues) -> Palette {
         let base = dark ? self.dark : light
         guard increasedContrast else { return base }
-        return (dark ? darkIncreased : lightIncreased) ?? base.raisingContrast(in: environment)
+        if let explicit = dark ? darkIncreased : lightIncreased { return explicit }
+        guard base == (dark ? Palette.dark : .light) else { return base.raisingContrast(in: environment) }
+        return (dark ? Palette.darkIncreased : .lightIncreased).raisingText(in: environment)
     }
 }
 
 extension Palette {
     func raisingContrast(in environment: EnvironmentValues) -> Palette {
-        let background = background.resolve(in: environment)
-        let ink = text.resolve(in: environment)
-        func raise(_ color: Color, to target: Double) -> Color {
-            let base = color.resolve(in: environment)
-            for step in 0...20 {
-                let mixed = mix(ink, base, Float(step) / 20)
-                if contrastRatio(mixed, background) >= target { return Color(mixed) }
-            }
-            return Color(ink)
-        }
-        var raised = self
-        raised.textMuted = raise(textMuted, to: 7)
-        raised.control = raise(control, to: 4.5)
-        raised.inputBorder = raise(inputBorder, to: 4.5)
-        raised.inputBorderHover = raise(inputBorderHover ?? text, to: 7)
+        var raised = raisingText(in: environment)
+        raised.inputBorder = raise(inputBorder, to: 4.5, in: environment)
+        raised.inputBorderHover = raise(inputBorderHover ?? text, to: 7, in: environment)
         raised.border = raised.inputBorder
         raised.borderHover = raised.inputBorderHover ?? raised.inputBorder
         raised.secondaryBorder = raised.inputBorder
-        raised.error = raise(error, to: 4.5)
-        raised.primary = raise(primary, to: 4.5)
+        return raised
+    }
+
+    func raisingText(in environment: EnvironmentValues) -> Palette {
+        var raised = self
+        raised.textMuted = raise(textMuted, to: 7, in: environment)
+        raised.control = raise(control, to: 4.5, in: environment)
+        raised.error = raise(error, to: 4.5, in: environment)
+        raised.primary = raise(primary, to: 4.5, in: environment)
         let fill = raised.primary.resolve(in: environment)
+        let background = background.resolve(in: environment)
         if contrastRatio(onPrimary.resolve(in: environment), fill) < 4.5 {
-            raised.onPrimary = contrastRatio(background, fill) >= contrastRatio(ink, fill) ? self.background : text
+            raised.onPrimary =
+                contrastRatio(background, fill) >= contrastRatio(text.resolve(in: environment), fill) ? self.background : text
         }
         return raised
+    }
+
+    private func raise(_ color: Color, to target: Double, in environment: EnvironmentValues) -> Color {
+        let background = background.resolve(in: environment)
+        let ink = text.resolve(in: environment)
+        let base = color.resolve(in: environment)
+        for step in 0...20 {
+            let mixed = mix(ink, base, Float(step) / 20)
+            if contrastRatio(mixed, background) >= target { return Color(mixed) }
+        }
+        return Color(ink)
     }
 }
 
