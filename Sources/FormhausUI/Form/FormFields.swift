@@ -36,6 +36,7 @@ struct SectionNode: View {
     let model: FormModel
 
     var body: some View {
+        let section = model.recalled(self.section)
         let description = section.description.flatMap { $0.isEmpty ? nil : $0 }
         Group {
             if let custom = components.slots.section {
@@ -45,10 +46,10 @@ struct SectionNode: View {
                         content: AnyView(SectionFields(section: section, model: model))))
             } else {
                 VStack(alignment: .leading, spacing: tokens.spacing.s1) {
-                    Text(section.title ?? "").formhausText(.heading).accessibilityAddTraits(.isHeader)
+                    Text(verbatim: section.title ?? "").formhausText(.heading).accessibilityAddTraits(.isHeader)
                         .fixedSize(horizontal: false, vertical: true)
                     if let description {
-                        Text(description).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
+                        Text(verbatim: description).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
                     }
                     SectionFields(section: section, model: model)
                         .padding(.top, (description == nil ? tokens.spacing.s7 : tokens.spacing.s9) - tokens.spacing.s1)

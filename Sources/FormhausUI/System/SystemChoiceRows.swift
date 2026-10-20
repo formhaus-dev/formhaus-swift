@@ -19,9 +19,9 @@ struct SystemPickerRow: View {
                     if multiple { checkboxes } else { menu }
                 #endif
             }
-            .accessibilityLabel(context.accessibilityName)
+            .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(summary ?? "")
-            .accessibilityHint(context.helperText ?? "")
+            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .formhausFocus(context, $focused)
             .sensoryFeedback(.selection, trigger: context.value)
         }
@@ -32,7 +32,7 @@ struct SystemPickerRow: View {
     #if os(iOS)
         private var link: some View {
             NavigationLink {
-                SystemOptionList(field: context.field, key: context.key, model: context.model)
+                SystemOptionList(field: context.source, key: context.key, model: context.model)
                     .formhausTheme(theme)
                     .environment(\.locale, locale)
                     .resolveFormhausTokens()
@@ -46,10 +46,10 @@ struct SystemPickerRow: View {
         Menu {
             Picker(selection: Binding(get: { context.text }, set: { choose($0) })) {
                 ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
-                    Text(option.label ?? option.value ?? "").tag(option.value ?? "")
+                    Text(verbatim: option.label ?? option.value ?? "").tag(option.value ?? "")
                 }
             } label: {
-                Text(context.label)
+                Text(verbatim: context.label)
             }
             .pickerStyle(.inline)
         } label: {
@@ -95,7 +95,7 @@ private struct SystemValueRow: View {
         HStack(spacing: 8) {
             SystemRowLabel(context: context)
             Spacer(minLength: 12)
-            Text(value ?? context.choicePrompt)
+            Text(verbatim: value ?? context.choicePrompt)
                 .systemSecondaryText()
                 .multilineTextAlignment(.trailing)
             if chevrons {
@@ -127,7 +127,7 @@ private struct SystemValueRow: View {
                             if !selection.multiple { dismiss() }
                         } label: {
                             HStack {
-                                Text(option.label ?? value).foregroundStyle(Color.primary)
+                                Text(verbatim: option.label ?? value).foregroundStyle(Color.primary)
                                 Spacer()
                                 Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(.tint)
                                     .opacity(selected.contains(value) ? 1 : 0)
@@ -142,7 +142,7 @@ private struct SystemValueRow: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(context.label)
+            .navigationTitle(Text(verbatim: context.label))
             .disabled(context.isLocked)
             .sensoryFeedback(.selection, trigger: selected)
         }

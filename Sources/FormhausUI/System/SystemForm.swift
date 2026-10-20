@@ -80,10 +80,10 @@ struct SystemPage: View {
         ScrollViewReader { proxy in
             Form {
                 if current, components.slots.progress != nil { Section { FormProgress(model: model).listRowBackground(Color.clear) } }
-                if let description = step?.description, !description.isEmpty {
+                if let description = step.map(model.recalled)?.description, !description.isEmpty {
                     Section {
                     } header: {
-                        Text(description).font(.body).textCase(nil).systemSecondaryText()
+                        Text(verbatim: description).font(.body).textCase(nil).systemSecondaryText()
                     }
                 }
                 SystemNodes(nodes: nodes.filter { $0.type != "hidden" }, model: model).id(model.structure.revision)
@@ -119,7 +119,7 @@ struct SystemPage: View {
         .alert(errors.first ?? "", isPresented: alertShown) {
             Button(model.text(forLabel: "close"), role: .cancel) { dismissed = model.alertVersion }
         } message: {
-            Text(errors.dropFirst().joined(separator: "\n"))
+            Text(verbatim: errors.dropFirst().joined(separator: "\n"))
         }
     }
 
@@ -145,12 +145,13 @@ private struct SystemStepTitle: ViewModifier {
     let level: Int
 
     func body(content: Content) -> some View {
-        if let step, model.structure.isMultiStep {
+        if let step = step.map(model.recalled), model.structure.isMultiStep {
             let subtitle = model.text(forLabel: "stepTitle", ["index": .number(Double(level + 1))])
             if #available(iOS 26, macOS 14, *), !typeSize.isAccessibilitySize {
-                content.navigationTitle(step.title ?? subtitle).navigationSubtitle(step.title == nil ? "" : subtitle)
+                content.navigationTitle(Text(verbatim: step.title ?? subtitle)).navigationSubtitle(
+                    Text(verbatim: step.title == nil ? "" : subtitle))
             } else {
-                content.navigationTitle(step.title ?? subtitle)
+                content.navigationTitle(Text(verbatim: step.title ?? subtitle))
             }
         } else {
             content

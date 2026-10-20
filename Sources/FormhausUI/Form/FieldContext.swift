@@ -11,6 +11,9 @@ public struct FieldContext {
     public let disabled: Bool
     public let options: [FieldOption]
     public let model: FormModel
+    #if os(iOS)
+        let source: FormField
+    #endif
     let state: FieldState
 
     public init(field: FormField, key: String? = nil, model: FormModel) {
@@ -19,7 +22,10 @@ public struct FieldContext {
     }
 
     init(field: FormField, key: String, state: FieldState, model: FormModel) {
-        self.field = field
+        #if os(iOS)
+            source = field
+        #endif
+        self.field = model.recalled(field, at: key)
         self.key = key
         self.state = state
         self.model = model
@@ -39,6 +45,7 @@ public struct FieldContext {
     }
 
     public var helperText: String? { field.helperText.flatMap { $0.isEmpty ? nil : $0 } }
+    public var placeholder: String? { field.placeholder.flatMap { $0.isEmpty ? nil : $0 } }
     public var isRequired: Bool { field.isRequired }
     public var advancesOnCommit: Bool { !isItem && field.advancesOnCommit }
 

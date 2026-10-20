@@ -49,7 +49,7 @@ struct SystemNodes: View {
                 }
                 .environment(\.formhausFooterErrors, true)
             case .node(.section(let section)):
-                SystemSection(section: section, model: model)
+                SystemSection(section: model.recalled(section), model: model)
             case .node(let node):
                 SystemNodeRow(node: node, matrix: false, model: model)
             }
@@ -71,7 +71,7 @@ struct SystemNodeRow: View {
         case .field(let field):
             FormhausField(field, model: model)
         case .section(let section):
-            SystemSection(section: section, model: model)
+            SystemSection(section: model.recalled(section), model: model)
         }
     }
 }
@@ -140,11 +140,11 @@ private struct SystemSection: View {
 
     @ViewBuilder private var header: some View {
         if let title = section.title, !title.isEmpty {
-            Text(title).textCase(nil).systemSecondaryText().accessibilityAddTraits(.isHeader)
+            Text(verbatim: title).textCase(nil).systemSecondaryText().accessibilityAddTraits(.isHeader)
         }
     }
 
     @ViewBuilder private var footer: some View {
-        if let description { Text(description).systemSecondaryText() }
+        if let description { Text(verbatim: description).systemSecondaryText() }
     }
 }

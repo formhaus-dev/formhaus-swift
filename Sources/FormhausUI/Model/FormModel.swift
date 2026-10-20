@@ -65,7 +65,7 @@ public final class FormModel {
         definition: FormDefinition, initialValues: JSONObject = JSONObject(), engineOptions: FormEngineOptions = FormEngineOptions(),
         options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler
     ) {
-        let hooks = HookBox(engineOptions)
+        let hooks = HookBox(engineOptions.recalling(with: options))
         let engine = FormEngine(definition: definition, values: initialValues, options: hooks.forwarding())
         self.init(engine: engine, options: options, onSubmit: onSubmit)
         self.hooks = hooks
@@ -200,9 +200,11 @@ public final class FormModel {
         }
         assign(\.actions, engine.actionsState(options.labels))
         let errors = engine.errors
-        if errors != lastErrors || errorGroups.isEmpty != errors.isEmpty || structureVersion != lastStructureVersion {
+        let recallChanged = !errors.isEmpty && valuesVersion != lastValuesVersion
+        if errors != lastErrors || errorGroups.isEmpty != errors.isEmpty || structureVersion != lastStructureVersion || recallChanged {
             lastErrors = errors
             lastStructureVersion = structureVersion
+            lastValuesVersion = valuesVersion
             assign(\.errorGroups, engine.errorGroups(options.labels))
             assign(\.stepErrorCounts, engine.stepErrors.reduce(into: [:]) { $0[$1.key] = $1.value.count })
         }
@@ -210,6 +212,7 @@ public final class FormModel {
     }
 
     @ObservationIgnored private var lastStructureVersion = -1
+    @ObservationIgnored private var lastValuesVersion = -1
 
     private func refreshDisabled() {
         assign(\.disabled, loading || engine.stepValidating || engine.submitting)

@@ -9,13 +9,14 @@ struct FormProgress: View {
     var body: some View {
         let structure = model.structure
         if structure.isMultiStep {
+            let step = structure.currentStep.map(model.recalled)
             let context = ProgressContext(
                 current: structure.progress.current, total: structure.progress.total,
                 counterLabel: model.text(
                     forLabel:
                         "stepOf",
                     ["current": .number(Double(structure.progress.current)), "total": .number(Double(structure.progress.total))]),
-                stepTitle: structure.currentStep?.title, stepDescription: structure.currentStep?.description, steps: marks(structure))
+                stepTitle: step?.title, stepDescription: step?.description, steps: marks(structure))
             if let custom = components.slots.progress {
                 custom(context)
             } else {
@@ -27,7 +28,8 @@ struct FormProgress: View {
     private func marks(_ structure: FormStructure) -> [StepStatus]? {
         guard behavior.stepErrorMarks else { return nil }
         let counts = model.stepErrorCounts
-        return structure.steps.enumerated().map { index, step in
+        return structure.steps.enumerated().map { index, source in
+            let step = model.recalled(source)
             let count = counts[step.id] ?? 0
             return StepStatus(
                 id: step.id, title: step.title ?? model.text(forLabel: "stepTitle", ["index": .number(Double(index + 1))]),
@@ -51,7 +53,7 @@ public struct StepProgressView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.s2) {
             ProgressBar(fraction: context.total > 0 ? Double(context.current) / Double(context.total) : 0)
-            Text(context.counterLabel).formhausText(.counter)
+            Text(verbatim: context.counterLabel).formhausText(.counter)
             if let steps = context.steps {
                 if tokens.scale > 1.3, steps.indices.contains(context.current - 1) {
                     StepMark(step: steps[context.current - 1], current: true)
@@ -64,13 +66,13 @@ public struct StepProgressView: View {
                 }
             }
             if let title = context.stepTitle, !title.isEmpty {
-                Text(title).formhausText(.title).fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: title).formhausText(.title).fixedSize(horizontal: false, vertical: true)
                     .padding(.top, tokens.spacing.s1)
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityFocused($headingFocused)
             }
             if let description = context.stepDescription, !description.isEmpty {
-                Text(description).formhausText(.body).foregroundStyle(tokens.colors.textMuted)
+                Text(verbatim: description).formhausText(.body).foregroundStyle(tokens.colors.textMuted)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -107,10 +109,10 @@ private struct StepMark: View {
 
     var body: some View {
         HStack(spacing: tokens.spacing.s1) {
-            Text(step.title).fontWeight(current ? .semibold : .regular)
+            Text(verbatim: step.title).fontWeight(current ? .semibold : .regular)
             if let errors = step.errorLabel {
                 Text(verbatim: "·").accessibilityHidden(true)
-                Text(errors)
+                Text(verbatim: errors)
             }
         }
         .formhausText(.counter, colored: false)

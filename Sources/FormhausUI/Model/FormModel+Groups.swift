@@ -4,6 +4,7 @@ import SwiftUI
 extension FormModel {
     public func itemTitle(_ index: Int, inGroup key: String) -> String {
         guard let group = groupField(key) else { return "" }
+        track(engine.itemTitleDependencies(group, index))
         return engine.itemTitle(group, index, options.labels)
     }
 
