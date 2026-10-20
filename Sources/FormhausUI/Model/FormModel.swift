@@ -24,13 +24,13 @@ public final class FormModel {
     public private(set) var structureVersion = 0
     public private(set) var valuesVersion = 0
     public var loading = false {
-        didSet { if oldValue != loading { refreshDisabled() } }
+        didSet { if oldValue != loading { loadingChanged() } }
     }
     public private(set) var disabled = false
     private(set) var alertVersion = 0
     @ObservationIgnored private var seenErrors = -1
 
-    @ObservationIgnored private var fieldStates: [String: FieldState] = [:]
+    @ObservationIgnored private(set) var fieldStates: [String: FieldState] = [:]
     @ObservationIgnored private var groupStates: [String: GroupState] = [:]
     @ObservationIgnored var optionStates: [String: OptionsState] = [:]
     @ObservationIgnored var optionsRevision = -1
@@ -42,6 +42,7 @@ public final class FormModel {
     @ObservationIgnored private var focusCounter = 0
     @ObservationIgnored private var pendingFocusKey: String?
     @ObservationIgnored private var emittedValues: JSONObject?
+    @ObservationIgnored var heldEdits: [String: JSONValue?] = [:]
 
     public init(engine: FormEngine, options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler) {
         self.engine = engine
@@ -213,7 +214,7 @@ public final class FormModel {
     @ObservationIgnored private var lastStructureVersion = -1
     @ObservationIgnored private var lastValuesVersion = -1
 
-    private func refreshDisabled() {
+    func refreshDisabled() {
         assign(\.disabled, loading || engine.stepValidating || engine.submitting)
     }
 

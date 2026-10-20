@@ -9,6 +9,7 @@ public struct FieldContext {
     public let error: String?
     public let loading: Bool
     public let disabled: Bool
+    let focused: Bool
     public let options: [FieldOption]
     public let model: FormModel
     public let label: String
@@ -34,12 +35,13 @@ public struct FieldContext {
         error = state.error
         loading = state.loading
         disabled = model.disabled
+        focused = state.hasFocus
         options = model.options(for: key) ?? field.options ?? []
     }
 
     public var isItem: Bool { key != field.key }
     public var isInvalid: Bool { error?.isEmpty == false }
-    public var isLocked: Bool { disabled || loading }
+    public var isLocked: Bool { loading || disabled && !focused }
     public var accessibilityName: String {
         isRequired ? "\(label), \(text(forLabel: "required"))" : label
     }

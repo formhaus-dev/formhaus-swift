@@ -3,7 +3,11 @@ import Foundation
 
 extension FormModel {
     public func setValue(_ value: JSONValue?, forKey key: String) {
-        guard !disabled else { return }
+        guard !disabled else {
+            if fieldStates[key]?.hasFocus == true { heldEdits[key] = .some(value) }
+            return
+        }
+        heldEdits[key] = nil
         dropFocusRequest()
         engine.setValue(key, value)
         options.onFieldChange?(key, value, engine.values)
@@ -85,6 +89,19 @@ extension FormModel {
                 setActionError(actionMessage(error))
             }
         }
+        applyHeldEdits()
+    }
+
+    func loadingChanged() {
+        refreshDisabled()
+        applyHeldEdits()
+    }
+
+    private func applyHeldEdits() {
+        guard !disabled, !heldEdits.isEmpty else { return }
+        let edits = heldEdits
+        heldEdits = [:]
+        for (key, value) in edits { setValue(value, forKey: key) }
     }
 }
 

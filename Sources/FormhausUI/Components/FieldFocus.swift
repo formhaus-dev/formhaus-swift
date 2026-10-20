@@ -41,6 +41,8 @@ private struct FieldFocus: ViewModifier {
                 focused.wrappedValue = true
                 spoken = true
             }
+            .onChange(of: focused.wrappedValue) { _, now in context.state.noteFocus(now) }
+            .onDisappear { context.state.noteFocus(false) }
     }
 }
 
