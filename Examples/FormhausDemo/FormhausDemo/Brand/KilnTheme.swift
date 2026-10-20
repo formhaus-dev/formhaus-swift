@@ -41,8 +41,8 @@ enum KilnType {
     static let heading = Font.system(.title3, design: .serif).weight(.semibold)
     static let label = Font.system(.headline, design: .rounded)
     static let body = Font.system(.body, design: .rounded)
-    static let note = Font.system(.footnote, design: .rounded)
-    static let eyebrow = Font.system(.caption, design: .rounded).weight(.bold)
+    static let note = Font.system(.subheadline, design: .rounded)
+    static let eyebrow = Font.system(.footnote, design: .rounded).weight(.bold)
 }
 
 extension Color {

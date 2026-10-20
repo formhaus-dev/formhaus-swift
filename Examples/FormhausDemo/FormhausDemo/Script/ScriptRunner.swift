@@ -4,7 +4,6 @@ import FormhausUI
 @MainActor
 protocol ScriptStage: AnyObject {
     var model: FormModel { get }
-    func reveal(_ key: String)
     func setLanguage(_ language: DemoLanguage)
     var style: DemoStyle { get set }
     var frames: FieldFrames { get }
@@ -54,7 +53,6 @@ struct ScriptRunner {
         switch beat {
         case .wait(let pace): await pause(timings.duration(pace))
         case .mark: break
-        case .reveal(let key): stage.reveal(key)
         case .type(let key, let text): await type(text, into: key)
         case .clear(let key): model.setValue(.null, forKey: key)
         case .pick(let key, let value): model.commitValue(value, forKey: key)

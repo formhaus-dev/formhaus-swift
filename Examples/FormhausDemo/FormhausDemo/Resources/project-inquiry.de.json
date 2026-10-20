@@ -1,7 +1,8 @@
 {
   "title": "Projekt starten",
-  "description": "Erzählen Sie uns von Ihrer Website. Das dauert etwa zwei Minuten.",
-  "submit": { "label": "Anfrage senden" },
+  "submit": {
+    "label": "Anfrage senden"
+  },
   "messages": {
     "required": "Bitte ausfüllen",
     "email": "Geben Sie eine gültige E-Mail-Adresse ein",
@@ -31,10 +32,22 @@
             "landing-page": "Eine Landingpage",
             "online-store": "Einen Onlineshop"
           },
-          "validation": { "required": "Wählen Sie die Art des Projekts" }
+          "validation": {
+            "required": "Wählen Sie die Art des Projekts"
+          }
+        }
+      }
+    },
+    "site": {
+      "title": "Ihre Website",
+      "description": "Nur bei einem Redesign fragen wir nach der aktuellen Website.",
+      "fields": {
+        "currentSite": {
+          "label": "Aktuelle Website"
         },
-        "currentSite": { "label": "Aktuelle Website" },
-        "siteRating": { "label": "Wie zufrieden sind Sie heute damit?" }
+        "siteRating": {
+          "label": "Wie zufrieden sind Sie heute damit?"
+        }
       }
     },
     "scope": {
@@ -43,25 +56,32 @@
       "fields": {
         "services": {
           "label": "Welche Leistungen brauchen Sie?",
-          "helperText": "Mehrfachauswahl möglich.",
-          "options": { "design": "Design", "development": "Entwicklung", "copywriting": "Texte", "seo": "SEO" }
+          "options": {
+            "design": "Design",
+            "development": "Entwicklung",
+            "copywriting": "Texte",
+            "seo": "SEO"
+          }
         },
-        "priorityLaunch": { "label": "Ein früher Start", "options": { "low": "Niedrig", "medium": "Mittel", "high": "Hoch" } },
-        "priorityPolish": { "label": "Visueller Feinschliff", "options": { "low": "Niedrig", "medium": "Mittel", "high": "Hoch" } },
-        "prioritySearch": { "label": "Suchmaschinen-Ranking", "options": { "low": "Niedrig", "medium": "Mittel", "high": "Hoch" } },
-        "urgency": { "label": "Wie schnell brauchen Sie es?", "options": { "1": "Keine Eile", "5": "Gestern" } }
-      },
-      "sections": {
-        "priorities": { "title": "Wie wichtig ist Ihnen das?" }
+        "urgency": {
+          "label": "Wie schnell brauchen Sie es?"
+        }
       }
     },
     "contact": {
       "title": "Ihre Kontaktdaten",
       "description": "Ihre Wahl: {{projectType}}. Wir antworten innerhalb eines Werktags.",
       "fields": {
-        "name": { "label": "Vollständiger Name" },
-        "email": { "label": "Geschäftliche E-Mail" },
-        "company": { "label": "Firma", "placeholder": "Optional" }
+        "name": {
+          "label": "Vollständiger Name"
+        },
+        "email": {
+          "label": "Geschäftliche E-Mail"
+        },
+        "company": {
+          "label": "Firma",
+          "placeholder": "Optional"
+        }
       }
     }
   }

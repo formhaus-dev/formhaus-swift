@@ -9,11 +9,6 @@ struct Receipt: Equatable {
     let project: String
 }
 
-struct ScrollTarget: Equatable {
-    let key: String
-    let id: Int
-}
-
 @MainActor
 @Observable
 final class DemoSession {
@@ -26,7 +21,6 @@ final class DemoSession {
     var style: DemoStyle
     private(set) var model: FormModel
     private(set) var phase = Phase.form
-    private(set) var scrollTarget: ScrollTarget?
     @ObservationIgnored let timings: ScriptTimings
     @ObservationIgnored let launch: LaunchOptions
     @ObservationIgnored let frames = FieldFrames()
@@ -70,11 +64,6 @@ final class DemoSession {
         model.engine.cancelPendingActions()
         model = Self.makeModel(source, language, relay: relay)
         phase = .form
-        scrollTarget = nil
-    }
-
-    func reveal(_ key: String) {
-        scrollTarget = ScrollTarget(key: key, id: (scrollTarget?.id ?? 0) + 1)
     }
 
     private static func makeModel(

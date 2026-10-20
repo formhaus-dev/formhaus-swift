@@ -4,26 +4,19 @@ import SwiftUI
 struct FormScreen: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.colorSchemeContrast) private var contrast
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let session: DemoSession
 
     var body: some View {
-        ScrollViewReader { proxy in
-            Group {
-                if session.style == .system {
-                    FormhausFormContent(model: session.model)
-                } else {
-                    scroller
-                }
-            }
-            .onChange(of: session.scrollTarget) { _, target in
-                guard let target else { return }
-                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.45)) { proxy.scrollTo(target.key, anchor: .center) }
+        Group {
+            if session.style == .system {
+                FormhausFormContent(model: session.model)
+            } else {
+                scroller
             }
         }
         .formhausComponents(components)
         .formhausTheme(session.style.theme)
-        .formhausBehavior(FormBehavior(errorSummary: true))
+        .formhausBehavior(FormBehavior())
     }
 
     private var components: FormComponents {
@@ -54,13 +47,37 @@ struct FormScreen: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
+        .returnsToTop(on: session.model.engine.currentStep?.id)
         .topBar(session.style.palette(scheme, contrast).background)
         .alignsBar(toColumn: 640, padding: 16)
         .background(session.style.palette(scheme, contrast).background)
     }
 }
 
+@available(iOS 18, macOS 15, *)
+private struct ReturnsToTop<Step: Equatable>: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let step: Step
+    @State private var position = ScrollPosition(edge: .top)
+
+    func body(content: Content) -> some View {
+        content
+            .scrollPosition($position)
+            .onChange(of: step) {
+                Task {
+                    await Task.yield()
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { position.scrollTo(edge: .top) }
+                }
+            }
+    }
+}
+
 extension View {
+    @ViewBuilder
+    fileprivate func returnsToTop(on step: some Equatable) -> some View {
+        if #available(iOS 18, macOS 15, *) { modifier(ReturnsToTop(step: step)) } else { self }
+    }
+
     @ViewBuilder
     fileprivate func topBar(_ background: Color) -> some View {
         #if os(iOS)
