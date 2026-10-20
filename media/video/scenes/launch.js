@@ -13,8 +13,8 @@ export default async (layer, beat, data) => {
   return {
     update(t) {
       frame(t);
-      place(title, { y: 96 + (1 - progress(t, 0.9, 0.8, easeOut)) * 20, opacity: progress(t, 0.9, 0.6) });
-      place(subline, { y: 186, opacity: progress(t, 1.4, 0.6) });
+      place(title, { y: 96 + (1 - progress(t, 0, 0.8, easeOut)) * 8 });
+      place(subline, { y: 186, opacity: progress(t, 0.3, 0.5) });
       return Promise.all(stills.map((still) => still.at(beat.at)));
     },
   };

@@ -10,7 +10,6 @@ export default async (layer, beat, data) => {
   );
   const total = sides.reduce((sum, item) => sum + item.width, 0) + gap;
   const title = el('div', 'caption abs', layer, beat.title);
-  const after = el('div', 'caption abs', layer, beat.after);
 
   const { key, prefix, before, after: changed, suffix } = data.edit;
   const inserted = changed.slice(before.length - 1, -1);
@@ -55,11 +54,13 @@ export default async (layer, beat, data) => {
       const typing = t >= beat.editAt && t <= typeEnd;
       const blink = Math.floor(t * 2.5) % 2 === 0;
       caret.style.opacity = typing || (t > beat.editAt - 0.6 && t < swapAt + 0.5 && blink) ? '1' : '0';
-      const swap = progress(t, swapAt, 0.6);
-      place(title, { y: 96, opacity: progress(t, 0, 0.6) * (1 - swap) });
-      place(after, { y: 96, opacity: swap });
+      const swap = t >= typeEnd ? 1 : 0;
+      place(title, { y: 96 });
       place(card, { x: (1920 - width) / 2, y: 214 + (1 - progress(t, 0.2, 0.7)) * 20, opacity: progress(t, 0.2, 0.7) });
-      for (const side of sides) side.players[1].img.style.opacity = String(swap);
+      for (const side of sides) {
+        side.players[0].img.style.opacity = String(1 - swap);
+        side.players[1].img.style.opacity = String(swap);
+      }
       return Promise.all(sides.flatMap((side) => side.players.map(({ player }) => player.at(time))));
     },
   };

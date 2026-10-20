@@ -246,7 +246,6 @@
       "from": -1.1,
       "cursor": true,
       "lensAt": 2.9,
-      "captionAt": 3.0,
       "freeze": {
         "at": "branch",
         "offset": 1.0
@@ -305,11 +304,6 @@
       },
       "from": -1.2,
       "lensAt": 2.0,
-      "captionAt": 2.8,
-      "step": {
-        "text": "Next, with nothing filled in.",
-        "at": "error"
-      },
       "caption": "Same errors and branch handling on web and iOS.",
       "lenses": {
         "web": {
@@ -366,7 +360,6 @@
       "offset": 0.5,
       "editAt": 1.6,
       "title": "Fix it once and get it everywhere.",
-      "after": "Fix it once and get it everywhere.",
       "file": "project-inquiry.json",
       "lenses": {
         "web": {
