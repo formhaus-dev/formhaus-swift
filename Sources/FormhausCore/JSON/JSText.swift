@@ -5,10 +5,15 @@ private let jsWhitespace: Set<UInt32> = [
     0x2007, 0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0xFEFF,
 ]
 
+func isJSWhitespace(_ scalar: Unicode.Scalar) -> Bool {
+    let value = scalar.value
+    return value == 0x20 || (0x09...0x0D).contains(value) || (value >= 0xA0 && jsWhitespace.contains(value))
+}
+
 extension String {
     var jsTrimmed: String {
         let scalars = unicodeScalars
-        let content = { (scalar: Unicode.Scalar) in !jsWhitespace.contains(scalar.value) }
+        let content = { (scalar: Unicode.Scalar) in !isJSWhitespace(scalar) }
         guard let start = scalars.firstIndex(where: content), let end = scalars.lastIndex(where: content) else { return "" }
         return String(scalars[start...end])
     }
@@ -16,6 +21,24 @@ extension String {
     var jsLength: Int { utf16.count }
 
     var isBlankText: Bool { jsTrimmed.isEmpty }
+
+    var jsCollapsed: String {
+        var previous = false
+        let settled = unicodeScalars.allSatisfy { scalar in
+            let space = isJSWhitespace(scalar)
+            defer { previous = space }
+            return !space || (!previous && scalar == " ")
+        }
+        guard !settled else { return self }
+        var result = String.UnicodeScalarView()
+        previous = false
+        for scalar in unicodeScalars {
+            let space = isJSWhitespace(scalar)
+            if !space || !previous { result.append(space ? " " : scalar) }
+            previous = space
+        }
+        return String(result)
+    }
 }
 
 func codeUnitLess(_ lhs: String, _ rhs: String) -> Bool {

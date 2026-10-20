@@ -25,7 +25,7 @@ extension EngineCore {
         if let (group, index, field) = visibility.parse(key) {
             setItemValue(group, index, field, value)
         } else {
-            writeValue(key, .fresh(value))
+            writeValue(key, .fresh(exclusiveWrite(visibility.fieldOf(key, values.json), values[key], value)))
         }
     }
 
@@ -94,13 +94,14 @@ extension EngineCore {
         return true
     }
 
-    func setItemValue(_ key: String, _ index: Int, _ fieldKey: String, _ value: JSONValue?) {
+    func setItemValue(_ key: String, _ index: Int, _ fieldKey: String, _ input: JSONValue?) {
         let items = itemsOf(values[key])
         guard let group = activeGroup(key), let field = group.items.first(where: { sameText($0.key, fieldKey) }),
             items.indices.contains(index)
         else { return }
         let current = items[index]
         let item = current.objectValue ?? JSONObject()
+        let value = exclusiveWrite(field, item[fieldKey], input)
         let path = itemPath(key, index, fieldKey)
         let changed = !samePrimitive(item[fieldKey], value)
         var slot = values.slot(key)

@@ -101,6 +101,8 @@ private func usedLabels(_ definition: FormDefinition) -> KeySet {
     add(unlabeled(definition.json["submit"], "label"), ["submit"])
     add(nodes.contains(where: \.isGroup), groupLabels)
     add(fields.contains(where: \.hasPictures), ["enlargeImage", "close"])
+    add(fields.contains { $0.type == "multiselect" && ($0.options ?? []).contains(where: \.exclusive) }, ["or"])
+    add(fields.contains { $0.type == "select" }, ["select"])
     add(fields.contains { $0.validation?.required?.isTruthy == true }, ["required"])
     add(fields.contains { pickerTypes.contains($0.type) || $0.type == "file" }, ["clear"])
     add(fields.contains { pickerTypes.contains($0.type) }, ["done"])

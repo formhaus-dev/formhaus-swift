@@ -43,51 +43,6 @@ private struct Prepared {
     let check: () -> SubmissionResult
 }
 
-private func itemErrors(_ engine: EngineCore, _ invalid: KeySet, _ resolve: @escaping ResolveMessage) -> [(key: String, error: String)] {
-    var errors: [(key: String, error: String)] = []
-    for group in engine.visibility.groups where !invalid.contains(group.key) {
-        guard let active = engine.visibility.activeField(group.key, engine.values.json), active.isGroup else { continue }
-        let items = itemsOf(engine.values[group.key])
-        let next = items.enumerated().map { index, item -> JSONValue in
-            guard var entry = item.objectValue else { return item }
-            for field in engine.visibility.itemFields(active, item, engine.values.json) {
-                guard let error = typeError(field, entry[field.key], resolve) else { continue }
-                errors.append((itemPath(group.key, index, field.key), error))
-                entry.removeValue(forKey: field.key)
-            }
-            return .object(entry)
-        }
-        if next != items { engine.writeValue(group.key, .fresh(.array(next)), own: false) }
-    }
-    return errors
-}
-
-private func dropUnchecked(
-    _ engine: EngineCore, _ submitted: inout JSONObject, _ errors: inout FieldErrors, _ resolve: @escaping ResolveMessage
-) {
-    let visibility = engine.visibility
-    for key in submitted.keys {
-        guard let field = visibility.activeField(key, engine.values.json), errors[key] == nil else { continue }
-        if let error = typeError(field, submitted[key], resolve) {
-            setError(visibility, &errors, key, error)
-            submitted.removeValue(forKey: key)
-            continue
-        }
-        guard field.isGroup else { continue }
-        let items = itemsOf(submitted[key])
-        let next = items.enumerated().map { index, item -> JSONValue in
-            guard var entry = item.objectValue else { return item }
-            for itemField in visibility.itemFields(field, item, engine.values.json) {
-                guard let error = typeError(itemField, entry[itemField.key], resolve) else { continue }
-                errors[itemPath(key, index, itemField.key)] = error
-                entry.removeValue(forKey: itemField.key)
-            }
-            return .object(entry)
-        }
-        if next != items { submitted[key] = .array(next) }
-    }
-}
-
 private func applySkips(_ engine: EngineCore, _ skippedSteps: JSONValue?) {
     guard let requested = skippedSteps?.arrayValue else { return }
     var index = 0
@@ -101,35 +56,27 @@ private func applySkips(_ engine: EngineCore, _ skippedSteps: JSONValue?) {
 private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ values: JSONObject, _ options: SubmissionOptions) -> Prepared {
     let messages = messageResolver(options.messages, .catalog(definition.messages ?? .null))
     let resolve = namedResolver(messages)
-    let visibility = VisibilityState(definition)
-    let groups = rejectGroups(visibility, fields, values, resolve)
-    let resolved = groups.resolved
-    let invalid = typeErrors(resolved, resolve)
-    let invalidKeys = KeySet(invalid.map(\.key))
+    var resolved = activeValues(VisibilityState(definition), fields, values, resolve)
+    let items = blankItems(&resolved, resolve)
     let engine = EngineCore(
-        definition: withoutRules(definition, invalidKeys), values: resolved.values,
-        validators: ignoredValidators(fields, options.validators), messages: .function(messages))
+        definition: definition, values: resolved.values, validators: ignoredValidators(fields, options.validators),
+        messages: .function(messages))
     engine.loadSubmitted(resolved.values)
-    let items = itemErrors(engine, invalidKeys, resolve)
     applySkips(engine, options.skippedSteps)
     let skipped = engine.skipped.flatMap(\.keys)
+    let invalid = resolved.invalid
     let check = { () -> SubmissionResult in
         var errors = engine.validate()
         var submitted = engine.getSubmitValues()
         let visibility = engine.visibility
-        for (key, error) in invalid where submitted.has(key) {
-            setError(visibility, &errors, key, error)
-            submitted[key] = resolved.values[key]
-        }
-        for (key, value) in groups.rejected {
+        for (key, value) in invalid {
             guard let field = visibility.activeField(key, engine.values.json), !skipped.containsText(key) else { continue }
             setError(visibility, &errors, key, typeError(field, value, resolve) ?? resolve("value", [:], field))
-            submitted[key] = oversizedList(field, value) ? value : nil
+            submitted.removeValue(forKey: key)
         }
         for (key, error) in items where submitted.has(visibility.owner(key)) && visibility.activeItem(key, engine.values.json) != nil {
             errors[key] = error
         }
-        dropUnchecked(engine, &submitted, &errors, resolve)
         return SubmissionResult(values: submitted, errors: errors)
     }
     return Prepared(engine: engine, skipped: skipped, check: check)

@@ -136,11 +136,14 @@ public struct FormEngineOptions: Sendable {
     public var onWarning: WarningFn?
     public var validators: Validators
     public var messages: MessageSource?
+    public var lang: String?
+    public var formatRecall: RecallFormatFn?
 
     public init(
         onBeforeStepChange: BeforeStepChangeFn? = nil, onAfterStepChange: AfterStepChangeFn? = nil,
         onBeforeSubmit: BeforeSubmitFn? = nil, onAfterSubmit: SubmitFn? = nil, onStepValidate: StepValidateFn? = nil,
-        onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:], messages: MessageSource? = nil
+        onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:], messages: MessageSource? = nil,
+        lang: String? = nil, formatRecall: RecallFormatFn? = nil
     ) {
         self.onBeforeStepChange = onBeforeStepChange
         self.onAfterStepChange = onAfterStepChange
@@ -151,5 +154,7 @@ public struct FormEngineOptions: Sendable {
         self.onWarning = onWarning
         self.validators = validators
         self.messages = messages
+        self.lang = lang
+        self.formatRecall = formatRecall
     }
 }

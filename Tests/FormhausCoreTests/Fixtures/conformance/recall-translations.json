@@ -1,0 +1,89 @@
+{
+  "name": "recall-translations",
+  "covers": [],
+  "issues": [],
+  "warnings": [],
+  "overlay": {
+    "steps": {
+      "review": {
+        "description": "Prüfen Sie: {{ name }}, Tarif {{plan}}"
+      },
+      "about": {
+        "fields": {
+          "plan": {
+            "options": {
+              "team": "Mannschaft"
+            }
+          }
+        }
+      }
+    }
+  },
+  "texts": {
+    "steps.review.description": "Prüfen Sie: {{ name }}, Tarif {{plan}}"
+  },
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "lang": "en",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "about",
+        "title": "About",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          },
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "pro",
+                "label": "Pro"
+              },
+              {
+                "value": "team",
+                "label": "Team"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "description": "Check your answers: {{name}}, plan {{plan}}",
+        "fields": [
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note"
+          }
+        ]
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "translated texts and option labels",
+      "values": {
+        "name": "Ada",
+        "plan": "team"
+      },
+      "texts": [
+        {
+          "address": "steps.review.description",
+          "text": "Prüfen Sie: Ada, Tarif Mannschaft"
+        }
+      ]
+    }
+  ]
+}

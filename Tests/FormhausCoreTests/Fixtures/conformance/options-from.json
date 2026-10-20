@@ -81,7 +81,8 @@
           "topics": "Must be a list of available options"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {}
     }
   ]
 }

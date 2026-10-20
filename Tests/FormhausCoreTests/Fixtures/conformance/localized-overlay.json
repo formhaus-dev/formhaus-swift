@@ -139,7 +139,8 @@
           "email": "Введите корректный email"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": { "password": "secret123", "plan": "pro" }
     },
     {
       "name": "accepts valid answers",

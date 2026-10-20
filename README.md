@@ -67,7 +67,7 @@ if try await engine.next() {
 }
 ```
 
-`FormEngine` is `@MainActor`. `checkDefinition`, `validateSubmission`, `localize` and `textSlots` run on any thread.
+`FormEngine` is `@MainActor`. `checkDefinition`, `validateSubmission`, `localize`, `textSlots`, `recallText` and `recallStatic` run on any thread.
 
 ## API
 
@@ -77,9 +77,10 @@ if try await engine.next() {
 - Values: `setValue`, `setItemValue`, `addItem`, `removeItem`, `reset`, `replaceDefinition`. `replaceDefinition` switches to a new definition and keeps the answers that still fit.
 - Errors: `validate`, `validateField`, `setErrors`, `setFieldLoading`.
 - Navigation: `start`, `next`, `back`, `skip(_:)`, `submit(_:)`, `goToStepWithField`, `cancelPendingActions`. `next`, `back`, `skip` and `submit` are `async throws` and return `Bool`, like the promises in TypeScript.
+- Recall: `recallText(_:options:)` resolves the `{{key}}` tokens of a text with the submit values and the active path. `RecallOptions` holds `item`, `lang` and `format`.
 - Changes: `subscribe(_:)` calls the listener after every state change and returns a function that cancels the subscription. A listener added during a notification is called in it, and one removed before its turn is not.
 
-`FormEngineOptions` holds `onBeforeStepChange`, `onAfterStepChange`, `onBeforeSubmit`, `onAfterSubmit`, `onStepValidate`, `onFormEvent`, `onWarning`, `validators` and `messages`. Hooks are `@MainActor @Sendable` and `async throws`. A hook that returns `Bool?` cancels with `false`, and `nil` stands for `undefined`. A submit handler returns `SubmitResult?`: `.ok`, `.rejected(errors:formErrors:)` or `nil`. `SubmitResult(json:)` reads the `{ ok, errors, formErrors }` object that a TypeScript handler returns. An error thrown by `onAfterStepChange` or `onAfterSubmit` comes back as `FormLifecycleError` with its `phase` and `cause`. A `CancellationError` thrown by a hook or submit handler is never rethrown. The action clears `stepValidating` and `submitting` and returns `false`, or `true` when `onAfterStepChange` or `onAfterSubmit` threw it after the step change or submit.
+`FormEngineOptions` holds `onBeforeStepChange`, `onAfterStepChange`, `onBeforeSubmit`, `onAfterSubmit`, `onStepValidate`, `onFormEvent`, `onWarning`, `validators`, `messages`, `lang` and `formatRecall`. Hooks are `@MainActor @Sendable` and `async throws`. A hook that returns `Bool?` cancels with `false`, and `nil` stands for `undefined`. A submit handler returns `SubmitResult?`: `.ok`, `.rejected(errors:formErrors:)` or `nil`. `SubmitResult(json:)` reads the `{ ok, errors, formErrors }` object that a TypeScript handler returns. An error thrown by `onAfterStepChange` or `onAfterSubmit` comes back as `FormLifecycleError` with its `phase` and `cause`. A `CancellationError` thrown by a hook or submit handler is never rethrown. The action clears `stepValidating` and `submitting` and returns `false`, or `true` when `onAfterStepChange` or `onAfterSubmit` threw it after the step change or submit.
 
 ## SwiftUI renderer
 
@@ -179,9 +180,10 @@ In script mode the iOS keyboard stays hidden. The timings are in `FormhausDemo/R
 ## Status
 
 - Definition corpus: passing. `checkDefinition` errors and warnings, overlays, text slots and value cases for the server and the browser engine.
+- Answer recall: passing. Every `recall` case resolves its texts through `FormEngine.recallText` with the identity formatter.
 - Engine scenarios: passing. Every scenario in `Fixtures/conformance/scenarios` runs through `FormEngine` as its own test, named `<file>: <scenario>`.
 
-The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.20.2`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
+The conformance fixtures live in `Tests/FormhausCoreTests/Fixtures/conformance`. They are pinned to the formhaus tag `@formhaus/core@0.21.0`. `Fixtures/VERSION` records the ref and the resolved sha. To sync again:
 
 ```sh
 scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
@@ -189,6 +191,8 @@ scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
 
 ## Differences from @formhaus/core
 
+- Answer recall formats with Foundation format styles in UTC, as the specification lists for Swift. A locale that is not a well-formed BCP 47 tag, or whose language Foundation does not provide, falls back to `en`. A `RecallFormatFn` receives a `RecallAnswer` (`.text`, `.number` or `.list`), the field and the locale. `RecallAnswer.stored` writes the answer like the identity formatter.
+- `FormEngine.recallText(_:options:)` stands for `recallText` with `engine` in TypeScript. It reads the engine's active path, and it takes `lang` and `formatRecall` from the engine options when `options` leaves them out. Both options are fixed for the lifetime of an engine.
 - Patterns run on a native engine that follows `new RegExp(pattern).test(value)` in ECMAScript 2025 with no flags, including Annex B syntax, modifier groups such as `(?i:...)` and duplicate named groups. `Tests/FormhausCoreTests/Fixtures/regex/cases.json` holds the expected results, recorded with Node. To record them again, run `node scripts/regex-cases.mjs`.
 - Node 24.15 folds case wrongly in some modifier groups. It returns `false` for `(?i:b|[ab])`, `(?i:x|[a-c])` and `(?i:((3|([a]))))` on `A`, and for `^(?i:\u0178)$` on `ÿ`, where the specification says `true`. It returns `true` for `(?i:(?=\W{2}|(W))(A|(?<![a])))` on `A😀`, where the specification says `false`. JavaScriptCore and the native engine follow the specification. `scripts/regex-cases.mjs` leaves these cases out and checks every recorded case again in a new node process.
 - Duplicate group names follow V8, which accepts some patterns that the specification rejects, such as `(?<a>a)(?:b|(?<a>c))`.
@@ -233,6 +237,8 @@ Median time of one `validateFieldValue` call with a `pattern` rule, on an Apple 
 | `[ab]*a[ab]{12}$` on 10,000 random `a` and `b` | 15 µs | 2.0 ms |
 
 JavaScriptCore stops the pathological patterns at its backtracking limit and returns `false`. The native engine fails the rule for the pattern with 15,000 captures when it runs out of steps. Node takes 94 s for `[^]*a[^]{3900}$` on the same input. The last three patterns build many large DFA states, so they run on the NFA without caching once a copy reaches its 1 MB limit. The native engine adds 165 KB to a stripped release executable that links `FormhausCore`: 1,008,336 bytes against 839,664 on main.
+
+`RecallBenchmarks` measures the renderer call that resolves the texts of one field. A label with four tokens (text, list, date and number) takes 3.7 µs with the identity formatter and 8.2 µs with the default formatter. A label without tokens takes 0.31 µs.
 
 To run the benchmarks:
 

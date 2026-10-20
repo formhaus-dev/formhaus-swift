@@ -62,6 +62,10 @@ final class VisibilityState {
         index.fieldsByKey[key]?.first { onPath($0, values) && visible($0, values) }
     }
 
+    func fieldOf(_ key: String, _ values: JSONObject) -> FormField? {
+        activeField(key, values) ?? index.fieldsByKey[key]?.first
+    }
+
     func parse(_ key: String) -> (group: String, index: Int, field: String)? {
         if index.fieldsByKey.has(key) { return nil }
         for group in groups {

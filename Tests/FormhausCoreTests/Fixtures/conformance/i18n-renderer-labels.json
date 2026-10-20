@@ -13,7 +13,8 @@
         "skip": {},
         "fields": [
           { "key": "day", "type": "date", "label": "Day", "validation": { "required": true } },
-          { "key": "receipt", "type": "file", "label": "Receipt" }
+          { "key": "receipt", "type": "file", "label": "Receipt" },
+          { "key": "kind", "type": "select", "label": "Kind", "options": [{ "value": "a", "label": "A" }] }
         ]
       },
       { "id": "notes", "title": "Notes", "fields": [{ "key": "note", "type": "textarea", "label": "Note" }] }
@@ -24,6 +25,7 @@
       "clear": "Очистить",
       "done": "Готово",
       "chooseFile": "Выбрать файл",
+      "select": "Выбрать",
       "required": "обязательно",
       "skip": "Пропустить",
       "submit": "Отправить",
@@ -34,6 +36,7 @@
     "labels.clear": "Очистить",
     "labels.done": "Готово",
     "labels.chooseFile": "Выбрать файл",
+    "labels.select": "Выбрать",
     "labels.required": "обязательно",
     "labels.skip": "Пропустить",
     "labels.submit": "Отправить",

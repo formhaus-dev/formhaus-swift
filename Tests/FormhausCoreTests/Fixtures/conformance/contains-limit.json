@@ -893,7 +893,10 @@
           "tags": "Select one of the available options"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {
+        "missed": "n"
+      }
     },
     {
       "name": "an item value that is not a list is blank",
@@ -1485,7 +1488,10 @@
           "codes": "Select one of the available options"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {
+        "uncoded": "u"
+      }
     }
   ]
 }

@@ -14,6 +14,7 @@ public struct FieldOption: Sendable, Hashable {
     public var value: String? { json["value"]?.stringValue }
     public var label: String? { json["label"]?.stringValue }
     public var image: String? { json["image"]?.stringValue }
+    public var exclusive: Bool { json["exclusive"]?.isTruthy == true }
 }
 
 public struct FieldValidation: Sendable, Hashable {
@@ -32,7 +33,7 @@ public struct FieldValidation: Sendable, Hashable {
 }
 
 public struct FormField: Sendable, Conditional, NodeIdentity {
-    let json: JSONObject
+    var json: JSONObject
     let ordinal: Int
     public let key: String
     public let type: String
@@ -66,6 +67,7 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
     public var rows: JSONValue? { json["rows"] }
     public var mask: JSONValue? { json["mask"] }
     public var inputMode: JSONValue? { json["inputMode"] }
+    public var autocomplete: JSONValue? { json["autocomplete"] }
     public var autoAdvance: JSONValue? { json["autoAdvance"] }
     public var props: JSONObject? { json["props"]?.objectValue }
     public var defaultValue: JSONValue? { json["defaultValue"] }
@@ -95,7 +97,7 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
 }
 
 public struct FormSection: Sendable, Conditional, NodeIdentity {
-    let json: JSONObject
+    var json: JSONObject
     let ordinal: Int
     public let key: String
     public let show: [ShowCondition]?
@@ -139,6 +141,13 @@ public enum FormNode: Sendable, Conditional {
         switch self {
         case .field(let field): field.json
         case .section(let section): section.json
+        }
+    }
+
+    var ordinal: Int {
+        switch self {
+        case .field(let field): field.ordinal
+        case .section(let section): section.ordinal
         }
     }
 

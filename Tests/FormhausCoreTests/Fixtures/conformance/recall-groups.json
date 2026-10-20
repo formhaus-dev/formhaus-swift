@@ -1,0 +1,139 @@
+{
+  "name": "recall-groups",
+  "covers": [],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "recall-forward-reference",
+      "path": "/fields/1/helperText"
+    },
+    {
+      "code": "unknown-recall-field",
+      "path": "/fields/2/label"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name"
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "Guests of {{name}}",
+        "helperText": "{{people}} added",
+        "fields": [
+          {
+            "key": "guest",
+            "type": "text",
+            "label": "Guest"
+          },
+          {
+            "key": "vegan",
+            "type": "checkbox",
+            "label": "Vegan"
+          },
+          {
+            "key": "meal",
+            "type": "text",
+            "label": "Meal for {{guest}}",
+            "helperText": "Host {{name}}, vegan [{{vegan}}]",
+            "show": [
+              {
+                "field": "vegan",
+                "eq": false
+              }
+            ]
+          },
+          {
+            "key": "dish",
+            "type": "text",
+            "label": "Dish for {{guest}}",
+            "show": [
+              {
+                "field": "vegan",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "summary",
+        "type": "text",
+        "label": "Summary [{{guest}}]"
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "item fields resolve within their item",
+      "values": {
+        "name": "Ada",
+        "people": [
+          {
+            "guest": "Bo",
+            "vegan": false
+          },
+          {
+            "guest": "Cy",
+            "vegan": true,
+            "meal": "hidden"
+          }
+        ]
+      },
+      "texts": [
+        {
+          "address": "fields.people.label",
+          "text": "Guests of Ada"
+        },
+        {
+          "address": "fields.people.helperText",
+          "text": "2 added"
+        },
+        {
+          "address": "fields.people.fields.meal.label",
+          "group": "people",
+          "item": 0,
+          "text": "Meal for Bo"
+        },
+        {
+          "address": "fields.people.fields.meal.helperText",
+          "group": "people",
+          "item": 0,
+          "text": "Host Ada, vegan []"
+        },
+        {
+          "address": "fields.people.fields.dish.label",
+          "group": "people",
+          "item": 1,
+          "text": "Dish for Cy"
+        },
+        {
+          "address": "fields.people.fields.meal.helperText",
+          "group": "people",
+          "item": 1,
+          "text": "Host Ada, vegan [Vegan]"
+        },
+        {
+          "address": "fields.people.fields.meal.label",
+          "group": "people",
+          "item": 2,
+          "text": "Meal for "
+        },
+        {
+          "address": "fields.summary.label",
+          "text": "Summary []"
+        }
+      ]
+    }
+  ]
+}

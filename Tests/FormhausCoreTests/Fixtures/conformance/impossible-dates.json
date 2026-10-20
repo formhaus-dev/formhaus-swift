@@ -73,7 +73,8 @@
           "day": "Enter a valid date"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {}
     },
     {
       "name": "February 29 outside a leap year",
@@ -94,7 +95,8 @@
           "at": "Enter a valid date and time"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {}
     },
     {
       "name": "April 31",
@@ -112,7 +114,8 @@
           "at": "Enter a valid date and time"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {}
     }
   ]
 }

@@ -78,7 +78,8 @@
           "until": "Enter a valid time"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {}
     },
     {
       "name": "12-hour, single-digit and fractional times",
@@ -99,7 +100,8 @@
           "until": "Enter a valid time"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {}
     },
     {
       "name": "hidden value that is not text",
@@ -117,7 +119,8 @@
           "source": "Source: Must be text"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {}
     },
     {
       "name": "hidden field behind a condition that fails",

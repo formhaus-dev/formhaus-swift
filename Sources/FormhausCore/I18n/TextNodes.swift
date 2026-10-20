@@ -16,6 +16,7 @@ let defaultLabelKeys = [
     "continue", "back", "stepOf", "errorSummary", "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved",
     "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel",
     "enlargeImage", "close", "clear", "done", "chooseFile", "required", "skip", "submit", "stepTitle", "stepErrors",
+    "or", "select",
 ]
 
 let defaultLabels: [String: String] = [
@@ -42,6 +43,8 @@ let defaultLabels: [String: String] = [
     "submit": "Submit",
     "stepTitle": "Step {index}",
     "stepErrors": "Errors: {count}",
+    "or": "or",
+    "select": "Select",
 ]
 
 func hasRule(_ node: JSONObject, _ slot: String) -> Bool {

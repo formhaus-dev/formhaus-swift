@@ -1,0 +1,240 @@
+{
+  "name": "group-list-answers",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "group-list-answers",
+    "title": "Invalid lists in group items",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "members",
+        "type": "group",
+        "label": "Members",
+        "fields": [
+          {
+            "key": "pick",
+            "type": "multiselect",
+            "label": "Pick",
+            "options": [
+              {
+                "value": "a",
+                "label": "A"
+              },
+              {
+                "value": "b",
+                "label": "B"
+              },
+              {
+                "value": "c",
+                "label": "C"
+              }
+            ]
+          },
+          {
+            "key": "missing",
+            "type": "text",
+            "label": "Missing",
+            "validation": {
+              "required": true
+            },
+            "show": [
+              {
+                "field": "pick",
+                "notContains": "a"
+              }
+            ]
+          },
+          {
+            "key": "picked",
+            "type": "text",
+            "label": "Picked",
+            "show": [
+              {
+                "field": "pick",
+                "contains": "b"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "more answers than options",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "pick": ["a", "b", "c", "d"],
+              "missing": "keep",
+              "picked": "kept"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "pick": ["a", "b", "c", "d"],
+              "picked": "kept"
+            }
+          ]
+        },
+        "errors": {
+          "members.0.pick": "Select one of the available options"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "members": [
+          {
+            "missing": "keep"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown option",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "pick": ["a", "z"],
+              "missing": "keep",
+              "picked": "kept"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "pick": ["a", "z"]
+            }
+          ]
+        },
+        "errors": {
+          "members.0.pick": "Select one of the available options"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "members": [
+          {
+            "missing": "keep"
+          }
+        ]
+      }
+    },
+    {
+      "name": "repeated option",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "pick": ["b", "b"],
+              "missing": "keep",
+              "picked": "kept"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "pick": ["b", "b"],
+              "missing": "keep",
+              "picked": "kept"
+            }
+          ]
+        },
+        "errors": {
+          "members.0.pick": "Must be a list of available options"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "members": [
+          {
+            "missing": "keep"
+          }
+        ]
+      }
+    },
+    {
+      "name": "not a list",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "pick": "a",
+              "missing": "keep",
+              "picked": "kept"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "pick": "a",
+              "missing": "keep"
+            }
+          ]
+        },
+        "errors": {
+          "members.0.pick": "Must be a list of available options"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "members": [
+          {
+            "missing": "keep"
+          }
+        ]
+      }
+    },
+    {
+      "name": "valid answer",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "pick": ["b", "c"],
+              "missing": "keep",
+              "picked": "kept"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "pick": ["b", "c"],
+              "missing": "keep",
+              "picked": "kept"
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

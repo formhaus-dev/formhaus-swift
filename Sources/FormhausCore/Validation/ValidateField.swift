@@ -31,7 +31,13 @@ private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: Fo
     case .string(let text):
         return boundError(Double(text.jsLength), "Length", rules) { resolve(MessageKey(rawValue: "\($0)Length"), $1, field) }
     case .array(let items):
-        return boundError(Double(items.count), "Length", rules) { resolve(MessageKey(rawValue: "\($0)Items"), $1, field) }
+        var bounds = rules
+        if items.count == 1, exclusiveValues(field).contains(where: { strictEquals($0, items[0]) }) {
+            var json = rules.json
+            json.removeValue(forKey: "minLength")
+            bounds = FieldValidation(json: json)
+        }
+        return boundError(Double(items.count), "Length", bounds) { resolve(MessageKey(rawValue: "\($0)Items"), $1, field) }
     default:
         return nil
     }

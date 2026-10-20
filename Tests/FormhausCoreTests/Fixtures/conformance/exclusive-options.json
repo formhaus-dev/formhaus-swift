@@ -1,0 +1,282 @@
+{
+  "name": "exclusive-options",
+  "covers": [
+    "rejects an exclusive option with any other value",
+    "accepts the exclusive option alone",
+    "skips minLength for an exclusive option alone"
+  ],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "exclusive-with-min-length",
+      "path": "/fields/3/validation/minLength"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "conditions",
+        "type": "multiselect",
+        "label": "Do you have any of these conditions?",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "details",
+        "type": "text",
+        "label": "Tell us more",
+        "show": [
+          {
+            "field": "conditions",
+            "notContains": "none"
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "fields": [
+          {
+            "key": "history",
+            "type": "multiselect",
+            "label": "Family history",
+            "options": [
+              {
+                "value": "asthma",
+                "label": "Asthma"
+              },
+              {
+                "value": "diabetes",
+                "label": "Diabetes"
+              },
+              {
+                "value": "none",
+                "label": "None of these",
+                "exclusive": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "symptoms",
+        "type": "multiselect",
+        "label": "Symptoms",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          },
+          {
+            "value": "private",
+            "label": "Prefer not to say",
+            "exclusive": true
+          }
+        ],
+        "validation": {
+          "minLength": 2
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "the exclusive option alone answers a required field",
+      "input": {
+        "values": {
+          "conditions": ["none"],
+          "people": [
+            {
+              "history": ["none"]
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "conditions": ["none"],
+          "people": [
+            {
+              "history": ["none"]
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "other options without the exclusive one",
+      "input": {
+        "values": {
+          "conditions": ["asthma", "diabetes"],
+          "details": "Mild",
+          "people": [
+            {
+              "history": ["diabetes"]
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "conditions": ["asthma", "diabetes"],
+          "details": "Mild",
+          "people": [
+            {
+              "history": ["diabetes"]
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "an exclusive option with another value is a type error",
+      "input": {
+        "values": {
+          "conditions": ["asthma", "none"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "conditions": ["asthma", "none"]
+        },
+        "errors": {
+          "conditions": "Select \"None of these\" or other options, not both"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    },
+    {
+      "name": "an exclusive option with another value in a group item is a type error",
+      "input": {
+        "values": {
+          "conditions": ["none"],
+          "people": [
+            {
+              "history": ["none", "diabetes"]
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "conditions": ["none"],
+          "people": [
+            {
+              "history": ["none", "diabetes"]
+            }
+          ]
+        },
+        "errors": {
+          "people.0.history": "Select \"None of these\" or other options, not both"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "conditions": ["none"],
+        "people": [{}]
+      }
+    },
+    {
+      "name": "an exclusive option alone skips minLength",
+      "input": {
+        "values": {
+          "conditions": ["none"],
+          "symptoms": ["private"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "conditions": ["none"],
+          "symptoms": ["private"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "minLength applies to other options",
+      "input": {
+        "values": {
+          "conditions": ["none"],
+          "symptoms": ["asthma"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "conditions": ["none"],
+          "symptoms": ["asthma"]
+        },
+        "errors": {
+          "symptoms": "At least 2 required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "two exclusive options together are a type error",
+      "input": {
+        "values": {
+          "conditions": ["none"],
+          "symptoms": ["none", "private"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "conditions": ["none"],
+          "symptoms": ["none", "private"]
+        },
+        "errors": {
+          "symptoms": "Select \"None of these\" or other options, not both"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "conditions": ["none"]
+      }
+    }
+  ]
+}

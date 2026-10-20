@@ -1,0 +1,26 @@
+{
+  "name": "check-autocomplete-type",
+  "issues": [
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/autocomplete"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "first",
+        "type": "text",
+        "label": "First",
+        "autocomplete": 123
+      }
+    ]
+  }
+}

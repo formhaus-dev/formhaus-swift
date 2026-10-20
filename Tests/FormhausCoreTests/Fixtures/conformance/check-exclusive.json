@@ -1,0 +1,221 @@
+{
+  "name": "check-exclusive",
+  "covers": ["warns about exclusive options that do not apply or come before other options"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "exclusive-not-applicable",
+      "path": "/fields/1/options/2/exclusive"
+    },
+    {
+      "code": "exclusive-not-applicable",
+      "path": "/fields/2/options/2/exclusive"
+    },
+    {
+      "code": "exclusive-option-position",
+      "path": "/fields/3/options/0"
+    },
+    {
+      "code": "exclusive-default-value",
+      "path": "/fields/4/defaultValue"
+    },
+    {
+      "code": "exclusive-with-min-length",
+      "path": "/fields/5/validation/minLength"
+    },
+    {
+      "code": "exclusive-default-value",
+      "path": "/fields/7/defaultValue"
+    },
+    {
+      "code": "missing-options",
+      "path": "/fields/8/options"
+    }
+  ],
+  "texts": {
+    "labels.or": "or"
+  },
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "conditions",
+        "type": "multiselect",
+        "label": "Do you have any of these conditions?",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ]
+      },
+      {
+        "key": "pick",
+        "type": "radio",
+        "label": "Pick one",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ]
+      },
+      {
+        "key": "remote",
+        "type": "multiselect",
+        "label": "Remote",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ],
+        "optionsFrom": "conditions"
+      },
+      {
+        "key": "order",
+        "type": "multiselect",
+        "label": "Order",
+        "options": [
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          },
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes",
+            "exclusive": true
+          }
+        ]
+      },
+      {
+        "key": "preset",
+        "type": "multiselect",
+        "label": "Preset",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ],
+        "defaultValue": ["asthma", "none"]
+      },
+      {
+        "key": "least",
+        "type": "multiselect",
+        "label": "At least two",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ],
+        "validation": {
+          "minLength": 2
+        }
+      },
+      {
+        "key": "one",
+        "type": "multiselect",
+        "label": "At least one",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "diabetes",
+            "label": "Diabetes"
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ],
+        "defaultValue": ["none"],
+        "validation": {
+          "minLength": 1
+        }
+      },
+      {
+        "key": "blank",
+        "type": "multiselect",
+        "label": "Blank",
+        "options": [
+          {
+            "value": "asthma",
+            "label": "Asthma"
+          },
+          {
+            "value": "",
+            "label": "None",
+            "exclusive": true
+          }
+        ],
+        "defaultValue": ["asthma", ""]
+      },
+      {
+        "key": "empty",
+        "type": "multiselect",
+        "label": "Empty",
+        "options": null
+      }
+    ]
+  }
+}

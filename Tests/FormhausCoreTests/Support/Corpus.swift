@@ -40,6 +40,27 @@ struct CorpusCase {
     }
 }
 
+struct RecallEntry {
+    let address: String
+    let item: RecallItem?
+    let text: String
+}
+
+struct RecallCase {
+    let name: String
+    let values: JSONObject
+    let texts: [RecallEntry]
+
+    init(_ json: JSONValue) {
+        name = json["name"]?.stringValue ?? ""
+        values = json["values"]?.objectValue ?? JSONObject()
+        texts = (json["texts"]?.arrayValue ?? []).map { entry in
+            let item = entry["group"]?.stringValue.map { RecallItem(group: $0, index: Int(entry["item"]?.numberValue ?? 0)) }
+            return RecallEntry(address: entry["address"]?.stringValue ?? "", item: item, text: entry["text"]?.stringValue ?? "")
+        }
+    }
+}
+
 struct CorpusFixture {
     let issues: [IssueEntry]
     let warnings: [IssueEntry]?
@@ -47,6 +68,7 @@ struct CorpusFixture {
     let overlay: JSONValue?
     let texts: JSONObject?
     let cases: [CorpusCase]
+    let recall: [RecallCase]
 
     init(_ json: JSONValue) {
         issues = IssueEntry.list(json["issues"]) ?? []
@@ -55,6 +77,7 @@ struct CorpusFixture {
         overlay = json["overlay"]
         texts = json["texts"]?.objectValue
         cases = (json["cases"]?.arrayValue ?? []).map(CorpusCase.init)
+        recall = (json["recall"]?.arrayValue ?? []).map(RecallCase.init)
     }
 
     func runtime() throws -> FormDefinition {

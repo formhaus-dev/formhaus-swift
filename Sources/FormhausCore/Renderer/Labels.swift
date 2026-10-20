@@ -72,9 +72,10 @@ extension FormEngine {
 
     @_spi(Renderer)
     public func itemTitle(_ group: FormField, _ index: Int, _ source: LabelSource?) -> String {
-        let params: JSONObject = ["label": group.label.map { .string($0) } ?? .null, "index": .number(Double(index + 1))]
-        if let template = group.itemLabel { return formatText(template, params) }
-        return label("itemLabel", source, params)
+        let name = recalled(group).label
+        let params: JSONObject = ["label": name.map { .string($0) } ?? .null, "index": .number(Double(index + 1))]
+        if let template = group.itemLabel { return itemTemplate(template, RecallItem(group: group.key, index: index), params) }
+        return cut(label("itemLabel", source, params))
     }
 
     @_spi(Renderer)
@@ -83,11 +84,14 @@ extension FormEngine {
         guard !errors.isEmpty else { return [] }
         let values = core.values.json
         let sections: [(id: String, title: String?, fields: [FormNode])] =
-            isMultiStep ? visibleSteps.map { ($0.id, $0.title, $0.fields) } : [(definition.id, definition.title, definition.fields ?? [])]
+            isMultiStep
+            ? visibleSteps.map { ($0.id, recalledTitle($0.json), $0.fields) }
+            : [(definition.id, recalledTitle(definition.json), definition.fields ?? [])]
         return sections.enumerated().compactMap { index, section in
             let entries = errorKeys(section.fields, errors, values).compactMap { key -> ErrorEntry? in
                 let item = core.visibility.activeItem(key, values)
-                guard let field = item?.field ?? core.visibility.activeField(key, values), let message = errors[key] else { return nil }
+                guard let raw = item?.field ?? core.visibility.activeField(key, values), let message = errors[key] else { return nil }
+                let field = recalled(raw, at: item == nil ? nil : key)
                 let name = field.label ?? ""
                 let label = item.map { "\(name) (\(itemTitle($0.group, $0.index, source)))" } ?? name
                 return ErrorEntry(key: key, label: label, message: message)

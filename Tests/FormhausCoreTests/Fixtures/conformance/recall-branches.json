@@ -1,0 +1,191 @@
+{
+  "name": "recall-branches",
+  "covers": [],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "recall-sensitive-field",
+      "path": "/steps/1/fields/2/itemLabel"
+    },
+    {
+      "code": "recall-sensitive-field",
+      "path": "/steps/2/fields/2/itemLabel"
+    },
+    {
+      "code": "recall-sensitive-field",
+      "path": "/steps/3/description"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "start",
+        "title": "Start",
+        "fields": [
+          {
+            "key": "way",
+            "type": "radio",
+            "label": "Way",
+            "options": [
+              {
+                "value": "a",
+                "label": "A"
+              },
+              {
+                "value": "b",
+                "label": "B"
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "to": "b",
+            "show": [
+              {
+                "field": "way",
+                "eq": "b"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "a",
+        "title": "A",
+        "fields": [
+          {
+            "key": "credential",
+            "type": "text",
+            "label": "Code"
+          },
+          {
+            "key": "plan",
+            "type": "select",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "x",
+                "label": "Plan A"
+              }
+            ]
+          },
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "itemLabel": "Item [{{secret}}]",
+            "fields": [
+              {
+                "key": "secret",
+                "type": "text",
+                "label": "Credential"
+              }
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "to": "review"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "title": "B",
+        "fields": [
+          {
+            "key": "credential",
+            "type": "password",
+            "label": "Password"
+          },
+          {
+            "key": "plan",
+            "type": "select",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "x",
+                "label": "Plan B"
+              }
+            ]
+          },
+          {
+            "key": "people",
+            "type": "group",
+            "label": "People",
+            "itemLabel": "Item [{{secret}}]",
+            "fields": [
+              {
+                "key": "secret",
+                "type": "password",
+                "label": "Credential"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "description": "[{{credential}}] [{{plan}}]",
+        "fields": []
+      }
+    ]
+  },
+  "recall": [
+    {
+      "name": "branch b",
+      "values": {
+        "way": "b",
+        "credential": "hunter2",
+        "plan": "x"
+      },
+      "texts": [
+        {
+          "address": "steps.review.description",
+          "text": "[] [Plan B]"
+        }
+      ]
+    },
+    {
+      "name": "branch a",
+      "values": {
+        "way": "a",
+        "credential": "code",
+        "plan": "x"
+      },
+      "texts": [
+        {
+          "address": "steps.review.description",
+          "text": "[] [Plan A]"
+        }
+      ]
+    },
+    {
+      "name": "a group child that is a password on another branch",
+      "values": {
+        "way": "a",
+        "people": [
+          {
+            "secret": "code"
+          }
+        ]
+      },
+      "texts": [
+        {
+          "address": "steps.a.fields.people.itemLabel",
+          "group": "people",
+          "item": 0,
+          "text": "Item []"
+        }
+      ]
+    }
+  ]
+}

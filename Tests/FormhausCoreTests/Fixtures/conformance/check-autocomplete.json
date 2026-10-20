@@ -1,0 +1,173 @@
+{
+  "name": "check-autocomplete",
+  "issues": [],
+  "warnings": [
+    {
+      "code": "unknown-autocomplete-token",
+      "path": "/fields/9/autocomplete"
+    },
+    {
+      "code": "unknown-autocomplete-token",
+      "path": "/fields/10/autocomplete"
+    },
+    {
+      "code": "unknown-autocomplete-token",
+      "path": "/fields/11/autocomplete"
+    },
+    {
+      "code": "autocomplete-not-applicable",
+      "path": "/fields/12/autocomplete"
+    },
+    {
+      "code": "unknown-autocomplete-token",
+      "path": "/fields/13/autocomplete"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "first",
+        "type": "text",
+        "label": "first",
+        "autocomplete": "given-name"
+      },
+      {
+        "key": "mail",
+        "type": "email",
+        "label": "mail",
+        "autocomplete": "email"
+      },
+      {
+        "key": "phone",
+        "type": "phone",
+        "label": "phone",
+        "autocomplete": "shipping tel"
+      },
+      {
+        "key": "street",
+        "type": "text",
+        "label": "street",
+        "autocomplete": "section-blue billing street-address"
+      },
+      {
+        "key": "secret",
+        "type": "password",
+        "label": "secret",
+        "autocomplete": "new-password"
+      },
+      {
+        "key": "about",
+        "type": "textarea",
+        "label": "about",
+        "autocomplete": "off"
+      },
+      {
+        "key": "year",
+        "type": "number",
+        "label": "year",
+        "autocomplete": "bday-year"
+      },
+      {
+        "key": "born",
+        "type": "date",
+        "label": "born",
+        "autocomplete": "bday"
+      },
+      {
+        "key": "mixed",
+        "type": "text",
+        "label": "mixed",
+        "autocomplete": " Work   tel "
+      },
+      {
+        "key": "snake",
+        "type": "text",
+        "label": "snake",
+        "autocomplete": "given_name"
+      },
+      {
+        "key": "modifier",
+        "type": "text",
+        "label": "modifier",
+        "autocomplete": "home given-name"
+      },
+      {
+        "key": "empty",
+        "type": "text",
+        "label": "empty",
+        "autocomplete": ""
+      },
+      {
+        "key": "agree",
+        "type": "checkbox",
+        "label": "agree",
+        "autocomplete": "off"
+      },
+      {
+        "key": "plan",
+        "type": "radio",
+        "label": "plan",
+        "autocomplete": "bogus",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          }
+        ]
+      },
+      {
+        "key": "rating",
+        "type": "x-rating",
+        "label": "rating",
+        "autocomplete": "off"
+      },
+      {
+        "key": "plain",
+        "type": "text",
+        "label": "plain"
+      },
+      {
+        "key": "country",
+        "type": "select",
+        "label": "country",
+        "autocomplete": "country",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          }
+        ]
+      },
+      {
+        "key": "prefix",
+        "type": "phone",
+        "label": "prefix",
+        "autocomplete": "tel-local-prefix"
+      },
+      {
+        "key": "suffix",
+        "type": "phone",
+        "label": "suffix",
+        "autocomplete": "home tel-local-suffix"
+      },
+      {
+        "key": "region",
+        "type": "autocomplete",
+        "label": "region",
+        "autocomplete": "address-level1",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          }
+        ]
+      }
+    ]
+  }
+}

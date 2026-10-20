@@ -37,6 +37,7 @@ extension MessageKey {
     public static let time = MessageKey(rawValue: "time")
     public static let option = MessageKey(rawValue: "option")
     public static let options = MessageKey(rawValue: "options")
+    public static let exclusive = MessageKey(rawValue: "exclusive")
     public static let boolean = MessageKey(rawValue: "boolean")
     public static let string = MessageKey(rawValue: "string")
     public static let file = MessageKey(rawValue: "file")

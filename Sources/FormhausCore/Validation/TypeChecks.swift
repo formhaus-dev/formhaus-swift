@@ -65,6 +65,10 @@ private func isCalendarDate(_ value: String) -> Bool {
     return day <= days[month - 1]
 }
 
+func matchesFormat(_ type: String, _ value: String) -> Bool {
+    Format(type)?.matches(value) == true
+}
+
 func trimValue(_ field: FormField, _ value: JSONValue?) -> JSONValue? {
     guard case .string(let text)? = value, !untrimmedTypes.contains(field.type) else { return value }
     return .string(text.jsTrimmed)
@@ -97,10 +101,9 @@ private func staticOptions(_ field: FormField) -> [FieldOption]? {
     field.hasOptionsFrom ? nil : field.options
 }
 
-func oversizedList(_ field: FormField, _ value: JSONValue?) -> Bool {
-    guard listTypes.contains(field.type) else { return false }
-    guard let items = value?.arrayValue else { return true }
-    return items.count > staticOptions(field)?.count ?? maxListItems
+func exclusiveValues(_ field: FormField) -> [JSONValue] {
+    guard listTypes.contains(field.type) else { return [] }
+    return (staticOptions(field) ?? []).filter(\.exclusive).compactMap { $0.json["value"] }
 }
 
 private func isOption(_ field: FormField, _ value: JSONValue) -> Bool {
@@ -126,7 +129,13 @@ private func multiselectError(_ field: FormField, _ value: JSONValue, _ fail: Fa
         guard let text = item.stringValue, text.jsLength <= maxStringLength, isOption(field, item) else { return fail("option", [:]) }
         repeated = !seen.insert(text) || repeated
     }
-    return repeated ? fail("options", [:]) : nil
+    if repeated { return fail("options", [:]) }
+    guard items.count > 1,
+        let exclusive = staticOptions(field)?.first(where: { option in
+            option.exclusive && items.contains { strictEquals(option.json["value"], $0) }
+        })
+    else { return nil }
+    return fail("exclusive", ["option": exclusive.json["label"] ?? .string("undefined")])
 }
 
 private func stringError(_ field: FormField, _ value: JSONValue, _ key: MessageKey, _ fail: Fail) -> String? {
@@ -182,7 +191,7 @@ func typeMessageKeys(_ field: FormField) -> [MessageKey] {
     if booleanTypes.contains(field.type) { return ["boolean"] }
     if field.type == "number" { return ["number"] }
     if field.isScale { return ["option"] }
-    if listTypes.contains(field.type) { return ["options", "option"] }
+    if listTypes.contains(field.type) { return ["options", "option"] + (exclusiveValues(field).isEmpty ? [] : ["exclusive"]) }
     if let format = Format(field.type) { return [format.key, "maxLength"] }
     if field.type == "file" { return ["file", "maxLength"] }
     if field.type == "select" || field.type == "radio" { return ["option", "maxLength"] }

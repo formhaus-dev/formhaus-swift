@@ -6,14 +6,15 @@ enum Properties {
     static let step: [String] = ["id", "title", "description", "fields", "show", "showAny", "routes", "next", "back", "skip", "i18n"]
     static let field: [String] = [
         "key", "type", "label", "placeholder", "helperText", "autoAdvance", "defaultValue", "source", "show", "showAny", "validation",
-        "options", "layout", "columns", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode", "props", "i18n",
+        "options", "layout", "columns", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode", "autocomplete", "props",
+        "i18n",
     ]
     static let section: [String] = ["key", "type", "title", "description", "layout", "show", "showAny", "fields", "i18n"]
     static let group: [String] = [
         "key", "type", "label", "helperText", "itemLabel", "addLabel", "removeLabel", "defaultItems", "show", "showAny", "validation",
         "fields", "i18n",
     ]
-    static let option: [String] = ["value", "label", "image", "i18n"]
+    static let option: [String] = ["value", "label", "image", "exclusive", "i18n"]
     static let action: [String] = ["label", "variant", "disabled", "i18n"]
     static let route: [String] = ["to", "show", "showAny"]
     static let validation: [String] = [
