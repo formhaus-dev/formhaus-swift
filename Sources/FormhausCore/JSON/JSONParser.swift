@@ -20,9 +20,41 @@ extension JSONValue {
     }
 }
 
-private enum Container {
-    case array([JSONValue])
-    case object(JSONObject, String)
+private enum Frame {
+    case array
+    case object
+}
+
+private struct Frames {
+    var kinds: [Frame] = []
+    var arrays: [[JSONValue]] = []
+    var objects: [JSONObject] = []
+    var keys: [String] = []
+
+    var depth: Int { kinds.count }
+
+    mutating func openArray() {
+        kinds.append(.array)
+        arrays.append([])
+    }
+
+    mutating func openObject(_ key: String) {
+        kinds.append(.object)
+        objects.append(JSONObject())
+        keys.append(key)
+    }
+
+    mutating func closeArray() -> JSONValue {
+        kinds.removeLast()
+        return .array(arrays.removeLast())
+    }
+
+    mutating func closeObject() -> JSONValue {
+        kinds.removeLast()
+        var object = objects.removeLast()
+        object.establishKeyOrder()
+        return .object(object)
+    }
 }
 
 private struct JSONParser {
@@ -34,41 +66,33 @@ private struct JSONParser {
     }
 
     mutating func parseDocument() throws(JSONParseError) -> JSONValue {
-        var stack: [Container] = []
-        while true {
-            guard var value = try openValue(&stack) else { continue }
-            while true {
-                guard let top = stack.popLast() else {
-                    skipWhitespace()
-                    guard index == bytes.count else { throw fail("unexpected trailing content") }
-                    return value
-                }
+        var frames = Frames()
+        parsing: while true {
+            guard var value = try openValue(&frames) else { continue }
+            while let kind = frames.kinds.last {
                 skipWhitespace()
                 guard index < bytes.count else { throw fail("unexpected end of input") }
                 let byte = bytes[index]
                 index += 1
-                switch top {
-                case .array(var items):
-                    items.append(value)
-                    if byte == UInt8(ascii: ",") {
-                        stack.append(.array(items))
-                        break
-                    }
+                switch kind {
+                case .array:
+                    frames.arrays[frames.arrays.count - 1].append(value)
+                    if byte == UInt8(ascii: ",") { continue parsing }
                     guard byte == UInt8(ascii: "]") else { throw fail("expected ',' or ']'") }
-                    value = .array(items)
-                    continue
-                case .object(var object, let key):
-                    object[key] = value
+                    value = frames.closeArray()
+                case .object:
+                    frames.objects[frames.objects.count - 1].appendParsed(frames.keys.removeLast(), value)
                     if byte == UInt8(ascii: ",") {
-                        stack.append(.object(object, try parseKey()))
-                        break
+                        frames.keys.append(try parseKey())
+                        continue parsing
                     }
                     guard byte == UInt8(ascii: "}") else { throw fail("expected ',' or '}'") }
-                    value = .object(object)
-                    continue
+                    value = frames.closeObject()
                 }
-                break
             }
+            skipWhitespace()
+            guard index == bytes.count else { throw fail("unexpected trailing content") }
+            return value
         }
     }
 
@@ -80,11 +104,11 @@ private struct JSONParser {
         while index < bytes.count, [0x20, 0x09, 0x0A, 0x0D].contains(bytes[index]) { index += 1 }
     }
 
-    mutating func openValue(_ stack: inout [Container]) throws(JSONParseError) -> JSONValue? {
+    mutating func openValue(_ frames: inout Frames) throws(JSONParseError) -> JSONValue? {
         skipWhitespace()
         guard index < bytes.count else { throw fail("unexpected end of input") }
         let opens = bytes[index] == UInt8(ascii: "[") || bytes[index] == UInt8(ascii: "{")
-        if opens && stack.count >= JSONValue.maxNestingDepth { throw fail("nesting deeper than \(JSONValue.maxNestingDepth) levels") }
+        if opens && frames.depth >= JSONValue.maxNestingDepth { throw fail("nesting deeper than \(JSONValue.maxNestingDepth) levels") }
         switch bytes[index] {
         case UInt8(ascii: "["):
             index += 1
@@ -93,7 +117,7 @@ private struct JSONParser {
                 index += 1
                 return .array([])
             }
-            stack.append(.array([]))
+            frames.openArray()
             return nil
         case UInt8(ascii: "{"):
             index += 1
@@ -102,7 +126,7 @@ private struct JSONParser {
                 index += 1
                 return .object(JSONObject())
             }
-            stack.append(.object(JSONObject(), try parseKey()))
+            frames.openObject(try parseKey())
             return nil
         case UInt8(ascii: "\""): return .string(try parseString())
         case UInt8(ascii: "t"): return try literal("true", .bool(true))
