@@ -17,16 +17,34 @@ private let derivedTokens: [(KeyPath<Palette, Color?> & Sendable, String)] = [
     (\.errorSoft, "color.error.soft"), (\.inputBorderHover, "color.input.border-hover"),
 ]
 
+private func bytes(_ hex: String) -> [Int] {
+    let value = Int(hex.dropFirst(), radix: 16) ?? -1
+    return [value >> 16 & 0xFF, value >> 8 & 0xFF, value & 0xFF]
+}
+
 private func hex(_ color: Color) -> (hex: String, alpha: Double) {
     let resolved = color.resolve(in: EnvironmentValues())
-    let channels = [resolved.red, resolved.green, resolved.blue].map { String(format: "%02x", Int(($0 * 255).rounded())) }
-    return ("#" + channels.joined(), (Double(resolved.opacity) * 100).rounded() / 100)
+    let channels = [resolved.red, resolved.green, resolved.blue].map { Int(($0 * 255).rounded()) }
+    return ("#" + channels.map { String(format: "%02x", $0) }.joined(), (Double(resolved.opacity) * 100).rounded() / 100)
+}
+
+@MainActor
+private func renderedPixel(_ color: Color) throws -> [Int] {
+    let image = try #require(ImageRenderer(content: color.frame(width: 4, height: 4)).cgImage)
+    var pixel = [UInt8](repeating: 0, count: 4)
+    let space = try #require(CGColorSpace(name: CGColorSpace.sRGB))
+    let context = try #require(
+        CGContext(
+            data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4, space: space,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+    context.draw(image, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+    return pixel.prefix(3).map(Int.init)
 }
 
 private func expectColor(_ color: Color?, _ tokens: ResolvedTokens, _ path: String, _ context: String) throws {
     let expected = try tokens.color(path)
     let actual = hex(try #require(color, "\(context) \(path)"))
-    #expect(actual.hex == expected.hex && actual.alpha == expected.alpha, "\(context) \(path)")
+    #expect(bytes(actual.hex) == bytes(expected.hex) && actual.alpha == expected.alpha, "\(context) \(path)")
 }
 
 @Suite("Generated tokens match the DTCG source")
@@ -100,6 +118,12 @@ struct TokenSourceTests {
         #expect(Double(RaisedShadow.x) == (try ResolvedTokens.dimension(try #require(value["offsetX"]))))
         #expect(Double(RaisedShadow.y) == (try ResolvedTokens.dimension(try #require(value["offsetY"]))))
         #expect(Double(RaisedShadow.blur) == (try ResolvedTokens.dimension(try #require(value["blur"]))))
+    }
+
+    @Test("a rendered input border pixel equals the token hex", arguments: [("light", Palette.light), ("dark", Palette.dark)])
+    @MainActor func renderedBorder(name: String, palette: Palette) throws {
+        let expected = try ResolvedTokens(["theme": name]).color("color.input.border")
+        #expect(try renderedPixel(palette.inputBorder) == bytes(expected.hex))
     }
 
     @Test("the pointer and touch themes use the pointer and width contexts")
