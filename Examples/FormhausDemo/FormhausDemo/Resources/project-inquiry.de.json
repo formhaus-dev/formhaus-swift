@@ -57,10 +57,10 @@
     },
     "contact": {
       "title": "Ihre Kontaktdaten",
-      "description": "Wir antworten innerhalb eines Werktags.",
+      "description": "Ihre Wahl: {{projectType}}. Wir antworten innerhalb eines Werktags.",
       "fields": {
         "name": { "label": "Vollständiger Name" },
-        "email": { "label": "Geschäftliche E-Mail", "helperText": "Wir antworten {{name}} an diese Adresse." },
+        "email": { "label": "Geschäftliche E-Mail" },
         "company": { "label": "Firma", "placeholder": "Optional" }
       }
     }

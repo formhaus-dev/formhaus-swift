@@ -100,14 +100,13 @@
     {
       "id": "contact",
       "title": "Your details",
-      "description": "We reply within one business day.",
+      "description": "Your choice: {{projectType}}. We reply within one business day.",
       "fields": [
         { "key": "name", "type": "text", "label": "Full name", "validation": { "required": true } },
         {
           "key": "email",
           "type": "email",
           "label": "Work email",
-          "helperText": "We'll reply to {{name}} at this address.",
           "inputMode": "email",
           "validation": { "required": true }
         },
