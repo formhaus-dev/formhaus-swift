@@ -32,12 +32,7 @@ extension FormSection {
 
 extension FormNode {
     @_spi(Renderer)
-    public var nodeID: Int {
-        switch self {
-        case .field(let field): field.ordinal
-        case .section(let section): section.ordinal
-        }
-    }
+    public var nodeID: Int { ordinal }
 }
 
 extension FormDefinition {
