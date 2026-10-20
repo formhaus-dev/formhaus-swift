@@ -101,10 +101,10 @@ struct ReviewTests {
         defer { try? manager.removeItem(at: source) }
         let owner = ObjectIdentifier(CallLog())
         let copy = try #require(await UploadStore.copy(source, owner: owner))
-        #expect(UploadStore.owns(copy))
-        #expect(!UploadStore.owns(source))
+        #expect(UploadStore.owned(copy.absoluteString) == copy)
+        #expect(UploadStore.owned(source.absoluteString) == nil)
         let crafted = try #require(URL(string: UploadStore.directory.absoluteString + "x/..%2F..%2Fvictim/f"))
-        #expect(!UploadStore.owns(crafted))
+        #expect(UploadStore.owned(crafted.absoluteString) == nil)
         UploadStore.prune(owner: owner, keeping: [copy.absoluteString])
         #expect(manager.fileExists(atPath: copy.path))
         UploadStore.prune(owner: owner, keeping: [])
