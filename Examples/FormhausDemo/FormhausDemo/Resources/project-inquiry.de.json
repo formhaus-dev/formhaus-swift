@@ -52,7 +52,6 @@
     },
     "scope": {
       "title": "Umfang",
-      "description": "Landingpages überspringen diesen Schritt.",
       "fields": {
         "services": {
           "label": "Welche Leistungen brauchen Sie?",
@@ -63,6 +62,9 @@
             "seo": "SEO"
           }
         },
+        "brandLink": {
+          "label": "Link zu Ihren Markenrichtlinien"
+        },
         "urgency": {
           "label": "Wie schnell brauchen Sie es?"
         }
@@ -70,17 +72,13 @@
     },
     "contact": {
       "title": "Ihre Kontaktdaten",
-      "description": "Ihre Wahl: {{projectType}}. Wir antworten innerhalb eines Werktags.",
+      "description": "Ihre Wahl: {{projectType}}.",
       "fields": {
         "name": {
           "label": "Vollständiger Name"
         },
         "email": {
           "label": "Geschäftliche E-Mail"
-        },
-        "company": {
-          "label": "Firma",
-          "placeholder": "Optional"
         }
       }
     }

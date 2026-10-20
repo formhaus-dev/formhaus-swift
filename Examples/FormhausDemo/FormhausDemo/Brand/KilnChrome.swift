@@ -15,9 +15,8 @@ struct KilnStepHeader: View {
                 }
             }
             .accessibilityHidden(true)
-            Text(verbatim: context.counterLabel.uppercased())
+            Text(verbatim: context.counterLabel)
                 .font(KilnType.eyebrow)
-                .tracking(1.2)
                 .foregroundStyle(tokens.colors.primary)
                 .padding(.top, 6)
             if let title = context.stepTitle {
@@ -60,21 +59,22 @@ struct KilnActions: View {
         HStack(spacing: 12) {
             if context.state.showBack {
                 Button(action: context.back) {
-                    Image(systemName: "arrow.left").font(.body.weight(.semibold))
-                        .frame(width: 52, height: 52)
-                        .background(Circle().strokeBorder(tokens.colors.border, lineWidth: 1.5))
-                        .contentShape(Circle())
+                    Text(verbatim: context.state.backLabel)
+                        .font(KilnType.body.weight(.semibold))
+                        .padding(.horizontal, 22)
+                        .frame(minHeight: 52)
+                        .background(Capsule().strokeBorder(tokens.colors.border, lineWidth: 1.5))
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(tokens.colors.text)
-                .accessibilityLabel(Text(verbatim: context.state.backLabel))
                 .disabled(context.busy)
             }
             if context.state.showPrimary {
                 Button(action: context.performPrimaryAction) {
                     HStack(spacing: 10) {
                         Text(verbatim: context.state.primaryLabel)
-                        if context.busy { ProgressView().tint(tokens.colors.onPrimary) } else { Image(systemName: "arrow.right") }
+                        if context.busy { ProgressView().tint(tokens.colors.onPrimary) }
                     }
                     .font(KilnType.body.weight(.semibold))
                     .foregroundStyle(tokens.colors.onPrimary)

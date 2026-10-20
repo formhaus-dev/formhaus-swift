@@ -13,15 +13,12 @@ struct KilnFieldFrame<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(verbatim: context.label).font(KilnType.label).foregroundStyle(tokens.colors.text)
-                if context.isRequired {
-                    Text(verbatim: context.text(forLabel: "required")).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
-                }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(verbatim: context.accessibilityName))
-            .accessibilityAddTraits(.isHeader)
+            (Text(verbatim: context.label).foregroundStyle(tokens.colors.text)
+                + Text(verbatim: context.isRequired ? " *" : "").foregroundStyle(tokens.colors.error))
+                .font(KilnType.label)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(verbatim: context.accessibilityName))
+                .accessibilityAddTraits(.isHeader)
             if let helper = context.helperText {
                 Text(verbatim: helper).font(KilnType.note).foregroundStyle(tokens.colors.textMuted)
             }

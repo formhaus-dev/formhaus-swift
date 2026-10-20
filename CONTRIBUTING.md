@@ -93,13 +93,16 @@ The benchmarks use jemalloc when it is installed. Without it, set `BENCHMARK_DIS
 Script mode plays a fixed interaction through the public `FormModel` API, for screen recordings. Pass the launch arguments in the scheme or to `xcrun simctl launch`:
 
 - `-demoScript tour` types, picks options, triggers and fixes an error, takes the landing page branch, gets the server error and submits.
+- `-demoScript showcase` plays the same walkthrough without the error and the branch.
+- `-demoScript branch` picks the landing page, takes its branch and sends the empty contact step.
+- `-demoScript edit` goes to Scope and picks Design.
 - `-demoScript languages` switches to German and back.
 - `-demoScript styles` shows the same values and step in the native, Kiln and formhaus sets.
 - `-demoStyle system` or `-demoStyle brand` starts in another set.
 - `-demoLanguage de` starts in German.
 - `-demoSpeed 2` plays twice as fast. `-demoStop <mark>` stops at a mark, such as `error`, `branch`, `server` or `success`.
 
-The timings are in `FormhausDemo/Resources/demo-timings.json`. `Examples/FormhausDemo/scripts/render-assets.sh` renders the app icon and the option pictures.
+In script mode the iOS keyboard stays hidden, and the app writes the time of each mark and each scripted tap, with the frame of the tapped field, to `Documents/demo-timeline.json` in its container. The timings are in `FormhausDemo/Resources/demo-timings.json`. `Examples/FormhausDemo/scripts/render-assets.sh` renders the app icon and the option pictures.
 
 The product video is built from sources in `media/video`. Its README covers recording the footage and rendering.
 

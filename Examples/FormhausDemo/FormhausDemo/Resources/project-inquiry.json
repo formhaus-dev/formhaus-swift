@@ -87,14 +87,19 @@
           "label": "How happy are you with it today?",
           "validation": {
             "max": 5
-          }
+          },
+          "show": [
+            {
+              "field": "currentSite",
+              "notEmpty": true
+            }
+          ]
         }
       ]
     },
     {
       "id": "scope",
       "title": "Scope",
-      "description": "Landing pages skip this step.",
       "fields": [
         {
           "key": "services",
@@ -123,6 +128,19 @@
           }
         },
         {
+          "key": "brandLink",
+          "type": "text",
+          "label": "Link to your brand guidelines",
+          "placeholder": "https://",
+          "inputMode": "url",
+          "show": [
+            {
+              "field": "services",
+              "contains": "seo"
+            }
+          ]
+        },
+        {
           "key": "urgency",
           "type": "scale",
           "label": "How soon do you need it?",
@@ -137,7 +155,7 @@
     {
       "id": "contact",
       "title": "Your details",
-      "description": "Your choice: {{projectType}}. We reply within one business day.",
+      "description": "Your choice: {{projectType}}.",
       "fields": [
         {
           "key": "name",
@@ -155,12 +173,6 @@
           "validation": {
             "required": true
           }
-        },
-        {
-          "key": "company",
-          "type": "text",
-          "label": "Company",
-          "placeholder": "Optional"
         }
       ]
     }
