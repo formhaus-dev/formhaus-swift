@@ -55,10 +55,9 @@ struct RegexCompiler {
 
     var oversized: Bool { code.count > Self.instructionLimit }
 
-    static func compile(_ parsed: ParsedPattern) -> RegexProgram {
-        let analysis = PatternAnalysis(parsed)
+    static func compile(_ parsed: ParsedPattern, analysis: PatternAnalysis, backward: Bool) -> RegexProgram {
         var compiler = RegexCompiler(analysis, automaton: analysis.automaton)
-        compiler.emit(parsed.root, backward: false)
+        compiler.emit(parsed.root, backward: backward)
         let mainEnd = compiler.code.count
         compiler.code.append(.match)
         compiler.inMain = false
