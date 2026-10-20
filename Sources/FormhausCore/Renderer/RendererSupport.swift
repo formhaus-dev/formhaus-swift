@@ -104,12 +104,17 @@ extension FormEngine {
     public func itemHasContent(_ key: String, _ index: Int) -> Bool {
         guard let group = core.visibility.groups.first(where: { sameText($0.key, key) }) else { return false }
         let items = itemsOf(core.values[key])
-        guard items.indices.contains(index), let item = items[index].objectValue else { return false }
-        return group.items.contains { field in
-            let raw = item[field.key]
-            let value = raw?.stringValue.map { JSONValue.string($0.jsTrimmed) } ?? raw
-            return !isBlank(value) && value != .bool(false) && value != field.defaultValue
-        }
+        guard items.indices.contains(index) else { return false }
+        return hasContent(group.items, items[index])
+    }
+
+    @_spi(Renderer)
+    public func itemsHaveContent(_ key: String) -> [Bool] {
+        guard let group = core.visibility.groups.first(where: { sameText($0.key, key) }) else { return [] }
+        let fields = group.items
+        return core.visibility.filled.map(group, itemsOf(core.values[key]), context: .fixed, sharing: true) { _, item in
+            (hasContent(fields, item), true)
+        }.items
     }
 
     @_spi(Renderer)
@@ -128,4 +133,13 @@ public func clampedInt(_ value: Double?, _ range: ClosedRange<Int>) -> Int? {
     if floor <= Double(range.lowerBound) { return range.lowerBound }
     if floor >= Double(range.upperBound) { return range.upperBound }
     return Int(floor)
+}
+
+private func hasContent(_ fields: [FormField], _ item: JSONValue) -> Bool {
+    guard let entry = item.objectValue else { return false }
+    return fields.contains { field in
+        let raw = entry[field.key]
+        let value = raw?.stringValue.map { JSONValue.string($0.jsTrimmed) } ?? raw
+        return !isBlank(value) && value != .bool(false) && value != field.defaultValue
+    }
 }
