@@ -205,18 +205,9 @@
     {
       "id": "launch",
       "scene": "launch",
-      "duration": 2,
+      "duration": 2.3,
       "title": "Formhaus on iOS and macOS",
-      "subline": "Native SwiftUI, same JSON as the web",
-      "devices": {
-        "mac": "mac",
-        "phone": "iphone"
-      },
-      "stills": {
-        "mac": "mac-still",
-        "phone": "ios-tour"
-      },
-      "at": 0.8
+      "subline": "Native SwiftUI, same JSON as the web"
     },
     {
       "id": "branch",
@@ -242,12 +233,13 @@
       },
       "from": -0.45,
       "cursor": true,
-      "caption": "Same answer, same next step"
+      "caption": "Same answer, same next step",
+      "continues": true
     },
     {
       "id": "parity",
       "scene": "split",
-      "duration": 2.6,
+      "duration": 2.88,
       "devices": {
         "web": "browser",
         "ios": "iphone"
@@ -266,9 +258,10 @@
           "errors"
         ]
       },
-      "from": -0.45,
+      "from": -0.733,
       "cursor": true,
-      "caption": "Same field errors and error summary"
+      "caption": "Same field errors and error summary",
+      "continues": true
     },
     {
       "id": "tour",

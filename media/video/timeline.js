@@ -26,7 +26,7 @@ const scenes = await Promise.all(
 
 const cut = params.has('calm');
 const last = data.beats.length - 1;
-const pushes = (index) => !cut && index > 0 && data.beats[index].scene !== data.beats[index - 1].scene;
+const pushes = (index) => !cut && index > 0 && !data.beats[index].continues && data.beats[index].scene !== data.beats[index - 1].scene;
 const visible = ({ beat, index }, t) =>
   t >= beat.start && (t < beat.start + beat.duration + (index < last && pushes(index + 1) ? transition : 0) || index === last);
 
