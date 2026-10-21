@@ -1,0 +1,751 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "option-order",
+  "definition": {
+    "formatVersion": "1.6",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "tools",
+        "title": "Tools",
+        "fields": [
+          {
+            "key": "tools",
+            "type": "multiselect",
+            "label": "Which tools did you use last month?",
+            "randomize": true,
+            "options": [
+              {
+                "value": "figma",
+                "label": "Figma"
+              },
+              {
+                "value": "sketch",
+                "label": "Sketch"
+              },
+              {
+                "value": "framer",
+                "label": "Framer"
+              },
+              {
+                "value": "penpot",
+                "label": "Penpot"
+              },
+              {
+                "value": "other",
+                "label": "Other",
+                "pinned": true
+              },
+              {
+                "value": "none",
+                "label": "None of these",
+                "exclusive": true
+              }
+            ]
+          },
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan",
+            "randomize": true,
+            "options": [
+              {
+                "value": "unsure",
+                "label": "Not sure yet",
+                "pinned": true
+              },
+              {
+                "value": "free",
+                "label": "Free"
+              },
+              {
+                "value": "pro",
+                "label": "Pro"
+              },
+              {
+                "value": "team",
+                "label": "Team"
+              },
+              {
+                "value": "enterprise",
+                "label": "Enterprise"
+              }
+            ]
+          },
+          {
+            "key": "size",
+            "type": "select",
+            "label": "Company size",
+            "options": [
+              {
+                "value": "small",
+                "label": "Small"
+              },
+              {
+                "value": "medium",
+                "label": "Medium"
+              },
+              {
+                "value": "large",
+                "label": "Large"
+              }
+            ]
+          },
+          {
+            "key": "city",
+            "type": "select",
+            "label": "City",
+            "randomize": true,
+            "optionsFrom": "cities"
+          }
+        ]
+      },
+      {
+        "id": "team",
+        "title": "Team",
+        "fields": [
+          {
+            "key": "team",
+            "type": "group",
+            "label": "Team",
+            "defaultItems": 2,
+            "fields": [
+              {
+                "key": "role",
+                "type": "radio",
+                "label": "Role",
+                "randomize": true,
+                "options": [
+                  {
+                    "value": "design",
+                    "label": "Design"
+                  },
+                  {
+                    "value": "engineering",
+                    "label": "Engineering"
+                  },
+                  {
+                    "value": "product",
+                    "label": "Product"
+                  },
+                  {
+                    "value": "research",
+                    "label": "Research"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "shows a seeded order and keeps pinned and exclusive options in place",
+      "seed": "visitor-1",
+      "steps": [
+        {
+          "expect": {
+            "options": {
+              "tools": ["penpot", "framer", "sketch", "figma", "other", "none"],
+              "plan": ["unsure", "free", "team", "enterprise", "pro"],
+              "size": ["small", "medium", "large"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "shows another order for another seed",
+      "seed": "visitor-2",
+      "steps": [
+        {
+          "expect": {
+            "options": {
+              "tools": ["framer", "figma", "penpot", "sketch", "other", "none"],
+              "plan": ["unsure", "team", "pro", "free", "enterprise"],
+              "size": ["small", "medium", "large"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the order after answers, next, back, goToStep and reset",
+      "seed": "visitor-1",
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "tools",
+          "value": ["figma"]
+        },
+        {
+          "do": "setValue",
+          "key": "plan",
+          "value": "pro"
+        },
+        {
+          "expect": {
+            "options": {
+              "tools": ["penpot", "framer", "sketch", "figma", "other", "none"],
+              "plan": ["unsure", "free", "team", "enterprise", "pro"]
+            },
+            "submitValues": {
+              "tools": ["figma"],
+              "plan": "pro",
+              "team": [{}, {}]
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "team",
+            "options": {
+              "team.role": ["product", "research", "engineering", "design"]
+            }
+          }
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "tools",
+            "options": {
+              "tools": ["penpot", "framer", "sketch", "figma", "other", "none"],
+              "plan": ["unsure", "free", "team", "enterprise", "pro"]
+            }
+          }
+        },
+        {
+          "do": "goToStep",
+          "stepId": "team"
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "step": "tools",
+            "options": {
+              "tools": ["penpot", "framer", "sketch", "figma", "other", "none"],
+              "plan": ["unsure", "free", "team", "enterprise", "pro"],
+              "team.role": ["product", "research", "engineering", "design"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the seed after replaceDefinition, and the order of fields whose options did not change",
+      "seed": "visitor-1",
+      "steps": [
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "formatVersion": "1.6",
+            "id": "f",
+            "title": "F",
+            "submit": {
+              "label": "Submit"
+            },
+            "steps": [
+              {
+                "id": "tools",
+                "title": "Design tools",
+                "fields": [
+                  {
+                    "key": "tools",
+                    "type": "multiselect",
+                    "label": "Which design tools did you use last month?",
+                    "randomize": true,
+                    "options": [
+                      {
+                        "value": "figma",
+                        "label": "Figma"
+                      },
+                      {
+                        "value": "sketch",
+                        "label": "Sketch"
+                      },
+                      {
+                        "value": "framer",
+                        "label": "Framer"
+                      },
+                      {
+                        "value": "penpot",
+                        "label": "Penpot"
+                      },
+                      {
+                        "value": "other",
+                        "label": "Other",
+                        "pinned": true
+                      },
+                      {
+                        "value": "none",
+                        "label": "None of these",
+                        "exclusive": true
+                      }
+                    ]
+                  },
+                  {
+                    "key": "plan",
+                    "type": "radio",
+                    "label": "Plan",
+                    "randomize": true,
+                    "options": [
+                      {
+                        "value": "unsure",
+                        "label": "Not sure yet",
+                        "pinned": true
+                      },
+                      {
+                        "value": "free",
+                        "label": "Free"
+                      },
+                      {
+                        "value": "pro",
+                        "label": "Pro"
+                      },
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "enterprise",
+                        "label": "Enterprise"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "size",
+                    "type": "select",
+                    "label": "Company size",
+                    "options": [
+                      {
+                        "value": "small",
+                        "label": "Small"
+                      },
+                      {
+                        "value": "medium",
+                        "label": "Medium"
+                      },
+                      {
+                        "value": "large",
+                        "label": "Large"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "city",
+                    "type": "select",
+                    "label": "City",
+                    "randomize": true,
+                    "optionsFrom": "cities"
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "team",
+                    "type": "group",
+                    "label": "Team",
+                    "defaultItems": 2,
+                    "fields": [
+                      {
+                        "key": "role",
+                        "type": "radio",
+                        "label": "Role",
+                        "randomize": true,
+                        "options": [
+                          {
+                            "value": "design",
+                            "label": "Design"
+                          },
+                          {
+                            "value": "engineering",
+                            "label": "Engineering"
+                          },
+                          {
+                            "value": "product",
+                            "label": "Product"
+                          },
+                          {
+                            "value": "research",
+                            "label": "Research"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "options": {
+              "tools": ["penpot", "framer", "sketch", "figma", "other", "none"],
+              "plan": ["unsure", "free", "team", "enterprise", "pro"]
+            }
+          }
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "formatVersion": "1.6",
+            "id": "f",
+            "title": "F",
+            "submit": {
+              "label": "Submit"
+            },
+            "steps": [
+              {
+                "id": "tools",
+                "title": "Tools",
+                "fields": [
+                  {
+                    "key": "tools",
+                    "type": "multiselect",
+                    "label": "Which tools did you use last month?",
+                    "randomize": true,
+                    "options": [
+                      {
+                        "value": "figma",
+                        "label": "Figma"
+                      },
+                      {
+                        "value": "sketch",
+                        "label": "Sketch"
+                      },
+                      {
+                        "value": "framer",
+                        "label": "Framer"
+                      },
+                      {
+                        "value": "penpot",
+                        "label": "Penpot"
+                      },
+                      {
+                        "value": "other",
+                        "label": "Other",
+                        "pinned": true
+                      },
+                      {
+                        "value": "none",
+                        "label": "None of these",
+                        "exclusive": true
+                      }
+                    ]
+                  },
+                  {
+                    "key": "plan",
+                    "type": "radio",
+                    "label": "Plan",
+                    "randomize": true,
+                    "options": [
+                      {
+                        "value": "unsure",
+                        "label": "Not sure yet",
+                        "pinned": true
+                      },
+                      {
+                        "value": "free",
+                        "label": "Free"
+                      },
+                      {
+                        "value": "pro",
+                        "label": "Pro"
+                      },
+                      {
+                        "value": "team",
+                        "label": "Team"
+                      },
+                      {
+                        "value": "enterprise",
+                        "label": "Enterprise"
+                      },
+                      {
+                        "value": "custom",
+                        "label": "Custom"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "size",
+                    "type": "select",
+                    "label": "Company size",
+                    "options": [
+                      {
+                        "value": "small",
+                        "label": "Small"
+                      },
+                      {
+                        "value": "medium",
+                        "label": "Medium"
+                      },
+                      {
+                        "value": "large",
+                        "label": "Large"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "city",
+                    "type": "select",
+                    "label": "City",
+                    "randomize": true,
+                    "optionsFrom": "cities"
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "fields": [
+                  {
+                    "key": "team",
+                    "type": "group",
+                    "label": "Team",
+                    "defaultItems": 2,
+                    "fields": [
+                      {
+                        "key": "role",
+                        "type": "radio",
+                        "label": "Role",
+                        "randomize": true,
+                        "options": [
+                          {
+                            "value": "design",
+                            "label": "Design"
+                          },
+                          {
+                            "value": "engineering",
+                            "label": "Engineering"
+                          },
+                          {
+                            "value": "product",
+                            "label": "Product"
+                          },
+                          {
+                            "value": "research",
+                            "label": "Research"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "options": {
+              "tools": ["penpot", "framer", "sketch", "figma", "other", "none"],
+              "plan": ["unsure", "enterprise", "team", "free", "custom", "pro"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives every item of a group the same order",
+      "seed": "visitor-1",
+      "steps": [
+        {
+          "expect": {
+            "options": {
+              "team.role": ["product", "research", "engineering", "design"],
+              "team.0.role": ["product", "research", "engineering", "design"],
+              "team.1.role": ["product", "research", "engineering", "design"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "orders a list from an options provider",
+      "seed": "visitor-1",
+      "steps": [
+        {
+          "do": "orderOptions",
+          "key": "city",
+          "options": [
+            {
+              "value": "paris",
+              "label": "Paris"
+            },
+            {
+              "value": "rome",
+              "label": "Rome"
+            },
+            {
+              "value": "oslo",
+              "label": "Oslo"
+            },
+            {
+              "value": "lima",
+              "label": "Lima"
+            }
+          ],
+          "returns": ["oslo", "rome", "lima", "paris"]
+        },
+        {
+          "do": "orderOptions",
+          "key": "size",
+          "options": [
+            {
+              "value": "paris",
+              "label": "Paris"
+            },
+            {
+              "value": "rome",
+              "label": "Rome"
+            },
+            {
+              "value": "oslo",
+              "label": "Oslo"
+            },
+            {
+              "value": "lima",
+              "label": "Lima"
+            }
+          ],
+          "returns": ["paris", "rome", "oslo", "lima"]
+        },
+        {
+          "do": "orderOptions",
+          "key": "missing",
+          "options": [
+            {
+              "value": "paris",
+              "label": "Paris"
+            },
+            {
+              "value": "rome",
+              "label": "Rome"
+            },
+            {
+              "value": "oslo",
+              "label": "Oslo"
+            },
+            {
+              "value": "lima",
+              "label": "Lima"
+            }
+          ],
+          "returns": ["paris", "rome", "oslo", "lima"]
+        }
+      ]
+    },
+    {
+      "name": "does not shuffle matrix rows or autocomplete suggestions",
+      "definition": {
+        "formatVersion": "1.6",
+        "id": "m",
+        "title": "M",
+        "submit": {
+          "label": "Submit"
+        },
+        "fields": [
+          {
+            "key": "ratings",
+            "type": "section",
+            "title": "Ratings",
+            "layout": "matrix",
+            "fields": [
+              {
+                "key": "speed",
+                "type": "radio",
+                "label": "Speed",
+                "randomize": true,
+                "options": [
+                  {
+                    "value": "1",
+                    "label": "1"
+                  },
+                  {
+                    "value": "2",
+                    "label": "2"
+                  },
+                  {
+                    "value": "3",
+                    "label": "3"
+                  }
+                ]
+              },
+              {
+                "key": "price",
+                "type": "radio",
+                "label": "Price",
+                "randomize": true,
+                "options": [
+                  {
+                    "value": "1",
+                    "label": "1"
+                  },
+                  {
+                    "value": "2",
+                    "label": "2"
+                  },
+                  {
+                    "value": "3",
+                    "label": "3"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "country",
+            "type": "autocomplete",
+            "label": "Country",
+            "randomize": true,
+            "options": [
+              {
+                "value": "ca",
+                "label": "Canada"
+              },
+              {
+                "value": "mx",
+                "label": "Mexico"
+              },
+              {
+                "value": "us",
+                "label": "United States"
+              }
+            ]
+          }
+        ]
+      },
+      "seed": "visitor-1",
+      "steps": [
+        {
+          "expect": {
+            "options": {
+              "speed": ["1", "2", "3"],
+              "price": ["1", "2", "3"],
+              "country": ["ca", "mx", "us"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
