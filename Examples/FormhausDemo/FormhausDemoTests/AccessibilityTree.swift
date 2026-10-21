@@ -45,7 +45,8 @@ func axTree(_ view: UIView) -> [AXNode] {
 @MainActor
 func axNodes(_ view: some View, size: CGSize = CGSize(width: 393, height: 2400)) async -> [AXNode] {
     enableAccessibilityAutomation()
-    ScriptKeyboard.hide()
+    UITextField.appearance().inputView = UIView(frame: .zero)
+    UITextField.appearance().inputAccessoryView = nil
     let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
     let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow()
     window.frame = CGRect(origin: .zero, size: size)

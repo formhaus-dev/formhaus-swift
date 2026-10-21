@@ -86,22 +86,11 @@ cd Benchmarks && swift package benchmark --target RegexBenchmarks
 
 The benchmarks use jemalloc when it is installed. Without it, set `BENCHMARK_DISABLE_JEMALLOC=true`. Run builds and benchmarks under `nice -n 15` on a busy machine.
 
-## Demo and video
+## Demo
 
 `Examples/FormhausDemo` uses the package from the repository by path. CI builds it for the iOS Simulator and macOS, runs the system set navigation tests on pull requests, and runs the iOS Simulator accessibility audit on pushes to `main`.
 
-Script mode plays a fixed interaction through the public `FormModel` API, for screen recordings. Pass the launch arguments in the scheme or to `xcrun simctl launch`:
-
-- `-demoScript tour` types, picks options, triggers and fixes an error, takes the landing page branch, gets the server error and submits.
-- `-demoScript languages` switches to German and back.
-- `-demoScript styles` shows the same values and step in the native, Kiln and formhaus sets.
-- `-demoStyle system` or `-demoStyle brand` starts in another set.
-- `-demoLanguage de` starts in German.
-- `-demoSpeed 2` plays twice as fast. `-demoStop <mark>` stops at a mark, such as `error`, `branch`, `server` or `success`.
-
-The timings are in `FormhausDemo/Resources/demo-timings.json`. `Examples/FormhausDemo/scripts/render-assets.sh` renders the app icon and the option pictures.
-
-The product video is built from sources in `media/video`. Its README covers recording the footage and rendering.
+`Examples/FormhausDemo/scripts/render-assets.sh` renders the app icon and the option pictures.
 
 ## Pull requests
 

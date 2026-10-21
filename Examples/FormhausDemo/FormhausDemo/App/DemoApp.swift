@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct DemoApp: App {
-    @State private var session = DemoSession(launch: LaunchOptions())
+    @State private var session = DemoSession()
 
     var body: some Scene {
         WindowGroup {

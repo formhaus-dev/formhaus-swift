@@ -1,8 +1,6 @@
 import FormhausUI
 import SwiftUI
 
-extension DemoSession: ScriptStage {}
-
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.colorSchemeContrast) private var contrast
@@ -18,7 +16,6 @@ struct RootView: View {
                 .toolbar { toolbar }
         }
         .tint(session.style.palette(scheme, contrast).primary)
-        .task { await playScript() }
     }
 
     @ViewBuilder private var content: some View {
@@ -71,13 +68,6 @@ struct RootView: View {
 
     private var styleBinding: Binding<DemoStyle> {
         Binding(get: { session.style }, set: { style in withAnimation(.snappy) { session.style = style } })
-    }
-
-    private func playScript() async {
-        guard let name = session.launch.script, let script = DemoScript.named(name) else { return }
-        ScriptKeyboard.hide()
-        let runner = ScriptRunner(script: script, timings: session.timings, stopAt: session.launch.stopAt, stage: session)
-        await runner.run()
     }
 }
 

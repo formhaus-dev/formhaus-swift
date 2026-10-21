@@ -9,11 +9,6 @@ struct Receipt: Equatable {
     let project: String
 }
 
-struct ScrollTarget: Equatable {
-    let key: String
-    let id: Int
-}
-
 @MainActor
 @Observable
 final class DemoSession {
@@ -22,22 +17,15 @@ final class DemoSession {
         case done(Receipt)
     }
 
-    private(set) var language: DemoLanguage
-    var style: DemoStyle
+    private(set) var language = DemoLanguage.english
+    var style = DemoStyle.formhaus
     private(set) var model: FormModel
     private(set) var phase = Phase.form
-    private(set) var scrollTarget: ScrollTarget?
-    @ObservationIgnored let timings: ScriptTimings
-    @ObservationIgnored let launch: LaunchOptions
     @ObservationIgnored private let source: FormSource
     @ObservationIgnored private var registered: Set<String> = ["ada@lovelace.dev"]
     @ObservationIgnored private let relay: Relay
 
-    init(launch: LaunchOptions, bundle: Bundle = .main) {
-        self.launch = launch
-        language = launch.language
-        style = launch.style
-        timings = ScriptTimings.load(from: bundle, speed: launch.speed)
+    init(bundle: Bundle = .main) {
         do {
             source = try FormSource(bundle: bundle)
         } catch {
@@ -45,7 +33,7 @@ final class DemoSession {
         }
         let relay = Relay()
         self.relay = relay
-        model = Self.makeModel(source, launch.language, relay: relay)
+        model = Self.makeModel(source, .english, relay: relay)
         relay.session = self
     }
 
@@ -67,13 +55,8 @@ final class DemoSession {
 
     func restart() {
         model.engine.cancelPendingActions()
-        model = Self.makeModel(source, language, relay: relay)
+        model = Self.makeModel(source, .english, relay: relay)
         phase = .form
-        scrollTarget = nil
-    }
-
-    func reveal(_ key: String) {
-        scrollTarget = ScrollTarget(key: key, id: (scrollTarget?.id ?? 0) + 1)
     }
 
     private static func makeModel(
@@ -94,7 +77,7 @@ final class DemoSession {
     }
 
     private func send(_ values: JSONObject) async throws -> SubmitResult {
-        try await Task.sleep(for: .seconds(timings.submitDelay))
+        try await Task.sleep(for: .seconds(1.3))
         let email = values["email"]?.stringValue?.lowercased() ?? ""
         guard !registered.contains(email) else { return .rejected(errors: ["email": copy.emailTaken]) }
         registered.insert(email)
