@@ -4,21 +4,14 @@ import SwiftUI
 struct FormScreen: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.colorSchemeContrast) private var contrast
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let session: DemoSession
 
     var body: some View {
-        ScrollViewReader { proxy in
-            Group {
-                if session.style == .system {
-                    FormhausFormContent(model: session.model)
-                } else {
-                    scroller
-                }
-            }
-            .onChange(of: session.scrollTarget) { _, target in
-                guard let target else { return }
-                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.45)) { proxy.scrollTo(target.key, anchor: .center) }
+        Group {
+            if session.style == .system {
+                FormhausFormContent(model: session.model)
+            } else {
+                scroller
             }
         }
         .formhausComponents(session.style.components)
