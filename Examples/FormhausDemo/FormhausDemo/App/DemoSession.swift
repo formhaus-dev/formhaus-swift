@@ -33,7 +33,7 @@ final class DemoSession {
         }
         let relay = Relay()
         self.relay = relay
-        model = Self.makeModel(source, .english, relay: relay)
+        model = Self.makeModel(source, language, relay: relay)
         relay.session = self
     }
 
@@ -55,7 +55,7 @@ final class DemoSession {
 
     func restart() {
         model.engine.cancelPendingActions()
-        model = Self.makeModel(source, .english, relay: relay)
+        model = Self.makeModel(source, language, relay: relay)
         phase = .form
     }
 
