@@ -1,4 +1,4 @@
-import { el, motion, progress } from './scenes/kit.js';
+import { el, mix, motion, progress } from './scenes/kit.js';
 
 const params = new URLSearchParams(location.search);
 const capture = params.has('capture') || params.has('frame');
@@ -26,14 +26,16 @@ const scenes = await Promise.all(
 
 const cut = params.has('calm');
 const last = data.beats.length - 1;
-const pushes = (index) => !cut && index > 0 && !data.beats[index].continues && data.beats[index].scene !== data.beats[index - 1].scene;
+const blends = (index) => !cut && index > 0 && !data.beats[index].continues && data.beats[index].scene !== data.beats[index - 1].scene;
+const half = transition / 2;
 const visible = ({ beat, index }, t) =>
-  t >= beat.start && (t < beat.start + beat.duration + (index < last && pushes(index + 1) ? transition : 0) || index === last);
+  t >= beat.start && (t < beat.start + beat.duration + (index < last && blends(index + 1) ? half : 0) || index === last);
 
-const offset = ({ beat, index }, t) => {
-  const entering = pushes(index) ? 1 - progress(t - beat.start, 0, transition) : 0;
-  const leaving = index < last && pushes(index + 1) ? progress(t - beat.start - beat.duration, 0, transition) : 0;
-  return (entering - leaving) * 1920;
+const look = ({ beat, index }, t) => {
+  const local = t - beat.start;
+  const enter = blends(index) ? progress(local, half, half) : 1;
+  const leave = index < last && blends(index + 1) ? progress(local - beat.duration, 0, half) : 0;
+  return { opacity: enter * (1 - leave), scale: mix(1.03, 1, enter) * mix(1, 0.97, leave) };
 };
 
 export const renderFrame = async (frame) => {
@@ -44,7 +46,9 @@ export const renderFrame = async (frame) => {
     entry.layer.style.display = show ? 'block' : 'none';
     if (!show) continue;
     const local = t - entry.beat.start;
-    entry.layer.style.transform = `translateX(${offset(entry, t)}px)`;
+    const { opacity, scale } = look(entry, t);
+    entry.layer.style.opacity = String(opacity);
+    entry.layer.style.transform = `scale(${scale})`;
     pending.push(entry.scene.update(local));
   }
   await Promise.all(pending);

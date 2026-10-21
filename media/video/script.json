@@ -4,7 +4,7 @@
     "width": 1920,
     "height": 1080,
     "fps": 60,
-    "transition": 0.22,
+    "transition": 0.5,
     "poster": {
       "beat": "branch",
       "at": 2
