@@ -26,10 +26,10 @@
         "projectType": {
           "label": "Was brauchen Sie?",
           "options": {
-            "new-site": "Eine neue Website",
-            "redesign": "Ein Redesign",
-            "landing-page": "Eine Landingpage",
-            "online-store": "Einen Onlineshop"
+            "new-site": "Neue Website",
+            "redesign": "Redesign",
+            "landing-page": "Landingpage",
+            "online-store": "Onlineshop"
           },
           "validation": { "required": "Wählen Sie die Art des Projekts" }
         },
