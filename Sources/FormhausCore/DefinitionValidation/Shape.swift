@@ -87,7 +87,7 @@ private func action(_ value: JSONValue?, _ path: String) -> [DefinitionIssue] {
 }
 
 private func option(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
-    text(value, "value", path) + typed(value, ["label": .string, "image": .string, "exclusive": .boolean], path)
+    text(value, "value", path) + typed(value, ["label": .string, "image": .string, "exclusive": .boolean, "pinned": .boolean], path)
 }
 
 private let rules: KeyValuePairs<String, Kind> = [
@@ -122,7 +122,7 @@ private func field(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
     let container = (type == "section" || type == "group") && nestable(path)
     let labels: KeyValuePairs<String, Kind> = [
         "label": .string, "placeholder": .string, "autocomplete": .string, "helperText": .string, "title": .string, "description": .string,
-        "itemLabel": .string, "addLabel": .string, "removeLabel": .string, "defaultItems": .number,
+        "itemLabel": .string, "addLabel": .string, "removeLabel": .string, "defaultItems": .number, "randomize": .boolean,
     ]
     return text(value, "key", path) + text(value, "type", path) + typed(value, labels, path)
         + (container ? list(value["fields"], "\(path)/fields", "a field object", field, required: true) : [])

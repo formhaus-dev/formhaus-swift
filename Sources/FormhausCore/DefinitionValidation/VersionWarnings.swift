@@ -17,7 +17,14 @@ private func latestOutdated(_ context: CheckContext) -> (problem: String, needed
     return nil
 }
 
+private func setsOrder(_ field: FormField) -> Bool {
+    field.json.has("randomize") || (field.options ?? []).contains { $0.json.has("pinned") }
+}
+
 private func outdated(_ context: CheckContext, _ minor: Double) -> (problem: String, needed: Int, hint: String)? {
+    if minor < 6, let entry = context.entries.first(where: { setsOrder($0.field) }) {
+        return ("\(entry.path) sets \"randomize\" or \"pinned\"", 6, "Older versions of @formhaus/core show the written order")
+    }
     if minor < 5, let latest = latestOutdated(context) { return latest }
     if minor < 4, let entry = context.conditions.first(where: { entry in containsOperators.contains { entry.condition.json.has($0) } }),
         let name = containsOperators.first(where: { entry.condition.json.has($0) })

@@ -6,15 +6,15 @@ enum Properties {
     static let step: [String] = ["id", "title", "description", "fields", "show", "showAny", "routes", "next", "back", "skip", "i18n"]
     static let field: [String] = [
         "key", "type", "label", "placeholder", "helperText", "autoAdvance", "defaultValue", "source", "show", "showAny", "validation",
-        "options", "layout", "columns", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode", "autocomplete", "props",
-        "i18n",
+        "options", "randomize", "layout", "columns", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode",
+        "autocomplete", "props", "i18n",
     ]
     static let section: [String] = ["key", "type", "title", "description", "layout", "show", "showAny", "fields", "i18n"]
     static let group: [String] = [
         "key", "type", "label", "helperText", "itemLabel", "addLabel", "removeLabel", "defaultItems", "show", "showAny", "validation",
         "fields", "i18n",
     ]
-    static let option: [String] = ["value", "label", "image", "exclusive", "i18n"]
+    static let option: [String] = ["value", "label", "image", "exclusive", "pinned", "i18n"]
     static let action: [String] = ["label", "variant", "disabled", "i18n"]
     static let route: [String] = ["to", "show", "showAny"]
     static let validation: [String] = [
@@ -60,6 +60,33 @@ private func misplaced(_ key: String) -> String? {
         ? "Move \"\(key)\" into \"validation\": { \"\(key)\": ... }" : nil
 }
 
+private func optionWarnings(_ field: FormField, _ option: FieldOption, _ at: String) -> [DefinitionIssue] {
+    var issues = labeled(option.json, at) + unknown(option.json, at, Properties.option)
+    if let image = option.image, safeImage.test(image) != true {
+        issues.append(
+            warning(
+                "unsafe-image-url", "\(at)/image",
+                "the image of option \"\(option.value ?? "")\" in \"\(field.key)\" is not an https: or data:image/ URL",
+                "Serve the image over https"))
+    }
+    if option.pinned && !field.randomize {
+        issues.append(
+            warning("randomize-not-applicable", "\(at)/pinned", "\"\(field.key)\" does not set \"randomize\"", "Remove \"pinned\""))
+    }
+    return issues
+}
+
+private func randomizeWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
+    let field = entry.field
+    guard field.randomize, !randomizedTypes.contains(field.type) || entry.parent?.json["layout"]?.stringValue == "matrix" else { return [] }
+    return [
+        warning(
+            "randomize-not-applicable", "\(entry.path)/randomize",
+            "\"randomize\" of \"\(field.key)\" applies to radio, multiselect and select fields outside a matrix",
+            "Remove \"randomize\"")
+    ]
+}
+
 private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     let field = entry.field
     let path = entry.path
@@ -69,16 +96,9 @@ private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     if empty { issues.append(warning("missing-label", "\(path)/label", "the label of \"\(field.key)\" is empty", labelHint)) }
     issues += unknown(field.json, path, field.isGroup ? Properties.group : Properties.field, hint: misplaced)
     for (index, option) in (field.options ?? []).enumerated() {
-        let at = "\(path)/options/\(index)"
-        issues += labeled(option.json, at) + unknown(option.json, at, Properties.option)
-        if let image = option.image, safeImage.test(image) != true {
-            issues.append(
-                warning(
-                    "unsafe-image-url", "\(at)/image",
-                    "the image of option \"\(option.value ?? "")\" in \"\(field.key)\" is not an https: or data:image/ URL",
-                    "Serve the image over https"))
-        }
+        issues += optionWarnings(field, option, "\(path)/options/\(index)")
     }
+    issues += randomizeWarnings(entry)
     if let validation = field.validation { issues += unknown(validation.json, "\(path)/validation", Properties.validation) }
     if field.json["columns"] != nil, !field.hasPictures || entry.parent?.json["layout"]?.stringValue == "matrix" {
         issues.append(

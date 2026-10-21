@@ -6,6 +6,7 @@ let builtInTypes = [
 let scaleTypes = ["scale", "rating"]
 let numberTypes = ["number"] + scaleTypes
 let listTypes = ["multiselect"]
+let randomizedTypes = ["radio", "multiselect", "select"]
 
 let maxStringLength = 10000
 let maxHiddenLength = 2000

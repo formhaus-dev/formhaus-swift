@@ -15,6 +15,7 @@ public struct FieldOption: Sendable, Hashable {
     public var label: String? { json["label"]?.stringValue }
     public var image: String? { json["image"]?.stringValue }
     public var exclusive: Bool { json["exclusive"]?.isTruthy == true }
+    public var pinned: Bool { json["pinned"]?.isTruthy == true }
 }
 
 public struct FieldValidation: Sendable, Hashable {
@@ -76,6 +77,7 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
     public var source: JSONValue? { json["source"] }
     public var optionsFrom: JSONValue? { json["optionsFrom"] }
     public var hasOptionsFrom: Bool { optionsFrom?.isTruthy == true }
+    public var randomize: Bool { json["randomize"]?.isTruthy == true }
     public var defaultItems: Double? { json["defaultItems"]?.numberValue }
     public var isGroup: Bool { type == "group" }
     public var isScale: Bool { scaleTypes.contains(type) }

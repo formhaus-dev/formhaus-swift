@@ -64,6 +64,7 @@ extension IssueCode {
     public static let customTypeName = IssueCode(rawValue: "custom-type-name")
     public static let definitionReset = IssueCode(rawValue: "definition-reset")
     public static let missingComponent = IssueCode(rawValue: "missing-component")
+    public static let missingResearch = IssueCode(rawValue: "missing-research")
     public static let unknownValidator = IssueCode(rawValue: "unknown-validator")
     public static let skipUnreachable = IssueCode(rawValue: "skip-unreachable")
     public static let routeFallthrough = IssueCode(rawValue: "route-fallthrough")
@@ -83,4 +84,5 @@ extension IssueCode {
     public static let exclusiveOptionPosition = IssueCode(rawValue: "exclusive-option-position")
     public static let exclusiveDefaultValue = IssueCode(rawValue: "exclusive-default-value")
     public static let exclusiveWithMinLength = IssueCode(rawValue: "exclusive-with-min-length")
+    public static let randomizeNotApplicable = IssueCode(rawValue: "randomize-not-applicable")
 }
