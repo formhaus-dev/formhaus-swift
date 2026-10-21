@@ -26,10 +26,15 @@ export const pair = (layer, data, beat, { gap = 48, head = captionHeight, height
     sides,
     captionY,
     middle: devicesY + tallest / 2,
-    frame() {
-      for (const item of Object.values(sides)) {
-        place(item.node.root, { x: item.x, y: devicesY + (tallest - item.node.height * item.scale) / 2, scale: item.scale });
-      }
+    frame(motion = () => ({})) {
+      Object.values(sides).forEach((item, index) => {
+        const { rise = 0, grow = 1, opacity = 1 } = motion(index);
+        const width = item.node.width * item.scale;
+        const height = item.node.height * item.scale;
+        const x = item.x + (width * (1 - grow)) / 2;
+        const y = devicesY + (tallest - height) / 2 + (height * (1 - grow)) / 2 + rise;
+        place(item.node.root, { x, y, scale: item.scale * grow, opacity });
+      });
     },
   };
 };

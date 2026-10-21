@@ -26,13 +26,13 @@ const scenes = await Promise.all(
 
 const cut = params.has('calm');
 const last = data.beats.length - 1;
-const visible = ({ beat, index }, t) => t >= beat.start && (t < beat.start + beat.duration || index === last);
+const overlap = (index) => (cut || index === last || data.beats[index + 1].continues ? 0 : transition);
+const visible = ({ beat, index }, t) => t >= beat.start && (t < beat.start + beat.duration + overlap(index) || index === last);
 
 const fade = ({ beat, index }, local) => {
   if (cut) return 1;
   const enter = index === 0 || beat.continues ? 1 : progress(local, 0, transition);
-  const leave = index === last || data.beats[index + 1].continues ? 0 : progress(local, beat.duration - transition, transition);
-  return Math.min(enter, 1 - leave);
+  return enter;
 };
 
 export const renderFrame = async (frame) => {

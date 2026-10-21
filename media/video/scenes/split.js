@@ -1,5 +1,5 @@
 import { footage } from './footage.js';
-import { el, place } from './kit.js';
+import { el, place, progress } from './kit.js';
 import { pair } from './pair.js';
 
 export default async (layer, beat, data) => {
@@ -14,7 +14,8 @@ export default async (layer, beat, data) => {
   return {
     update(t) {
       frame();
-      place(caption, { y: captionY });
+      const enter = beat.continues ? 1 : progress(t, data.output.transition, 0.25);
+      place(caption, { y: captionY, opacity: Math.min(enter, 1 - progress(t, beat.duration - 0.2, 0.2)) });
       return Promise.all(players.map(({ player, from }) => player.at(from + t)));
     },
   };

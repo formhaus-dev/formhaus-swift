@@ -522,3 +522,25 @@ body {
   font-size: 34px;
   font-weight: 650;
 }
+
+.launch-word {
+  display: inline-block;
+}
+
+.launch-head {
+  width: 1920px;
+  text-align: center;
+}
+
+.launch-sub {
+  margin-top: 18px;
+}
+
+.launch-tab {
+  font-size: 26px;
+}
+
+.launch-code {
+  padding: 14px 44px 30px;
+  font-size: 36px;
+}
