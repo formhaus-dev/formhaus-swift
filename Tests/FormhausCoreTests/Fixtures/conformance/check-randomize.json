@@ -1,0 +1,130 @@
+{
+  "name": "check-randomize",
+  "covers": ["warns about randomize and pinned where they do not apply"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "randomize-not-applicable",
+      "path": "/fields/1/randomize"
+    },
+    {
+      "code": "randomize-not-applicable",
+      "path": "/fields/2/randomize"
+    },
+    {
+      "code": "randomize-not-applicable",
+      "path": "/fields/3/fields/0/randomize"
+    },
+    {
+      "code": "randomize-not-applicable",
+      "path": "/fields/4/options/2/pinned"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.6",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "pick",
+        "type": "radio",
+        "label": "Pick",
+        "randomize": true,
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          },
+          {
+            "value": "c",
+            "label": "C",
+            "pinned": true
+          }
+        ]
+      },
+      {
+        "key": "agree",
+        "type": "checkbox",
+        "label": "Agree",
+        "randomize": true
+      },
+      {
+        "key": "country",
+        "type": "autocomplete",
+        "label": "Country",
+        "randomize": true,
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          },
+          {
+            "value": "c",
+            "label": "C",
+            "pinned": true
+          }
+        ]
+      },
+      {
+        "key": "ratings",
+        "type": "section",
+        "title": "Ratings",
+        "layout": "matrix",
+        "fields": [
+          {
+            "key": "speed",
+            "type": "radio",
+            "label": "Speed",
+            "randomize": true,
+            "options": [
+              {
+                "value": "a",
+                "label": "A"
+              },
+              {
+                "value": "b",
+                "label": "B"
+              },
+              {
+                "value": "c",
+                "label": "C",
+                "pinned": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "fixed",
+        "type": "select",
+        "label": "Fixed",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          },
+          {
+            "value": "c",
+            "label": "C",
+            "pinned": true
+          }
+        ]
+      }
+    ]
+  }
+}

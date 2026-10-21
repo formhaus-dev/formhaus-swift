@@ -97,11 +97,21 @@ enum Corpus {
     static let names = jsonFiles(in: directory)
 
     static func load(_ url: URL) -> JSONValue {
+        guard let data = try? Data(contentsOf: url) else { fatalError("cannot read \(url.lastPathComponent)") }
         do {
-            return try JSONValue(parsing: Data(contentsOf: url))
+            return try JSONValue(parsing: data)
         } catch {
-            fatalError("cannot load \(url.lastPathComponent): \(error)")
+            guard error.reason == "lone surrogate in string", let value = RawReader.parse(data)?.value(without: "orders") else {
+                fatalError("cannot load \(url.lastPathComponent): \(error)")
+            }
+            return value
         }
+    }
+
+    static func orders(_ name: String) -> [RawJSON] {
+        let url = directory.appendingPathComponent("\(name).json")
+        guard let data = try? Data(contentsOf: url), let raw = RawReader.parse(data) else { fatalError("cannot read \(name).json") }
+        return raw["orders"]?.items ?? []
     }
 
     static func fixture(_ name: String) -> CorpusFixture {

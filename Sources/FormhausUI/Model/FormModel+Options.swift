@@ -1,13 +1,8 @@
 @_spi(Renderer) import FormhausCore
 
 extension FormModel {
-    func optionKey(_ key: String) -> String {
-        guard let path = engine.itemPath(key) else { return key }
-        return "\(path.group).\(path.field)"
-    }
-
     public func options(for key: String) -> [FieldOption]? {
-        optionsState(optionKey(key)).options
+        optionsState(engine.optionKey(key)).options
     }
 
     private func optionsState(_ key: String) -> OptionsState {
@@ -47,7 +42,7 @@ extension FormModel {
     private func optionSources() -> [(String, FormField)] {
         structure.visibleFields.flatMap { field -> [(String, FormField)] in
             guard field.isGroup else { return [(field.key, field)] }
-            return field.items.map { ("\(field.key).\($0.key)", $0) }
+            return field.items.map { (optionKey(group: field.key, field: $0.key), $0) }
         }
     }
 }

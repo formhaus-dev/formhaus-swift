@@ -1,0 +1,248 @@
+{
+  "name": "option-order",
+  "covers": ["shuffles options with the specified hash, generator and shuffle"],
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.6",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "tools",
+        "type": "multiselect",
+        "label": "Which tools did you use last month?",
+        "randomize": true,
+        "options": [
+          {
+            "value": "figma",
+            "label": "Figma"
+          },
+          {
+            "value": "sketch",
+            "label": "Sketch"
+          },
+          {
+            "value": "framer",
+            "label": "Framer"
+          },
+          {
+            "value": "other",
+            "label": "Other",
+            "pinned": true
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ]
+      }
+    ]
+  },
+  "orders": [
+    {
+      "seed": "7f3a9c2e5b8d104f6a1e3c7b9d2f4a6c",
+      "key": "tools",
+      "count": 5,
+      "pinned": [4],
+      "order": [3, 0, 2, 1, 4]
+    },
+    {
+      "seed": "0c91d4e7a2b5f8136c9e0a4d7b1f3e5a",
+      "key": "tools",
+      "count": 5,
+      "pinned": [4],
+      "order": [1, 2, 0, 3, 4]
+    },
+    {
+      "seed": "7f3a9c2e5b8d104f6a1e3c7b9d2f4a6c",
+      "key": "tools",
+      "count": 5,
+      "pinned": [3, 4],
+      "order": [2, 0, 1, 3, 4]
+    },
+    {
+      "seed": "7f3a9c2e5b8d104f6a1e3c7b9d2f4a6c",
+      "key": "colors",
+      "count": 5,
+      "pinned": [],
+      "order": [4, 3, 0, 2, 1]
+    },
+    {
+      "seed": "",
+      "key": "a",
+      "count": 1,
+      "pinned": [],
+      "order": [0]
+    },
+    {
+      "seed": "",
+      "key": "a",
+      "count": 2,
+      "pinned": [],
+      "order": [0, 1]
+    },
+    {
+      "seed": "seed",
+      "key": "a",
+      "count": 2,
+      "pinned": [0],
+      "order": [0, 1]
+    },
+    {
+      "seed": "seed",
+      "key": "a",
+      "count": 3,
+      "pinned": [1],
+      "order": [0, 1, 2]
+    },
+    {
+      "seed": "seed",
+      "key": "plan",
+      "count": 3,
+      "pinned": [],
+      "order": [2, 0, 1]
+    },
+    {
+      "seed": "seed",
+      "key": "plan",
+      "count": 4,
+      "pinned": [0],
+      "order": [0, 3, 1, 2]
+    },
+    {
+      "seed": "seed",
+      "key": "plan",
+      "count": 6,
+      "pinned": [0, 5],
+      "order": [0, 2, 1, 4, 3, 5]
+    },
+    {
+      "seed": "seed",
+      "key": "plan",
+      "count": 7,
+      "pinned": [3],
+      "order": [4, 1, 2, 3, 0, 6, 5]
+    },
+    {
+      "seed": "seed",
+      "key": "plan",
+      "count": 8,
+      "pinned": [0, 1, 2, 3, 4, 5, 6, 7],
+      "order": [0, 1, 2, 3, 4, 5, 6, 7]
+    },
+    {
+      "seed": "visitor-42",
+      "key": "team.role",
+      "count": 4,
+      "pinned": [],
+      "order": [2, 3, 1, 0]
+    },
+    {
+      "seed": "visitor-42",
+      "key": "team.role",
+      "count": 10,
+      "pinned": [9],
+      "order": [3, 5, 2, 0, 1, 7, 6, 8, 4, 9]
+    },
+    {
+      "seed": "visitor-42",
+      "key": "team",
+      "count": 10,
+      "pinned": [0, 9],
+      "order": [0, 7, 4, 2, 1, 6, 5, 8, 3, 9]
+    },
+    {
+      "seed": "café",
+      "key": "q1",
+      "count": 6,
+      "pinned": [],
+      "order": [4, 0, 5, 1, 2, 3]
+    },
+    {
+      "seed": "café",
+      "key": "q1",
+      "count": 6,
+      "pinned": [],
+      "order": [5, 0, 3, 2, 4, 1]
+    },
+    {
+      "seed": "😀",
+      "key": "q1",
+      "count": 6,
+      "pinned": [],
+      "order": [0, 1, 5, 3, 4, 2]
+    },
+    {
+      "seed": "Ω≈ç√",
+      "key": "вопрос",
+      "count": 9,
+      "pinned": [4],
+      "order": [2, 8, 3, 6, 4, 0, 7, 1, 5]
+    },
+    {
+      "seed": "\ud800",
+      "key": "q",
+      "count": 5,
+      "pinned": [],
+      "order": [4, 0, 1, 3, 2]
+    },
+    {
+      "seed": "s\u001fq",
+      "key": "k",
+      "count": 5,
+      "pinned": [],
+      "order": [3, 1, 4, 2, 0]
+    },
+    {
+      "seed": "s",
+      "key": "q\u001fk",
+      "count": 5,
+      "pinned": [],
+      "order": [3, 1, 4, 2, 0]
+    },
+    {
+      "seed": "abc",
+      "key": "countries",
+      "count": 26,
+      "pinned": [0, 25],
+      "order": [0, 13, 24, 7, 1, 14, 21, 19, 3, 5, 22, 12, 23, 2, 11, 17, 18, 20, 6, 4, 8, 9, 10, 16, 15, 25]
+    },
+    {
+      "seed": "abc",
+      "key": "countries",
+      "count": 50,
+      "pinned": [10, 20, 30],
+      "order": [
+        31, 3, 44, 5, 33, 9, 38, 29, 22, 37, 10, 4, 16, 11, 49, 32, 2, 13, 46, 26, 20, 28, 47, 45, 8, 34, 42, 17, 18, 39, 30, 0, 27, 7, 23,
+        25, 36, 1, 24, 6, 12, 43, 48, 21, 15, 40, 19, 35, 41, 14
+      ]
+    },
+    {
+      "seed": "ffffffffffffffffffffffffffffffff",
+      "key": "long",
+      "count": 100,
+      "pinned": [],
+      "order": [
+        48, 52, 66, 96, 37, 55, 71, 82, 6, 78, 35, 47, 21, 90, 36, 28, 0, 98, 14, 15, 74, 46, 9, 73, 38, 41, 31, 29, 84, 58, 8, 63, 59, 86,
+        17, 12, 18, 95, 4, 89, 87, 64, 94, 16, 54, 99, 92, 75, 77, 91, 50, 24, 56, 70, 72, 26, 79, 97, 45, 80, 88, 85, 40, 44, 61, 11, 3, 1,
+        53, 30, 57, 20, 83, 13, 39, 69, 32, 67, 25, 10, 76, 22, 62, 42, 81, 27, 2, 7, 5, 49, 51, 65, 93, 19, 23, 43, 33, 60, 34, 68
+      ]
+    },
+    {
+      "seed": "00000000000000000000000000000000",
+      "key": "long",
+      "count": 100,
+      "pinned": [0, 49, 99],
+      "order": [
+        0, 81, 22, 7, 97, 57, 53, 80, 98, 92, 29, 79, 52, 6, 30, 21, 9, 33, 74, 64, 75, 36, 11, 35, 68, 46, 44, 47, 3, 71, 76, 87, 94, 34,
+        16, 40, 2, 67, 39, 8, 42, 93, 51, 63, 15, 84, 41, 14, 45, 49, 28, 32, 58, 5, 59, 61, 4, 62, 43, 77, 66, 23, 85, 89, 65, 17, 20, 27,
+        19, 69, 12, 48, 88, 26, 1, 96, 72, 55, 83, 70, 60, 24, 37, 95, 91, 86, 50, 54, 73, 78, 56, 38, 31, 90, 10, 18, 13, 82, 25, 99
+      ]
+    }
+  ]
+}

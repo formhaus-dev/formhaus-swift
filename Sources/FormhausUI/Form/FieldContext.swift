@@ -36,7 +36,8 @@ public struct FieldContext {
         loading = state.loading
         disabled = model.disabled
         focused = state.hasFocus
-        options = model.options(for: key) ?? field.options ?? []
+        let loaded = model.options(for: key)
+        options = field.randomize ? model.engine.orderOptions(key, options: loaded) : loaded ?? field.options ?? []
     }
 
     public var isItem: Bool { key != field.key }

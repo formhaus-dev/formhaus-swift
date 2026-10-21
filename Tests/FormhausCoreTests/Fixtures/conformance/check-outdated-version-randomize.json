@@ -1,0 +1,51 @@
+{
+  "name": "check-outdated-version-randomize",
+  "covers": ["asks for format 1.6 when a field sets randomize or pinned"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.5",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "tools",
+        "type": "multiselect",
+        "label": "Which tools did you use last month?",
+        "randomize": true,
+        "options": [
+          {
+            "value": "figma",
+            "label": "Figma"
+          },
+          {
+            "value": "sketch",
+            "label": "Sketch"
+          },
+          {
+            "value": "framer",
+            "label": "Framer"
+          },
+          {
+            "value": "other",
+            "label": "Other",
+            "pinned": true
+          },
+          {
+            "value": "none",
+            "label": "None of these",
+            "exclusive": true
+          }
+        ]
+      }
+    ]
+  }
+}

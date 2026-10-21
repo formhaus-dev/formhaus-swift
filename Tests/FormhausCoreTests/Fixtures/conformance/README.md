@@ -24,6 +24,7 @@ Each file holds one `definition`, the issues `checkDefinition` reports for it, a
 - `texts` maps text slot addresses to the text they hold after the overlay is applied, such as `"steps.account.fields.email.label": "Почта"`. Addresses are those of the specification under Translations, Addresses. Only the listed addresses are checked; an address with no text slot fails.
 - `cases` lists value cases. It may be empty or missing.
 - `recall` lists answer recall cases. It may be missing. See [Recall](#recall).
+- `orders` lists option order vectors. It may be missing. See [Option order](#option-order).
 
 ## Checks
 
@@ -36,6 +37,7 @@ The checks run on the definition as written, without `overlay`. A structural err
 5. `texts`: if set, apply `overlay` to the definition, list its text slots, and compare the text at each listed address. Do this even when step 1 rejected the definition: text slots do not depend on validation.
 6. If `issues` is empty, run each case.
 7. `recall`: if set, run each recall case on the definition after the overlay.
+8. `orders`: if set, run each option order vector.
 
 ## Cases
 
@@ -51,6 +53,14 @@ A case has `name`, `input` (`values` and `skippedSteps`), `expected` (`values` a
 A recall case has `name`, `values` and `texts`. Create the engine with `values` and take its submit values. Each entry of `texts` has an `address`, an optional `group` and `item`, and the expected `text`. Take the text at `address` from the text slots, resolve its `{{key}}` tokens with the submit values, the engine's active path and the identity formatter as the specification describes under Answer recall, and compare the result with `text`. With `group`, resolve it inside item number `item` (from 0) of that group.
 
 The identity formatter makes the expected texts the same on every platform. The default formatter is locale-native: each port builds it on its platform formatters with the style classes listed in the specification under Recall formatting, and matches the style class, not the bytes. Its locale falls back to `en`, never to the platform default. The corpus does not check it.
+
+## Option order
+
+Option order is an opt-in research feature: `@formhaus/core/research` in TypeScript and the FormhausResearch module in the Swift port. The vectors and the `option-order` scenarios run with it. A vector has `seed`, `key`, `count`, `pinned` and `order`. Build a list of `count` options in which the indexes in `pinned` are pinned, and shuffle it with `seed` and `key` as the specification describes under Option order. `order` lists the written index of the option shown at each position.
+
+```json
+{ "seed": "seed", "key": "plan", "count": 4, "pinned": [0], "order": [0, 3, 1, 2] }
+```
 
 ## Semantics
 

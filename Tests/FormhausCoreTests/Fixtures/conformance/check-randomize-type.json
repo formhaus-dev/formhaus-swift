@@ -1,0 +1,46 @@
+{
+  "name": "check-randomize-type",
+  "covers": ["rejects randomize and pinned that are not booleans"],
+  "issues": [
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/randomize"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/options/0/pinned"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.6",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "typed",
+        "type": "multiselect",
+        "label": "Typed",
+        "randomize": "yes",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "pinned": 1
+          },
+          {
+            "value": "b",
+            "label": "B"
+          },
+          {
+            "value": "c",
+            "label": "C",
+            "pinned": true
+          }
+        ]
+      }
+    ]
+  }
+}

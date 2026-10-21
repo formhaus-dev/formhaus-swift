@@ -7,18 +7,20 @@ let package = Package(
     products: [
         .library(name: "FormhausCore", targets: ["FormhausCore"]),
         .library(name: "FormhausUI", targets: ["FormhausUI"]),
+        .library(name: "FormhausResearch", targets: ["FormhausResearch"]),
     ],
     targets: [
         .target(name: "FormhausCore"),
         .target(name: "FormhausUI", dependencies: ["FormhausCore"]),
+        .target(name: "FormhausResearch", dependencies: ["FormhausCore"]),
         .testTarget(
             name: "FormhausCoreTests",
-            dependencies: ["FormhausCore"],
+            dependencies: ["FormhausCore", "FormhausResearch"],
             resources: [.copy("Fixtures")]
         ),
         .testTarget(
             name: "FormhausUITests",
-            dependencies: ["FormhausUI", "FormhausCore"],
+            dependencies: ["FormhausUI", "FormhausCore", "FormhausResearch"],
             resources: [.copy("Fixtures")]
         ),
     ],

@@ -26,7 +26,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.3"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.4"),
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -40,6 +40,7 @@ targets: [
 |---|---|
 | `FormhausCore` | Engine, validation, `validateSubmission` |
 | `FormhausUI` | SwiftUI renderer |
+| `FormhausResearch` | Option order for `randomize` fields |
 
 Requires Swift 6.2, iOS 17 or macOS 14. `FormhausCore` uses Foundation and `os`, so it builds for Apple platforms only. There is no JavaScript runtime.
 
@@ -73,6 +74,24 @@ struct SignupView: View {
 ```
 
 `.rejected(errors:formErrors:)` also takes errors that belong to no field. `SubmitResult(json:)` reads the `{ ok, errors, formErrors }` object that a formhaus endpoint returns. `jsonData()` and `jsonString()` on `JSONValue` and `JSONObject` write compact JSON in JavaScript key order. `JSONValue` is also `Codable`, but Foundation's keyed decoding may not keep the key order of the source JSON; use `JSONValue(parsing:)` when order matters. `FormEngine` runs the same form without a UI, for a renderer of your own. The [documentation](https://formhaus.dev/guide/) covers the definition format.
+
+## Randomize options
+
+A `radio`, `multiselect` or `select` field with `"randomize": true` shows its options in a random order per respondent. Add the `FormhausResearch` product and pass `Research()`:
+
+```swift
+.product(name: "FormhausResearch", package: "formhaus-swift"),
+```
+
+```swift
+import FormhausResearch
+
+FormhausForm(definition: definition, options: FormEngineOptions(research: Research())) { values, _ in
+    try await send(values)
+}
+```
+
+Without it, options show in written order. The same `seed` in `FormEngineOptions` shows the same order again.
 
 ## Choose a look
 
@@ -189,10 +208,11 @@ Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and 
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.1.4 | 1.1.1 | 1.6 |
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 73 definition files with their issues, value cases and recall cases, and 429 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 77 definition files with their issues, value cases, recall cases and option order vectors, and 436 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 

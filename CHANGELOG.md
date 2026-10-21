@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.4
+
+### FormhausCore
+
+- Passes the conformance suite of `@formhaus/core` 1.1.1.
+- Format 1.6: `"randomize": true` on a `radio`, `multiselect` or `select` field shows its options in a random order per respondent. Options with `"pinned": true` and exclusive options keep their written position.
+- New `FormEngineOptions.seed` and `FormEngineOptions.research`. The same seed shows the same order. `engine.seed` returns it.
+- New `engine.orderOptions(_:options:)` returns the options of a field in shown order.
+- New `FormResearch` protocol for the option order.
+- Without `research`, options show in written order, and debug builds report `missing-research` once per process through `onWarning`.
+- `checkDefinition()` reports `randomize-not-applicable`, and `outdated-format-version` for `randomize` or `pinned` below format 1.6.
+
+### FormhausResearch
+
+- New product with `Research`, the option order of `@formhaus/core/research`. Pass `Research()` as `research` to apply it.
+
+### FormhausUI
+
+- Fields with `randomize` show their options in the order of `engine.orderOptions(_:options:)`, including options from a provider.
+
 ## 0.1.3
 
 ### FormhausCore

@@ -1,4 +1,4 @@
-import FormhausCore
+@testable import FormhausCore
 
 extension ScenarioRun {
     private func index(_ step: JSONObject) -> Int {
@@ -26,6 +26,9 @@ extension ScenarioRun {
         case "goToStep": return json(engine.goToStep(step["stepId"]?.stringValue ?? ""))
         case "reset": engine.reset(step["values"]?.objectValue)
         case "replaceDefinition": try engine.replaceDefinition(file.localized(step["definition"] ?? .null))
+        case "orderOptions":
+            let options = step["options"]?.arrayValue?.compactMap { $0.objectValue.map(FieldOption.init(json:)) }
+            return optionValues(engine.orderOptions(key, options: options))
         case let name: throw ScriptError(message: "unknown action \(name ?? "nil")")
         }
         return nil
@@ -60,6 +63,9 @@ extension ScenarioRun {
         case "submitting": return .bool(engine.submitting)
         case "stepValidating": return .bool(engine.stepValidating)
         case "fieldLoading": return .object(JSONObject(engine.fieldLoading.map { ($0.key, .bool($0.value)) }))
+        case "options":
+            let keys = expected?.objectValue?.keys ?? []
+            return .object(JSONObject(keys.map { ($0, optionValues(engine.orderOptions($0))) }))
         case "log":
             return .array(log.drain())
         default:
@@ -145,6 +151,10 @@ extension ScenarioRun {
         await entry.task.value
         return true
     }
+}
+
+private func optionValues(_ options: [FieldOption]) -> JSONValue {
+    json(options.compactMap(\.value))
 }
 
 extension JSONObject {
