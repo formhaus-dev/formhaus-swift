@@ -72,32 +72,20 @@
       "title": "Start a project"
     }
   },
-  "edit": {
-    "field": "brandLink",
-    "property": "show.0.contains",
-    "value": "design"
-  },
   "marks": {
-    "tour": {
-      "first": 1.687,
-      "error": 1.687,
-      "landing": 4.026,
-      "branch": 5.057,
-      "back": 7
-    },
     "showcase": {
-      "first": 1.069,
-      "condition": 1.069,
-      "site": 1.732,
-      "typing": 2.051,
-      "project": 3.631,
-      "scope": 4.26,
-      "services": 5.173,
-      "scoped": 5.484,
-      "contact": 6.155,
-      "server": 10.074,
-      "success": 14.445,
-      "end": 15.845
+      "first": 1.121,
+      "condition": 1.121,
+      "swap": 1.751,
+      "reveal": 2.358,
+      "typing": 2.672,
+      "scope": 4.303,
+      "services": 5.256,
+      "scoped": 5.88,
+      "contact": 6.52,
+      "server": 10.41,
+      "success": 14.708,
+      "end": 16.108
     },
     "styles": {
       "first": 7.41,
@@ -114,36 +102,14 @@
       "errors": 3.318,
       "typing": 4.253,
       "end": 5.653
-    },
-    "edit": {
-      "first": 1.095,
-      "picked": 1.095,
-      "scope": 1.418,
-      "design": 2.019,
-      "end": 3.419
     }
   },
   "footage": {
-    "ios-tour": {
-      "device": "iphone",
-      "script": "tour",
-      "stop": "back",
-      "definition": "base",
-      "length": 8,
-      "motion": false
-    },
     "ios-showcase": {
       "device": "iphone",
       "script": "showcase",
       "definition": "base",
       "length": 27,
-      "speed": 1.5
-    },
-    "ios-variant": {
-      "device": "iphone",
-      "script": "edit",
-      "definition": "variant",
-      "length": 9,
       "speed": 1.5
     },
     "ios-styles": {
@@ -158,20 +124,6 @@
       "definition": "base",
       "still": true
     },
-    "web-tour": {
-      "device": "browser",
-      "script": "tour",
-      "stop": "back",
-      "definition": "base",
-      "length": 7.6
-    },
-    "web-variant": {
-      "device": "browser",
-      "script": "edit",
-      "definition": "variant",
-      "length": 3.6,
-      "speed": 1.5
-    },
     "ios-branch": {
       "device": "iphone",
       "script": "branch",
@@ -184,20 +136,6 @@
       "script": "branch",
       "definition": "base",
       "length": 6.4,
-      "speed": 1.5
-    },
-    "web-edit": {
-      "device": "browser",
-      "script": "edit",
-      "definition": "base",
-      "length": 3.6,
-      "speed": 1.5
-    },
-    "ios-edit": {
-      "device": "iphone",
-      "script": "edit",
-      "definition": "base",
-      "length": 9,
       "speed": 1.5
     }
   },
@@ -266,7 +204,7 @@
     {
       "id": "tour",
       "scene": "tour",
-      "duration": 9.07,
+      "duration": 9.56,
       "device": "iphone",
       "clip": "ios-showcase",
       "script": "showcase",
@@ -275,21 +213,14 @@
         {
           "from": "condition",
           "lead": 0.45,
-          "length": 1.07,
-          "rate": 1,
-          "label": "Image choices"
-        },
-        {
-          "from": "site",
-          "lead": 0,
-          "length": 2.15,
+          "length": 3.33,
           "rate": 1,
           "label": "Conditional fields"
         },
         {
           "from": "scope",
-          "lead": 0.402,
-          "length": 2,
+          "lead": 0.4,
+          "length": 2.58,
           "rate": 1,
           "label": "Checkboxes and ratings"
         },
@@ -355,9 +286,9 @@
         "iphone"
       ],
       "stills": {
-        "browser": "web-tour",
+        "browser": "web-branch",
         "mac": "mac-still",
-        "iphone": "ios-tour"
+        "iphone": "ios-branch"
       },
       "at": {
         "browser": 0.5,

@@ -23,7 +23,7 @@ struct DemoScript: Sendable {
         all.first { $0.name == name }
     }
 
-    static let all = [tour, showcase, branch, edit, languages, styles]
+    static let all = [tour, showcase, branch, languages, styles]
 
     static let tour = DemoScript(name: "tour", beats: prelude + walkthrough)
 
@@ -39,15 +39,6 @@ struct DemoScript: Sendable {
             .mark("typing"), .fill("name", "Ada Lovelace"), .wait(.hold),
         ])
 
-    static let edit = DemoScript(
-        name: "edit",
-        beats: [
-            .mark("start"), .wait(.intro),
-            .pick("projectType", "new-site"), .mark("picked"), .wait(.short),
-            .next, .mark("scope"), .wait(.beat),
-            .toggle("services", "design"), .mark("design"), .wait(.hold),
-        ])
-
     private static let prelude: [Beat] = [
         .mark("start"), .wait(.intro),
         .next, .mark("error"), .wait(.hold),
@@ -58,12 +49,12 @@ struct DemoScript: Sendable {
 
     private static let walkthrough: [Beat] = [
         .pick("projectType", "redesign"), .mark("condition"), .wait(.beat),
-        .next, .mark("site"), .wait(.short),
+        .pick("projectType", "online-store"), .mark("swap"), .wait(.beat),
+        .pick("projectType", "redesign"), .mark("reveal"), .wait(.short),
         .mark("typing"), .fill("currentSite", "https://northwind.studio"), .wait(.short),
-        .pick("siteRating", 5), .mark("project"), .wait(.beat),
         .next, .mark("scope"), .wait(.beat),
         .toggle("services", "design"), .wait(.short), .toggle("services", "development"), .mark("services"), .wait(.short),
-        .pick("urgency", 4), .mark("scoped"), .wait(.beat),
+        .pick("siteRating", 5), .wait(.short), .pick("urgency", 4), .mark("scoped"), .wait(.beat),
         .next, .mark("contact"), .wait(.beat),
         .fill("name", "Ada Lovelace"), .wait(.short), .type("email", "ada@lovelace.dev"), .wait(.short),
         .submit, .mark("server"), .wait(.hold),
@@ -84,11 +75,11 @@ struct DemoScript: Sendable {
         name: "styles",
         beats: [
             .mark("start"), .wait(.intro),
-            .pick("projectType", "redesign"), .wait(.short), .next, .wait(.short),
-            .type("currentSite", "https://northwind.studio"), .wait(.short), .pick("siteRating", 4), .wait(.short),
+            .pick("projectType", "redesign"), .wait(.short),
+            .type("currentSite", "https://northwind.studio"), .wait(.short),
             .next, .wait(.beat),
             .toggle("services", "design"), .wait(.short), .toggle("services", "development"), .wait(.short),
-            .pick("urgency", 4), .mark("filled"), .wait(.hold),
+            .pick("siteRating", 4), .wait(.short), .pick("urgency", 4), .mark("filled"), .wait(.hold),
             .style(.system), .mark("system"), .wait(.style),
             .style(.brand), .mark("brand"), .wait(.style),
             .style(.formhaus), .mark("formhaus"), .wait(.style),

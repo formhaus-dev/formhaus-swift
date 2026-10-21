@@ -6,7 +6,6 @@ repo=$(cd "$here/../.." && pwd)
 footage=$here/footage
 build=$repo/.build/video
 app=$build/Build/Products/Release-iphonesimulator/FormhausDemo.app
-variant=$footage/build/FormhausDemo.app
 bundle=dev.formhaus.demo
 simctl=$(xcrun -f simctl)
 booted=""
@@ -30,10 +29,6 @@ build_app() {
   wait_for_builds
   timeout 1500 xcodebuild build -project "$repo/Examples/FormhausDemo/FormhausDemo.xcodeproj" -scheme FormhausDemo -configuration Release \
     -destination 'generic/platform=iOS Simulator' -derivedDataPath "$build" -quiet CODE_SIGNING_ALLOWED=NO
-  rm -rf "$variant"
-  mkdir -p "$(dirname "$variant")"
-  cp -R "$app" "$variant"
-  cp "$footage/definitions/variant.json" "$variant/project-inquiry.json"
 }
 
 boot() {
@@ -54,11 +49,7 @@ boot() {
 
 install() {
   timeout 30 "$simctl" terminate "$1" "$bundle" >/dev/null 2>&1 || true
-  if [ "$2" = variant ]; then
-    timeout 120 "$simctl" install "$1" "$variant"
-  else
-    timeout 120 "$simctl" install "$1" "$app"
-  fi
+  timeout 120 "$simctl" install "$1" "$app"
 }
 
 launch() {

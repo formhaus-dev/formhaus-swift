@@ -27,26 +27,26 @@
         "projectType": {
           "label": "Was brauchen Sie?",
           "options": {
-            "new-site": "Eine neue Website",
-            "redesign": "Ein Redesign",
-            "landing-page": "Eine Landingpage",
-            "online-store": "Einen Onlineshop"
+            "new-site": "Neue Website",
+            "redesign": "Redesign",
+            "landing-page": "Landingpage",
+            "online-store": "Onlineshop"
           },
           "validation": {
             "required": "Wählen Sie die Art des Projekts"
           }
-        }
-      }
-    },
-    "site": {
-      "title": "Ihre Website",
-      "description": "Nur bei einem Redesign fragen wir nach der aktuellen Website.",
-      "fields": {
+        },
         "currentSite": {
           "label": "Aktuelle Website"
         },
-        "siteRating": {
-          "label": "Wie zufrieden sind Sie heute damit?"
+        "catalogSize": {
+          "label": "Wie viele Produkte?",
+          "options": {
+            "small": "Unter 50",
+            "medium": "50 bis 500",
+            "large": "Über 500"
+          },
+          "placeholder": "Bereich wählen"
         }
       }
     },
@@ -67,6 +67,9 @@
         },
         "urgency": {
           "label": "Wie schnell brauchen Sie es?"
+        },
+        "siteRating": {
+          "label": "Wie zufrieden sind Sie mit Ihrer aktuellen Website?"
         }
       }
     },

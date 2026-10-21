@@ -266,18 +266,7 @@ body {
   color: var(--c-primary);
 }
 
-.code-edit {
-  border-radius: 4px;
-}
 
-.code-caret {
-  display: inline-block;
-  width: 2px;
-  height: 1.15em;
-  margin: 0 1px;
-  background: var(--c-codeKey);
-  vertical-align: -0.2em;
-}
 
 .tour-item {
   display: flex;

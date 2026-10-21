@@ -13,19 +13,8 @@ const option = (text) => (page) => page.locator('.fh-field__radio-label', { hasT
 const input = (key) => (page) => page.locator(`input[name="${key}"]`);
 
 const actions = {
-  tour: {
-    error: ['next', primary],
-    landing: ['pick', option('A landing page')],
-    branch: ['next', primary],
-    back: ['back', (page) => page.getByRole('button', { name: 'Back' })],
-  },
-  edit: {
-    picked: ['pick', option('A new website')],
-    scope: ['next', primary],
-    design: ['pick', (page) => page.getByText('Design', { exact: true })],
-  },
   branch: {
-    landing: ['pick', option('A landing page')],
+    landing: ['pick', option('Landing page')],
     branch: ['next', primary],
     errors: ['submit', primary],
     typing: ['fill', input('name'), 'Ada Lovelace'],
