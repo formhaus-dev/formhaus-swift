@@ -33,7 +33,7 @@ final class DemoSession {
         }
         let relay = Relay()
         self.relay = relay
-        model = Self.makeModel(source, language, relay: relay)
+        model = Self.makeModel(source, .english, relay: relay)
         relay.session = self
     }
 
