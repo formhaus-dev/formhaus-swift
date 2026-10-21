@@ -89,4 +89,21 @@ struct SystemNavigationTests {
         #expect(stage.depth == 1)
         stage.close()
     }
+
+    @Test("the step header is a section header, not a clipped row")
+    func headerOutsideRows() async throws {
+        let stage = Stage(try stepsModel())
+        #expect(await stage.shows(["X"]))
+        let rows = collectionViews(in: stage.window).flatMap(\.visibleCells).map(\.accessibilityFrame)
+        let header = axTree(stage.window).filter { ["Step 1 of 3", "Alpha"].contains($0.label) }
+        #expect(header.count == 2)
+        #expect(!rows.isEmpty)
+        #expect(header.allSatisfy { node in node.cell.map { !rows.contains($0) } ?? true })
+        stage.close()
+    }
+}
+
+@MainActor
+private func collectionViews(in view: UIView) -> [UICollectionView] {
+    (view as? UICollectionView).map { [$0] } ?? view.subviews.flatMap { collectionViews(in: $0) }
 }
