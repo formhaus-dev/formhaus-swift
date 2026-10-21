@@ -53,9 +53,7 @@ extension View {
     fileprivate func hardTopEdge(_ background: Color) -> some View {
         #if os(iOS)
             if #available(iOS 26, *) {
-                scrollEdgeEffectStyle(.hard, for: .top)
-                    .toolbarBackground(background, for: .navigationBar)
-                    .toolbarBackground(.visible, for: .navigationBar)
+                toolbarBackground(background, for: .navigationBar)
             } else {
                 toolbarBackground(background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
             }
