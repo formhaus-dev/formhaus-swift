@@ -13,21 +13,31 @@ struct SystemStepHeader: View {
         let counter = structure.isMultiStep ? counterText(structure.progress) : nil
         let description = texts?.description.flatMap { $0.isEmpty ? nil : $0 }
         if title != nil || description != nil {
-            Section {
-                VStack(alignment: .leading, spacing: 6) {
-                    if let counter { Text(verbatim: counter).font(.subheadline).systemSecondaryText() }
-                    if let title {
-                        Text(verbatim: title).font(.title3.weight(.semibold)).foregroundStyle(Color.primary)
-                            .accessibilityAddTraits(.isHeader)
-                    }
-                    if let description { Text(verbatim: description).font(.body).systemSecondaryText() }
+            #if os(iOS)
+                Section {
+                } header: {
+                    stack(counter: counter, title: title, description: description).textCase(nil)
                 }
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
-            }
+            #else
+                Section {
+                    stack(counter: counter, title: title, description: description).listRowBackground(Color.clear)
+                }
+            #endif
         }
+    }
+
+    private func stack(counter: String?, title: String?, description: String?) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let counter { Text(verbatim: counter).font(.subheadline).systemSecondaryText() }
+            if let title {
+                Text(verbatim: title).font(.title3.weight(.semibold)).foregroundStyle(Color.primary)
+                    .accessibilityAddTraits(.isHeader)
+            }
+            if let description { Text(verbatim: description).font(.body).systemSecondaryText() }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
     }
 
     private func counterText(_ progress: StepProgress) -> String {
