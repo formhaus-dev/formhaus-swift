@@ -7,7 +7,7 @@
     "transition": 0.22,
     "poster": {
       "beat": "branch",
-      "at": 2.0
+      "at": 2
     },
     "gif": {
       "width": 800,
@@ -61,7 +61,7 @@
       ],
       "scale": 1.5,
       "url": "northwind.studio/start",
-      "pageZoom": 1.0
+      "pageZoom": 1
     },
     "mac": {
       "kind": "mac",
@@ -83,7 +83,7 @@
       "error": 1.687,
       "landing": 4.026,
       "branch": 5.057,
-      "back": 7.0
+      "back": 7
     },
     "showcase": {
       "first": 1.069,
@@ -206,7 +206,7 @@
       "id": "launch",
       "scene": "launch",
       "duration": 2.6,
-      "title": "Formhaus is now on iOS and macOS",
+      "title": "formhaus on iOS and macOS",
       "subline": "Native SwiftUI, same JSON as the web",
       "devices": {
         "mac": "mac",
@@ -242,7 +242,7 @@
       },
       "from": -0.45,
       "cursor": true,
-      "caption": "Same rules on every platform"
+      "caption": "Same answer, same next step"
     },
     {
       "id": "parity",
@@ -268,38 +268,7 @@
       },
       "from": -0.45,
       "cursor": true,
-      "caption": "Same errors and branch handling on web and iOS"
-    },
-    {
-      "id": "edit",
-      "scene": "edit",
-      "duration": 3.2,
-      "devices": {
-        "web": "browser",
-        "ios": "iphone"
-      },
-      "clips": {
-        "before": {
-          "web": "web-edit",
-          "ios": "ios-edit"
-        },
-        "after": {
-          "web": "web-variant",
-          "ios": "ios-variant"
-        }
-      },
-      "title": "Fix it once and get it everywhere",
-      "file": "project-inquiry.json",
-      "cursor": true,
-      "sync": [
-        "edit",
-        "design"
-      ],
-      "from": -0.4,
-      "cuts": [
-        0.9,
-        1.9
-      ]
+      "caption": "Same field errors and error summary"
     },
     {
       "id": "tour",
@@ -308,40 +277,40 @@
       "device": "iphone",
       "clip": "ios-showcase",
       "script": "showcase",
-      "title": "The formhaus components run natively on iOS",
+      "title": "JSON forms rendered in SwiftUI",
       "segments": [
         {
           "from": "condition",
           "lead": 0.45,
           "length": 1.07,
           "rate": 1,
-          "label": "Picture options"
+          "label": "Image choices"
         },
         {
           "from": "site",
           "lead": 0,
           "length": 2.15,
           "rate": 1,
-          "label": "Conditions and typing"
+          "label": "Conditional fields"
         },
         {
           "from": "scope",
           "lead": 0.402,
-          "length": 2.0,
+          "length": 2,
           "rate": 1,
-          "label": "Choices and scales"
+          "label": "Checkboxes and ratings"
         },
         {
           "from": "server",
           "lead": 1.05,
           "length": 1.65,
           "rate": 1,
-          "label": "Server errors and focus"
+          "label": "Server errors on fields"
         },
         {
           "from": "success",
           "lead": 0.95,
-          "length": 2.0,
+          "length": 2,
           "rate": 1,
           "label": "Success"
         }
@@ -362,7 +331,7 @@
         {
           "at": "system",
           "offset": 2.6,
-          "name": "iOS system"
+          "name": "SwiftUI Form"
         },
         {
           "at": "brand",
@@ -386,7 +355,7 @@
       "id": "end",
       "scene": "end",
       "duration": 3.2,
-      "title": "Same engine for web, iOS and macOS",
+      "title": "Same JSON for web, iOS and macOS",
       "devices": [
         "browser",
         "mac",
