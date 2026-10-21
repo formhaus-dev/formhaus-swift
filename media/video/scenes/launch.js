@@ -22,7 +22,7 @@ export default async (layer, beat, data) => {
     update(t) {
       const blend = progress(t, handoff, 0.5);
       frame((index) => ({ grow: mix(0.95, 1, progress(t, index * 0.06, handoff, easeOut)) }), blend);
-      playWords(titleWords, t, 0.1, 0.08);
+      playWords(titleWords, t, 0.1, 0.025);
       const gone = progress(t, handoff, 0.22);
       place(title, { y: captionY - blend * 40, opacity: 1 - gone });
       const sub = progress(t, 0.65, 0.45, easeOut);

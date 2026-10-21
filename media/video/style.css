@@ -524,6 +524,10 @@ body {
 }
 
 .word {
+  white-space: nowrap;
+}
+
+.letter {
   display: inline-block;
-  transform-origin: 50% 80%;
+  white-space: pre;
 }

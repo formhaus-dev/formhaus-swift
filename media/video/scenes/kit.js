@@ -43,20 +43,21 @@ export const words = (node, text) => {
   node.textContent = '';
   return bind(text)
     .split(' ')
-    .map((word, index, all) => {
-      const span = el('span', 'word', node, word);
+    .flatMap((word, index, all) => {
+      const group = el('span', 'word', node);
+      const letters = [...word].map((letter) => el('span', 'letter', group, letter));
       if (index < all.length - 1) node.append(' ');
-      return span;
+      return letters;
     });
 };
 
-export const playWords = (nodes, t, start, stagger = 0.06) => {
+export const playWords = (nodes, t, start, stagger = 0.018) => {
   nodes.forEach((node, index) => {
     const at = start + index * stagger;
-    const fade = progress(t, at, 0.25, easeOut);
-    const pop = progress(t, at, 0.55, easeOutBack);
+    const fade = progress(t, at, 0.3, easeOut);
+    const lift = progress(t, at, 0.5, easeOutBack);
     node.style.opacity = String(fade);
-    node.style.filter = fade < 1 ? `blur(${(1 - fade) * 10}px)` : '';
-    node.style.transform = `translateY(${(1 - pop) * 46}px) scale(${mix(0.7, 1, pop)}) rotate(${(1 - pop) * 6}deg)`;
+    node.style.filter = fade < 1 ? `blur(${(1 - fade) * 4}px)` : '';
+    node.style.transform = `translateY(${(1 - lift) * 0.45}em)`;
   });
 };
