@@ -26,13 +26,14 @@ const scenes = await Promise.all(
 
 const cut = params.has('calm');
 const last = data.beats.length - 1;
-const overlap = (index) => (cut || index === last || data.beats[index + 1].continues ? 0 : transition);
-const visible = ({ beat, index }, t) => t >= beat.start && (t < beat.start + beat.duration + overlap(index) || index === last);
+const pushes = (index) => !cut && index > 0 && data.beats[index].scene !== data.beats[index - 1].scene;
+const visible = ({ beat, index }, t) =>
+  t >= beat.start && (t < beat.start + beat.duration + (index < last && pushes(index + 1) ? transition : 0) || index === last);
 
-const fade = ({ beat, index }, local) => {
-  if (cut) return 1;
-  const enter = index === 0 || beat.continues ? 1 : progress(local, 0, transition);
-  return enter;
+const offset = ({ beat, index }, t) => {
+  const entering = pushes(index) ? 1 - progress(t - beat.start, 0, transition) : 0;
+  const leaving = index < last && pushes(index + 1) ? progress(t - beat.start - beat.duration, 0, transition) : 0;
+  return (entering - leaving) * 1920;
 };
 
 export const renderFrame = async (frame) => {
@@ -43,7 +44,7 @@ export const renderFrame = async (frame) => {
     entry.layer.style.display = show ? 'block' : 'none';
     if (!show) continue;
     const local = t - entry.beat.start;
-    entry.layer.style.opacity = String(fade(entry, local));
+    entry.layer.style.transform = `translateX(${offset(entry, t)}px)`;
     pending.push(entry.scene.update(local));
   }
   await Promise.all(pending);

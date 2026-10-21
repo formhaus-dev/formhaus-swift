@@ -205,24 +205,18 @@
     {
       "id": "launch",
       "scene": "launch",
-      "duration": 3,
+      "duration": 2,
       "title": "Formhaus on iOS and macOS",
       "subline": "Native SwiftUI, same JSON as the web",
-      "file": "project-inquiry.json",
-      "code": [
-        "{",
-        "  \"key\": \"projectType\",",
-        "  \"type\": \"radio\",",
-        "  \"label\": \"What do you need?\",",
-        "  \"options\": [\"new-site\", \"redesign\", …]",
-        "}"
-      ],
-      "timing": {
-        "code": 0.75,
-        "build": 0.9,
-        "title": 1.3,
-        "devices": 2.25
-      }
+      "devices": {
+        "mac": "mac",
+        "phone": "iphone"
+      },
+      "stills": {
+        "mac": "mac-still",
+        "phone": "ios-tour"
+      },
+      "at": 0.8
     },
     {
       "id": "branch",
@@ -248,8 +242,7 @@
       },
       "from": -0.45,
       "cursor": true,
-      "caption": "Same answer, same next step",
-      "continues": true
+      "caption": "Same answer, same next step"
     },
     {
       "id": "parity",
