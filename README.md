@@ -26,7 +26,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.2"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.3"),
 ],
 targets: [
     .target(name: "App", dependencies: [
