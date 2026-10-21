@@ -1,4 +1,5 @@
 import FormhausCore
+import FormhausResearch
 
 @MainActor
 final class EventLog {
@@ -41,6 +42,8 @@ struct ScenarioHooks {
             options.validators[name] = { value, _ in reject.contains { jsonEqual(value, $0) } ? error : nil }
         }
         if let messages = scenario["messages"] { options.messages = .catalog(messages) }
+        options.seed = scenario["seed"]?.stringValue
+        options.research = Research()
         return options
     }
 

@@ -146,6 +146,11 @@ public typealias SubmitHandler = @MainActor @Sendable (JSONObject, [String]) asy
 public typealias FormEventFn = @MainActor @Sendable (FormEvent) -> Void
 public typealias WarningFn = @MainActor @Sendable (DefinitionIssue) -> Void
 
+public protocol FormResearch: Sendable {
+    func seed() -> String
+    func order(seed: String, key: String, options: [FieldOption]) -> [FieldOption]
+}
+
 public struct FormEngineOptions: Sendable {
     public var onBeforeStepChange: BeforeStepChangeFn?
     public var onAfterStepChange: AfterStepChangeFn?
@@ -158,12 +163,14 @@ public struct FormEngineOptions: Sendable {
     public var messages: MessageSource?
     public var lang: String?
     public var formatRecall: RecallFormatFn?
+    public var seed: String?
+    public var research: (any FormResearch)?
 
     public init(
         onBeforeStepChange: BeforeStepChangeFn? = nil, onAfterStepChange: AfterStepChangeFn? = nil,
         onBeforeSubmit: BeforeSubmitFn? = nil, onAfterSubmit: AfterSubmitFn? = nil, onStepValidate: StepValidateFn? = nil,
         onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:], messages: MessageSource? = nil,
-        lang: String? = nil, formatRecall: RecallFormatFn? = nil
+        lang: String? = nil, formatRecall: RecallFormatFn? = nil, seed: String? = nil, research: (any FormResearch)? = nil
     ) {
         self.onBeforeStepChange = onBeforeStepChange
         self.onAfterStepChange = onAfterStepChange
@@ -176,5 +183,7 @@ public struct FormEngineOptions: Sendable {
         self.messages = messages
         self.lang = lang
         self.formatRecall = formatRecall
+        self.seed = seed
+        self.research = research
     }
 }

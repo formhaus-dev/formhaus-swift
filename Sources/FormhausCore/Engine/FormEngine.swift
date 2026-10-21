@@ -4,7 +4,10 @@ private let warningLog = Logger(subsystem: "dev.formhaus", category: "definition
 
 @MainActor
 private func reportWarnings(_ definition: FormDefinition, _ options: FormEngineOptions) {
-    let issues = checkDefinition(.object(definition.json), options: CheckDefinitionOptions(validators: options.validators.keys))
+    var issues = checkDefinition(.object(definition.json), options: CheckDefinitionOptions(validators: options.validators.keys))
+    #if DEBUG
+        issues += unorderedWarning(definition, options)
+    #endif
     for issue in issues {
         if let onWarning = options.onWarning {
             onWarning(issue)
@@ -52,6 +55,7 @@ final class Listeners {
 public final class FormEngine {
     let core: EngineCore
     let options: FormEngineOptions
+    public let seed: String
     private let listeners = Listeners()
 
     public convenience init(definition: JSONValue, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions())
@@ -62,6 +66,7 @@ public final class FormEngine {
 
     public init(definition: FormDefinition, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) {
         self.options = options
+        seed = options.seed.flatMap { $0.isEmpty ? nil : $0 } ?? options.research?.seed() ?? ""
         reportWarnings(definition, options)
         core = EngineCore(definition: definition, values: values, validators: options.validators, messages: options.messages)
         if let onFormEvent = options.onFormEvent {
