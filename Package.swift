@@ -20,7 +20,7 @@ let package = Package(
         ),
         .testTarget(
             name: "FormhausUITests",
-            dependencies: ["FormhausUI", "FormhausCore"],
+            dependencies: ["FormhausUI", "FormhausCore", "FormhausResearch"],
             resources: [.copy("Fixtures")]
         ),
     ],
