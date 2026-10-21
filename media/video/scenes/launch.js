@@ -1,5 +1,5 @@
 import { footage } from './footage.js';
-import { easeOut, el, mix, place, playWords, progress, words } from './kit.js';
+import { easeOut, el, mix, place, playWords, progress, softIn, words } from './kit.js';
 import { pair } from './pair.js';
 
 export default async (layer, beat, data) => {
@@ -14,8 +14,7 @@ export default async (layer, beat, data) => {
   const titleWords = words(title, beat.title);
   const subline = el('p', 'sub launch-sub abs', layer, beat.subline);
   Object.assign(subline.style, { width: '1920px', textAlign: 'center' });
-  const caption = el('div', 'caption abs', layer);
-  const captionWords = words(caption, next.caption);
+  const caption = el('div', 'caption abs', layer, next.caption);
   const handoff = beat.duration - 0.5;
 
   return {
@@ -27,8 +26,8 @@ export default async (layer, beat, data) => {
       place(title, { y: captionY - blend * 40, opacity: 1 - gone });
       const sub = progress(t, 0.65, 0.45, easeOut);
       place(subline, { y: captionY + 92 + (1 - sub) * 12 - blend * 40, opacity: sub * (1 - gone) });
-      playWords(captionWords, t, handoff + 0.22);
       place(caption, { y: targetCaptionY });
+      softIn(caption, t, handoff + 0.22);
       return Promise.all(players.map(({ player, from }) => player.at(from)));
     },
   };

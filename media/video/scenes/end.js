@@ -1,13 +1,12 @@
 import { swift } from './code.js';
-import { captionHeight, el, place, playWords, progress, stack, words } from './kit.js';
+import { captionHeight, el, place, progress, softIn, stack } from './kit.js';
 import { deviceRow, showRow } from './row.js';
 
 const rowHeight = 540;
 const gap = 56;
 
 export default async (layer, beat, data) => {
-  const title = el('div', 'caption abs', layer);
-  const titleWords = words(title, beat.title);
+  const title = el('div', 'caption abs', layer, beat.title);
   const devices = deviceRow(layer, data, beat, rowHeight, gap);
   const tallest = Math.max(...devices.map((item) => item.node.height * item.scale));
   const install = el('div', 'card abs end-install', layer);
@@ -23,8 +22,8 @@ export default async (layer, beat, data) => {
     update(t) {
       rows ??= stack([[captionHeight, gap], [tallest, gap], [install.offsetHeight, gap * 0.75], [links.offsetHeight]], 8);
       const [captionY, devicesY, installY, linksY] = rows;
-      playWords(titleWords, t, 0.15);
       place(title, { y: captionY });
+      softIn(title, t, 0.15);
       devices.forEach((item, index) => {
         const p = progress(t, 0.25 + index * 0.12, 0.8);
         const y = devicesY + (tallest - item.node.height * item.scale) / 2;

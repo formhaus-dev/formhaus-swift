@@ -1,6 +1,6 @@
 import { device } from './devices.js';
 import { footage } from './footage.js';
-import { captionHeight, clamp, el, place, playWords, progress, stack, words } from './kit.js';
+import { captionHeight, clamp, el, place, progress, softIn, stack } from './kit.js';
 
 const lead = 0.2;
 const blend = 0.2;
@@ -22,8 +22,7 @@ export default async (layer, beat, data) => {
     segment.cut = Boolean(previous) && Math.abs(previous.clip + previous.length * previous.rate - segment.clip) > 0.1;
   });
 
-  const title = el('div', 'caption abs', layer);
-  const titleWords = words(title, beat.title);
+  const title = el('div', 'caption abs', layer, beat.title);
   const items = segments.map((segment) => {
     const row = el('div', 'tour-item abs', layer);
     el('i', null, row);
@@ -46,8 +45,8 @@ export default async (layer, beat, data) => {
       const front = index % 2;
       place(phones[front].root, { x, y, scale, opacity: fade });
       place(phones[1 - front].root, { x, y, scale, opacity: fade < 1 ? 1 - fade : 0 });
-      playWords(titleWords, t, 0.15);
       place(title, { y: captionY });
+      softIn(title, t, 0.15);
       items.forEach((row, rowIndex) => {
         row.classList.toggle('tour-item--on', rowIndex === index);
         place(row, { x: 150, y: top + height / 2 - (items.length * 80) / 2 + rowIndex * 80 });

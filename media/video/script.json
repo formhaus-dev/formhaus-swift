@@ -233,7 +233,7 @@
       },
       "from": -0.45,
       "cursor": true,
-      "caption": "Same answer, same next step",
+      "caption": "Same form on web and iOS",
       "continues": true
     },
     {
@@ -260,7 +260,7 @@
       },
       "from": -0.733,
       "cursor": true,
-      "caption": "Same field errors and error summary",
+      "caption": "Same form on web and iOS",
       "continues": true
     },
     {

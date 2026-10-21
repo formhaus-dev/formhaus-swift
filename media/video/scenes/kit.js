@@ -37,8 +37,6 @@ export const stack = (parts, optical = shadowed) => {
   });
 };
 
-export const easeOutBack = (t) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2;
-
 export const words = (node, text) => {
   node.textContent = '';
   return bind(text)
@@ -54,10 +52,14 @@ export const words = (node, text) => {
 export const playWords = (nodes, t, start, stagger = 0.018) => {
   nodes.forEach((node, index) => {
     const at = start + index * stagger;
-    const fade = progress(t, at, 0.3, easeOut);
-    const lift = progress(t, at, 0.5, easeOutBack);
-    node.style.opacity = String(fade);
-    node.style.filter = fade < 1 ? `blur(${(1 - fade) * 4}px)` : '';
-    node.style.transform = `translateY(${(1 - lift) * 0.45}em)`;
+    const p = progress(t, at, 0.45, easeOut);
+    node.style.opacity = String(p);
+    node.style.transform = `translateY(${(1 - p) * 0.25}em)`;
   });
+};
+
+export const softIn = (node, t, start, base = 1) => {
+  const p = progress(t, start, 0.35, easeOut);
+  node.style.opacity = String(p * base);
+  node.style.translate = `0 ${(1 - p) * 10}px`;
 };
