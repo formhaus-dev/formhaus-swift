@@ -523,6 +523,7 @@ body {
   font-weight: 650;
 }
 
-.launch-word {
+.word {
   display: inline-block;
+  transform-origin: 50% 80%;
 }

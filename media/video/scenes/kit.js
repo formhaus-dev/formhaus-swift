@@ -36,3 +36,27 @@ export const stack = (parts, optical = shadowed) => {
     return top;
   });
 };
+
+export const easeOutBack = (t) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2;
+
+export const words = (node, text) => {
+  node.textContent = '';
+  return bind(text)
+    .split(' ')
+    .map((word, index, all) => {
+      const span = el('span', 'word', node, word);
+      if (index < all.length - 1) node.append(' ');
+      return span;
+    });
+};
+
+export const playWords = (nodes, t, start, stagger = 0.06) => {
+  nodes.forEach((node, index) => {
+    const at = start + index * stagger;
+    const fade = progress(t, at, 0.25, easeOut);
+    const pop = progress(t, at, 0.55, easeOutBack);
+    node.style.opacity = String(fade);
+    node.style.filter = fade < 1 ? `blur(${(1 - fade) * 10}px)` : '';
+    node.style.transform = `translateY(${(1 - pop) * 46}px) scale(${mix(0.7, 1, pop)}) rotate(${(1 - pop) * 6}deg)`;
+  });
+};
