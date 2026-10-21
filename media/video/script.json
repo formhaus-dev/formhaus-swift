@@ -206,7 +206,7 @@
       "id": "launch",
       "scene": "launch",
       "duration": 2.6,
-      "title": "formhaus on iOS and macOS",
+      "title": "Formhaus on iOS and macOS",
       "subline": "Native SwiftUI, same JSON as the web",
       "devices": {
         "mac": "mac",
@@ -326,7 +326,7 @@
         {
           "at": "filled",
           "offset": 0.6,
-          "name": "formhaus"
+          "name": "Formhaus"
         },
         {
           "at": "system",
