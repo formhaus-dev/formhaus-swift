@@ -15,7 +15,7 @@ struct CorpusCheckTests {
         "check-randomize", "check-randomize-type", "check-scale", "check-scale-range",
         "check-section-forward-reference", "check-slow-pattern", "contains-disabled", "contains-limit", "disabled-actions",
         "duplicate-options", "exclusive-options", "file-app-reference", "flat-api-steps", "format-version", "group-list-answers",
-        "hidden-values", "i18n-empty-overlay", "i18n-exclusive-branches", "i18n-own-properties", "i18n-renderer-labels",
+        "group-over-limit", "hidden-values", "i18n-empty-overlay", "i18n-exclusive-branches", "i18n-own-properties", "i18n-renderer-labels",
         "i18n-signup-steps",
         "impossible-dates", "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "option-order", "options-from",
         "proto-keys", "recall-branches", "recall-groups", "recall-inactive", "recall-limit", "recall-no-reexpansion",

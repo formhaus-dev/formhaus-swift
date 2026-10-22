@@ -1,0 +1,339 @@
+{
+  "name": "group-over-limit",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "group-over-limit",
+    "title": "Groups over the item limit",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "crew",
+        "type": "group",
+        "label": "Crew",
+        "validation": {
+          "maxLength": 2
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "team",
+        "type": "group",
+        "label": "Team",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "reports only the limit error for more items than maxLength",
+      "input": {
+        "values": {
+          "crew": [
+            {
+              "name": 5
+            },
+            {},
+            {
+              "name": ""
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "crew": [
+            {
+              "name": 5
+            },
+            {},
+            {
+              "name": ""
+            }
+          ]
+        },
+        "errors": {
+          "crew": "At most 2 allowed"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    },
+    {
+      "name": "reports only the value error for more items than the default limit",
+      "input": {
+        "values": {
+          "team": [
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "team": [
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ]
+        },
+        "errors": {
+          "team": "Invalid value"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    },
+    {
+      "name": "reports only the value error for an item that is not an object",
+      "input": {
+        "values": {
+          "team": [
+            {},
+            "x",
+            {
+              "name": 5
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "team": [
+            {},
+            "x",
+            {
+              "name": 5
+            }
+          ]
+        },
+        "errors": {
+          "team": "Invalid value"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    }
+  ]
+}
