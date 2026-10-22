@@ -30,9 +30,13 @@ import SwiftUI
 
         var body: some View {
             Button(action: context.back) {
-                HStack(spacing: 3) {
-                    Image(systemName: "chevron.backward").fontWeight(.semibold)
-                    Text(verbatim: context.state.backLabel)
+                if #available(iOS 26, *) {
+                    Label(context.state.backLabel, systemImage: "chevron.backward")
+                } else {
+                    HStack(spacing: 3) {
+                        Image(systemName: "chevron.backward").fontWeight(.semibold)
+                        Text(verbatim: context.state.backLabel)
+                    }
                 }
             }
             .accessibilityLabel(Text(verbatim: context.state.backLabel))
