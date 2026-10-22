@@ -81,7 +81,7 @@ public struct FormDefinition: Sendable {
         return fields ?? []
     }
 
-    var allFields: [FormField] { valueFields(topNodes) }
+    @_spi(Renderer) public var allFields: [FormField] { valueFields(topNodes) }
 }
 
 public func parseDefinition(_ json: JSONValue) throws(FormDefinitionError) -> FormDefinition {

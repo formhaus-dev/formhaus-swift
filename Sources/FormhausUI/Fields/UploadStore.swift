@@ -26,11 +26,15 @@ enum UploadStore {
     }
 
     static func owned(_ value: String, by owner: ObjectIdentifier) -> URL? {
-        let text = value.trimmingCharacters(in: .whitespacesAndNewlines.union(.controlCharacters))
-        guard text.lowercased().hasPrefix("file:"), let url = URL(string: text), url.isFileURL, let folder = folder(of: url),
-            let upload = uploads[folder], upload.owner == owner, upload.url.standardizedFileURL == url.standardizedFileURL
+        guard let url = fileURL(value), let entry = entry(url), let upload = uploads[entry.folder], upload.owner == owner,
+            upload.url.standardizedFileURL.path == entry.file.path, FileManager.default.fileExists(atPath: entry.file.path)
         else { return nil }
         return upload.url
+    }
+
+    static func isMissing(_ value: String) -> Bool {
+        guard let url = fileURL(value), let entry = entry(url) else { return false }
+        return !FileManager.default.fileExists(atPath: entry.file.path)
     }
 
     static func prune(owner: ObjectIdentifier, keeping values: Set<String>) {
@@ -40,7 +44,7 @@ enum UploadStore {
     }
 
     static func discard(_ url: URL, owner: ObjectIdentifier) {
-        guard let folder = folder(of: url), uploads[folder]?.owner == owner else { return }
+        guard let folder = entry(url)?.folder, uploads[folder]?.owner == owner else { return }
         remove(folder)
     }
 
@@ -56,14 +60,32 @@ enum UploadStore {
 
     private static func remove(_ folder: String) {
         uploads[folder] = nil
-        try? FileManager.default.removeItem(at: directory.appendingPathComponent(folder, isDirectory: true))
+        let url = directory.appendingPathComponent(folder, isDirectory: true)
+        guard !isLink(url), url.resolvingSymlinksInPath().deletingLastPathComponent().path == root.path else { return }
+        try? FileManager.default.removeItem(at: url)
     }
 
-    private static func folder(of url: URL) -> String? {
-        let parent = url.standardizedFileURL.deletingLastPathComponent()
-        guard parent.deletingLastPathComponent().standardizedFileURL.path == directory.standardizedFileURL.path else { return nil }
-        return parent.lastPathComponent
+    private static func fileURL(_ value: String) -> URL? {
+        let text = value.trimmingCharacters(in: .whitespacesAndNewlines.union(.controlCharacters))
+        guard text.lowercased().hasPrefix("file:"), let url = URL(string: text), url.isFileURL else { return nil }
+        return url
     }
+
+    private static var root: URL { directory.resolvingSymlinksInPath().standardizedFileURL }
+
+    private static func entry(_ url: URL) -> (folder: String, file: URL)? {
+        let file = URL(fileURLWithPath: url.path).standardizedFileURL
+        let folder = file.deletingLastPathComponent()
+        let base = folder.deletingLastPathComponent().resolvingSymlinksInPath().standardizedFileURL
+        guard base.path == root.path, !isLink(folder), !isLink(file) else { return nil }
+        let resolved = file.resolvingSymlinksInPath().standardizedFileURL
+        guard resolved.deletingLastPathComponent().deletingLastPathComponent().path == root.path else { return nil }
+        return (folder.lastPathComponent, file)
+    }
+}
+
+private func isLink(_ url: URL) -> Bool {
+    (try? FileManager.default.attributesOfItem(atPath: url.path)[.type] as? FileAttributeType) == .typeSymbolicLink
 }
 
 private func prepare(_ folder: String) -> URL? {

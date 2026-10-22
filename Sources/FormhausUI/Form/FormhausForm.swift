@@ -75,7 +75,7 @@ final class ModelHolder {
         definition = source
         let engine = next.engine
         if isOwned {
-            cancel = { @MainActor in engine.cancelPendingActions() }
+            cancel = { @MainActor in engine.cancelUnsentActions() }
         } else {
             cancel = nil
         }

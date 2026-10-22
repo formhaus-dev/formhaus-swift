@@ -6,6 +6,13 @@ extension FormModel {
         engine.value(at: key)?.stringValue.flatMap { UploadStore.owned($0, by: ObjectIdentifier(self)) }
     }
 
+    func dropMissingFiles() {
+        guard !disabled else { return }
+        for field in engine.definition.allFields where field.type == "file" {
+            if engine.values[field.key]?.stringValue.map(UploadStore.isMissing) == true { engine.setValue(field.key, .null) }
+        }
+    }
+
     func pruneUploadsAfterRestart(_ values: JSONObject) {
         guard engine.restarts != lastRestarts else { return }
         lastRestarts = engine.restarts
