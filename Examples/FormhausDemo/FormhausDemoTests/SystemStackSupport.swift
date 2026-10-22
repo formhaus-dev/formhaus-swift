@@ -100,7 +100,11 @@ final class Stage {
     }
 
     func tapBack() -> Bool {
-        barBack?.element?.accessibilityActivate() ?? false
+        guard let element = barBack?.element else { return false }
+        if element.accessibilityActivate() { return true }
+        guard let control = element as? UIControl, control.isEnabled, control.window != nil else { return false }
+        control.sendActions(for: .touchUpInside)
+        return true
     }
 
     func close() {
