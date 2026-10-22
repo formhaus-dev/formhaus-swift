@@ -46,7 +46,7 @@ A case has `name`, `input` (`values`, `skippedSteps` and an optional `hiddenValu
 - Server: validating `input.values` with `input.skippedSteps` returns `expected`. The returned values are a plain object.
 - Browser engine: creating the engine with `input.values`, then `validate()` returns `expected.errors`, and the submit values equal `expected.values`. `canSubmit` says whether stepping through every step and submitting is allowed: on each step before the last, `next.disabled` does not match the submit values and `next()` succeeds; on the last, `validate()` returns no errors and `submit.disabled` does not match.
 - A payload the browser accepts passes server validation without errors.
-- `serverValues` is optional. When set, the server returns it in place of `expected.values`. The server drops a value with a type error, and the browser engine keeps it.
+- `serverValues` is optional. When set, the server returns it in place of `expected.values`. The server drops a value with a type error, and the browser engine keeps it. With `hiddenValues` set to `keep`, the server also drops a hidden value that fails any other rule except `required`.
 
 ## Recall
 
