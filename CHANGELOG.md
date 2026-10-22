@@ -4,10 +4,11 @@
 
 ### FormhausCore
 
+- Passes the conformance suite of `@formhaus/core` 1.2.0.
 - New `FormEngineOptions.hiddenValues`, `.clear` (default) or `.keep`. With `.keep`, fields hidden by conditions keep their values in `engine.values` and in submitted values.
 - With `.keep`, conditions, validation and recall still treat hidden fields as unanswered, and hidden fields never block Continue or Submit.
 - With `.keep`, submitted values also hold the answers on steps off the active path. Fields of skipped steps stay out.
-- `SubmissionOptions.hiddenValues` takes the same option. With `.keep`, `validateSubmission` returns hidden values without validating them and drops a value that fails its type check.
+- `SubmissionOptions.hiddenValues` takes the same option. With `.keep`, `validateSubmission` checks hidden values like visible ones except `required` and drops one that fails without an error.
 - New `missingKeys(messages:labels:)` lists the built-in message and label keys a catalog lacks.
 - In debug builds, a `messages` or `labels` catalog reports `missing-message-key` or `missing-label-key` through `onWarning` when a shown text is in neither the catalog nor the definition's `messages` or `labels`. Each key is reported once per process.
 - New `TestIdTarget` type.

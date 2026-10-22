@@ -62,7 +62,10 @@
             "field": "type",
             "eq": "business"
           }
-        ]
+        ],
+        "validation": {
+          "min": 1
+        }
       },
       {
         "key": "contacts",
@@ -98,7 +101,10 @@
                 "field": "kind",
                 "eq": "phone"
               }
-            ]
+            ],
+            "validation": {
+              "minLength": 7
+            }
           }
         ]
       }
@@ -139,18 +145,18 @@
       "canSubmit": true
     },
     {
-      "name": "keep sends hidden answers without validating them",
+      "name": "keep sends hidden answers that pass validation",
       "input": {
         "values": {
           "type": "personal",
           "company": " Acme ",
-          "vat": "bad",
+          "vat": "DE123",
           "employees": "x12",
           "contacts": [
             {
               "name": "Ann",
               "kind": "email",
-              "phone": "555"
+              "phone": "555 0100"
             }
           ],
           "note": "not a field"
@@ -162,8 +168,57 @@
         "values": {
           "type": "personal",
           "company": "Acme",
-          "vat": "bad",
+          "vat": "DE123",
           "employees": "x12",
+          "contacts": [
+            {
+              "name": "Ann",
+              "kind": "email",
+              "phone": "555 0100"
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true,
+      "serverValues": {
+        "type": "personal",
+        "company": "Acme",
+        "vat": "DE123",
+        "contacts": [
+          {
+            "name": "Ann",
+            "kind": "email",
+            "phone": "555 0100"
+          }
+        ]
+      }
+    },
+    {
+      "name": "keep drops hidden answers that fail validation",
+      "input": {
+        "values": {
+          "type": "personal",
+          "company": "Acme",
+          "vat": "bad",
+          "employees": 0,
+          "contacts": [
+            {
+              "name": "Ann",
+              "kind": "email",
+              "phone": "555"
+            }
+          ]
+        },
+        "skippedSteps": [],
+        "hiddenValues": "keep"
+      },
+      "expected": {
+        "values": {
+          "type": "personal",
+          "company": "Acme",
+          "vat": "bad",
+          "employees": 0,
           "contacts": [
             {
               "name": "Ann",
@@ -178,12 +233,10 @@
       "serverValues": {
         "type": "personal",
         "company": "Acme",
-        "vat": "bad",
         "contacts": [
           {
             "name": "Ann",
-            "kind": "email",
-            "phone": "555"
+            "kind": "email"
           }
         ]
       }
@@ -209,7 +262,11 @@
           "company": "This field is required"
         }
       },
-      "canSubmit": false
+      "canSubmit": false,
+      "serverValues": {
+        "type": "business",
+        "company": ""
+      }
     }
   ]
 }
