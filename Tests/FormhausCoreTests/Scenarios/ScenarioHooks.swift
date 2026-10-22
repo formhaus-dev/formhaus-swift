@@ -44,6 +44,7 @@ struct ScenarioHooks {
         if let messages = scenario["messages"] { options.messages = .catalog(messages) }
         options.seed = scenario["seed"]?.stringValue
         options.research = Research()
+        options.hiddenValues = scenario["hiddenValues"]?.stringValue.flatMap(HiddenValues.init) ?? .clear
         return options
     }
 

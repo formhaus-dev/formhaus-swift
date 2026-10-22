@@ -24,6 +24,7 @@ struct CorpusCase {
     let name: String
     let values: JSONValue
     let skippedSteps: JSONValue
+    let hiddenValues: HiddenValues
     let expectedValues: JSONValue
     let expectedErrors: JSONValue
     let canSubmit: Bool
@@ -33,6 +34,7 @@ struct CorpusCase {
         name = json["name"]?.stringValue ?? ""
         values = json["input"]?["values"] ?? .object(JSONObject())
         skippedSteps = json["input"]?["skippedSteps"] ?? .array([])
+        hiddenValues = json["input"]?["hiddenValues"]?.stringValue.flatMap(HiddenValues.init) ?? .clear
         expectedValues = json["expected"]?["values"] ?? .object(JSONObject())
         expectedErrors = json["expected"]?["errors"] ?? .object(JSONObject())
         canSubmit = json["canSubmit"]?.boolValue ?? false
