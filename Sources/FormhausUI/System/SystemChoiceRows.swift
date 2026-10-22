@@ -35,7 +35,7 @@ struct SystemPickerRow: View {
                 SystemOptionList(field: context.field, key: context.key, model: context.model)
                     .formhausTheme(theme)
                     .environment(\.locale, locale)
-                    .resolveFormhausTokens()
+                    .resolveFormhausTokens(system: true)
             } label: {
                 SystemValueRow(context: context, value: summary)
             }
