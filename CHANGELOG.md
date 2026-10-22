@@ -8,6 +8,7 @@
 - New `FormSnapshot` holds a form's values, current step, skipped steps and option order seed. It is `Codable` with the keys `version`, `definitionId`, `values`, `step`, `skipped` and `seed`.
 - New `FormEngine.snapshot()`. It leaves out the values of `password` fields, also inside group items.
 - New `restoring:` parameter on `FormEngine` restores a snapshot without walking the steps or validating.
+- The fields of each skipped step in a restored snapshot are reset to their start values, as Skip resets them.
 - A snapshot that does not match the definition starts the form fresh and reports `snapshot-mismatch` through `onWarning`.
 - New `FormSnapshot.decode(_:options:)` returns `nil` for malformed JSON and reports `snapshot-mismatch`.
 
