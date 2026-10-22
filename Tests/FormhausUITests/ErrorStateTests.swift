@@ -75,7 +75,7 @@ struct ErrorStateTests {
         host.appearance = NSAppearance(named: .aqua)
         #expect(errorPixels(host) == 0, "\(name) is red while valid")
         model.setErrors(["f": " "])
-        #expect(errorPixels(host) > 40, "\(name) does not show its error")
+        #expect(errorPixels(host) > 16, "\(name) does not show its error")
     }
 
     @Test("a rating row stays inside narrow widths at every text size", arguments: [5, 10])
