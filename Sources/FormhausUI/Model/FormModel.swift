@@ -42,8 +42,9 @@ public final class FormModel {
     @ObservationIgnored private var lastErrors: FieldErrors
     @ObservationIgnored private var focusCounter = 0
     @ObservationIgnored private var pendingFocusKey: String?
-    @ObservationIgnored private var emittedValues: JSONObject?
+    @ObservationIgnored var emittedValues: JSONObject?
     @ObservationIgnored var heldEdits: [String: JSONValue?] = [:]
+    let snapshots = SnapshotState()
 
     public init(engine: FormEngine, options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler) {
         self.engine = engine
@@ -53,6 +54,11 @@ public final class FormModel {
         actions = engine.actionsState(options.labels)
         lastValues = engine.values
         lastErrors = engine.errors
+        if adoptRestoredUploads() {
+            structure = FormStructure(engine)
+            lastValues = engine.values
+        }
+        snapshots.last = engine.snapshot()
         refreshStatus()
         unsubscribe = engine.subscribe { [weak self] in self?.refresh() }
     }
@@ -68,10 +74,10 @@ public final class FormModel {
 
     public convenience init(
         definition: FormDefinition, initialValues: JSONObject = JSONObject(), engineOptions: FormEngineOptions = FormEngineOptions(),
-        options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler
+        options: FormRendererOptions = FormRendererOptions(), restoring snapshot: FormSnapshot? = nil, onSubmit: @escaping SubmitHandler
     ) {
         let hooks = HookBox(engineOptions.recalling(with: options))
-        let engine = FormEngine(definition: definition, values: initialValues, options: hooks.forwarding())
+        let engine = FormEngine(definition: definition, values: initialValues, options: hooks.forwarding(), restoring: snapshot)
         self.init(engine: engine, options: options, onSubmit: onSubmit)
         self.hooks = hooks
     }
@@ -86,7 +92,7 @@ public final class FormModel {
 
     public convenience init(
         localized: Localized, initialValues: JSONObject = JSONObject(), engineOptions: FormEngineOptions = FormEngineOptions(),
-        options: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler
+        options: FormRendererOptions = FormRendererOptions(), restoring snapshot: FormSnapshot? = nil, onSubmit: @escaping SubmitHandler
     ) {
         var engineOptions = engineOptions
         if engineOptions.messages == nil { engineOptions.messages = .catalog(localized.messages) }
@@ -94,7 +100,7 @@ public final class FormModel {
         if options.labels == nil { options.labels = .catalog(localized.labels) }
         self.init(
             definition: localized.definition, initialValues: initialValues, engineOptions: engineOptions, options: options,
-            onSubmit: onSubmit)
+            restoring: snapshot, onSubmit: onSubmit)
     }
 
     public var definition: FormDefinition { engine.definition }
@@ -176,6 +182,7 @@ public final class FormModel {
         if previousStep != structure.currentStep?.nodeID { requestFocus(engine.firstErrorKey(), afterErrors: true) }
         if valuesChanged || structureChanged { reloadOptions() }
         if valuesChanged { emitValues() }
+        snapshotChanged()
         pruneUploadsAfterRestart(values)
     }
 
@@ -219,13 +226,5 @@ public final class FormModel {
 
     private func assign<Value: Equatable>(_ path: ReferenceWritableKeyPath<FormModel, Value>, _ value: Value) {
         if self[keyPath: path] != value { self[keyPath: path] = value }
-    }
-
-    private func emitValues() {
-        guard let onValuesChange = options.onValuesChange else { return }
-        let values = engine.values
-        guard values != emittedValues else { return }
-        emittedValues = values
-        onValuesChange(values)
     }
 }

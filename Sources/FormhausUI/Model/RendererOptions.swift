@@ -3,6 +3,7 @@
 public typealias OptionsProvider = @MainActor @Sendable (JSONObject) async -> [FieldOption]
 public typealias FieldChangeFn = @MainActor (String, JSONValue?, JSONObject) -> Void
 public typealias ValuesChangeFn = @MainActor (JSONObject) -> Void
+public typealias SnapshotChangeFn = @MainActor (FormSnapshot?) -> Void
 public typealias ActionErrorFn = @MainActor (any Error) -> Void
 
 public struct FormRendererOptions {
@@ -11,6 +12,7 @@ public struct FormRendererOptions {
     public var onCancel: (@MainActor () -> Void)?
     public var onFieldChange: FieldChangeFn?
     public var onValuesChange: ValuesChangeFn?
+    public var onSnapshotChange: SnapshotChangeFn?
     public var onError: ActionErrorFn?
     public var lang: String?
     public var formatRecall: RecallFormatFn?
@@ -18,14 +20,15 @@ public struct FormRendererOptions {
 
     public init(
         labels: LabelSource? = nil, optionsProviders: [String: OptionsProvider] = [:], onCancel: (@MainActor () -> Void)? = nil,
-        onFieldChange: FieldChangeFn? = nil, onValuesChange: ValuesChangeFn? = nil, onError: ActionErrorFn? = nil,
-        lang: String? = nil, formatRecall: RecallFormatFn? = nil, testIds: TestIds = .off
+        onFieldChange: FieldChangeFn? = nil, onValuesChange: ValuesChangeFn? = nil, onSnapshotChange: SnapshotChangeFn? = nil,
+        onError: ActionErrorFn? = nil, lang: String? = nil, formatRecall: RecallFormatFn? = nil, testIds: TestIds = .off
     ) {
         self.labels = labels
         self.optionsProviders = optionsProviders
         self.onCancel = onCancel
         self.onFieldChange = onFieldChange
         self.onValuesChange = onValuesChange
+        self.onSnapshotChange = onSnapshotChange
         self.onError = onError
         self.lang = lang
         self.formatRecall = formatRecall

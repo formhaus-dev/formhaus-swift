@@ -11,10 +11,11 @@ public struct FormhausForm: View {
 
     public init(
         definition: FormDefinition, initialValues: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions(),
-        renderer: FormRendererOptions = FormRendererOptions(), onSubmit: @escaping SubmitHandler
+        renderer: FormRendererOptions = FormRendererOptions(), restoring snapshot: FormSnapshot? = nil, onSubmit: @escaping SubmitHandler
     ) {
         source = .definition(
-            OwnedForm(definition: definition, values: initialValues, engine: options, renderer: renderer, submit: onSubmit))
+            OwnedForm(
+                definition: definition, values: initialValues, engine: options, renderer: renderer, restoring: snapshot, submit: onSubmit))
     }
 
     public var body: some View {
@@ -30,6 +31,7 @@ struct OwnedForm {
     let values: JSONObject
     let engine: FormEngineOptions
     let renderer: FormRendererOptions
+    var restoring: FormSnapshot?
     let submit: SubmitHandler
 }
 
@@ -62,7 +64,7 @@ final class ModelHolder {
             }
             let created = FormModel(
                 definition: form.definition, initialValues: form.values, engineOptions: form.engine, options: form.renderer,
-                onSubmit: form.submit)
+                restoring: form.restoring, onSubmit: form.submit)
             replace(created, owned: true, definition: form.definition.source)
             return created
         }

@@ -44,7 +44,7 @@ extension FormModel {
     public func skip() async {
         await run {
             self.dropMissingFiles()
-            return try await self.engine.skip(self.submitHandler)
+            return try await self.clearingSnapshot { try await self.engine.skip($0) }
         }
     }
 
@@ -52,7 +52,7 @@ extension FormModel {
         await run {
             guard !self.engine.isActionDisabled(self.engine.definition.submit) else { return false }
             self.dropMissingFiles()
-            return try await self.engine.submit(self.submitHandler)
+            return try await self.clearingSnapshot { try await self.engine.submit($0) }
         }
     }
 

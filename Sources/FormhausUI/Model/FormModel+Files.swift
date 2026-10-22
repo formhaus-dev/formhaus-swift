@@ -13,6 +13,18 @@ extension FormModel {
         }
     }
 
+    func adoptRestoredUploads() -> Bool {
+        guard engine.restored else { return false }
+        let owner = ObjectIdentifier(self)
+        var dropped = false
+        for field in engine.definition.allFields where field.type == "file" {
+            guard let value = engine.values[field.key]?.stringValue, !UploadStore.adopt(value, owner: owner) else { continue }
+            engine.setValue(field.key, .null)
+            dropped = true
+        }
+        return dropped
+    }
+
     func pruneUploadsAfterRestart(_ values: JSONObject) {
         guard engine.restarts != lastRestarts else { return }
         lastRestarts = engine.restarts

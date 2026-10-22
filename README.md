@@ -192,6 +192,33 @@ FormhausForm(definition: definition, initialValues: record, options: FormEngineO
 
 Hidden fields keep their values in `engine.values` and in the submitted values, together with answers on steps off the active path. Conditions, validation and recall still treat them as unanswered, so they never block Continue or Submit. Pass `SubmissionOptions(hiddenValues: .keep)` to `validateSubmission`, or the server drops them.
 
+## Restore after the app is closed
+
+The system can end the app while it is in the background. Save the form's snapshot and pass it back to `restoring:` to bring back the answers, the current step and the skipped steps:
+
+```swift
+struct SignupView: View {
+    let definition: FormDefinition
+    @SceneStorage("signup.draft") private var draft: Data?
+
+    var body: some View {
+        FormhausForm(
+            definition: definition,
+            renderer: FormRendererOptions(onSnapshotChange: { snapshot in
+                draft = try? snapshot.map { try JSONEncoder().encode($0) }
+            }),
+            restoring: draft.flatMap { FormSnapshot.decode($0) }
+        ) { values, _ in
+            try await send(values)
+        }
+    }
+}
+```
+
+`onSnapshotChange` gets a new snapshot at most once per run loop turn, and `nil` after a successful submit so the draft goes away. A snapshot saved for another form, or for a step the definition no longer has, starts the form fresh and reports `snapshot-mismatch` through `onWarning`. Password values are never in a snapshot. A picked file comes back while its copy still exists.
+
+Snapshot values can hold personal data. Apple advises against keeping sensitive data in scene storage, so for such forms store the snapshot in the Keychain or in a file with data protection, and delete it when the user signs out.
+
 ## Translations
 
 `missingKeys(messages:labels:)` lists the built-in message and label keys that a catalog lacks, for a unit test of your translations. In debug builds, a form with a `messages` or `labels` catalog reports `missing-message-key` or `missing-label-key` through `onWarning` when it shows a text that neither the catalog nor the definition's own `messages` or `labels` supply. Each key is reported once per process.
