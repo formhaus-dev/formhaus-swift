@@ -80,6 +80,14 @@ private func walk(_ element: NSObject, cell: CGRect? = nil, bar: Bool = false, i
 }
 
 @MainActor
+func accessibilityIdentifiers(_ element: NSObject) -> [String] {
+    let selector = NSSelectorFromString("accessibilityIdentifier")
+    let own = element.responds(to: selector) ? element.perform(selector)?.takeUnretainedValue() as? String : nil
+    let found = own.map { $0.isEmpty ? [] : [$0] } ?? []
+    return found + children(of: element).flatMap(accessibilityIdentifiers)
+}
+
+@MainActor
 private func children(of element: NSObject) -> [NSObject] {
     if let children = element.accessibilityElements as? [NSObject] { return children }
     let count = element.accessibilityElementCount()
