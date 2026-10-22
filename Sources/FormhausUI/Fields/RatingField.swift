@@ -33,6 +33,7 @@ public struct RatingField: View {
                         .accessibilityLabel(Text(verbatim: String(point)))
                         .accessibilityAddTraits(current == point ? .isSelected : [])
                         .accessibilityHint(Text(verbatim: scale.anchor(for: point) ?? ""))
+                        .formhausTestId(context.optionTestId(String(point)))
                     }
                 }
                 .padding(.leading, -tokens.spacing.s1 / 2)

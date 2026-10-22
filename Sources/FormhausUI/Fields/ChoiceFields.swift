@@ -118,6 +118,7 @@ struct ChoiceList: View {
             option: option, shape: shape, selected: selected.contains(value), picture: picture,
             hint: context.helperText ?? "",
             zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
+            testId: context.optionTestId(value),
             choose: { selection.choose(value) },
             zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: image) }
         )

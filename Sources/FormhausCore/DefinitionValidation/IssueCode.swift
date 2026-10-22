@@ -65,6 +65,8 @@ extension IssueCode {
     public static let definitionReset = IssueCode(rawValue: "definition-reset")
     public static let missingComponent = IssueCode(rawValue: "missing-component")
     public static let missingResearch = IssueCode(rawValue: "missing-research")
+    public static let missingMessageKey = IssueCode(rawValue: "missing-message-key")
+    public static let missingLabelKey = IssueCode(rawValue: "missing-label-key")
     public static let unknownValidator = IssueCode(rawValue: "unknown-validator")
     public static let skipUnreachable = IssueCode(rawValue: "skip-unreachable")
     public static let routeFallthrough = IssueCode(rawValue: "route-fallthrough")

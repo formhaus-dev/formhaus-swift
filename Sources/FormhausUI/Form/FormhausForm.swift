@@ -105,6 +105,7 @@ private struct FormScroller: View {
                     .frame(maxWidth: .infinity)
                     .background(alignment: .top) { Color.clear.frame(height: 1).id(ScrollAnchor.screenTop(model)) }
             }
+            .formhausTestId(model.testId(.form))
             .modifier(ScreenTopScroller(requests: topRequests, proxy: proxy, anchor: ScrollAnchor.screenTop(model)))
         }
         .environment(\.formhausTopRequests, topRequests)

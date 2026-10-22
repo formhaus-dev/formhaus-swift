@@ -118,6 +118,12 @@ NavigationStack {
 
 On iOS steps swap in place and never push screens onto your navigation stack. The primary action sits in the toolbar, and from the second step a Back item replaces the back button.
 
+Controls use the tint of your app, also in your own field views: Continue and Back, checkmarks, scale dots, stars, picture selection and the date row. For the Formhaus primary, apply `.tint(...)` around the form. The set shows the definition title as the navigation title and leaves the display mode to your screen. Set `titleDisplayMode` to `.inline` or `.large` to choose it, or to `.off` to set no title:
+
+```swift
+.formhausBehavior(FormBehavior(titleDisplayMode: .inline))
+```
+
 ### Your own components
 
 Register a view per field type on top of a built-in set. Types you leave out keep the built-in views:
@@ -174,6 +180,22 @@ if result.errors.isEmpty {
 
 The body is the values object. `result.values` holds the values of the active path, and `result.errors` maps keys to messages. Pass skipped steps and custom validators in `SubmissionOptions`. `checkDefinition(json)` lists the issues of a definition before you use it.
 
+## Keep hidden values
+
+By default a field hidden by a condition loses its value. An editor of a stored record can keep it:
+
+```swift
+FormhausForm(definition: definition, initialValues: record, options: FormEngineOptions(hiddenValues: .keep)) { values, _ in
+    try await save(values)
+}
+```
+
+Hidden fields keep their values in `engine.values` and in the submitted values, together with answers on steps off the active path. Conditions, validation and recall still treat them as unanswered, so they never block Continue or Submit. Pass `SubmissionOptions(hiddenValues: .keep)` to `validateSubmission`, or the server drops them.
+
+## Translations
+
+`missingKeys(messages:labels:)` lists the built-in message and label keys that a catalog lacks, for a unit test of your translations. In debug builds, a form with a `messages` or `labels` catalog reports `missing-message-key` or `missing-label-key` through `onWarning` when it shows a text that neither the catalog nor the definition's own `messages` or `labels` supply. Each key is reported once per process.
+
 ## Theming
 
 `FormhausTheme` holds the [formhaus design tokens](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/tokens): light and dark palettes, type sizes, spacing, radii, control sizes and motion. `.standard` picks `.touch` on iOS and `.pointer` on macOS.
@@ -204,6 +226,35 @@ Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and 
 - At standard contrast the input border is about 2:1 against the background, below the 3:1 of WCAG 1.4.11. This is deliberate and matches the web renderers.
 - Increase Contrast switches to the `contrast: more` palette. Input, card and secondary borders then reach about 3.7:1, and muted text, placeholders, errors and the primary colour are raised to the native targets.
 
+## UI tests
+
+Set `testIds` to give the form accessibility identifiers for XCUITest. They are off by default:
+
+```swift
+FormhausForm(definition: definition, renderer: FormRendererOptions(testIds: .automatic)) { values, _ in .ok }
+```
+
+`.automatic` names each element after the definition `id` with the scheme of the web `testIds`: `<id>.form`, `<id>.<key>`, `<id>.<key>.<value>`, `<id>.<group>.<index>.<key>`, `<id>.submit`, `<id>.next`, `<id>.back` and `<id>.summary`. `<id>.cancel` exists only in Swift. The identifiers land here:
+
+| Id | Formhaus set | `.system` |
+|---|---|---|
+| `signup.form` | The scroll view of `FormhausForm`. `FormhausFormContent` on its own has none. | The `Form` list |
+| `signup.email` | The field row, a container that holds the label, the control and the error | The field row container. For a textarea, scale, rating or picture field, the container of its block. For an inline choice list, the section header text. |
+| `signup.plan.pro` | Each option of a radio, multiselect or matrix row, each scale point and each star. A `select` has none. | Each row of an inline choice list or of the pushed option list, and each picture tile. Scale, rating and menu pickers have none. |
+| `signup.people.0.name` | A field in a group item, placed like other fields | The same |
+| `signup.submit`, `signup.next` | The primary button | The primary button in the toolbar |
+| `signup.back`, `signup.cancel` | The Back and Cancel buttons, also Back in the navigation bar | The Back and Cancel buttons in the toolbar and below the form |
+| `signup.summary` | The error summary container | The header text of the error summary section |
+
+A field id sits on the row, not on the input. Query the input inside it:
+
+```swift
+app.descendants(matching: .any)["signup.email"].textFields.firstMatch.typeText("ada@example.com")
+app.buttons["signup.next"].tap()
+```
+
+With ids on, the `.system` set wraps each field row in an accessibility container that holds the id. VoiceOver does not read identifiers. `.custom { target in ... }` names the ids yourself from a `TestIdTarget`. Custom field views read `context.testId` and `context.optionTestId(_:)`, and custom actions read `context.testIds`.
+
 ## Compatibility
 
 | formhaus-swift | @formhaus/core | Format |
@@ -212,7 +263,7 @@ Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and 
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 77 definition files with their issues, value cases, recall cases and option order vectors, and 436 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 78 definition files with their issues, value cases, recall cases and option order vectors, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 

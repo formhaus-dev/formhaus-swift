@@ -2,6 +2,7 @@ final class EngineCore {
     private(set) var definition: FormDefinition
     let validators: Validators
     private let messageSource: MessageSource?
+    private let missingMessage: MissingMessageFn?
     private(set) var messages: ResolveMessage
     private(set) var visibility: VisibilityState
     var values = Values()
@@ -26,18 +27,20 @@ final class EngineCore {
     var viewedStep: String?
     var shownFields: ShownFields?
     private(set) var version = 0
+    var keptCache: (version: Int, generation: Int, values: JSONObject)?
     var emitEvent: ((FormEvent) -> Void)?
     var onChange: (() -> Void)?
 
     init(
         definition: FormDefinition, values initialValues: JSONObject = JSONObject(), validators: Validators = [:],
-        messages: MessageSource? = nil
+        messages: MessageSource? = nil, keep: Bool = false, missingMessage: MissingMessageFn? = nil
     ) {
         self.definition = definition
         self.validators = validators
         messageSource = messages
-        self.messages = messageResolver(messages, .catalog(definition.messages ?? .null))
-        visibility = VisibilityState(definition)
+        self.missingMessage = missingMessage
+        self.messages = watchedResolver(messages, definition, missingMessage)
+        visibility = VisibilityState(definition, keep: keep)
         values = Self.startValues(visibility, Values(fresh: initialValues), &errors)
     }
 
@@ -50,8 +53,8 @@ final class EngineCore {
     func load(_ next: FormDefinition, _ initialValues: Values) {
         definition = next
         definitionGeneration += 1
-        messages = messageResolver(messageSource, .catalog(next.messages ?? .null))
-        visibility = VisibilityState(next)
+        messages = watchedResolver(messageSource, next, missingMessage)
+        visibility = VisibilityState(next, keep: visibility.keep)
         replaceValues(Self.startValues(visibility, initialValues, &errors))
     }
 

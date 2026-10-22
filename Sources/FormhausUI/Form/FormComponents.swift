@@ -31,6 +31,13 @@ public enum StepScroll: Sendable {
     case formTop
 }
 
+public enum TitleDisplayMode: Sendable {
+    case automatic
+    case inline
+    case large
+    case off
+}
+
 public struct FormBehavior: Sendable {
     public var errorSummary = true
     public var confirmRemove = true
@@ -38,10 +45,12 @@ public struct FormBehavior: Sendable {
     public var backPlacement = BackPlacement.automatic
     public var stepScroll = StepScroll.screenTop
     public var inlineChoiceLimit = 6
+    public var titleDisplayMode = TitleDisplayMode.automatic
 
     public init(
         errorSummary: Bool = true, confirmRemove: Bool = true, stepErrorMarks: Bool = false,
-        backPlacement: BackPlacement = .automatic, stepScroll: StepScroll = .screenTop, inlineChoiceLimit: Int = 6
+        backPlacement: BackPlacement = .automatic, stepScroll: StepScroll = .screenTop, inlineChoiceLimit: Int = 6,
+        titleDisplayMode: TitleDisplayMode = .automatic
     ) {
         self.errorSummary = errorSummary
         self.confirmRemove = confirmRemove
@@ -49,6 +58,7 @@ public struct FormBehavior: Sendable {
         self.backPlacement = backPlacement
         self.stepScroll = stepScroll
         self.inlineChoiceLimit = inlineChoiceLimit
+        self.titleDisplayMode = titleDisplayMode
     }
 }
 

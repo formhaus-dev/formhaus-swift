@@ -151,6 +151,11 @@ public protocol FormResearch: Sendable {
     func order(seed: String, key: String, options: [FieldOption]) -> [FieldOption]
 }
 
+public enum HiddenValues: String, Sendable {
+    case clear
+    case keep
+}
+
 public struct FormEngineOptions: Sendable {
     public var onBeforeStepChange: BeforeStepChangeFn?
     public var onAfterStepChange: AfterStepChangeFn?
@@ -165,12 +170,14 @@ public struct FormEngineOptions: Sendable {
     public var formatRecall: RecallFormatFn?
     public var seed: String?
     public var research: (any FormResearch)?
+    public var hiddenValues: HiddenValues
 
     public init(
         onBeforeStepChange: BeforeStepChangeFn? = nil, onAfterStepChange: AfterStepChangeFn? = nil,
         onBeforeSubmit: BeforeSubmitFn? = nil, onAfterSubmit: AfterSubmitFn? = nil, onStepValidate: StepValidateFn? = nil,
         onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:], messages: MessageSource? = nil,
-        lang: String? = nil, formatRecall: RecallFormatFn? = nil, seed: String? = nil, research: (any FormResearch)? = nil
+        lang: String? = nil, formatRecall: RecallFormatFn? = nil, seed: String? = nil, research: (any FormResearch)? = nil,
+        hiddenValues: HiddenValues = .clear
     ) {
         self.onBeforeStepChange = onBeforeStepChange
         self.onAfterStepChange = onAfterStepChange
@@ -185,5 +192,6 @@ public struct FormEngineOptions: Sendable {
         self.formatRecall = formatRecall
         self.seed = seed
         self.research = research
+        self.hiddenValues = hiddenValues
     }
 }

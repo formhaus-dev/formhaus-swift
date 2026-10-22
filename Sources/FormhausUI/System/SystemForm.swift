@@ -9,6 +9,7 @@ private final class StepDirection {
 
 struct SystemForm: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.formhausBehavior) private var behavior
     @State private var direction = StepDirection()
     @State private var dismissed = -1
     let model: FormModel
@@ -26,7 +27,7 @@ struct SystemForm: View {
                 .transition(StepSlide(direction: direction))
         }
         .animation(reduceMotion ? nil : .smooth(duration: 0.35), value: index)
-        .modifier(SystemStepTitle(title: model.definition.title))
+        .modifier(SystemStepTitle(title: model.definition.title, mode: behavior.titleDisplayMode))
         #if os(iOS)
             .modifier(SystemToolbar(context: actions, first: index == 0, empty: structure.nodes.isEmpty))
         #endif
@@ -89,6 +90,7 @@ struct SystemPage: View {
                 }
             }
             .formStyle(.grouped)
+            .formhausTestId(model.testId(.form))
             .scrollDismissesKeyboard(.interactively)
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
             .onChange(of: model.focusRequest) { _, request in
@@ -101,13 +103,19 @@ struct SystemPage: View {
 
 private struct SystemStepTitle: ViewModifier {
     let title: String?
+    let mode: TitleDisplayMode
 
     func body(content: Content) -> some View {
-        if let title, !title.isEmpty {
-            content.navigationTitle(Text(verbatim: title))
-                #if os(iOS)
-                    .navigationBarTitleDisplayMode(.large)
-                #endif
+        if let title, !title.isEmpty, mode != .off {
+            #if os(iOS)
+                switch mode {
+                case .inline: content.navigationTitle(Text(verbatim: title)).navigationBarTitleDisplayMode(.inline)
+                case .large: content.navigationTitle(Text(verbatim: title)).navigationBarTitleDisplayMode(.large)
+                default: content.navigationTitle(Text(verbatim: title))
+                }
+            #else
+                content.navigationTitle(Text(verbatim: title))
+            #endif
         } else {
             content
         }

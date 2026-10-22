@@ -115,8 +115,9 @@ extension EngineCore {
         return pruned
     }
 
-    func getSubmitValues() -> JSONObject {
+    func getSubmitValues(payload: Bool = false) -> JSONObject {
         var result = visibility.conditionValues(values.json)
+        if payload && visibility.keep { addKept(&result) }
         for key in skipped.flatMap(\.keys) { result.removeValue(forKey: key) }
         return result
     }

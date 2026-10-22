@@ -20,6 +20,7 @@ struct SystemPrimaryButton: View {
             .modifier(SystemProminence(prominent: prominent))
             .disabled(context.busy || context.state.primaryDisabled)
             .keyboardShortcut(.defaultAction)
+            .formhausTestId(context.primaryTestId)
         }
     }
 
@@ -81,6 +82,7 @@ struct SystemSkip: View {
                     if first, let cancel = context.state.cancelAction {
                         ToolbarItem(placement: .cancellationAction) {
                             Button(cancel.label ?? "", role: .cancel, action: context.cancel).disabled(context.busy)
+                                .formhausTestId(context.testIds.cancel)
                         }
                     }
                 }
@@ -106,6 +108,7 @@ struct SystemSkip: View {
                         .buttonStyle(.borderless)
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .disabled(context.busy)
+                        .formhausTestId(context.testIds.back)
                 }
                 .listRowBackground(Color.clear)
             }
@@ -120,10 +123,12 @@ struct SystemSkip: View {
                 HStack(spacing: 12) {
                     if let cancel = context.state.cancelAction {
                         Button(cancel.label ?? "", role: .cancel, action: context.cancel).disabled(context.busy)
+                            .formhausTestId(context.testIds.cancel)
                     }
                     Spacer()
                     if context.state.showBack {
                         Button(context.state.backLabel, action: context.back).disabled(context.busy)
+                            .formhausTestId(context.testIds.back)
                     }
                     SystemPrimaryButton(context: context)
                 }

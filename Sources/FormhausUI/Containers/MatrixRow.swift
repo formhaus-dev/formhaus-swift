@@ -52,6 +52,7 @@ private struct MatrixRowBody: View {
         .formhausFocus(context, focused)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(verbatim: context.accessibilityName))
+        .formhausTestId(context.testId)
         .id(context.key)
     }
 
@@ -85,6 +86,7 @@ private struct MatrixRowBody: View {
         .buttonStyle(.plain)
         .accessibilityLabel(Text(verbatim: option.label ?? value))
         .accessibilityAddTraits(selected ? .isSelected : [])
+        .formhausTestId(context.optionTestId(value))
     }
 
     private func isSelected(_ value: String) -> Bool {

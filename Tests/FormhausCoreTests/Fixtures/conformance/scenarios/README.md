@@ -19,7 +19,7 @@ Each file holds a `definition` and a list of scenarios that drive `FormEngine` t
 
 ## Running a scenario
 
-1. Take the scenario's own `definition` if it has one, and the file's `definition` otherwise. Apply the file's `overlay` to it, if set. Create the engine with `values`, the `seed` if set, and the options the scenario lists.
+1. Take the scenario's own `definition` if it has one, and the file's `definition` otherwise. Apply the file's `overlay` to it, if set. Create the engine with `values`, the `seed` and `hiddenValues` options if set, and the options the scenario lists.
 2. If `throws` is set, the constructor must throw an error with that name. Such a scenario has no steps and no options.
 3. Run `steps` in order. An action step calls the engine method named in `do` and awaits it. `returns` is compared with the result. `throws` is compared with the `name` of the error the action throws or rejects with, and with its `phase` and `message` if the expectation lists them.
 4. With `"await": false`, the action starts, the runner waits one macrotask, and moves on. `settle` awaits every started action and checks its `returns` or `throws`. Outside JavaScript, waiting one macrotask means letting every started action run until it finishes or waits on an unresolved `defer` reply.

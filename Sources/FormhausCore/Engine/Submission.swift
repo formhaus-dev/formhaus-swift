@@ -30,7 +30,7 @@ extension FormEngine {
         let epoch = core.validationEpoch
         let operation = core.beginOperation()
         operationBox?.value = operation
-        let checked = core.getSubmitValues()
+        let checked = core.getSubmitValues(payload: true)
         let inputsChanged = core.watchCheckedInputs(checked)
         let stale = { epoch != core.validationEpoch || operation != core.operationEpoch || inputsChanged() }
         core.submitting = true
@@ -76,7 +76,7 @@ extension FormEngine {
         guard let before = options.onBeforeSubmit else { return checked }
         let allowed = try await suspended { try await before(checked) }
         if stale() || allowed == false || invalid(stale) { return nil }
-        return core.getSubmitValues()
+        return core.getSubmitValues(payload: true)
     }
 
     private func invalid(_ stale: () -> Bool) -> Bool {

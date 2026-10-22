@@ -90,17 +90,19 @@ extension View {
         environment(\.formhausTheme, theme)
     }
 
-    func resolveFormhausTokens() -> some View {
-        modifier(TokenResolver())
+    func resolveFormhausTokens(system: Bool? = nil) -> some View {
+        modifier(TokenResolver(system: system))
     }
 }
 
 private struct TokenResolver: ViewModifier {
+    @Environment(\.formhausComponents) private var components
     @Environment(\.formhausTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorSchemeContrast) private var contrast
+    let system: Bool?
 
     private var environment: EnvironmentValues {
         var values = EnvironmentValues()
@@ -112,6 +114,10 @@ private struct TokenResolver: ViewModifier {
         let tokens = FormhausTokens(
             theme: theme, dark: colorScheme == .dark, typeSize: typeSize, reduceMotion: reduceMotion,
             increasedContrast: contrast == .increased, environment: environment)
-        content.environment(\.formhausTokens, tokens).tint(tokens.colors.primary)
+        if system ?? components.system {
+            content.environment(\.formhausTokens, tokens)
+        } else {
+            content.environment(\.formhausTokens, tokens).tint(tokens.colors.primary)
+        }
     }
 }

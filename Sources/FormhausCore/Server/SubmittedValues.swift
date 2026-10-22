@@ -1,6 +1,5 @@
 struct ActiveValues {
     var values = JSONObject()
-    var active: [(key: String, field: FormField)] = []
     var invalid: [(key: String, value: JSONValue?)] = []
     private var activeByKey = StringMap<FormField>(insertionOrder: true)
 
@@ -8,7 +7,6 @@ struct ActiveValues {
 
     init(values: JSONObject, active: [(key: String, field: FormField)], invalid: [(key: String, value: JSONValue?)]) {
         self.values = values
-        self.active = active
         self.invalid = invalid
         for (key, field) in active where !activeByKey.has(key) { activeByKey[key] = field }
     }
@@ -58,9 +56,12 @@ func activeValues(_ visibility: VisibilityState, _ fields: [FormField], _ source
     return result
 }
 
-func blankItems(_ resolved: inout ActiveValues, _ resolve: @escaping ResolveMessage) -> [(key: String, error: String)] {
+func blankItems(_ resolved: inout ActiveValues, _ fields: [FormField], _ resolve: @escaping ResolveMessage)
+    -> [(key: String, error: String)]
+{
     var errors: [(key: String, error: String)] = []
-    for (key, group) in resolved.active where group.isGroup {
+    for group in fields where group.isGroup && (resolved.field(group.key) ?? group).ordinal == group.ordinal {
+        let key = group.key
         guard let items = resolved.values[key]?.arrayValue else { continue }
         resolved.values[key] = .array(
             items.enumerated().map { index, item in
@@ -70,4 +71,22 @@ func blankItems(_ resolved: inout ActiveValues, _ resolve: @escaping ResolveMess
         )
     }
     return errors
+}
+
+func keepHidden(_ fields: [FormField], _ source: JSONObject, _ submitted: inout JSONObject, _ skipped: [String]) {
+    for field in fields {
+        let key = field.key
+        guard let value = source[key], !skipped.containsText(key) else { continue }
+        guard let items = submitted[key] else {
+            submitted[key] = value
+            continue
+        }
+        guard field.isGroup, let kept = value.arrayValue, let sent = items.arrayValue else { continue }
+        submitted[key] = .array(
+            sent.enumerated().map { index, item in
+                guard let entry = item.objectValue, kept.indices.contains(index), var merged = kept[index].objectValue else { return item }
+                merged.merge(entry)
+                return .object(merged)
+            })
+    }
 }

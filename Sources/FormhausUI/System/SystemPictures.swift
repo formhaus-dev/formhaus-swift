@@ -16,6 +16,7 @@ struct SystemPictures: View {
                     SystemPictureTile(option: option, selected: selected.contains(value)) {
                         selection.choose(value)
                     }
+                    .formhausTestId(context.optionTestId(value))
                 }
             }
             .padding(.vertical, 8)

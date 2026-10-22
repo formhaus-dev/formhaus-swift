@@ -50,6 +50,7 @@ public struct FieldShell<Content: View>: View {
         .opacity(isInline && context.isLocked ? 0.6 : 1)
         .measured("\(context.key)/field")
         .accessibilityElement(children: .contain)
+        .formhausTestId(context.testId)
         .formhausScrollAnchor(context)
     }
 

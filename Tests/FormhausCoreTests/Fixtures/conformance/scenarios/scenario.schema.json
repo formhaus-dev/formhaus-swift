@@ -70,6 +70,9 @@
         "seed": {
           "type": "string"
         },
+        "hiddenValues": {
+          "enum": ["clear", "keep"]
+        },
         "hooks": {
           "type": "object",
           "additionalProperties": false,

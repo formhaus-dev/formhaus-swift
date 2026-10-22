@@ -102,17 +102,17 @@ func itemScope(_ fields: [FormField], _ item: JSONValue, _ values: JSONObject) -
     return scope
 }
 
-func cleanItems(_ group: FormField, _ value: JSONValue?, _ values: JSONObject, _ limits: ListLimits) -> JSONValue? {
+func cleanItems(_ group: FormField, _ value: JSONValue?, _ values: JSONObject, _ limits: ListLimits, all: Bool = false) -> JSONValue? {
     guard let items = value?.arrayValue else { return value }
     let fields = group.items
-    return .array(items.map { cleanItem(fields, $0, values, limits) })
+    return .array(items.map { cleanItem(fields, $0, values, limits, all: all) })
 }
 
-func cleanItem(_ fields: [FormField], _ item: JSONValue, _ values: JSONObject, _ limits: ListLimits) -> JSONValue {
+func cleanItem(_ fields: [FormField], _ item: JSONValue, _ values: JSONObject, _ limits: ListLimits, all: Bool = false) -> JSONValue {
     guard item.objectValue != nil else { return item }
     let scope = itemScope(fields, item, values)
     var result = JSONObject()
-    for field in fields where scope[field.key] != nil && isVisible(field, scope, limits: limits) {
+    for field in fields where scope[field.key] != nil && (all || isVisible(field, scope, limits: limits)) {
         result[field.key] = scope[field.key]
     }
     return .object(result)

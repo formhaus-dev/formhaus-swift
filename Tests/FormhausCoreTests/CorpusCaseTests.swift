@@ -6,8 +6,10 @@ import Testing
 struct CorpusCaseTests {
     static let withTexts = Corpus.names.filter { Corpus.fixture($0).texts != nil }
 
-    @MainActor private func browserCanSubmit(_ definition: FormDefinition, _ values: JSONObject) async throws -> Bool {
-        let engine = FormEngine(definition: definition, values: values)
+    @MainActor private func browserCanSubmit(_ definition: FormDefinition, _ testCase: CorpusCase) async throws -> Bool {
+        let engine = FormEngine(
+            definition: definition, values: testCase.values.objectValue ?? JSONObject(),
+            options: FormEngineOptions(hiddenValues: testCase.hiddenValues))
         while engine.isMultiStep && !engine.isLastStep {
             if engine.isActionDisabled(engine.currentStep?.next.action) { return false }
             if try await !engine.next() { return false }
@@ -35,7 +37,7 @@ struct CorpusCaseTests {
     @Test("server", arguments: Corpus.caseNames)
     func server(id: String) throws {
         let (fixture, testCase) = try Corpus.testCase(id)
-        let options = SubmissionOptions(skippedSteps: testCase.skippedSteps)
+        let options = SubmissionOptions(skippedSteps: testCase.skippedSteps, hiddenValues: testCase.hiddenValues)
         let result = validateSubmission(try fixture.runtime(), testCase.values, options: options)
         #expect(strictlyEqual(.object(result.values), testCase.serverValues ?? testCase.expectedValues))
         #expect(strictlyEqual(json(result.errors), testCase.expectedErrors))
@@ -45,19 +47,20 @@ struct CorpusCaseTests {
     @MainActor func browserEngine(id: String) async throws {
         let (fixture, testCase) = try Corpus.testCase(id)
         let definition = try fixture.runtime()
-        let values = testCase.values.objectValue ?? JSONObject()
-        let engine = FormEngine(definition: definition, values: values)
+        let engine = FormEngine(
+            definition: definition, values: testCase.values.objectValue ?? JSONObject(),
+            options: FormEngineOptions(hiddenValues: testCase.hiddenValues))
         #expect(strictlyEqual(json(engine.validate()), testCase.expectedErrors))
         #expect(strictlyEqual(.object(engine.getSubmitValues()), testCase.expectedValues))
-        #expect(try await browserCanSubmit(definition, values) == testCase.canSubmit)
+        #expect(try await browserCanSubmit(definition, testCase) == testCase.canSubmit)
     }
 
     @Test("a payload the browser accepts passes the server", arguments: Corpus.caseNames)
     @MainActor func acceptedPayloadPassesServer(id: String) async throws {
         let (fixture, testCase) = try Corpus.testCase(id)
         let definition = try fixture.runtime()
-        guard try await browserCanSubmit(definition, testCase.values.objectValue ?? JSONObject()) else { return }
-        let options = SubmissionOptions(skippedSteps: testCase.skippedSteps)
+        guard try await browserCanSubmit(definition, testCase) else { return }
+        let options = SubmissionOptions(skippedSteps: testCase.skippedSteps, hiddenValues: testCase.hiddenValues)
         #expect(validateSubmission(definition, testCase.values, options: options).errors.isEmpty)
     }
 

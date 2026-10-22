@@ -106,7 +106,8 @@ extension FormEngine {
         guard let move = core.plannedMove(forward: forward, reason: reason) else { return false }
         let step = move.step
         var committed = false
-        let context = StepChangeContext(fromStepId: step.id, toStepId: move.target.id, reason: reason, values: core.getSubmitValues())
+        let context = StepChangeContext(
+            fromStepId: step.id, toStepId: move.target.id, reason: reason, values: core.getSubmitValues(payload: true))
         let epoch = core.validationEpoch
         let operation = core.beginOperation()
         let inputsChanged = core.watchCheckedInputs(context.values)

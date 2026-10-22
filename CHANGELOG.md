@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.5
+
+### FormhausCore
+
+- New `FormEngineOptions.hiddenValues`, `.clear` (default) or `.keep`. With `.keep`, fields hidden by conditions keep their values in `engine.values` and in submitted values.
+- With `.keep`, conditions, validation and recall still treat hidden fields as unanswered, and hidden fields never block Continue or Submit.
+- With `.keep`, submitted values also hold the answers on steps off the active path. Fields of skipped steps stay out.
+- `SubmissionOptions.hiddenValues` takes the same option. With `.keep`, `validateSubmission` returns hidden values without validating them and drops a value that fails its type check.
+- New `missingKeys(messages:labels:)` lists the built-in message and label keys a catalog lacks.
+- In debug builds, a `messages` or `labels` catalog reports `missing-message-key` or `missing-label-key` through `onWarning` when a shown text is in neither the catalog nor the definition's `messages` or `labels`. Each key is reported once per process.
+- New `TestIdTarget` type.
+
+### FormhausUI
+
+- **Breaking:** the `.system` set no longer applies the Formhaus primary as tint. Its built-in controls use the tint of your app: Continue and Back, checkmarks, scale dots, stars, picture selection and the date row. Controls in custom field views follow it too. Apply `.tint(...)` around the form to keep the previous look. The Formhaus set still uses the theme primary.
+- The `.system` set no longer forces a large navigation title. New `FormBehavior.titleDisplayMode`: `.automatic` (default) leaves the mode to the host, `.inline` and `.large` set it, and `.off` sets no title. Pass `.large` to keep the previous large title.
+- New `FormRendererOptions.testIds` adds accessibility identifiers for UI tests. It is `.off` by default. `.automatic` names elements after the definition id: `signup.form`, `signup.email`, `signup.plan.pro`, `signup.people.0.name`, `signup.submit`, `signup.next`, `signup.back`, `signup.cancel` and `signup.summary`. `.custom` names them with a closure.
+- With test ids on, field rows of the `.system` set are accessibility containers that hold the id. Query inputs with descendant queries.
+- `FieldContext` has `testId` and `optionTestId(_:)`, and `ActionsContext` has `testIds`, for custom components.
+
 ## 0.1.4
 
 ### FormhausCore

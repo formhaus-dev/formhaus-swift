@@ -24,6 +24,7 @@ public struct ScaleField: View {
                         .buttonStyle(ScaleBoxStyle(selected: current == point))
                         .accessibilityAddTraits(current == point ? .isSelected : [])
                         .accessibilityHint(Text(verbatim: scale.anchor(for: point) ?? ""))
+                        .formhausTestId(context.optionTestId(String(point)))
                     }
                 }
                 ScaleAnchors(anchors: scale.anchors)

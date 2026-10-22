@@ -41,7 +41,7 @@ The checks run on the definition as written, without `overlay`. A structural err
 
 ## Cases
 
-A case has `name`, `input` (`values` and `skippedSteps`), `expected` (`values` and `errors`), `canSubmit` and an optional `serverValues`.
+A case has `name`, `input` (`values`, `skippedSteps` and an optional `hiddenValues`), `expected` (`values` and `errors`), `canSubmit` and an optional `serverValues`. When `hiddenValues` is set, pass it to the engine and to the server validation as the option of the same name.
 
 - Server: validating `input.values` with `input.skippedSteps` returns `expected`. The returned values are a plain object.
 - Browser engine: creating the engine with `input.values`, then `validate()` returns `expected.errors`, and the submit values equal `expected.values`. `canSubmit` says whether stepping through every step and submitting is allowed: on each step before the last, `next.disabled` does not match the submit values and `next()` succeeds; on the last, `validate()` returns no errors and `submit.disabled` does not match.

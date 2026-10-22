@@ -8,12 +8,15 @@ private func reportWarnings(_ definition: FormDefinition, _ options: FormEngineO
     #if DEBUG
         issues += unorderedWarning(definition, options)
     #endif
-    for issue in issues {
-        if let onWarning = options.onWarning {
-            onWarning(issue)
-        } else {
-            warningLog.warning("[formhaus] \(issue.message, privacy: .public)")
-        }
+    for issue in issues { deliver(issue, options) }
+}
+
+@MainActor
+func deliver(_ issue: DefinitionIssue, _ options: FormEngineOptions) {
+    if let onWarning = options.onWarning {
+        onWarning(issue)
+    } else {
+        warningLog.warning("[formhaus] \(issue.message, privacy: .public)")
     }
 }
 
@@ -68,7 +71,9 @@ public final class FormEngine {
         self.options = options
         seed = options.seed.flatMap { $0.isEmpty ? nil : $0 } ?? options.research?.seed() ?? ""
         reportWarnings(definition, options)
-        core = EngineCore(definition: definition, values: values, validators: options.validators, messages: options.messages)
+        core = EngineCore(
+            definition: definition, values: values, validators: options.validators, messages: options.messages,
+            keep: options.hiddenValues == .keep, missingMessage: missingMessageReporter(options))
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
         }
@@ -77,7 +82,7 @@ public final class FormEngine {
     }
 
     public var definition: FormDefinition { core.definition }
-    public var values: JSONObject { core.values.json }
+    public var values: JSONObject { core.visibility.keep ? core.keptJSON() : core.values.json }
     public var errors: FieldErrors { core.errors }
     public var currentStepIndex: Int { core.currentStepIndex }
     public var fieldLoading: StringMap<Bool> { core.fieldLoading }
@@ -182,11 +187,11 @@ public final class FormEngine {
     }
 
     public func getSubmitValues() -> JSONObject {
-        core.getSubmitValues()
+        core.getSubmitValues(payload: true)
     }
 
     public func isActionDisabled(_ action: FormAction?) -> Bool {
-        FormhausCore.isActionDisabled(action, getSubmitValues(), limits: core.visibility.limits(core.values.json))
+        FormhausCore.isActionDisabled(action, core.getSubmitValues(), limits: core.visibility.limits(core.values.json))
     }
 
     public func goToStepWithField(_ key: String) {
