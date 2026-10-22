@@ -16,6 +16,7 @@ public struct OptionCardStyle: ButtonStyle {
 
 private struct OptionCardBody: View {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.isFocused) private var focused
     let configuration: ButtonStyleConfiguration
     let selected: Bool
     let invalid: Bool
@@ -26,6 +27,7 @@ private struct OptionCardBody: View {
             .padding(.horizontal, tokens.spacing.s6)
             .frame(maxWidth: .infinity, minHeight: tokens.controls.hitTarget, alignment: .leading)
             .selectableSurface(selected: selected, invalid: invalid, solid: false)
+            .overlay(FocusRing(visible: focused, radius: tokens.radii.control, offset: 2))
             .scaleEffect(configuration.isPressed && !tokens.reduceMotion ? 0.99 : 1)
     }
 }

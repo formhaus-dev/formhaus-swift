@@ -115,7 +115,8 @@ struct ChoiceList: View {
         let selection = ChoiceSelection(context: context)
         let image = ImageKey(option.safeImage ?? "", digest: option.imageKey)
         return ChoiceCard(
-            option: option, shape: shape, selected: selected.contains(value), picture: picture,
+            option: option, shape: shape, selected: selected.contains(value), invalid: context.isInvalid,
+            picture: picture,
             hint: context.helperText ?? "",
             zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
             testId: context.optionTestId(value),
