@@ -8,12 +8,15 @@ private func reportWarnings(_ definition: FormDefinition, _ options: FormEngineO
     #if DEBUG
         issues += unorderedWarning(definition, options)
     #endif
-    for issue in issues {
-        if let onWarning = options.onWarning {
-            onWarning(issue)
-        } else {
-            warningLog.warning("[formhaus] \(issue.message, privacy: .public)")
-        }
+    for issue in issues { deliver(issue, options) }
+}
+
+@MainActor
+func deliver(_ issue: DefinitionIssue, _ options: FormEngineOptions) {
+    if let onWarning = options.onWarning {
+        onWarning(issue)
+    } else {
+        warningLog.warning("[formhaus] \(issue.message, privacy: .public)")
     }
 }
 
@@ -70,7 +73,7 @@ public final class FormEngine {
         reportWarnings(definition, options)
         core = EngineCore(
             definition: definition, values: values, validators: options.validators, messages: options.messages,
-            keep: options.hiddenValues == .keep)
+            keep: options.hiddenValues == .keep, missingMessage: missingMessageReporter(options))
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
         }

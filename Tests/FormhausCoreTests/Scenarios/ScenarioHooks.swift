@@ -32,6 +32,7 @@ struct ScenarioHooks {
         let log = log
         options.onFormEvent = { event in log.record(["event": json(event)]) }
         options.onWarning = { issue in
+            guard ![IssueCode.missingMessageKey, .missingLabelKey].contains(issue.code) else { return }
             log.record(["warning": ["code": .string(issue.code.rawValue), "path": .string(issue.path)]])
         }
         addStepHooks(&options)

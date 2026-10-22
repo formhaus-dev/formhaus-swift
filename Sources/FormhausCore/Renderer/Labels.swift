@@ -67,7 +67,14 @@ extension FormEngine {
 
     @_spi(Renderer)
     public func label(_ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject()) -> String {
-        labelFor(key, params, source, definitionLabels)
+        #if DEBUG
+            reportMissingLabel(key, source, options)
+        #endif
+        return labelFor(key, params, source, definitionLabels)
+    }
+
+    private func label(_ key: String, _ source: LabelSource?, shown: Bool) -> String {
+        shown ? label(key, source) : labelFor(key, JSONObject(), source, definitionLabels)
     }
 
     @_spi(Renderer)
@@ -108,6 +115,8 @@ extension FormEngine {
         let last = isLastStep || !isMultiStep
         let next = step?.next ?? .absent
         let primaryAction = last ? definition.submit : next.action
+        let showBack = isMultiStep && !isFirstStep && step?.back != .hidden
+        let showSkip = step?.canSkip == true && next != .hidden
         return FormActionsState(
             submitAction: definition.submit, nextAction: next.action, backAction: step?.back.action, skipAction: step?.skip.action,
             cancelAction: definition.cancel, isFirstStep: isFirstStep, isLastStep: last, isMultiStep: isMultiStep,
@@ -115,10 +124,10 @@ extension FormEngine {
                 ? definition.submit.label ?? label("submit", source) : next.action?.label ?? label("continue", source),
             primaryDisabled: isActionDisabled(primaryAction),
             showPrimary: last || next != .hidden,
-            showBack: isMultiStep && !isFirstStep && step?.back != .hidden,
-            backLabel: step?.back.action?.label ?? label("back", source),
-            showSkip: step?.canSkip == true && next != .hidden,
-            skipLabel: step?.skip.action?.label ?? label("skip", source)
+            showBack: showBack,
+            backLabel: step?.back.action?.label ?? label("back", source, shown: showBack),
+            showSkip: showSkip,
+            skipLabel: step?.skip.action?.label ?? label("skip", source, shown: showSkip)
         )
     }
 }
