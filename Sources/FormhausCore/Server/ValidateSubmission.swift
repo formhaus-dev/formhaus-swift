@@ -65,9 +65,8 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
     let resolve = namedResolver(messages)
     var resolved = activeValues(VisibilityState(definition), fields, values, resolve)
     let items = blankItems(&resolved, fields, resolve)
-    let engine = EngineCore(
-        definition: definition, values: resolved.values, validators: ignoredValidators(fields, options.validators),
-        messages: .function(messages))
+    let validators = ignoredValidators(fields, options.validators)
+    let engine = EngineCore(definition: definition, values: resolved.values, validators: validators, messages: .function(messages))
     engine.loadSubmitted(resolved.values)
     applySkips(engine, options.skippedSteps)
     let skipped = engine.skipped.flatMap(\.keys)
@@ -84,7 +83,7 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
         for (key, error) in items where submitted.has(visibility.owner(key)) && visibility.activeItem(key, engine.values.json) != nil {
             errors[key] = error
         }
-        if options.hiddenValues == .keep { keepHidden(fields, resolved.values, &submitted, skipped) }
+        if options.hiddenValues == .keep { keepHidden(fields, resolved, &submitted, skipped, validators) }
         return SubmissionResult(values: submitted, errors: errors)
     }
     return Prepared(engine: engine, skipped: skipped, check: check)

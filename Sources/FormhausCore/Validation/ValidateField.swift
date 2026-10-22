@@ -59,16 +59,17 @@ public func validateFieldValue(
     CallBudget.run { fieldValueError(field, input, allValues, options.validators, options.messages) }
 }
 
-private func fieldValueError(
-    _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, _ validators: Validators, _ messages: MessageSource?
+func fieldValueError(
+    _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, _ validators: Validators, _ messages: MessageSource?,
+    required: Bool = true
 ) -> String? {
     let value = trimValue(field, input)
     let rules = field.validation ?? FieldValidation(json: JSONObject())
     let resolve = namedResolver(messageResolver(messages))
     let matchMessage = { rules.message("matchFieldMessage") ?? resolve("matchField", [:], field) }
     guard let present = value, !isEmptyValue(value, field) else {
-        if let required = rules.required, required.isTruthy {
-            return required.stringValue ?? resolve("required", [:], field)
+        if required, let rule = rules.required, rule.isTruthy {
+            return rule.stringValue ?? resolve("required", [:], field)
         }
         if let match = rules.matchField, !isBlank(allValues[match]) { return matchMessage() }
         return nil
