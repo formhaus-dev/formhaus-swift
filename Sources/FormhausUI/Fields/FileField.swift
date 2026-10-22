@@ -12,7 +12,7 @@ public struct FileField: View {
     }
 
     public var body: some View {
-        PickerInput(context: context, active: picking, clearable: !context.text.isEmpty, cleared: .null, label: summary) {
+        PickerInput(context: context, active: picking, clearable: context.hasFile, cleared: .null, label: summary) {
             picking = true
         }
         .filePicker(context, isPresented: $picking)
@@ -50,8 +50,10 @@ extension FieldContext {
     }
 
     var reference: String? {
-        text.isEmpty || fileName != nil ? nil : text
+        text.isEmpty || fileName != nil || UploadStore.isMissing(text) ? nil : text
     }
+
+    var hasFile: Bool { fileName != nil || reference != nil }
 
     var fileValueText: String {
         fileName ?? reference ?? text(forLabel: "chooseFile")

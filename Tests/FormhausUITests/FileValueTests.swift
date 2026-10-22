@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import FormhausCore
+@_spi(Renderer) @testable import FormhausCore
 @testable import FormhausUI
 
 @MainActor
@@ -9,35 +9,37 @@ final class SubmitLog {
     var values: [JSONObject] = []
 }
 
-private let references: [JSONValue] = ["file:///Users/x/a.pdf", "upload-123", "file:///tmp/b.png", "https://cdn.example.com/cv.pdf"]
+private let references: [JSONValue] = ["upload-123", "https://cdn.example.com/cv.pdf"]
+
+let attachment: JSONValue = [
+    "id": "attachment", "title": "Attachment", "submit": ["label": "Send"],
+    "fields": [["key": "doc", "type": "file", "label": "Document"]],
+]
+
+@MainActor
+func attachmentForm(_ values: JSONObject = [:], log: SubmitLog = SubmitLog()) throws -> FormModel {
+    FormModel(definition: try FormDefinition(json: attachment), initialValues: values) { values, _ in
+        log.values.append(values)
+        return nil
+    }
+}
+
+@MainActor
+func docContext(_ form: FormModel) throws -> FieldContext {
+    FieldContext(field: try #require(form.engine.definition.fields?.first?.field), model: form)
+}
 
 @Suite("File values", .serialized)
 @MainActor
 struct FileValueTests {
-    private let definition: JSONValue = [
-        "id": "attachment", "title": "Attachment", "submit": ["label": "Send"],
-        "fields": [["key": "doc", "type": "file", "label": "Document"]],
-    ]
-
-    private func model(_ values: JSONObject = [:], log: SubmitLog = SubmitLog()) throws -> FormModel {
-        FormModel(definition: try FormDefinition(json: definition), initialValues: values) { values, _ in
-            log.values.append(values)
-            return nil
-        }
-    }
-
-    private func context(_ form: FormModel) throws -> FieldContext {
-        FieldContext(field: try #require(form.engine.definition.fields?.first?.field), model: form)
-    }
-
     private func picked(_ form: FormModel) throws -> String? {
-        try context(form).fileName
+        try docContext(form).fileName
     }
 
     @Test("an app reference in the initial values is submitted and not shown", arguments: references)
     func initialValues(value: JSONValue) async throws {
         let log = SubmitLog()
-        let form = try model(["doc": value], log: log)
+        let form = try attachmentForm(["doc": value], log: log)
         form.start()
         #expect(try picked(form) == nil)
         await form.submit()
@@ -46,7 +48,7 @@ struct FileValueTests {
 
     @Test("setValue does not show an app reference as a picked file", arguments: references)
     func setValue(value: JSONValue) throws {
-        let form = try model()
+        let form = try attachmentForm()
         form.start()
         form.setValue(value, forKey: "doc")
         #expect(try picked(form) == nil)
@@ -55,13 +57,13 @@ struct FileValueTests {
 
     @Test("a reference shows as plain text and can be cleared", arguments: references)
     func clearReference(value: JSONValue) throws {
-        let form = try model(["doc": value])
+        let form = try attachmentForm(["doc": value])
         form.start()
-        let field = try context(form)
+        let field = try docContext(form)
         #expect(field.reference == value.stringValue)
         #expect(field.fileValueText == value.stringValue)
         field.setValue(.null)
-        #expect(try context(form).reference == nil)
+        #expect(try docContext(form).reference == nil)
         #expect((form.engine.getSubmitValues()["doc"] ?? .null) == .null)
     }
 
@@ -71,12 +73,12 @@ struct FileValueTests {
         try Data("cv".utf8).write(to: source)
         defer { try? FileManager.default.removeItem(at: source) }
         let log = SubmitLog()
-        let form = try model(log: log)
+        let form = try attachmentForm(log: log)
         form.start()
         let copy = try #require(await UploadStore.copy(source, owner: ObjectIdentifier(form)))
         form.setValue(.string(copy.absoluteString), forKey: "doc")
         #expect(try picked(form) == source.lastPathComponent)
-        #expect(try context(form).reference == nil)
+        #expect(try docContext(form).reference == nil)
         #expect(form.pickedFile(forKey: "doc") == copy)
         for variant in [" \(copy.absoluteString)\n", copy.absoluteString.replacingOccurrences(of: "file:", with: "FILE:")] {
             #expect(UploadStore.owned(variant, by: ObjectIdentifier(form)) == copy)
@@ -92,15 +94,15 @@ struct FileValueTests {
         let source = FileManager.default.temporaryDirectory.appendingPathComponent("formhaus-cv-\(UUID().uuidString).txt")
         try Data("cv".utf8).write(to: source)
         defer { try? FileManager.default.removeItem(at: source) }
-        let first = try model()
-        let second = try model()
+        let first = try attachmentForm()
+        let second = try attachmentForm()
         let copy = try #require(await UploadStore.copy(source, owner: ObjectIdentifier(first)))
         first.setValue(.string(copy.absoluteString), forKey: "doc")
         second.setValue(.string(copy.absoluteString), forKey: "doc")
         #expect(first.pickedFile(forKey: "doc") == copy)
         #expect(second.pickedFile(forKey: "doc") == nil)
         #expect(try picked(second) == nil)
-        #expect(try context(second).reference == copy.absoluteString)
+        #expect(try docContext(second).reference == copy.absoluteString)
         UploadStore.release(owner: ObjectIdentifier(first))
     }
     private let conditional: JSONValue = [
@@ -143,7 +145,7 @@ struct FileValueTests {
     func resetDeletes() async throws {
         let source = try source()
         defer { try? FileManager.default.removeItem(at: source) }
-        let form = try model()
+        let form = try attachmentForm()
         form.start()
         let copy = try await pick(form, source)
         form.engine.reset()
@@ -158,7 +160,7 @@ struct FileValueTests {
         let form = FormModel(definition: try FormDefinition(json: conditional), initialValues: ["attach": true]) { _, _ in nil }
         form.start()
         let copy = try await pick(form, source)
-        form.engine.replaceDefinition(try FormDefinition(json: definition))
+        form.engine.replaceDefinition(try FormDefinition(json: attachment))
         #expect(form.pickedFile(forKey: "doc") == copy)
         let note: JSONValue = [
             "id": "note", "title": "Note", "submit": ["label": "Send"], "fields": [["key": "note", "type": "text", "label": "Note"]],
@@ -171,7 +173,7 @@ struct FileValueTests {
     func pickAgain() async throws {
         let source = try source()
         defer { try? FileManager.default.removeItem(at: source) }
-        let form = try model()
+        let form = try attachmentForm()
         form.start()
         let first = try await pick(form, source)
         let second = try await pick(form, source)

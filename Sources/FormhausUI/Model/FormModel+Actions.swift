@@ -42,12 +42,16 @@ extension FormModel {
     }
 
     public func skip() async {
-        await run { try await self.engine.skip(self.submitHandler) }
+        await run {
+            self.dropMissingFiles()
+            return try await self.engine.skip(self.submitHandler)
+        }
     }
 
     public func submit() async {
         await run {
             guard !self.engine.isActionDisabled(self.engine.definition.submit) else { return false }
+            self.dropMissingFiles()
             return try await self.engine.submit(self.submitHandler)
         }
     }
