@@ -68,7 +68,7 @@ extension FormEngine {
     @_spi(Renderer)
     public func label(_ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject()) -> String {
         #if DEBUG
-            reportMissingLabel(key, source, options)
+            reportMissingLabel(key, source, definition, options)
         #endif
         return labelFor(key, params, source, definitionLabels)
     }

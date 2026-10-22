@@ -43,4 +43,19 @@ struct MissingTextTests {
                 "missing-label-key /: The labels catalog has no \"missingTextProbe\" text. Add \"missingTextProbe\" to the labels catalog.",
             ])
     }
+
+    @Test("texts the definition supplies do not warn")
+    @MainActor func definitionTexts() throws {
+        let warnings = Warnings()
+        let definition = try FormDefinition(json: [
+            "id": "d", "title": "D", "submit": ["label": "Send"],
+            "messages": ["date": "Datum ungültig"], "labels": ["missingTextDefined": "Definiert"],
+            "fields": [["key": "on", "type": "date", "label": "On"]],
+        ])
+        let options = FormEngineOptions(onWarning: { warnings.issues.append($0) }, messages: .catalog(["required": "Pflichtfeld"]))
+        let engine = FormEngine(definition: definition, values: ["on": "soon"], options: options)
+        #expect(engine.validate()["on"] == "Datum ungültig")
+        #expect(engine.label("missingTextDefined", .catalog(["continue": "Weiter"])) == "Definiert")
+        #expect(warnings.issues.map(\.code).filter { [.missingMessageKey, .missingLabelKey].contains($0) } == [])
+    }
 }
