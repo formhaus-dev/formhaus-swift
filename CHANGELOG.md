@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.5
+
+### FormhausCore
+
+- New `FormEngineOptions.hiddenValues`, `.clear` (default) or `.keep`. With `.keep`, fields hidden by conditions keep their values in `engine.values` and in submitted values.
+- With `.keep`, conditions, validation and recall still treat hidden fields as unanswered, and hidden fields never block Continue or Submit.
+- With `.keep`, submitted values also hold the answers on steps off the active path. Fields of skipped steps stay out.
+- `SubmissionOptions.hiddenValues` takes the same option. With `.keep`, `validateSubmission` returns hidden values without validating them and drops one that fails its type check without an error.
+- New `missingKeys(messages:labels:)` lists the built-in message and label keys a catalog lacks.
+- In debug builds, a `messages` or `labels` catalog without a shown message or label reports `missing-message-key` or `missing-label-key` through `onWarning`, once per key.
+- New `TestIdTarget` type.
+
+### FormhausUI
+
+- New `FormRendererOptions.testIds` sets accessibility identifiers named after the definition id: `signup.form`, `signup.email`, `signup.plan.pro`, `signup.people.0.name`, `signup.submit`, `signup.next`, `signup.back`, `signup.cancel` and `signup.summary`. The default is `.automatic`. `.custom` names them with a closure, and `.off` leaves them out.
+- `FieldContext` has `testId` and `optionTestId(_:)`, and `ActionsContext` has `testIds`, for custom components.
+- In the `.system` set, field rows are accessibility containers that hold their controls.
+- Fixed controls in custom field views of the `.system` set taking the theme primary as tint. The `.system` set keeps the platform tint, and the formhaus set still uses the theme primary.
+- The `.system` set no longer forces a large navigation title. New `FormBehavior.titleDisplayMode`: `.automatic` (default) leaves the mode to the host, `.inline` and `.large` set it, and `.off` sets no title.
+
 ## 0.1.4
 
 ### FormhausCore

@@ -118,6 +118,12 @@ NavigationStack {
 
 On iOS steps swap in place and never push screens onto your navigation stack. The primary action sits in the toolbar, and from the second step a Back item replaces the back button.
 
+Controls keep the platform tint, also in your own field views. The set shows the definition title as the navigation title and leaves the display mode to your screen. Set `titleDisplayMode` to `.inline` or `.large` to choose it, or to `.off` to set no title:
+
+```swift
+.formhausBehavior(FormBehavior(titleDisplayMode: .inline))
+```
+
 ### Your own components
 
 Register a view per field type on top of a built-in set. Types you leave out keep the built-in views:
@@ -174,6 +180,18 @@ if result.errors.isEmpty {
 
 The body is the values object. `result.values` holds the values of the active path, and `result.errors` maps keys to messages. Pass skipped steps and custom validators in `SubmissionOptions`. `checkDefinition(json)` lists the issues of a definition before you use it.
 
+## Keep hidden values
+
+By default a field hidden by a condition loses its value. An editor of a stored record can keep it:
+
+```swift
+FormhausForm(definition: definition, initialValues: record, options: FormEngineOptions(hiddenValues: .keep)) { values, _ in
+    try await save(values)
+}
+```
+
+Hidden fields keep their values in `engine.values` and in the submitted values, together with answers on steps off the active path. Conditions, validation and recall still treat them as unanswered, so they never block Continue or Submit. Pass `SubmissionOptions(hiddenValues: .keep)` to `validateSubmission`, or the server drops them.
+
 ## Theming
 
 `FormhausTheme` holds the [formhaus design tokens](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/tokens): light and dark palettes, type sizes, spacing, radii, control sizes and motion. `.standard` picks `.touch` on iOS and `.pointer` on macOS.
@@ -204,6 +222,26 @@ Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and 
 - At standard contrast the input border is about 2:1 against the background, below the 3:1 of WCAG 1.4.11. This is deliberate and matches the web renderers.
 - Increase Contrast switches to the `contrast: more` palette. Input, card and secondary borders then reach about 3.7:1, and muted text, placeholders, errors and the primary colour are raised to the native targets.
 
+## UI tests
+
+Fields, options and buttons carry accessibility identifiers named after the definition `id`, the same names as the `testIds` of the web renderers:
+
+| Element | Identifier |
+|---|---|
+| The form | `signup.form` |
+| A field row | `signup.email` |
+| An option of a choice, scale or rating field | `signup.plan.pro` |
+| A field in a group item | `signup.people.0.name` |
+| Submit, Continue, Back and Cancel | `signup.submit`, `signup.next`, `signup.back`, `signup.cancel` |
+| The error summary | `signup.summary` |
+
+```swift
+app.otherElements["signup.email"].textFields.firstMatch.typeText("ada@example.com")
+app.buttons["signup.next"].tap()
+```
+
+VoiceOver does not read identifiers. Name them yourself with `FormRendererOptions(testIds: .custom { target in ... })`, which receives a `TestIdTarget`, or leave them out with `.off`. Custom field views read `context.testId` and `context.optionTestId(_:)`, and custom actions read `context.testIds`.
+
 ## Compatibility
 
 | formhaus-swift | @formhaus/core | Format |
@@ -212,7 +250,7 @@ Custom views read the resolved tokens from `@Environment(\.formhausTokens)` and 
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 77 definition files with their issues, value cases, recall cases and option order vectors, and 436 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 78 definition files with their issues, value cases, recall cases and option order vectors, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 
