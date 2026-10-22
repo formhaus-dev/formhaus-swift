@@ -40,7 +40,7 @@ func validateShown(_ fields: [FormNode], _ values: JSONObject, _ scope: JSONObje
         if let error = validateFieldValue(field, values[field.key], values, options: checks.options) {
             errors[field.key] = error
         }
-        if field.isGroup {
+        if field.isGroup, typeError(field, values[field.key]) == nil {
             errors.merge(validateItems(field, values, scope, checks))
         }
     }
