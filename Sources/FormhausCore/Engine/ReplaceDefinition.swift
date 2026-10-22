@@ -43,6 +43,7 @@ extension EngineCore {
         let previousValues = keptValues()
         let steps = visibleSteps
         let stepIndex = currentStepIndex
+        restarts += 1
         baselineFields()
         load(next, carriedValues(previousValues, next.allFields, previous))
         validationEpoch += 1

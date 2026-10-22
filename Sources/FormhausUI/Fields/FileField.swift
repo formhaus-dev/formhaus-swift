@@ -58,7 +58,11 @@ extension FieldContext {
     }
 
     func replaceFile(with url: URL?) {
+        let previous = model.pickedFile(forKey: key)
         setValue(url.map { .string($0.absoluteString) } ?? .null)
+        if let previous, model.pickedFile(forKey: key) != previous {
+            UploadStore.discard(previous, owner: ObjectIdentifier(model))
+        }
     }
 }
 

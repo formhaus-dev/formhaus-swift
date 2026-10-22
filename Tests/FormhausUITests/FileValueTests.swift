@@ -103,4 +103,81 @@ struct FileValueTests {
         #expect(try context(second).reference == copy.absoluteString)
         UploadStore.release(owner: ObjectIdentifier(first))
     }
+    private let conditional: JSONValue = [
+        "id": "attachment", "title": "Attachment", "submit": ["label": "Send"],
+        "fields": [
+            ["key": "attach", "type": "checkbox", "label": "Attach"],
+            ["key": "doc", "type": "file", "label": "Document", "show": [["field": "attach", "eq": true]]],
+        ],
+    ]
+
+    private func pick(_ form: FormModel, _ source: URL) async throws -> URL {
+        let field = try #require(form.engine.definition.allFields.first { $0.key == "doc" })
+        let copy = try #require(await UploadStore.copy(source, owner: ObjectIdentifier(form)))
+        FieldContext(field: field, model: form).replaceFile(with: copy)
+        return copy
+    }
+
+    private func source() throws -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("formhaus-cv-\(UUID().uuidString).txt")
+        try Data("cv".utf8).write(to: url)
+        return url
+    }
+
+    @Test("a picked file survives its field being hidden and shown again")
+    func hiddenAndShown() async throws {
+        let source = try source()
+        defer { try? FileManager.default.removeItem(at: source) }
+        let form = FormModel(definition: try FormDefinition(json: conditional), initialValues: ["attach": true]) { _, _ in nil }
+        form.start()
+        let copy = try await pick(form, source)
+        form.setValue(false, forKey: "attach")
+        #expect(form.engine.values["doc"] == nil)
+        form.setValue(true, forKey: "attach")
+        #expect(FileManager.default.fileExists(atPath: copy.path))
+        #expect(form.pickedFile(forKey: "doc") == copy)
+        UploadStore.release(owner: ObjectIdentifier(form))
+    }
+
+    @Test("reset deletes the picked files")
+    func resetDeletes() async throws {
+        let source = try source()
+        defer { try? FileManager.default.removeItem(at: source) }
+        let form = try model()
+        form.start()
+        let copy = try await pick(form, source)
+        form.engine.reset()
+        #expect(!FileManager.default.fileExists(atPath: copy.path))
+        #expect(form.pickedFile(forKey: "doc") == nil)
+    }
+
+    @Test("a new definition keeps the files still in the values")
+    func replaceDefinitionKeeps() async throws {
+        let source = try source()
+        defer { try? FileManager.default.removeItem(at: source) }
+        let form = FormModel(definition: try FormDefinition(json: conditional), initialValues: ["attach": true]) { _, _ in nil }
+        form.start()
+        let copy = try await pick(form, source)
+        form.engine.replaceDefinition(try FormDefinition(json: definition))
+        #expect(form.pickedFile(forKey: "doc") == copy)
+        let note: JSONValue = [
+            "id": "note", "title": "Note", "submit": ["label": "Send"], "fields": [["key": "note", "type": "text", "label": "Note"]],
+        ]
+        form.engine.replaceDefinition(try FormDefinition(json: note))
+        #expect(!FileManager.default.fileExists(atPath: copy.path))
+    }
+
+    @Test("picking a new file deletes the previous one")
+    func pickAgain() async throws {
+        let source = try source()
+        defer { try? FileManager.default.removeItem(at: source) }
+        let form = try model()
+        form.start()
+        let first = try await pick(form, source)
+        let second = try await pick(form, source)
+        #expect(!FileManager.default.fileExists(atPath: first.path))
+        #expect(FileManager.default.fileExists(atPath: second.path))
+        #expect(form.pickedFile(forKey: "doc") == second)
+        UploadStore.release(owner: ObjectIdentifier(form))
+    }
 }

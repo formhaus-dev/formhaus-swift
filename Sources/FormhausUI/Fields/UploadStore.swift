@@ -39,6 +39,11 @@ enum UploadStore {
         }
     }
 
+    static func discard(_ url: URL, owner: ObjectIdentifier) {
+        guard let folder = folder(of: url), uploads[folder]?.owner == owner else { return }
+        remove(folder)
+    }
+
     static func release(owner: ObjectIdentifier) {
         for (folder, upload) in uploads where upload.owner == owner { remove(folder) }
     }

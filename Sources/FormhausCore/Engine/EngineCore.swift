@@ -21,6 +21,7 @@ final class EngineCore {
     var skipped: [(id: String, keys: [String])] = []
     var validationEpoch = 0
     var operationEpoch = 0
+    var restarts = 0
     var latestOperation = 0
     var sending: Int?
     var started = false

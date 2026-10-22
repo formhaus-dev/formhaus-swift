@@ -38,6 +38,7 @@ public final class FormModel {
         @ObservationIgnored var inNavigationBar = false
     #endif
     @ObservationIgnored private var lastValues: JSONObject
+    @ObservationIgnored var lastRestarts = 0
     @ObservationIgnored private var lastErrors: FieldErrors
     @ObservationIgnored private var focusCounter = 0
     @ObservationIgnored private var pendingFocusKey: String?
@@ -174,10 +175,8 @@ public final class FormModel {
         refreshStatus()
         if previousStep != structure.currentStep?.nodeID { requestFocus(engine.firstErrorKey(), afterErrors: true) }
         if valuesChanged || structureChanged { reloadOptions() }
-        if valuesChanged {
-            emitValues()
-            pruneUploads(values)
-        }
+        if valuesChanged { emitValues() }
+        pruneUploadsAfterRestart(values)
     }
 
     private func refreshGroup(_ state: GroupState) {
