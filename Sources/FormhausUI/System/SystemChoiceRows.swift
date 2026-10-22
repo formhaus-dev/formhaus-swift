@@ -67,6 +67,7 @@ struct SystemPickerRow: View {
                         let value = option.value ?? ""
                         Toggle(option.label ?? value, isOn: Binding(get: { selected.contains(value) }, set: { _ in choose(value) }))
                             .toggleStyle(.checkbox)
+                            .formhausTestId(context.optionTestId(value))
                     }
                 }
             } label: {
@@ -126,6 +127,7 @@ private struct SystemValueRow: View {
                             selection.choose(value)
                             if !selection.multiple { dismiss() }
                         }
+                        .formhausTestId(context.optionTestId(value))
                     }
                 } footer: {
                     VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context) }

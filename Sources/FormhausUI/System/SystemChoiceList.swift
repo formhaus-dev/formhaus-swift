@@ -13,10 +13,11 @@ struct SystemChoiceList: View {
     var body: some View {
         let selection = ChoiceSelection(context: context)
         let selected = Set(selection.values)
-        SystemBlock(context: context, anchored: false) {
+        SystemBlock(context: context, anchored: false, rows: true) {
             ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                 let value = option.value ?? ""
                 let row = SystemCheckRow(label: option.label ?? value, checked: selected.contains(value)) { selection.choose(value) }
+                    .formhausTestId(context.optionTestId(value))
                     .accessibilityFocused($spoken, equals: index)
                 if index == 0 {
                     row.formhausScrollAnchor(context)

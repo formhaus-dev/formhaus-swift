@@ -10,12 +10,14 @@ struct ChoiceCard: View, Equatable {
     let picture: Bool
     let hint: String
     let zoomLabel: String
+    let testId: String?
     let choose: @MainActor () -> Void
     let zoom: @MainActor () -> Void
 
     nonisolated static func == (lhs: ChoiceCard, rhs: ChoiceCard) -> Bool {
         lhs.option == rhs.option && lhs.shape == rhs.shape && lhs.selected == rhs.selected
             && lhs.picture == rhs.picture && lhs.hint == rhs.hint && lhs.zoomLabel == rhs.zoomLabel
+            && lhs.testId == rhs.testId
     }
 
     var body: some View {
@@ -36,6 +38,7 @@ struct ChoiceCard: View, Equatable {
         .buttonStyle(OptionCardStyle(selected: selected))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityHint(Text(verbatim: hint))
+        .formhausTestId(testId)
         .overlay(alignment: .topTrailing) {
             if picture, option.safeImage != nil {
                 let inset = (tokens.controls.hitTarget - tokens.controls.iconButton) / 2

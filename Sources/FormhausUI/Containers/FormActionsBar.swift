@@ -108,6 +108,7 @@ public struct FormActionsBar: View {
             }
             .buttonStyle(FormButtonStyle(FormButtonVariant(state.backAction, fallback: .secondary)))
             .disabled(context.busy)
+            .formhausTestId(context.testIds.back)
             .measured("actions/back")
         }
     }
@@ -117,6 +118,7 @@ public struct FormActionsBar: View {
             Button(cancel.label ?? "", action: context.cancel)
                 .buttonStyle(FormButtonStyle(FormButtonVariant(cancel, fallback: .text)))
                 .disabled(context.busy)
+                .formhausTestId(context.testIds.cancel)
         }
         if state.showSkip {
             Button(state.skipLabel, action: context.skip)
@@ -133,6 +135,7 @@ public struct FormActionsBar: View {
             .buttonStyle(FormButtonStyle(.primary, busy: context.busy && !context.model.loading))
             .disabled(context.busy || state.primaryDisabled)
             .keyboardShortcut(.defaultAction)
+            .formhausTestId(context.primaryTestId)
             .measured("actions/primary")
         }
     }

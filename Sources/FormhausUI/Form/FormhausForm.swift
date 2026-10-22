@@ -153,6 +153,7 @@ private struct FormStack: View {
             FormActionsSlot(model: model)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .formhausTestContainer(model.testId(.form))
     }
 }
 

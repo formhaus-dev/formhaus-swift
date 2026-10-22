@@ -37,6 +37,7 @@ import SwiftUI
             }
             .accessibilityLabel(Text(verbatim: context.state.backLabel))
             .disabled(context.busy)
+            .formhausTestId(context.testIds.back)
         }
     }
 

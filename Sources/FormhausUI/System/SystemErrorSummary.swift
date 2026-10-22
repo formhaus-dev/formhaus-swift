@@ -19,6 +19,7 @@ struct SystemErrorSummary: View {
             } header: {
                 Text(verbatim: model.text(forLabel: "errorSummary"))
                     .accessibilityAddTraits(.isHeader)
+                    .formhausTestId(model.testId(.summary))
                     .formhausSummaryFocus(model)
             }
         }

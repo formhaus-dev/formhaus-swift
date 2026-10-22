@@ -90,6 +90,7 @@ struct SystemPage: View {
                 }
             }
             .formStyle(.grouped)
+            .formhausTestId(model.testId(.form))
             .scrollDismissesKeyboard(.interactively)
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
             .onChange(of: model.focusRequest) { _, request in

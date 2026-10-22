@@ -47,6 +47,7 @@ struct SystemRow<Content: View>: View {
             content
             SystemNotes(context: context)
         }
+        .formhausTestContainer(context.testId)
         .disabled(context.isLocked)
         .formhausScrollAnchor(context)
     }
@@ -93,11 +94,13 @@ struct SystemBlock<Content: View>: View {
     @Environment(\.formhausTokens) private var tokens
     let context: FieldContext
     let anchored: Bool
+    let rows: Bool
     let content: Content
 
-    init(context: FieldContext, anchored: Bool = true, @ViewBuilder content: () -> Content) {
+    init(context: FieldContext, anchored: Bool = true, rows: Bool = false, @ViewBuilder content: () -> Content) {
         self.context = context
         self.anchored = anchored
+        self.rows = rows
         self.content = content()
     }
 
@@ -108,17 +111,19 @@ struct SystemBlock<Content: View>: View {
                 content
                 SystemNotes(context: context)
             }
+            .formhausTestContainer(context.testId)
             .disabled(context.isLocked)
             .scrollAnchor(anchored, context)
         } else {
             Section {
-                content.disabled(context.isLocked).scrollAnchor(anchored, context)
+                content.formhausTestContainer(rows ? nil : context.testId).disabled(context.isLocked).scrollAnchor(anchored, context)
             } header: {
                 tokens.marked(context.label, required: context.isRequired)
                     .textCase(nil)
                     .systemSecondaryText()
                     .accessibilityLabel(Text(verbatim: context.accessibilityName))
                     .accessibilityAddTraits(.isHeader)
+                    .formhausTestId(rows ? context.testId : nil)
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
                     SystemNotes(context: context)
