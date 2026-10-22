@@ -32,7 +32,7 @@ extension FormModel {
     public func next() async {
         await run {
             let action = self.engine.isLastStep ? nil : self.engine.currentStep?.next.action
-            guard !isActionDisabled(action, self.engine.getSubmitValues()) else { return false }
+            guard !self.engine.isActionDisabled(action) else { return false }
             return try await self.engine.next()
         }
     }
@@ -47,7 +47,7 @@ extension FormModel {
 
     public func submit() async {
         await run {
-            guard !isActionDisabled(self.engine.definition.submit, self.engine.getSubmitValues()) else { return false }
+            guard !self.engine.isActionDisabled(self.engine.definition.submit) else { return false }
             return try await self.engine.submit(self.submitHandler)
         }
     }

@@ -23,6 +23,7 @@ final class VisibilityState {
     let conditional: [FormField]
     let customSteps: [Int]
     let order: [String]
+    let keep: Bool
     var starts = StartValues()
     var settled = false
     var waiting = KeySet()
@@ -31,8 +32,9 @@ final class VisibilityState {
     private var view = VisibilityView()
     private var canGoNext = false
 
-    init(_ definition: FormDefinition) {
+    init(_ definition: FormDefinition, keep: Bool = false) {
         self.definition = definition
+        self.keep = keep
         index = DefinitionIndex(definition)
         groups = index.allFields.filter(\.isGroup)
         shown = ShownCache(index, groups)

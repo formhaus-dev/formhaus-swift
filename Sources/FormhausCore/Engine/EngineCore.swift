@@ -31,13 +31,13 @@ final class EngineCore {
 
     init(
         definition: FormDefinition, values initialValues: JSONObject = JSONObject(), validators: Validators = [:],
-        messages: MessageSource? = nil
+        messages: MessageSource? = nil, keep: Bool = false
     ) {
         self.definition = definition
         self.validators = validators
         messageSource = messages
         self.messages = messageResolver(messages, .catalog(definition.messages ?? .null))
-        visibility = VisibilityState(definition)
+        visibility = VisibilityState(definition, keep: keep)
         values = Self.startValues(visibility, Values(fresh: initialValues), &errors)
     }
 
@@ -51,7 +51,7 @@ final class EngineCore {
         definition = next
         definitionGeneration += 1
         messages = messageResolver(messageSource, .catalog(next.messages ?? .null))
-        visibility = VisibilityState(next)
+        visibility = VisibilityState(next, keep: visibility.keep)
         replaceValues(Self.startValues(visibility, initialValues, &errors))
     }
 

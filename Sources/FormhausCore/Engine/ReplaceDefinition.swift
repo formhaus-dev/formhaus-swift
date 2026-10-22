@@ -9,7 +9,7 @@ private func sameItems(_ previous: JSONValue?, _ next: JSONValue?) -> Bool {
 }
 
 extension EngineCore {
-    private func keptValues(_ fields: [FormField], _ previous: VisibilityState) -> Values {
+    private func carriedValues(_ values: Values, _ fields: [FormField], _ previous: VisibilityState) -> Values {
         var result = Values()
         for field in fields where kept(previous.allFields, field) && values.has(field.key) {
             let slot = values.slot(field.key)
@@ -40,11 +40,11 @@ extension EngineCore {
 
     func replaceDefinition(_ next: FormDefinition) {
         let previous = visibility
-        let previousValues = values
+        let previousValues = keptValues()
         let steps = visibleSteps
         let stepIndex = currentStepIndex
         baselineFields()
-        load(next, keptValues(next.allFields, previous))
+        load(next, carriedValues(previousValues, next.allFields, previous))
         validationEpoch += 1
         operationEpoch += 1
         stepValidating = false
@@ -55,7 +55,8 @@ extension EngineCore {
         skipped = skipped.compactMap { entry in
             next.steps?.first { sameText($0.id, entry.id) }.map { (entry.id, valueFields($0.fields).map(\.key)) }
         }
-        let valuesChanged = previousValues.changedKeys(values).contains { !sameItems(previousValues[$0], values[$0]) }
+        let current = keptValues()
+        let valuesChanged = previousValues.changedKeys(current).contains { !sameItems(previousValues[$0], current[$0]) }
         notify(structureChanged: true, valuesChanged: valuesChanged)
         if !valuesChanged { trackChanges(fields: true) }
     }

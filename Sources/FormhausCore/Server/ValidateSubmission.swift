@@ -2,17 +2,23 @@ public struct SubmissionOptions: Sendable {
     public var skippedSteps: JSONValue?
     public var validators: Validators
     public var messages: MessageSource?
+    public var hiddenValues: HiddenValues
 
-    public init(skippedSteps: [String]? = nil, validators: Validators = [:], messages: MessageSource? = nil) {
-        self.skippedSteps = skippedSteps.map { .array($0.map(JSONValue.string)) }
-        self.validators = validators
-        self.messages = messages
+    public init(
+        skippedSteps: [String]? = nil, validators: Validators = [:], messages: MessageSource? = nil, hiddenValues: HiddenValues = .clear
+    ) {
+        self.init(
+            skippedSteps: skippedSteps.map { .array($0.map(JSONValue.string)) }, validators: validators, messages: messages,
+            hiddenValues: hiddenValues)
     }
 
-    public init(skippedSteps: JSONValue?, validators: Validators = [:], messages: MessageSource? = nil) {
+    public init(
+        skippedSteps: JSONValue?, validators: Validators = [:], messages: MessageSource? = nil, hiddenValues: HiddenValues = .clear
+    ) {
         self.skippedSteps = skippedSteps
         self.validators = validators
         self.messages = messages
+        self.hiddenValues = hiddenValues
     }
 }
 
@@ -58,7 +64,7 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
     let messages = messageResolver(options.messages, .catalog(definition.messages ?? .null))
     let resolve = namedResolver(messages)
     var resolved = activeValues(VisibilityState(definition), fields, values, resolve)
-    let items = blankItems(&resolved, resolve)
+    let items = blankItems(&resolved, fields, resolve)
     let engine = EngineCore(
         definition: definition, values: resolved.values, validators: ignoredValidators(fields, options.validators),
         messages: .function(messages))
@@ -78,6 +84,7 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
         for (key, error) in items where submitted.has(visibility.owner(key)) && visibility.activeItem(key, engine.values.json) != nil {
             errors[key] = error
         }
+        if options.hiddenValues == .keep { keepHidden(fields, resolved.values, &submitted, skipped) }
         return SubmissionResult(values: submitted, errors: errors)
     }
     return Prepared(engine: engine, skipped: skipped, check: check)
