@@ -12,6 +12,10 @@
 - A picked file whose copy no longer exists shows as an empty file field instead of the raw path.
 - Submit and Skip send `null` for a picked file whose copy no longer exists, so a required file field reports its error. Other values, including `file:` URLs outside the picked files folder, are sent unchanged.
 - Fixed `onAfterSubmit` not running when an owned `FormhausForm` is torn down while the submit handler runs. Step validation and a submit that has not started sending are still cancelled.
+- Option cards, picture cards, scale boxes, rating stars, the checkbox, the switch and matrix cells show the error colour when their field is invalid.
+- Option cards, picture cards and the checkbox show a focus ring when they have keyboard focus. The switch shows one around its track.
+- The rating row shrinks its stars to fit narrow widths and wraps into balanced rows when a star would be smaller than the hit target.
+- On iOS 26 and later, the Back button of a step in the navigation bar shows only the chevron. VoiceOver still reads the back label.
 
 ## 0.1.5
 
