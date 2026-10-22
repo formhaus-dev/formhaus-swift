@@ -5,6 +5,11 @@
 ### FormhausCore
 
 - `FormEngine` validation no longer checks the items of a group that has more items than its limit or an item that is not an object. Only the group error is reported.
+- New `FormSnapshot` holds a form's values, current step, skipped steps and option order seed. It is `Codable` with the keys `version`, `definitionId`, `values`, `step`, `skipped` and `seed`.
+- New `FormEngine.snapshot()`. It leaves out the values of `password` fields, also inside group items.
+- New `restoring:` parameter on `FormEngine` restores a snapshot without walking the steps or validating.
+- A snapshot that does not match the definition starts the form fresh and reports `snapshot-mismatch` through `onWarning`.
+- New `FormSnapshot.decode(_:options:)` returns `nil` for malformed JSON and reports `snapshot-mismatch`.
 
 ### FormhausUI
 
@@ -16,6 +21,10 @@
 - Option cards, picture cards and the checkbox show a focus ring when they have keyboard focus. The switch shows one around its track.
 - The rating row shrinks its stars to fit narrow widths and wraps into balanced rows when a star would be smaller than the hit target.
 - On iOS 26 and later, the Back button of a step in the navigation bar shows only the chevron. VoiceOver still reads the back label.
+- New `restoring:` parameter on `FormhausForm(definition:)`, `FormModel(definition:)` and `FormModel(localized:)`.
+- New `FormRendererOptions.onSnapshotChange` reports a new snapshot after a change of values, step or skipped steps, at most once per run loop turn.
+- `onSnapshotChange` reports `nil` after a successful submit, including a Skip that submits and a submit that finishes after the form view is gone.
+- A restored file value in the picked files folder is picked again while its copy exists and becomes `null` when it does not. Other `file:` values are left unchanged.
 
 ## 0.1.5
 

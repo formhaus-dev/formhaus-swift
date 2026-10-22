@@ -37,6 +37,14 @@ enum UploadStore {
         return !FileManager.default.fileExists(atPath: entry.file.path)
     }
 
+    static func adopt(_ value: String, owner: ObjectIdentifier) -> Bool {
+        guard let url = fileURL(value), url.absoluteString == value, let entry = entry(url), UUID(uuidString: entry.folder) != nil
+        else { return true }
+        guard FileManager.default.fileExists(atPath: entry.file.path) else { return false }
+        if uploads[entry.folder] == nil { uploads[entry.folder] = Upload(owner: owner, url: url) }
+        return true
+    }
+
     static func prune(owner: ObjectIdentifier, keeping values: Set<String>) {
         for (folder, upload) in uploads where upload.owner == owner && !values.contains(upload.url.absoluteString) {
             remove(folder)
