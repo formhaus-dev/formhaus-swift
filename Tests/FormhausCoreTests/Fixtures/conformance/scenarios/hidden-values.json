@@ -1,0 +1,1183 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "hidden-values",
+  "definition": {
+    "formatVersion": "1.4",
+    "id": "account",
+    "title": "Account",
+    "submit": {
+      "label": "Save"
+    },
+    "steps": [
+      {
+        "id": "profile",
+        "title": "Profile",
+        "fields": [
+          {
+            "key": "type",
+            "type": "select",
+            "label": "Type",
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ]
+          },
+          {
+            "key": "company",
+            "type": "text",
+            "label": "Company",
+            "show": [
+              {
+                "field": "type",
+                "eq": "business"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "vat",
+            "type": "text",
+            "label": "VAT number",
+            "show": [
+              {
+                "field": "company",
+                "notEmpty": true
+              }
+            ],
+            "validation": {
+              "pattern": "^[A-Z]{2}[0-9]+$"
+            }
+          },
+          {
+            "key": "billing",
+            "type": "section",
+            "title": "Billing",
+            "show": [
+              {
+                "field": "type",
+                "eq": "business"
+              }
+            ],
+            "fields": [
+              {
+                "key": "billingEmail",
+                "type": "email",
+                "label": "Billing email"
+              }
+            ]
+          },
+          {
+            "key": "contacts",
+            "type": "group",
+            "label": "Contacts",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              },
+              {
+                "key": "kind",
+                "type": "select",
+                "label": "Kind",
+                "options": [
+                  {
+                    "value": "phone",
+                    "label": "Phone"
+                  },
+                  {
+                    "value": "email",
+                    "label": "Email"
+                  }
+                ]
+              },
+              {
+                "key": "phone",
+                "type": "text",
+                "label": "Phone",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "phone"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "team",
+        "title": "Team",
+        "show": [
+          {
+            "field": "type",
+            "eq": "business"
+          }
+        ],
+        "fields": [
+          {
+            "key": "employees",
+            "type": "number",
+            "label": "Employees",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "contact",
+        "title": "Contact",
+        "fields": [
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "clears a value hidden by a field condition by default",
+      "values": {
+        "type": "business",
+        "company": "Acme",
+        "vat": "DE123",
+        "billingEmail": "billing@acme.test",
+        "employees": 12
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "personal"
+            },
+            "submitValues": {
+              "type": "personal"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "clears a value hidden by a field condition with clear",
+      "hiddenValues": "clear",
+      "values": {
+        "type": "business",
+        "company": "Acme",
+        "vat": "DE123",
+        "billingEmail": "billing@acme.test",
+        "employees": 12
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "personal"
+            },
+            "submitValues": {
+              "type": "personal"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps values hidden by field, section and step conditions",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "business",
+        "company": "Acme",
+        "vat": "DE123",
+        "billingEmail": "billing@acme.test",
+        "employees": 12
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "personal",
+              "company": "Acme",
+              "vat": "DE123",
+              "billingEmail": "billing@acme.test",
+              "employees": 12
+            },
+            "submitValues": {
+              "type": "personal",
+              "company": "Acme",
+              "vat": "DE123",
+              "billingEmail": "billing@acme.test",
+              "employees": 12
+            },
+            "fields": ["type", "contacts"],
+            "steps": ["profile", "contact"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "shows a kept value again",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "business",
+        "company": "Acme",
+        "vat": "DE123",
+        "billingEmail": "billing@acme.test",
+        "employees": 12
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "personal"
+        },
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "business"
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "business",
+              "company": "Acme",
+              "vat": "DE123",
+              "billingEmail": "billing@acme.test",
+              "employees": 12
+            },
+            "fields": ["type", "company", "vat", "billingEmail", "contacts"],
+            "steps": ["profile", "team", "contact"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps initial values of fields that start hidden",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "personal",
+        "company": "Acme",
+        "employees": 12
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "type": "personal",
+              "company": "Acme",
+              "employees": 12
+            },
+            "submitValues": {
+              "type": "personal",
+              "company": "Acme",
+              "employees": 12
+            },
+            "fields": ["type", "contacts"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "conditions read a kept value as unanswered",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "personal",
+        "company": "Acme",
+        "vat": "DE123"
+      },
+      "steps": [
+        {
+          "expect": {
+            "fields": ["type", "contacts"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "business"
+        },
+        {
+          "expect": {
+            "fields": ["type", "company", "vat", "billingEmail", "contacts"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps a value written to a hidden field",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "personal"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": "Acme"
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "personal",
+              "company": "Acme"
+            },
+            "submitValues": {
+              "type": "personal",
+              "company": "Acme"
+            },
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not validate kept values",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "personal",
+        "company": "",
+        "vat": "invalid"
+      },
+      "steps": [
+        {
+          "do": "validateField",
+          "key": "vat",
+          "returns": null
+        },
+        {
+          "do": "validate",
+          "returns": {}
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "contact",
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops the error of a field when it hides",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "business",
+        "company": ""
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "company": "This field is required",
+            "employees": "This field is required"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "personal"
+        },
+        {
+          "expect": {
+            "errors": {},
+            "values": {
+              "type": "personal",
+              "company": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps an item field hidden by its condition",
+      "hiddenValues": "keep",
+      "values": {
+        "contacts": [
+          {
+            "name": "Ann",
+            "kind": "phone",
+            "phone": "555"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setItemValue",
+          "key": "contacts",
+          "index": 0,
+          "field": "kind",
+          "value": "email"
+        },
+        {
+          "expect": {
+            "values": {
+              "contacts": [
+                {
+                  "name": "Ann",
+                  "kind": "email",
+                  "phone": "555"
+                }
+              ]
+            },
+            "submitValues": {
+              "contacts": [
+                {
+                  "name": "Ann",
+                  "kind": "email",
+                  "phone": "555"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "contacts",
+          "index": 0,
+          "field": "kind",
+          "value": "phone"
+        },
+        {
+          "expect": {
+            "values": {
+              "contacts": [
+                {
+                  "name": "Ann",
+                  "kind": "phone",
+                  "phone": "555"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sends kept values to the submit handler and step hooks",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "personal",
+        "company": "Acme"
+      },
+      "hooks": {
+        "onBeforeStepChange": []
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "call": "onBeforeStepChange",
+                "context": {
+                  "fromStepId": "profile",
+                  "toStepId": "contact",
+                  "reason": "next",
+                  "values": {
+                    "type": "personal",
+                    "company": "Acme"
+                  }
+                }
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "profile"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "submit",
+          "handler": [],
+          "returns": true
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "type": "personal",
+              "company": "Acme"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "reset keeps hidden values of the new initial values",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "business",
+        "company": "Acme",
+        "vat": "DE123",
+        "billingEmail": "billing@acme.test",
+        "employees": 12
+      },
+      "steps": [
+        {
+          "do": "reset",
+          "values": {
+            "type": "personal",
+            "company": "Initech"
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "personal",
+              "company": "Initech"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "replaceDefinition keeps hidden values",
+      "hiddenValues": "keep",
+      "values": {
+        "type": "business",
+        "company": "Acme",
+        "vat": "DE123",
+        "billingEmail": "billing@acme.test",
+        "employees": 12
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "personal"
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "formatVersion": "1.4",
+            "id": "account",
+            "title": "Account",
+            "submit": {
+              "label": "Save"
+            },
+            "steps": [
+              {
+                "id": "profile",
+                "title": "Profile",
+                "fields": [
+                  {
+                    "key": "type",
+                    "type": "select",
+                    "label": "Type",
+                    "options": [
+                      {
+                        "value": "personal",
+                        "label": "Personal"
+                      },
+                      {
+                        "value": "business",
+                        "label": "Business"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "company",
+                    "type": "text",
+                    "label": "Company",
+                    "show": [
+                      {
+                        "field": "type",
+                        "eq": "business"
+                      }
+                    ],
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "vat",
+                    "type": "text",
+                    "label": "VAT number",
+                    "show": [
+                      {
+                        "field": "company",
+                        "notEmpty": true
+                      }
+                    ],
+                    "validation": {
+                      "pattern": "^[A-Z]{2}[0-9]+$"
+                    }
+                  },
+                  {
+                    "key": "billing",
+                    "type": "section",
+                    "title": "Billing",
+                    "show": [
+                      {
+                        "field": "type",
+                        "eq": "business"
+                      }
+                    ],
+                    "fields": [
+                      {
+                        "key": "billingEmail",
+                        "type": "email",
+                        "label": "Billing email"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "contacts",
+                    "type": "group",
+                    "label": "Contacts",
+                    "fields": [
+                      {
+                        "key": "name",
+                        "type": "text",
+                        "label": "Name"
+                      },
+                      {
+                        "key": "kind",
+                        "type": "select",
+                        "label": "Kind",
+                        "options": [
+                          {
+                            "value": "phone",
+                            "label": "Phone"
+                          },
+                          {
+                            "value": "email",
+                            "label": "Email"
+                          }
+                        ]
+                      },
+                      {
+                        "key": "phone",
+                        "type": "text",
+                        "label": "Phone",
+                        "show": [
+                          {
+                            "field": "kind",
+                            "eq": "phone"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "team",
+                "title": "Team",
+                "show": [
+                  {
+                    "field": "type",
+                    "eq": "business"
+                  }
+                ],
+                "fields": [
+                  {
+                    "key": "employees",
+                    "type": "number",
+                    "label": "Employees",
+                    "validation": {
+                      "required": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "contact",
+                "title": "Contact",
+                "fields": [
+                  {
+                    "key": "email",
+                    "type": "email",
+                    "label": "Email"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "personal",
+              "company": "Acme",
+              "vat": "DE123",
+              "billingEmail": "billing@acme.test",
+              "employees": 12
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "type",
+          "value": "business"
+        },
+        {
+          "expect": {
+            "values": {
+              "type": "business",
+              "company": "Acme",
+              "vat": "DE123",
+              "billingEmail": "billing@acme.test",
+              "employees": 12
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "leaves answers off the active path out of the payload by default",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "trip",
+        "title": "Trip",
+        "submit": {
+          "label": "Book"
+        },
+        "steps": [
+          {
+            "id": "mode",
+            "title": "Mode",
+            "fields": [
+              {
+                "key": "mode",
+                "type": "radio",
+                "label": "Mode",
+                "options": [
+                  {
+                    "value": "train",
+                    "label": "Train"
+                  },
+                  {
+                    "value": "car",
+                    "label": "Car"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "car",
+                "show": [
+                  {
+                    "field": "mode",
+                    "eq": "car"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "train",
+            "title": "Train",
+            "fields": [
+              {
+                "key": "seat",
+                "type": "text",
+                "label": "Seat"
+              }
+            ]
+          },
+          {
+            "id": "car",
+            "title": "Car",
+            "fields": [
+              {
+                "key": "plate",
+                "type": "text",
+                "label": "Plate"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "mode": "car",
+        "seat": "12A",
+        "plate": "XY 123"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["mode", "car"],
+            "values": {
+              "mode": "car",
+              "seat": "12A",
+              "plate": "XY 123"
+            },
+            "submitValues": {
+              "mode": "car",
+              "plate": "XY 123"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sends answers off the active path",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "trip",
+        "title": "Trip",
+        "submit": {
+          "label": "Book"
+        },
+        "steps": [
+          {
+            "id": "mode",
+            "title": "Mode",
+            "fields": [
+              {
+                "key": "mode",
+                "type": "radio",
+                "label": "Mode",
+                "options": [
+                  {
+                    "value": "train",
+                    "label": "Train"
+                  },
+                  {
+                    "value": "car",
+                    "label": "Car"
+                  }
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "to": "car",
+                "show": [
+                  {
+                    "field": "mode",
+                    "eq": "car"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "train",
+            "title": "Train",
+            "fields": [
+              {
+                "key": "seat",
+                "type": "text",
+                "label": "Seat"
+              }
+            ]
+          },
+          {
+            "id": "car",
+            "title": "Car",
+            "fields": [
+              {
+                "key": "plate",
+                "type": "text",
+                "label": "Plate"
+              }
+            ]
+          }
+        ]
+      },
+      "hiddenValues": "keep",
+      "values": {
+        "mode": "car",
+        "seat": "12A",
+        "plate": "XY 123"
+      },
+      "steps": [
+        {
+          "expect": {
+            "steps": ["mode", "car"],
+            "submitValues": {
+              "mode": "car",
+              "seat": "12A",
+              "plate": "XY 123"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "reset forgets a kept value the new values do not hold",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "toggle",
+        "title": "Toggle",
+        "submit": {
+          "label": "Save"
+        },
+        "fields": [
+          {
+            "key": "a",
+            "type": "checkbox",
+            "label": "A"
+          },
+          {
+            "key": "b",
+            "type": "text",
+            "label": "B",
+            "show": [
+              {
+                "field": "a",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      "hiddenValues": "keep",
+      "values": {
+        "a": false
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "a",
+          "value": true
+        },
+        {
+          "do": "setValue",
+          "key": "b",
+          "value": "hi"
+        },
+        {
+          "do": "setValue",
+          "key": "a",
+          "value": false
+        },
+        {
+          "expect": {
+            "values": {
+              "a": false,
+              "b": "hi"
+            }
+          }
+        },
+        {
+          "do": "reset",
+          "values": {
+            "a": false
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "a": false
+            },
+            "submitValues": {
+              "a": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "replaceDefinition shows the default of a new field",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "toggle",
+        "title": "Toggle",
+        "submit": {
+          "label": "Save"
+        },
+        "fields": [
+          {
+            "key": "a",
+            "type": "checkbox",
+            "label": "A"
+          },
+          {
+            "key": "b",
+            "type": "text",
+            "label": "B",
+            "show": [
+              {
+                "field": "a",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      },
+      "hiddenValues": "keep",
+      "values": {
+        "a": false,
+        "b": "hi"
+      },
+      "steps": [
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "formatVersion": "1.4",
+            "id": "toggle",
+            "title": "Toggle",
+            "submit": {
+              "label": "Save"
+            },
+            "fields": [
+              {
+                "key": "a",
+                "type": "checkbox",
+                "label": "A"
+              },
+              {
+                "key": "b",
+                "type": "text",
+                "label": "B",
+                "show": [
+                  {
+                    "field": "a",
+                    "eq": true
+                  }
+                ]
+              },
+              {
+                "key": "c",
+                "type": "text",
+                "label": "C",
+                "defaultValue": "x"
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "values": {
+              "a": false,
+              "b": "hi",
+              "c": "x"
+            },
+            "submitValues": {
+              "a": false,
+              "b": "hi",
+              "c": "x"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "leaves kept values of a skipped step out of values",
+      "definition": {
+        "formatVersion": "1.4",
+        "id": "skip",
+        "title": "Skip",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "one",
+            "title": "One",
+            "fields": [
+              {
+                "key": "a",
+                "type": "checkbox",
+                "label": "A"
+              }
+            ]
+          },
+          {
+            "id": "two",
+            "title": "Two",
+            "skip": {
+              "label": "Skip"
+            },
+            "fields": [
+              {
+                "key": "n",
+                "type": "text",
+                "label": "N",
+                "defaultValue": "d",
+                "show": [
+                  {
+                    "field": "a",
+                    "eq": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "three",
+            "title": "Three",
+            "fields": [
+              {
+                "key": "z",
+                "type": "text",
+                "label": "Z"
+              }
+            ]
+          }
+        ]
+      },
+      "hiddenValues": "keep",
+      "values": {
+        "a": false
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "a": false,
+              "n": "d"
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "three",
+            "skipped": ["two"],
+            "values": {
+              "a": false
+            },
+            "submitValues": {
+              "a": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
