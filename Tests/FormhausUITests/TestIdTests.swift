@@ -11,9 +11,10 @@ private let identified: JSONValue = [
 @Suite("Test ids")
 @MainActor
 struct TestIdTests {
-    @Test("test ids follow the definition id by default")
+    @Test("automatic test ids follow the definition id")
     func automaticTestIds() throws {
-        let model = FormModel(definition: try FormDefinition(json: identified)) { _, _ in .ok }
+        let definition = try FormDefinition(json: identified)
+        let model = FormModel(definition: definition, options: FormRendererOptions(testIds: .automatic)) { _, _ in .ok }
         let field = try #require(model.structure.visibleFields.first)
         let context = FieldContext(field: field, model: model)
         #expect(context.testId == "t.swatch")
@@ -25,7 +26,7 @@ struct TestIdTests {
         #expect(TestIdTarget(kind: .form, definitionId: "t").defaultId == "t.form")
     }
 
-    @Test("test ids can be named by a closure or turned off")
+    @Test("test ids can be named by a closure and are off by default")
     func namedTestIds() throws {
         let definition = try FormDefinition(json: identified)
         let named = FormModel(
@@ -35,7 +36,7 @@ struct TestIdTests {
         let field = try #require(named.structure.visibleFields.first)
         #expect(FieldContext(field: field, model: named).testId == "field-swatch")
         #expect(FieldContext(field: field, model: named).optionTestId("a") == nil)
-        let off = FormModel(definition: definition, options: FormRendererOptions(testIds: .off)) { _, _ in .ok }
+        let off = FormModel(definition: definition) { _, _ in .ok }
         #expect(FieldContext(field: field, model: off).testId == nil)
         #expect(ActionsContext(state: off.actions, busy: false, model: off).testIds.submit == nil)
     }

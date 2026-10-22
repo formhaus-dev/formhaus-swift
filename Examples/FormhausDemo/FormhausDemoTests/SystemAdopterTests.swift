@@ -19,17 +19,31 @@ private let identified: JSONValue = [
 struct SystemAdopterTests {
     @Test("both sets name fields, options, the form and the primary button after the definition id", arguments: [true, false])
     func testIds(system: Bool) async throws {
-        let model = FormModel(definition: try FormDefinition(json: identified)) { _, _ in .ok }
+        let expected: Set = ["t.form", "t.email", "t.plan", "t.plan.a", "t.plan.b", "t.submit"]
+        #expect(try await identifiers(system: system, scroller: true) == expected)
+        let content = try await identifiers(system: system, scroller: false)
+        #expect(content == (system ? expected : expected.subtracting(["t.form"])))
+    }
+
+    @Test("test ids are off by default")
+    func testIdsOff() async throws {
+        let stage = Stage(FormModel(definition: try FormDefinition(json: identified)) { _, _ in .ok })
+        #expect(await eventually { axLabels(stage.window).contains("Email") })
+        #expect(accessibilityIdentifiers(stage.window).filter { $0.hasPrefix("t.") }.isEmpty)
+        stage.close()
+    }
+
+    private func identifiers(system: Bool, scroller: Bool) async throws -> Set<String> {
+        let options = FormRendererOptions(testIds: .automatic)
+        let model = FormModel(definition: try FormDefinition(json: identified), options: options) { _, _ in .ok }
         let stage = Stage(model)
         stage.box.system = system
-        let expected: Set = ["t.form", "t.email", "t.plan", "t.plan.a", "t.plan.b", "t.submit"]
-        var found: Set<String> = []
-        let named = await eventually {
-            found = Set(accessibilityIdentifiers(stage.window))
-            return expected.isSubset(of: found)
-        }
-        #expect(named, "\(found.sorted())")
+        stage.box.scroller = scroller
+        _ = await eventually { accessibilityIdentifiers(stage.window).contains("t.plan.b") }
+        try? await Task.sleep(for: .milliseconds(300))
+        let found = Set(accessibilityIdentifiers(stage.window).filter { $0.hasPrefix("t.") })
         stage.close()
+        return found
     }
 
     @Test("the system set sets the title display mode only when the behavior asks for one")

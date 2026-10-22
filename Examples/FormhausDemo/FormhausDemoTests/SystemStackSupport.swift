@@ -22,6 +22,7 @@ final class StackBox {
     var system = true
     var behavior = FormBehavior()
     var hostTitleMode = NavigationBarItem.TitleDisplayMode.automatic
+    var scroller = false
     let deep: Bool
 
     init(_ model: FormModel, deep: Bool) {
@@ -48,8 +49,12 @@ private struct StackForm: View {
     let box: StackBox
 
     var body: some View {
-        FormhausFormContent(model: box.model).formhausComponents(box.system ? .system : .standard).formhausBehavior(box.behavior)
-            .navigationBarTitleDisplayMode(box.hostTitleMode)
+        Group {
+            if box.scroller { FormhausForm(model: box.model) } else { FormhausFormContent(model: box.model) }
+        }
+        .formhausComponents(box.system ? .system : .standard)
+        .formhausBehavior(box.behavior)
+        .navigationBarTitleDisplayMode(box.hostTitleMode)
     }
 }
 

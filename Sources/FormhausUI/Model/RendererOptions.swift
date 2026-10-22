@@ -19,7 +19,7 @@ public struct FormRendererOptions {
     public init(
         labels: LabelSource? = nil, optionsProviders: [String: OptionsProvider] = [:], onCancel: (@MainActor () -> Void)? = nil,
         onFieldChange: FieldChangeFn? = nil, onValuesChange: ValuesChangeFn? = nil, onError: ActionErrorFn? = nil,
-        lang: String? = nil, formatRecall: RecallFormatFn? = nil, testIds: TestIds = .automatic
+        lang: String? = nil, formatRecall: RecallFormatFn? = nil, testIds: TestIds = .off
     ) {
         self.labels = labels
         self.optionsProviders = optionsProviders
