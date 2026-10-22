@@ -169,6 +169,11 @@ public final class FormEngine {
         core.notify()
     }
 
+    @_spi(Renderer) public func cancelUnsentActions() {
+        guard !core.submitting || core.sending != core.latestOperation else { return }
+        cancelPendingActions()
+    }
+
     public func start() {
         core.startEvents()
     }

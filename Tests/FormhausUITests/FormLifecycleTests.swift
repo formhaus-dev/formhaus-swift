@@ -84,4 +84,53 @@ struct FormLifecycleTests {
         #expect(!first.submitting)
         #expect(!second.submitting)
     }
+
+    @Test("tearing down a form while it sends still runs onAfterSubmit")
+    func teardownWhileSending() async throws {
+        let log = CallLog()
+        let gate = Gate()
+        var holder: ModelHolder? = ModelHolder()
+        let submit: SubmitHandler = { _, _ in
+            log.calls.append("send")
+            if log.calls.count == 1 { await gate.wait() }
+            return nil
+        }
+        let engine = FormEngineOptions(onAfterSubmit: { _, _ in log.calls.append("after") })
+        let model = try #require(holder?.resolve(.definition(try owned("a", "x", engine: engine, submit: submit))))
+        let pending = Task { await model.submit() }
+        while log.calls.isEmpty { await Task.yield() }
+        holder = nil
+        await Task { @MainActor in }.value
+        await model.submit()
+        #expect(model.submitting)
+        gate.open()
+        await pending.value
+        #expect(log.calls == ["send", "after"])
+        #expect(!model.submitting)
+    }
+
+    @Test("tearing down a form before it sends cancels the submit")
+    func teardownBeforeSending() async throws {
+        let log = CallLog()
+        let gate = Gate()
+        var holder: ModelHolder? = ModelHolder()
+        let submit: SubmitHandler = { _, _ in
+            log.calls.append("send")
+            return nil
+        }
+        let engine = FormEngineOptions(onBeforeSubmit: { _ in
+            log.calls.append("before")
+            await gate.wait()
+            return nil
+        })
+        let model = try #require(holder?.resolve(.definition(try owned("a", "x", engine: engine, submit: submit))))
+        let pending = Task { await model.submit() }
+        while log.calls.isEmpty { await Task.yield() }
+        holder = nil
+        await Task { @MainActor in }.value
+        gate.open()
+        await pending.value
+        #expect(log.calls == ["before"])
+        #expect(!model.submitting)
+    }
 }

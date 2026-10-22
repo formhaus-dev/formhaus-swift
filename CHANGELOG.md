@@ -11,6 +11,7 @@
 - A file picked in a field that a condition hides and shows again is kept.
 - A picked file whose copy no longer exists shows as an empty file field instead of the raw path.
 - Submit and Skip send `null` for a picked file whose copy no longer exists, so a required file field reports its error. Other values, including `file:` URLs outside the picked files folder, are sent unchanged.
+- Fixed `onAfterSubmit` not running when an owned `FormhausForm` is torn down while the submit handler runs. Step validation and a submit that has not started sending are still cancelled.
 
 ## 0.1.5
 
