@@ -59,21 +59,29 @@ public final class FormEngine {
     let core: EngineCore
     let options: FormEngineOptions
     public let seed: String
+    @_spi(Renderer) public let restored: Bool
     private let listeners = Listeners()
 
-    public convenience init(definition: JSONValue, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions())
-        throws(FormDefinitionError)
-    {
-        self.init(definition: try FormDefinition(json: definition), values: values, options: options)
+    public convenience init(
+        definition: JSONValue, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions(),
+        restoring snapshot: FormSnapshot? = nil
+    ) throws(FormDefinitionError) {
+        self.init(definition: try FormDefinition(json: definition), values: values, options: options, restoring: snapshot)
     }
 
-    public init(definition: FormDefinition, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions()) {
+    public init(
+        definition: FormDefinition, values: JSONObject = JSONObject(), options: FormEngineOptions = FormEngineOptions(),
+        restoring snapshot: FormSnapshot? = nil
+    ) {
         self.options = options
-        seed = options.seed.flatMap { $0.isEmpty ? nil : $0 } ?? options.research?.seed() ?? ""
         reportWarnings(definition, options)
+        let restoring = snapshot?.matching(definition, options)
+        restored = restoring != nil
+        seed = [restoring?.seed, options.seed].lazy.compactMap { $0 }.first { !$0.isEmpty } ?? options.research?.seed() ?? ""
         core = EngineCore(
-            definition: definition, values: values, validators: options.validators, messages: options.messages,
+            definition: definition, values: restoring?.values ?? values, validators: options.validators, messages: options.messages,
             keep: options.hiddenValues == .keep, missingMessage: missingMessageReporter(options))
+        if let restoring { core.restore(restoring) }
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
         }
