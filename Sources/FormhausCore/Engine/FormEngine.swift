@@ -82,6 +82,7 @@ public final class FormEngine {
     }
 
     public var definition: FormDefinition { core.definition }
+    @_spi(Renderer) public var restarts: Int { core.restarts }
     public var values: JSONObject { core.visibility.keep ? core.keptJSON() : core.values.json }
     public var errors: FieldErrors { core.errors }
     public var currentStepIndex: Int { core.currentStepIndex }

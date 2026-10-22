@@ -45,6 +45,7 @@ extension EngineCore {
 
     func reset(_ initialValues: JSONObject?) {
         let previousValues = values
+        restarts += 1
         baselineFields()
         validationEpoch += 1
         operationEpoch += 1

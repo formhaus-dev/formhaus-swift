@@ -6,6 +6,10 @@
 
 - `FormEngine` validation no longer checks the items of a group that has more items than its limit or an item that is not an object. Only the group error is reported.
 
+### FormhausUI
+
+- A file picked in a field that a condition hides and shows again is kept.
+
 ## 0.1.5
 
 ### FormhausCore
