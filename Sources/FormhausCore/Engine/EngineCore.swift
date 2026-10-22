@@ -27,6 +27,7 @@ final class EngineCore {
     var viewedStep: String?
     var shownFields: ShownFields?
     private(set) var version = 0
+    var keptCache: (version: Int, generation: Int, values: JSONObject)?
     var emitEvent: ((FormEvent) -> Void)?
     var onChange: (() -> Void)?
 

@@ -31,6 +31,13 @@ extension EngineCore {
         visibility.withKept(values, skipped: skipped.flatMap(\.keys))
     }
 
+    func keptJSON() -> JSONObject {
+        if let keptCache, keptCache.version == version, keptCache.generation == valuesGeneration { return keptCache.values }
+        let json = keptValues().json
+        keptCache = (version, valuesGeneration, json)
+        return json
+    }
+
     func addKept(_ result: inout JSONObject) {
         let kept = keptValues().json
         for field in visibility.allFields {

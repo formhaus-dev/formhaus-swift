@@ -82,7 +82,7 @@ public final class FormEngine {
     }
 
     public var definition: FormDefinition { core.definition }
-    public var values: JSONObject { core.visibility.keep ? core.keptValues().json : core.values.json }
+    public var values: JSONObject { core.visibility.keep ? core.keptJSON() : core.values.json }
     public var errors: FieldErrors { core.errors }
     public var currentStepIndex: Int { core.currentStepIndex }
     public var fieldLoading: StringMap<Bool> { core.fieldLoading }
