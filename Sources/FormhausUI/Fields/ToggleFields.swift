@@ -13,7 +13,7 @@ public struct CheckboxField: View {
             Toggle(isOn: context.boolBinding) {
                 Text(verbatim: context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
-            .toggleStyle(CheckboxStyle())
+            .toggleStyle(CheckboxStyle(invalid: context.isInvalid))
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .disabled(context.isLocked)
@@ -45,7 +45,7 @@ private struct CheckboxBody: View {
             configuration.isOn.toggle()
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s5) {
-                ChoiceIndicator(.checkbox, selected: configuration.isOn, invalid: invalid)
+                FocusedIndicator(selected: configuration.isOn, invalid: invalid)
                     .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
                 configuration.label.frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -53,7 +53,20 @@ private struct CheckboxBody: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .focusEffectDisabled()
         .accessibilityRepresentation { Toggle(isOn: configuration.$isOn) { configuration.label } }
+    }
+}
+
+private struct FocusedIndicator: View {
+    @Environment(\.formhausTokens) private var tokens
+    @Environment(\.isFocused) private var focused
+    let selected: Bool
+    let invalid: Bool
+
+    var body: some View {
+        ChoiceIndicator(.checkbox, selected: selected, invalid: invalid)
+            .overlay(FocusRing(visible: focused, radius: tokens.radii.indicator, offset: 2))
     }
 }
 
@@ -70,7 +83,7 @@ public struct SwitchField: View {
             Toggle(isOn: context.boolBinding) {
                 Text(verbatim: context.label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
             }
-            .toggleStyle(SwitchRowStyle(loading: context.loading))
+            .toggleStyle(SwitchRowStyle(loading: context.loading, invalid: context.isInvalid))
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityHint(Text(verbatim: context.helperText ?? ""))
             .disabled(context.isLocked)
@@ -81,16 +94,19 @@ public struct SwitchField: View {
 
 private struct SwitchRowStyle: ToggleStyle {
     let loading: Bool
+    let invalid: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        SwitchRow(configuration: configuration, loading: loading)
+        SwitchRow(configuration: configuration, loading: loading, invalid: invalid)
     }
 }
 
 private struct SwitchRow: View {
     @Environment(\.formhausTokens) private var tokens
+    @FocusState private var focused: Bool
     let configuration: ToggleStyleConfiguration
     let loading: Bool
+    let invalid: Bool
 
     var body: some View {
         let offset = tokens.typography.body * 0.36
@@ -105,6 +121,14 @@ private struct SwitchRow: View {
                 .labelsHidden()
                 .toggleStyle(.switch)
                 .tint(tokens.colors.primary)
+                .focusEffectDisabled()
+                .focused($focused)
+                .overlay {
+                    Capsule().strokeBorder(tokens.colors.error, lineWidth: 1.5)
+                        .opacity(invalid && !configuration.isOn ? 1 : 0)
+                        .allowsHitTesting(false)
+                }
+                .overlay { FocusRing(visible: focused, radius: tokens.controls.hitTarget, offset: 2) }
                 .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
         }
         .frame(minHeight: tokens.controls.hitTarget)

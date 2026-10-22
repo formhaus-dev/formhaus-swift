@@ -67,7 +67,7 @@ func axNodes(_ view: some View, size: CGSize = CGSize(width: 393, height: 2400))
 @MainActor
 private func walk(_ element: NSObject, cell: CGRect? = nil, bar: Bool = false, into nodes: inout [AXNode]) {
     let cell = element is UICollectionViewCell ? element.accessibilityFrame : cell
-    let bar = bar || element is UINavigationBar
+    let bar = bar || element is UINavigationBar || "\(type(of: element))".contains("FloatingBar")
     if element.isAccessibilityElement {
         nodes.append(
             AXNode(

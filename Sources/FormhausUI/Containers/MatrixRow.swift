@@ -74,7 +74,8 @@ private struct MatrixRowBody: View {
             choose(value)
         } label: {
             VStack(spacing: tokens.spacing.s1) {
-                ChoiceIndicator(context.field.type == "radio" ? .radio : .checkbox, selected: selected)
+                ChoiceIndicator(
+                    context.field.type == "radio" ? .radio : .checkbox, selected: selected, invalid: context.isInvalid)
                 if caption {
                     Text(verbatim: option.label ?? value).formhausText(.caption).multilineTextAlignment(.center)
                 }

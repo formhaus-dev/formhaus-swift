@@ -54,6 +54,15 @@ extension View {
         #if os(iOS)
             if #available(iOS 26, *) {
                 toolbarBackground(background, for: .navigationBar)
+                    .overlay {
+                        GeometryReader { proxy in
+                            let top = proxy.frame(in: .global).minY
+                            background.frame(height: max(0, top)).offset(y: -top)
+                        }
+                        .ignoresSafeArea(edges: .horizontal)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                    }
             } else {
                 toolbarBackground(background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
             }

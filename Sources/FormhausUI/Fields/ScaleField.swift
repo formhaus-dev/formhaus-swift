@@ -21,7 +21,7 @@ public struct ScaleField: View {
                         } label: {
                             Text(verbatim: String(point)).monospacedDigit()
                         }
-                        .buttonStyle(ScaleBoxStyle(selected: current == point))
+                        .buttonStyle(ScaleBoxStyle(selected: current == point, invalid: context.isInvalid))
                         .accessibilityAddTraits(current == point ? .isSelected : [])
                         .accessibilityHint(Text(verbatim: scale.anchor(for: point) ?? ""))
                         .formhausTestId(context.optionTestId(String(point)))
@@ -36,9 +36,10 @@ public struct ScaleField: View {
 
 struct ScaleBoxStyle: ButtonStyle {
     let selected: Bool
+    let invalid: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        ScaleBox(configuration: configuration, selected: selected)
+        ScaleBox(configuration: configuration, selected: selected, invalid: invalid)
     }
 }
 
@@ -46,6 +47,7 @@ private struct ScaleBox: View {
     @Environment(\.formhausTokens) private var tokens
     let configuration: ButtonStyleConfiguration
     let selected: Bool
+    let invalid: Bool
 
     var body: some View {
         configuration.label
@@ -53,6 +55,6 @@ private struct ScaleBox: View {
             .fontWeight(.medium)
             .foregroundStyle(selected ? tokens.colors.onPrimary : tokens.colors.text)
             .frame(maxWidth: .infinity, minHeight: tokens.controls.height)
-            .selectableSurface(selected: selected, invalid: false, solid: true)
+            .selectableSurface(selected: selected, invalid: invalid, solid: true)
     }
 }
