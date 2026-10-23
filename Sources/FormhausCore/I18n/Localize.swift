@@ -12,11 +12,14 @@ public struct TextSlot: Sendable, Hashable {
     public let hash: String
 }
 
+private func addresses(_ path: [String]) -> [ArraySlice<String>] {
+    path.first == "steps" && path.dropFirst(2).first == "fields" ? [path[...], path.dropFirst(2)] : [path[...]]
+}
+
 func lookup(_ overlay: JSONValue?, _ path: [String]) -> String? {
-    var node = overlay
-    for key in path { node = node?.objectValue?[key] }
-    guard let text = node?.stringValue, !text.isBlankText else { return nil }
-    return text
+    addresses(path).lazy.compactMap { address in
+        address.reduce(overlay) { node, key in node?.objectValue?[key] }?.stringValue
+    }.first { !$0.isBlankText }
 }
 
 func placeholders(_ text: String) -> [String] {
