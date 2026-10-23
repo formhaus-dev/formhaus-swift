@@ -63,13 +63,11 @@ private func assignIds(_ names: [String], _ groups: KeySet = KeySet()) -> String
     return ids
 }
 
-private struct DomIds {
-    let prefix: String
+struct DomIds {
     let fields: StringMap<String>
     let items: StringMap<StringMap<String>>
 
-    init(_ definition: FormDefinition, _ formId: String?) {
-        prefix = formId.flatMap { $0.isEmpty ? nil : cleanId($0) } ?? "fh"
+    init(_ definition: FormDefinition) {
         var names: [String] = []
         var groups = KeySet()
         var itemNames = StringMap<[String]>()
@@ -83,12 +81,21 @@ private struct DomIds {
         items = itemNames.reduce(into: StringMap<StringMap<String>>()) { $0[$1.0] = assignIds(OrderedKeys($1.1).keys) }
     }
 
-    func field(_ key: String) -> String {
+    func field(_ prefix: String, _ key: String) -> String {
         "\(prefix)-\(fields[key] ?? cleanId(key))"
     }
 
-    func item(_ group: String, _ index: Int, _ key: String) -> String {
-        "\(field(group))--\(index)--\(items[group]?[key] ?? cleanId(key))"
+    func item(_ prefix: String, _ group: String, _ index: Int, _ key: String) -> String {
+        "\(field(prefix, group))--\(index)--\(items[group]?[key] ?? cleanId(key))"
+    }
+}
+
+extension EngineCore {
+    fileprivate var currentDomIds: DomIds {
+        if let cached = domIds, cached.generation == definitionGeneration { return cached.ids }
+        let ids = DomIds(definition)
+        domIds = (definitionGeneration, ids)
+        return ids
     }
 }
 
@@ -96,7 +103,8 @@ extension FormEngine {
     fileprivate func errorGroups(_ options: ErrorSummaryOptions) -> [ErrorGroup] {
         let errors = core.errors
         guard !errors.isEmpty else { return [] }
-        let ids = DomIds(definition, options.idPrefix)
+        let ids = core.currentDomIds
+        let prefix = options.idPrefix.flatMap { $0.isEmpty ? nil : cleanId($0) } ?? "fh"
         let source = options.labels
         let values = core.values.json
         let sections: [(id: String, title: String?, fields: [FormNode])] =
@@ -110,7 +118,7 @@ extension FormEngine {
                 let field = recalled(raw, at: item == nil ? nil : key)
                 let name = field.label ?? ""
                 let label = item.map { "\(name) (\(itemTitle($0.group, $0.index, source)))" } ?? name
-                let id = core.visibility.parse(key).map { ids.item($0.group, $0.index, $0.field) } ?? ids.field(key)
+                let id = core.visibility.parse(key).map { ids.item(prefix, $0.group, $0.index, $0.field) } ?? ids.field(prefix, key)
                 return ErrorEntry(key: key, id: id, label: label, message: message)
             }
             guard !entries.isEmpty else { return nil }

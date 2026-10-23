@@ -2,7 +2,9 @@ final class EngineCore {
     private(set) var definition: FormDefinition
     let validators: Validators
     private let messageSource: MessageSource?
-    private let locale: [LocaleCatalog]
+    var locale: [LocaleCatalog] {
+        didSet { rebuildMessages() }
+    }
     private let missingMessage: MissingMessageFn?
     private(set) var messages: ResolveMessage
     private(set) var visibility: VisibilityState
@@ -28,6 +30,7 @@ final class EngineCore {
     var started = false
     var viewedStep: String?
     var shownFields: ShownFields?
+    var domIds: (generation: Int, ids: DomIds)?
     private(set) var version = 0
     var keptCache: (version: Int, generation: Int, values: JSONObject)?
     var emitEvent: ((FormEvent) -> Void)?
@@ -47,6 +50,10 @@ final class EngineCore {
         values = Self.startValues(visibility, Values(fresh: initialValues), &errors)
     }
 
+    private func rebuildMessages() {
+        messages = watchedResolver(messageSource, definition, locale, missingMessage)
+    }
+
     private static func startValues(_ visibility: VisibilityState, _ initialValues: Values, _ errors: inout FieldErrors) -> Values {
         var values = createValues(visibility.allFields, initialValues) { visibility.activeField($0, $1) }
         visibility.reconcileHidden(&values, &errors, initial: true)
@@ -56,7 +63,7 @@ final class EngineCore {
     func load(_ next: FormDefinition, _ initialValues: Values) {
         definition = next
         definitionGeneration += 1
-        messages = watchedResolver(messageSource, next, locale, missingMessage)
+        rebuildMessages()
         visibility = VisibilityState(next, keep: visibility.keep)
         replaceValues(Self.startValues(visibility, initialValues, &errors))
     }

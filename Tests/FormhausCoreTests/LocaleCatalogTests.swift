@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @_spi(Renderer) @testable import FormhausCore
@@ -95,6 +96,16 @@ struct LocaleCatalogTests {
         #expect(try minLengthError(4, [russian], messages: .catalog(["minLength": "Option {min}"]), extra: own) == "Option 4")
     }
 
+    @Test("reads the locale when it changes after the engine was created")
+    func liveLocale() throws {
+        let engine = try FormEngine(definition: form(4), values: ["name": "a"])
+        #expect(engine.validate()["name"] == "Minimum length is 4")
+        #expect(engine.label("continue", nil) == "Continue")
+        engine.locale = [russian]
+        #expect(engine.validate()["name"] == "Не менее 4 символов")
+        #expect(engine.label("continue", nil) == "Далее")
+    }
+
     @Test("resolves labels with the same precedence")
     func labels() async throws {
         let steps: JSONValue = [
@@ -130,9 +141,11 @@ struct LocaleCatalogTests {
             ("fr", [2, 1_000_000.5], "other"), ("pt", [0, 1.5], "one"), ("pt", [3], "other"), ("ja", [1, 1_000_000], "other"),
             ("zh", [1], "other"), ("ru", [1, 21, 101], "one"), ("ru", [2, 24, 102], "few"), ("ru", [0, 5, 11, 12, 14, 111], "many"),
             ("ru", [1.5], "other"), ("uk", [31], "one"), ("uk", [13], "many"), ("xx", [1], "other"),
+            ("pt-PT", [1], "one"), ("pt-PT", [0, 1.5, 2], "other"), ("pt-PT", [1_000_000], "many"), ("pt-BR", [0], "one"),
+            ("es-419", [0], "other"), ("fr-CA", [0], "one"), ("en-GB", [0], "other"), ("it-CH", [1_000_000], "many"),
         ]
         for (language, numbers, category) in cases {
-            for number in numbers { #expect(pluralCategory(number, language) == category, "\(language) \(number)") }
+            for number in numbers { #expect(pluralCategory(number, Locale(identifier: language)) == category, "\(language) \(number)") }
         }
     }
 }

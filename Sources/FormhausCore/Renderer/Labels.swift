@@ -41,15 +41,18 @@ public struct FormActionsState: Sendable, Hashable {
 
 extension FormEngine {
     @_spi(Renderer)
-    public func label(_ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject()) -> String {
+    public func label(_ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject(), locale: [LocaleCatalog]? = nil) -> String
+    {
         #if DEBUG
-            reportMissingLabel(key, source, definition, options)
+            reportMissingLabel(key, source, definition, locale ?? core.locale, options)
         #endif
-        return resolvedLabel(key, source, params)
+        return resolvedLabel(key, source, params, locale: locale)
     }
 
-    private func resolvedLabel(_ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject()) -> String {
-        labelFor(key, params, source, definition.labels.map { .catalog($0) }, localeLabels(options.locale))
+    private func resolvedLabel(
+        _ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject(), locale: [LocaleCatalog]? = nil
+    ) -> String {
+        labelFor(key, params, source, definition.labels.map { .catalog($0) }, localeLabels(locale ?? core.locale))
     }
 
     private func label(_ key: String, _ source: LabelSource?, shown: Bool) -> String {

@@ -15,6 +15,7 @@ public final class FormModel {
     public private(set) var submitting = false
     public private(set) var topLevelErrors: [String] = []
     public private(set) var errorGroups: [ErrorGroup] = []
+    public private(set) var locale: [LocaleCatalog]
     public private(set) var stepErrorCounts: [String: Int] = [:]
     public private(set) var actions: FormActionsState
     public private(set) var actionError: String?
@@ -51,6 +52,7 @@ public final class FormModel {
         self.options = options
         submitHandler = onSubmit
         structure = FormStructure(engine)
+        locale = engine.locale
         actions = engine.actionsState(options.labels)
         lastValues = engine.values
         lastErrors = engine.errors
@@ -85,7 +87,10 @@ public final class FormModel {
     func updateHandlers(
         engineOptions: FormEngineOptions? = nil, options: FormRendererOptions? = nil, onSubmit: SubmitHandler? = nil
     ) {
-        if let engineOptions { hooks?.current = engineOptions }
+        if let engineOptions {
+            hooks?.current = engineOptions
+            if engineOptions.locale != engine.locale { engine.locale = engineOptions.locale }
+        }
         if let options { self.options = options }
         if let onSubmit { submitHandler = onSubmit }
     }
@@ -119,16 +124,6 @@ public final class FormModel {
         groupStates[key] = state
         refreshGroup(state)
         return state
-    }
-
-    public func text(forLabel key: String, _ params: JSONObject = JSONObject()) -> String {
-        let text = engine.label(key, options.labels, params)
-        guard text.isEmpty, let fallback = upcomingLabels[key] else { return text }
-        return formatTemplate(fallback, params)
-    }
-
-    func errorText(forKey key: String) -> String? {
-        errorGroups.lazy.flatMap(\.entries).first { $0.key == key }?.text
     }
 
     public func start() {
@@ -207,10 +202,14 @@ public final class FormModel {
         assign(\.actions, engine.actionsState(options.labels))
         let errors = engine.errors
         let recallChanged = !errors.isEmpty && valuesVersion != lastValuesVersion
-        if errors != lastErrors || errorGroups.isEmpty != errors.isEmpty || structureVersion != lastStructureVersion || recallChanged {
+        let localeChanged = engine.locale != locale
+        if errors != lastErrors || errorGroups.isEmpty != errors.isEmpty || structureVersion != lastStructureVersion || recallChanged
+            || localeChanged
+        {
             lastErrors = errors
             lastStructureVersion = structureVersion
             lastValuesVersion = valuesVersion
+            if localeChanged { locale = engine.locale }
             assign(\.errorGroups, errorSummary(engine, options: ErrorSummaryOptions(labels: options.labels)).groups)
             assign(\.stepErrorCounts, engine.stepErrors.reduce(into: [:]) { $0[$1.key] = $1.value.count })
         }

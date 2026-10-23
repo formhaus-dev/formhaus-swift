@@ -90,6 +90,14 @@ public final class FormEngine {
     }
 
     public var definition: FormDefinition { core.definition }
+
+    public var locale: [LocaleCatalog] {
+        get { core.locale }
+        set {
+            core.locale = newValue
+            core.notify()
+        }
+    }
     @_spi(Renderer) public var restarts: Int { core.restarts }
     public var values: JSONObject { core.visibility.keep ? core.keptJSON() : core.values.json }
     public var errors: FieldErrors { core.errors }
