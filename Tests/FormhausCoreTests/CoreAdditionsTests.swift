@@ -47,7 +47,7 @@ struct CoreAdditionsTests {
             ],
         ])
         engine.setErrors(["c": "Bad", "a": "Taken", "b": "Missing"])
-        let groups = engine.errorGroups(nil)
+        let groups = errorSummary(engine).groups
         #expect(groups.map(\.id) == ["one", "two"])
         #expect(groups.map(\.title) == ["Contact", "Step 2"])
         #expect(groups.flatMap(\.entries).map(\.text) == ["Name? Taken", "City: Missing", "Zip\u{FF1A} Bad"])

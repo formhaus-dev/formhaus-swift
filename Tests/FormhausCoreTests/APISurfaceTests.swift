@@ -114,6 +114,13 @@ struct APISurfaceTests {
         #expect(results == Array(repeating: 0, count: 16))
     }
 
+    @Test("locale helpers run from any thread")
+    func localeHelpers() async {
+        #expect(await Task.detached { localeChain("pt_br") }.value == ["pt-BR", "pt", "en"])
+        #expect(await Task.detached { checkCatalog(["locale": "x"]).missing.count }.value == 47)
+        #expect(await Task.detached { LocaleCatalog.bundled("de")?.locale }.value == "de")
+    }
+
     @Test("the engine runs on the main actor")
     @MainActor func mainActorEngine() throws {
         let engine = try FormEngine(definition: Self.definition, values: ["a": "x"])

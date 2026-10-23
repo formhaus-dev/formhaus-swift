@@ -46,3 +46,4 @@ sync_dir() {
 
 sync_dir packages/core/fixtures/conformance "$root/Tests/FormhausCoreTests/Fixtures" conformance
 sync_dir packages/core/tokens "$root/Tests/FormhausUITests/Fixtures" tokens
+sync_dir packages/core/locales "$root/Sources/FormhausCore/Resources" locales

@@ -51,8 +51,12 @@ private func reportMissing(_ code: IssueCode, _ key: String, _ catalog: String, 
 }
 
 @MainActor
-func reportMissingLabel(_ key: String, _ source: LabelSource?, _ definition: FormDefinition, _ options: FormEngineOptions) {
-    guard let catalog = source?.catalog, !hasText(catalog, key), !(definition.labels.map { hasText($0, key) } ?? false) else { return }
+func reportMissingLabel(
+    _ key: String, _ source: LabelSource?, _ definition: FormDefinition, _ locale: [LocaleCatalog], _ options: FormEngineOptions
+) {
+    guard let catalog = source?.catalog, !hasText(catalog, key), !(definition.labels.map { hasText($0, key) } ?? false),
+        !locale.contains(where: { $0.labels[key] != nil })
+    else { return }
     reportMissing(.missingLabelKey, key, "labels", options)
 }
 
@@ -65,12 +69,16 @@ func missingMessageReporter(_ options: FormEngineOptions) -> MissingMessageFn? {
     #endif
 }
 
-func watchedResolver(_ source: MessageSource?, _ definition: FormDefinition, _ missing: MissingMessageFn?) -> ResolveMessage {
-    let resolve = messageResolver(source, .catalog(definition.messages ?? .null))
+func watchedResolver(
+    _ source: MessageSource?, _ definition: FormDefinition, _ locale: [LocaleCatalog], _ missing: MissingMessageFn?
+) -> ResolveMessage {
+    let resolve = messageResolver(source, .catalog(definition.messages ?? .null), localeMessages(locale))
     guard let missing, let catalog = source?.catalog else { return resolve }
     let own = definition.messages ?? .null
     return { key, params, field in
-        if !hasText(catalog, key.rawValue) && !hasText(own, key.rawValue) { missing(key) }
+        if !hasText(catalog, key.rawValue) && !hasText(own, key.rawValue) && !locale.contains(where: { $0.messages[key] != nil }) {
+            missing(key)
+        }
         return resolve(key, params, field)
     }
 }

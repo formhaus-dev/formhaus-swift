@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.2.0
+
+### FormhausCore
+
+- New `locale` option on `FormEngineOptions` takes a list of `LocaleCatalog`. Per key, `messages` wins over the definition's `messages`, which wins over the catalogs in list order, which win over the built-in English.
+- A catalog text can be `PluralForms`, picked by the CLDR cardinal rules of the catalog locale on `{count}`, `{min}` or `{max}`. That number is formatted for the same locale.
+- Plural rules cover the languages of the shipped catalogs. Other languages use the `other` form.
+- Message and label catalogs for `es`, `fr`, `fr-CA`, `de`, `pt-BR`, `it`, `ja`, `zh-CN`, `ru`, `uk` and `en`, loaded with `LocaleCatalog.bundled(_:)`.
+- `FormEngine.locale` replaces the catalogs of a running form. The next labels and messages use them.
+- New `localeChain(_:)` and `checkCatalog(_:)`. `localeChain` adds the likely region, so `zh-Hans-CN` also tries `zh-CN`.
+- New types `LocaleCatalog`, `LocaleText`, `PluralForms` and `CatalogIssues`.
+- A multi-step overlay passed to `localize` also accepts `fields.<key>` at the top level. `steps.<id>.fields.<key>` wins when both are set.
+- New `onValidate` engine option runs after the definition rules pass, on Continue after `onStepValidate` and on Submit before `onBeforeSubmit`. It gets the values and a `ValidateContext`, whose `fields` lists the visible field paths in scope, and returns errors keyed by field path.
+- Keys of an `onValidate` result outside `fields` show as top-level errors.
+- An `onValidate` error on another step opens that step on Submit.
+- New types `ValidateFn` and `ValidateContext`.
+- Form errors from `onStepValidate` and `onValidate` clear on the next Continue, Back, Skip or Submit. Form errors from the submit handler and from `setErrors` stay.
+- New `errorSummary(_:options:)` returns the field errors grouped by step, the top-level errors and the field error count.
+- New types `ErrorSummary` and `ErrorSummaryOptions`.
+- **Breaking:** `ErrorEntry.id` is the element id from `idPrefix` and the field path, as in the web renderers, instead of the field key. Read the key from `ErrorEntry.key`.
+- **Breaking:** `@_spi(Renderer) FormEngine.errorGroups(_:)` is removed. Use `errorSummary(_:options:)`.
+- In debug builds, `missing-message-key` and `missing-label-key` are not reported for a text that a locale catalog supplies.
+
+### FormhausUI
+
+- `FormhausForm` and `FormModel` run `onValidate` and show its errors.
+- Labels of the built-in components come from the `locale` catalogs.
+- A changed `locale` in the options of `FormhausForm` relabels the open form, including the error summary.
+- New `FormModel.locale`.
+
 ## 0.1.7
 
 ### FormhausCore

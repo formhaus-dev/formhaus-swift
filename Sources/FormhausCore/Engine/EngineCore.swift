@@ -2,6 +2,9 @@ final class EngineCore {
     private(set) var definition: FormDefinition
     let validators: Validators
     private let messageSource: MessageSource?
+    var locale: [LocaleCatalog] {
+        didSet { rebuildMessages() }
+    }
     private let missingMessage: MissingMessageFn?
     private(set) var messages: ResolveMessage
     private(set) var visibility: VisibilityState
@@ -27,6 +30,7 @@ final class EngineCore {
     var started = false
     var viewedStep: String?
     var shownFields: ShownFields?
+    var domIds: (generation: Int, ids: DomIds)?
     private(set) var version = 0
     var keptCache: (version: Int, generation: Int, values: JSONObject)?
     var emitEvent: ((FormEvent) -> Void)?
@@ -34,15 +38,20 @@ final class EngineCore {
 
     init(
         definition: FormDefinition, values initialValues: JSONObject = JSONObject(), validators: Validators = [:],
-        messages: MessageSource? = nil, keep: Bool = false, missingMessage: MissingMessageFn? = nil
+        messages: MessageSource? = nil, locale: [LocaleCatalog] = [], keep: Bool = false, missingMessage: MissingMessageFn? = nil
     ) {
         self.definition = definition
         self.validators = validators
         messageSource = messages
+        self.locale = locale
         self.missingMessage = missingMessage
-        self.messages = watchedResolver(messages, definition, missingMessage)
+        self.messages = watchedResolver(messages, definition, locale, missingMessage)
         visibility = VisibilityState(definition, keep: keep)
         values = Self.startValues(visibility, Values(fresh: initialValues), &errors)
+    }
+
+    private func rebuildMessages() {
+        messages = watchedResolver(messageSource, definition, locale, missingMessage)
     }
 
     private static func startValues(_ visibility: VisibilityState, _ initialValues: Values, _ errors: inout FieldErrors) -> Values {
@@ -54,7 +63,7 @@ final class EngineCore {
     func load(_ next: FormDefinition, _ initialValues: Values) {
         definition = next
         definitionGeneration += 1
-        messages = watchedResolver(messageSource, next, missingMessage)
+        rebuildMessages()
         visibility = VisibilityState(next, keep: visibility.keep)
         replaceValues(Self.startValues(visibility, initialValues, &errors))
     }

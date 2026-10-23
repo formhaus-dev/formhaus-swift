@@ -1,0 +1,62 @@
+{
+  "locale": "fr",
+  "messages": {
+    "required": "Ce champ est obligatoire",
+    "minLength": {
+      "one": "Au moins {min} caractère",
+      "many": "Au moins {min} de caractères",
+      "other": "Au moins {min} caractères"
+    },
+    "maxLength": {
+      "one": "Au plus {max} caractère",
+      "many": "Au plus {max} de caractères",
+      "other": "Au plus {max} caractères"
+    },
+    "minItems": "Minimum requis : {min}",
+    "maxItems": "Maximum autorisé : {max}",
+    "min": "La valeur minimale est {min}",
+    "max": "La valeur maximale est {max}",
+    "pattern": "Format non valide",
+    "matchField": "Les champs doivent correspondre",
+    "email": "Saisissez une adresse e-mail valide",
+    "number": "Saisissez un nombre",
+    "date": "Saisissez une date valide",
+    "datetime": "Saisissez une date et une heure valides",
+    "time": "Saisissez une heure valide",
+    "option": "Sélectionnez l’une des options proposées",
+    "options": "Doit être une liste d’options proposées",
+    "exclusive": "Sélectionnez « {option} » ou d’autres options, mais pas les deux",
+    "boolean": "Doit être vrai ou faux",
+    "string": "Doit être du texte",
+    "file": "Doit être une référence de fichier",
+    "value": "Valeur non valide",
+    "hidden": "{label} : {message}"
+  },
+  "labels": {
+    "continue": "Continuer",
+    "back": "Retour",
+    "stepOf": "Étape {current} sur {total}",
+    "errorSummary": "Vérifiez ces réponses",
+    "addItem": "Ajouter",
+    "removeItem": "Supprimer",
+    "itemLabel": "{label} {index}",
+    "itemAdded": "Élément ajouté : {item}",
+    "itemRemoved": "Élément supprimé : {item}",
+    "removeItemNamed": "{label} « {item} »",
+    "removeItemPrompt": "Supprimer « {item} » ?",
+    "removeItemBody": "« {item} » et ses réponses seront supprimés. Cette action est irréversible.",
+    "cancel": "Annuler",
+    "enlargeImage": "Agrandir l’image : {label}",
+    "close": "Fermer",
+    "clear": "Effacer",
+    "done": "Terminé",
+    "chooseFile": "Choisir un fichier",
+    "required": "obligatoire",
+    "skip": "Passer",
+    "submit": "Envoyer",
+    "stepTitle": "Étape {index}",
+    "stepErrors": "Erreurs : {count}",
+    "or": "ou",
+    "select": "Sélectionner"
+  }
+}

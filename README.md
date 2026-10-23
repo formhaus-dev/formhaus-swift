@@ -24,7 +24,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.7"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.2.0"),
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -178,6 +178,19 @@ if result.errors.isEmpty {
 
 The body is the values object. `result.values` holds the values of the active path, and `result.errors` maps keys to messages. Pass skipped steps and custom validators in `SubmissionOptions`. `checkDefinition(json)` lists the issues of a definition before you use it.
 
+## Validate in code
+
+`onValidate` runs after the definition rules pass, on Continue for the step and on Submit for the whole form:
+
+```swift
+let options = FormEngineOptions(onValidate: { values, context in
+    guard context.fields.contains("email") else { return nil }
+    return try await api.isTaken(values["email"]) ? ["email": "This email is taken"] : nil
+})
+```
+
+`context.fields` lists the visible field paths in scope, and `context.submit` tells Submit from Continue. Keys outside `fields` show as form errors, and on Submit the form opens the step of the first field error. `errorSummary(engine, options: ErrorSummaryOptions(labels:))` returns the field errors grouped by step for a summary of your own.
+
 ## Keep hidden values
 
 By default a field hidden by a condition loses its value. An editor of a stored record can keep it:
@@ -239,6 +252,17 @@ struct SignupView: View {
 Snapshot values can hold personal data. User defaults are not encrypted, so for such forms store the snapshot in the Keychain or in a file with data protection, and delete it when the user signs out.
 
 ## Translations
+
+Formhaus ships message and label catalogs for `en`, `es`, `fr`, `fr-CA`, `de`, `pt-BR`, `it`, `ja`, `zh-CN`, `ru` and `uk`:
+
+```swift
+let locale = localeChain(Locale.current.identifier(.bcp47)).compactMap(LocaleCatalog.bundled)
+FormhausForm(definition: definition, options: FormEngineOptions(locale: locale)) { values, _ in
+    try await send(values)
+}
+```
+
+Per key, `messages` wins over the definition's `messages`, which wins over the catalogs in list order, which win over the built-in English. `localeChain` adds the likely region, so `zh-Hans-CN` also finds `zh-CN`. A text can be `PluralForms`, picked by `{count}`, `{min}` or `{max}` with the CLDR rules of the catalog locale, and that number is formatted for the same locale. `checkCatalog(_:)` lists the missing and unknown keys of a catalog JSON. Set `engine.locale` to switch the language of an open form. `FormhausForm` does this when the `locale` in its options changes.
 
 `missingKeys(messages:labels:)` lists the built-in message and label keys that a catalog lacks, for a unit test of your translations. In debug builds, a form with a `messages` or `labels` catalog reports `missing-message-key` or `missing-label-key` through `onWarning` when it shows a text that neither the catalog nor the definition's own `messages` or `labels` supply. Each key is reported once per process.
 
@@ -305,6 +329,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.2.0 | 1.3.0 | 1.6 |
 | 0.1.7 | 1.3.0 | 1.6 |
 | 0.1.6 | 1.2.2 | 1.6 |
 | 0.1.5 | 1.2.0 | 1.6 |
@@ -342,6 +367,7 @@ Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is 
 - A `file` field writes the URL of a copy in the temporary directory. Read it with `FormModel.pickedFile(forKey:)`.
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - There are no drafts and no Cloud client.
+- Plural rules cover the languages of the shipped catalogs, and other languages use the `other` form.
 
 ## Demo app
 

@@ -14,6 +14,7 @@ extension EngineCore {
         guard isMultiStep, !stepValidating, !submitting else { return nil }
         if !skipping && (forward ? isLastStep : isFirstStep) { return nil }
         guard let step = currentStep else { return nil }
+        clearFormErrors()
         let validating = forward && !skipping
         if validating { includeCurrentStep() }
         if validating && hasStepErrors() { return nil }
@@ -146,6 +147,9 @@ extension FormEngine {
                 core.applyValidationErrors(result)
                 return false
             }
+        }
+        if move.validating, let validate = options.onValidate, try await !passesValidate(validate, context.values, stale, submit: false) {
+            return false
         }
         if let before = options.onBeforeStepChange {
             let allowed = try await suspended { try await before(context) }

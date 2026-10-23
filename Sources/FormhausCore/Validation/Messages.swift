@@ -39,7 +39,7 @@ public enum MessageSource: Sendable {
     case function(MessageFn)
 }
 
-private func isWordUnit(_ unit: UInt16) -> Bool {
+func isWordUnit(_ unit: UInt16) -> Bool {
     (0x30...0x39).contains(unit) || (0x41...0x5A).contains(unit) || (0x61...0x7A).contains(unit) || unit == 0x5F
 }
 

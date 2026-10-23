@@ -137,7 +137,14 @@ public struct FormLifecycleError: Error, CustomStringConvertible {
     public var description: String { message }
 }
 
+public struct ValidateContext: Sendable, Hashable {
+    public let stepId: String?
+    public let fields: [String]
+    public let submit: Bool
+}
+
 public typealias StepValidateFn = @MainActor @Sendable (String, JSONObject) async throws -> FieldErrors?
+public typealias ValidateFn = @MainActor @Sendable (JSONObject, ValidateContext) async throws -> FieldErrors?
 public typealias BeforeStepChangeFn = @MainActor @Sendable (StepChangeContext) async throws -> Bool?
 public typealias AfterStepChangeFn = @MainActor @Sendable (StepChangeContext) async throws -> Void
 public typealias BeforeSubmitFn = @MainActor @Sendable (JSONObject) async throws -> Bool?
@@ -162,10 +169,12 @@ public struct FormEngineOptions: Sendable {
     public var onBeforeSubmit: BeforeSubmitFn?
     public var onAfterSubmit: AfterSubmitFn?
     public var onStepValidate: StepValidateFn?
+    public var onValidate: ValidateFn?
     public var onFormEvent: FormEventFn?
     public var onWarning: WarningFn?
     public var validators: Validators
     public var messages: MessageSource?
+    public var locale: [LocaleCatalog]
     public var lang: String?
     public var formatRecall: RecallFormatFn?
     public var seed: String?
@@ -175,19 +184,21 @@ public struct FormEngineOptions: Sendable {
     public init(
         onBeforeStepChange: BeforeStepChangeFn? = nil, onAfterStepChange: AfterStepChangeFn? = nil,
         onBeforeSubmit: BeforeSubmitFn? = nil, onAfterSubmit: AfterSubmitFn? = nil, onStepValidate: StepValidateFn? = nil,
-        onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:], messages: MessageSource? = nil,
-        lang: String? = nil, formatRecall: RecallFormatFn? = nil, seed: String? = nil, research: (any FormResearch)? = nil,
-        hiddenValues: HiddenValues = .clear
+        onValidate: ValidateFn? = nil, onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:],
+        messages: MessageSource? = nil, locale: [LocaleCatalog] = [], lang: String? = nil, formatRecall: RecallFormatFn? = nil,
+        seed: String? = nil, research: (any FormResearch)? = nil, hiddenValues: HiddenValues = .clear
     ) {
         self.onBeforeStepChange = onBeforeStepChange
         self.onAfterStepChange = onAfterStepChange
         self.onBeforeSubmit = onBeforeSubmit
         self.onAfterSubmit = onAfterSubmit
         self.onStepValidate = onStepValidate
+        self.onValidate = onValidate
         self.onFormEvent = onFormEvent
         self.onWarning = onWarning
         self.validators = validators
         self.messages = messages
+        self.locale = locale
         self.lang = lang
         self.formatRecall = formatRecall
         self.seed = seed

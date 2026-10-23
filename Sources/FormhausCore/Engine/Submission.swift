@@ -19,13 +19,14 @@ extension FormEngine {
             let owner = core.visibility.owner(key)
             if core.values.slot(owner).isSame(sent.slot(owner)) { accepted[key] = message }
         }
-        core.applyValidationErrors(accepted, server: true, formErrors: formErrors)
+        core.applyValidationErrors(accepted, server: true, formErrors: formErrors, navigate: true)
     }
 
     func submitForm(_ submit: SubmitHandler, keepSkipped: Bool = false, operationBox: Box<Int>? = nil) async throws -> Bool {
         let core = core
         guard !core.submitting, !core.stepValidating else { return false }
         if !keepSkipped { core.includeCurrentStep() }
+        core.clearFormErrors()
         var succeeded = false
         let epoch = core.validationEpoch
         let operation = core.beginOperation()
@@ -73,6 +74,10 @@ extension FormEngine {
 
     private func approveSubmission(_ checked: JSONObject, _ stale: () -> Bool) async throws -> JSONObject? {
         if stale() || invalid(stale) { return nil }
+        if let validate = options.onValidate, try await !passesValidate(validate, checked, stale, submit: true) {
+            if !stale() { core.emit(.formSubmitFailed(reason: .validation)) }
+            return nil
+        }
         guard let before = options.onBeforeSubmit else { return checked }
         let allowed = try await suspended { try await before(checked) }
         if stale() || allowed == false || invalid(stale) { return nil }

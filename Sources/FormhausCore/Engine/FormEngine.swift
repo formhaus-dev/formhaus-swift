@@ -80,7 +80,7 @@ public final class FormEngine {
         seed = [restoring?.seed, options.seed].lazy.compactMap { $0 }.first { !$0.isEmpty } ?? options.research?.seed() ?? ""
         core = EngineCore(
             definition: definition, values: restoring?.values ?? values, validators: options.validators, messages: options.messages,
-            keep: options.hiddenValues == .keep, missingMessage: missingMessageReporter(options))
+            locale: options.locale, keep: options.hiddenValues == .keep, missingMessage: missingMessageReporter(options))
         if let restoring { core.restore(restoring) }
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
@@ -90,6 +90,14 @@ public final class FormEngine {
     }
 
     public var definition: FormDefinition { core.definition }
+
+    public var locale: [LocaleCatalog] {
+        get { core.locale }
+        set {
+            core.locale = newValue
+            core.notify()
+        }
+    }
     @_spi(Renderer) public var restarts: Int { core.restarts }
     public var values: JSONObject { core.visibility.keep ? core.keptJSON() : core.values.json }
     public var errors: FieldErrors { core.errors }
@@ -161,7 +169,7 @@ public final class FormEngine {
     }
 
     public func setErrors(_ errors: FieldErrors) {
-        core.applyValidationErrors(errors, server: true)
+        core.applyValidationErrors(errors, server: true, navigate: true)
     }
 
     public func setFieldLoading(_ key: String, _ loading: Bool) {
