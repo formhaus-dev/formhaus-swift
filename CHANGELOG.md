@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.1.6
 
 ### FormhausCore
 
+- Passes the conformance suite of `@formhaus/core` 1.2.2.
 - `FormEngine` validation no longer checks the items of a group that has more items than its limit or an item that is not an object. Only the group error is reported.
 - New `FormSnapshot` holds a form's values, current step, skipped steps and option order seed. It is `Codable` with the keys `version`, `definitionId`, `values`, `step`, `skipped` and `seed`.
 - New `FormEngine.snapshot()`. It leaves out the values of `password` fields, also inside group items.

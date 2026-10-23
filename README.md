@@ -26,7 +26,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.5"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.6"),
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -307,12 +307,13 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.1.6 | 1.2.2 | 1.6 |
 | 0.1.5 | 1.2.0 | 1.6 |
 | 0.1.4 | 1.1.1 | 1.6 |
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 78 definition files with their issues, value cases, recall cases and option order vectors, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 79 definition files with their issues, value cases, recall cases and option order vectors, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 
