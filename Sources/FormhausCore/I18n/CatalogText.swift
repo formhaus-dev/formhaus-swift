@@ -9,14 +9,16 @@ private func slavicCategory(_ integer: Double) -> String {
     return (2...4).contains(ten) && !(12...14).contains(hundred) ? "few" : "many"
 }
 
-func pluralCategory(_ number: Double, _ language: String) -> String {
+func pluralCategory(_ number: Double, _ locale: Locale) -> String {
     guard number.isFinite else { return "other" }
     let milli = (abs(number) * 1000).rounded()
     let fraction = Int(milli.truncatingRemainder(dividingBy: 1000))
     let integer = (milli / 1000).rounded(.down)
     let digits = fraction == 0 ? 0 : fraction % 100 == 0 ? 1 : fraction % 10 == 0 ? 2 : 3
     let millions = digits == 0 && integer != 0 && integer.truncatingRemainder(dividingBy: 1_000_000) == 0
-    switch language {
+    let language = locale.language.languageCode?.identifier ?? ""
+    let rules = language == "pt" && locale.region?.identifier == "PT" ? "it" : language
+    switch rules {
     case "en", "de": return integer == 1 && digits == 0 ? "one" : "other"
     case "es", "it": return integer == 1 && digits == 0 ? "one" : millions ? "many" : "other"
     case "fr", "pt": return integer <= 1 ? "one" : millions ? "many" : "other"
@@ -30,7 +32,7 @@ private func catalogText(_ tag: String, _ text: LocaleText, _ params: JSONObject
     var category = "other"
     if let name = pluralParams.first(where: { params[$0]?.numberValue != nil }), let number = params[name]?.numberValue {
         let locale = recallLocale(tag)
-        category = pluralCategory(number, locale.language.languageCode?.identifier ?? "")
+        category = pluralCategory(number, locale)
         values[name] = .string(formatNumber(number, locale))
     }
     switch text {

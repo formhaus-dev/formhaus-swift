@@ -51,9 +51,11 @@ private func reportMissing(_ code: IssueCode, _ key: String, _ catalog: String, 
 }
 
 @MainActor
-func reportMissingLabel(_ key: String, _ source: LabelSource?, _ definition: FormDefinition, _ options: FormEngineOptions) {
+func reportMissingLabel(
+    _ key: String, _ source: LabelSource?, _ definition: FormDefinition, _ locale: [LocaleCatalog], _ options: FormEngineOptions
+) {
     guard let catalog = source?.catalog, !hasText(catalog, key), !(definition.labels.map { hasText($0, key) } ?? false),
-        !options.locale.contains(where: { $0.labels[key] != nil })
+        !locale.contains(where: { $0.labels[key] != nil })
     else { return }
     reportMissing(.missingLabelKey, key, "labels", options)
 }

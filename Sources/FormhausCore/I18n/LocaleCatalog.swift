@@ -72,7 +72,7 @@ public struct LocaleCatalog: Sendable, Hashable {
     }
 
     static var bundledFiles: [URL] {
-        Bundle.module.urls(forResourcesWithExtension: "json", subdirectory: "Resources/locales") ?? []
+        Bundle.module.urls(forResourcesWithExtension: "json", subdirectory: "locales") ?? []
     }
 
     public static func bundled(_ tag: String) -> LocaleCatalog? {

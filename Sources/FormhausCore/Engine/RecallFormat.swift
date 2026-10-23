@@ -38,18 +38,10 @@ private let gregorian: Calendar = {
     return calendar
 }()
 
-private func isWellFormed(_ tag: String) -> Bool {
-    let parts = tag.split(separator: "-", omittingEmptySubsequences: false)
-    guard let language = parts.first, [2, 3, 5, 6, 7, 8].contains(language.count), language.allSatisfy(\.isASCIILetter) else {
-        return false
-    }
-    return parts.dropFirst().allSatisfy { (1...8).contains($0.count) && $0.allSatisfy { $0.isASCIILetter || $0.isASCIIDigit } }
-}
-
 private func supportedLocale(_ tag: String) -> Locale {
-    guard isWellFormed(tag), let language = tag.split(separator: "-").first, languages.contains(language.lowercased()) else {
-        return Locale(identifier: "en")
-    }
+    guard let parsed = canonicalTag(tag), languages.contains(parsed.parts[0]),
+        parsed.extensions.allSatisfy({ (1...8).contains($0.count) && $0.allSatisfy(\.isASCIIAlphanumeric) })
+    else { return Locale(identifier: "en") }
     return Locale(identifier: tag)
 }
 
@@ -101,9 +93,4 @@ private func localized(_ answer: RecallAnswer, _ type: String, _ locale: Locale)
 let defaultRecallFormat: RecallFormatFn = { answer, field, locale in
     let collapsed = answer.collapsed
     return localized(collapsed, field.type, recallLocale(locale)) ?? collapsed.stored
-}
-
-extension Character {
-    fileprivate var isASCIILetter: Bool { isASCII && isLetter }
-    fileprivate var isASCIIDigit: Bool { isASCII && isNumber }
 }

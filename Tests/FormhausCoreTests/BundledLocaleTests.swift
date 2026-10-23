@@ -5,6 +5,11 @@ import Testing
 
 private let tags = LocaleCatalog.bundledFiles.map { $0.deletingPathExtension().lastPathComponent }.sorted()
 private let samples: [Double] = [0, 1, 2, 3, 5, 11, 21, 22, 25, 101, 1_000_000, 1.5]
+private let cldrCategories: [String: Set<String>] = [
+    "de": ["one", "other"], "en": ["one", "other"], "es": ["one", "many", "other"], "fr": ["one", "many", "other"],
+    "fr-CA": ["one", "many", "other"], "it": ["one", "many", "other"], "ja": ["other"], "pt-BR": ["one", "many", "other"],
+    "ru": ["one", "few", "many", "other"], "uk": ["one", "few", "many", "other"], "zh-CN": ["other"],
+]
 
 private func tokens(_ text: String) -> [String] {
     text.matches(of: /\{(\w+)\}/).map { String($0.1) }.sorted()
@@ -66,8 +71,8 @@ struct BundledLocaleTests {
 
     @Test("has exactly the plural forms of its language", arguments: tags)
     func plurals(tag: String) throws {
-        let language = Locale(identifier: tag).language.languageCode?.identifier ?? ""
-        let expected = Set(samples.map { pluralCategory($0, language) })
+        let expected = try #require(cldrCategories[tag])
+        #expect(Set(samples.map { pluralCategory($0, Locale(identifier: tag)) }) == expected)
         for entry in texts(try #require(LocaleCatalog.bundled(tag))) where categories(entry.text) != [] {
             #expect(categories(entry.text) == expected, "\(entry.key)")
         }
@@ -93,7 +98,9 @@ struct LocaleChainTests {
             ("zh-Hans-CN", ["zh-Hans-CN", "zh-Hans", "zh-CN", "zh", "en"]), ("zh-Hant", ["zh-Hant", "zh-TW", "zh", "en"]),
             ("zh", ["zh", "zh-CN", "en"]), ("pt", ["pt", "pt-BR", "en"]), ("pt_br", ["pt-BR", "pt", "en"]), ("en-US", ["en-US", "en"]),
             ("en", ["en-US", "en"]), ("en-US-u-va-posix", ["en-US", "en"]), ("de-CH-u-co-phonebk", ["de-CH", "de", "en"]),
-            ("", ["en"]), ("not a tag", ["en"]),
+            ("", ["en"]), ("not a tag", ["en"]), ("iw", ["he", "he-IL", "en"]), ("de_DE@fw=mon", ["de-DE", "de", "en"]),
+            ("fr_CA@mu=celsius", ["fr-CA", "fr", "en"]), ("en_US@rg=gbzzzz", ["en-US", "en"]),
+            ("ja_JP@calendar=japanese", ["ja-JP", "ja", "en"]),
         ])
     func chain(tag: String, expected: [String]) {
         #expect(localeChain(tag) == expected)
