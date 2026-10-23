@@ -83,6 +83,7 @@ jobs:
           -test-timeouts-enabled YES -maximum-test-execution-time-allowance 120
           -only-testing:FormhausDemoTests/SystemStackTests -only-testing:FormhausDemoTests/SystemNavigationTests
           -only-testing:FormhausDemoTests/SystemReplaceTests -only-testing:FormhausDemoTests/SystemAdopterTests
+          -only-testing:FormhausDemoTests/TopEdgeTests
       - name: Accessibility audit on the iOS Simulator
         if: github.event_name != 'pull_request'
         run: >-

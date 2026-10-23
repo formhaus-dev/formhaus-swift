@@ -194,20 +194,41 @@ Hidden fields keep their values in `engine.values` and in the submitted values, 
 
 ## Restore after the app is closed
 
-The system can end the app while it is in the background. Save the form's snapshot and pass it back to `restoring:` to bring back the answers, the current step and the skipped steps:
+The system can end the app while it is in the background. Save the form's snapshot and pass it back to `restoring:` to bring back the answers, the current step and the skipped steps. Keep the draft in a store that outlives the form view, so the `nil` sent after a submit is saved too:
 
 ```swift
+@MainActor
+final class SignupDraft {
+    private let key = "signup.draft"
+    private(set) var snapshot: FormSnapshot?
+
+    init() {
+        snapshot = UserDefaults.standard.data(forKey: key).flatMap { FormSnapshot.decode($0) }
+    }
+
+    func save(_ next: FormSnapshot?) {
+        snapshot = next
+        UserDefaults.standard.set(try? next.map { try JSONEncoder().encode($0) }, forKey: key)
+    }
+}
+
+@main
+struct SignupApp: App {
+    @State private var draft = SignupDraft()
+
+    var body: some Scene {
+        WindowGroup { SignupView(draft: draft) }
+    }
+}
+
 struct SignupView: View {
-    let definition: FormDefinition
-    @SceneStorage("signup.draft") private var draft: Data?
+    let draft: SignupDraft
 
     var body: some View {
         FormhausForm(
-            definition: definition,
-            renderer: FormRendererOptions(onSnapshotChange: { snapshot in
-                draft = try? snapshot.map { try JSONEncoder().encode($0) }
-            }),
-            restoring: draft.flatMap { FormSnapshot.decode($0) }
+            definition: signup,
+            renderer: FormRendererOptions(onSnapshotChange: draft.save),
+            restoring: draft.snapshot
         ) { values, _ in
             try await send(values)
         }
@@ -217,7 +238,7 @@ struct SignupView: View {
 
 `onSnapshotChange` gets a new snapshot at most once per run loop turn, and `nil` after a successful submit so the draft goes away. A snapshot saved for another form, or for a step the definition no longer has, starts the form fresh and reports `snapshot-mismatch` through `onWarning`. Password values are never in a snapshot. A picked file comes back while its copy still exists.
 
-Snapshot values can hold personal data. Apple advises against keeping sensitive data in scene storage, so for such forms store the snapshot in the Keychain or in a file with data protection, and delete it when the user signs out.
+Snapshot values can hold personal data. User defaults are not encrypted, so for such forms store the snapshot in the Keychain or in a file with data protection, and delete it when the user signs out.
 
 ## Translations
 

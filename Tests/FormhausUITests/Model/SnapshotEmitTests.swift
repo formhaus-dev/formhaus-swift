@@ -52,6 +52,29 @@ struct SnapshotEmitTests {
         #expect(log.snapshots.isEmpty)
     }
 
+    @Test("a restore that resets values and drops a missing file reports no snapshot until the next change")
+    func noEmitWhenRestoreChangesValues() async throws {
+        let log = SnapshotLog()
+        let gone = UploadStore.directory.appendingPathComponent("\(UUID().uuidString)/gone.txt")
+        var definition = try #require(tour.objectValue)
+        definition["steps"] = .array(
+            (definition["steps"]?.arrayValue ?? [])
+                + [["id": "files", "title": "Files", "fields": [["key": "cv", "type": "file", "label": "CV"]]]])
+        let restoring = FormSnapshot(
+            version: 1, definitionId: "tour", values: ["name": "Ada", "meal": "fish", "cv": .string(gone.absoluteString)], step: "files",
+            skipped: ["extras"], seed: "")
+        let submit: SubmitHandler = { _, _ in nil }
+        let form = FormModel(
+            definition: try FormDefinition(json: .object(definition)), options: log.options, restoring: restoring, onSubmit: submit)
+        #expect(form.engine.snapshot() != restoring)
+        form.start()
+        await nextTurn()
+        #expect(log.snapshots.isEmpty)
+        form.setValue("Ann", forKey: "name")
+        await nextTurn()
+        #expect(log.snapshots.count == 1)
+    }
+
     @Test("changes in one run loop turn are reported once")
     func coalesced() async throws {
         let log = SnapshotLog()
@@ -94,6 +117,24 @@ struct SnapshotEmitTests {
         let form = try tourModel(log, restoring: snapshot(step: "last"))
         form.start()
         await form.skip()
+        await nextTurn()
+        #expect(log.calls == ["send"])
+        #expect(log.snapshots.last == .some(nil))
+    }
+
+    @Test("an error thrown after the submit still clears the snapshot")
+    func clearedOnAfterSubmitError() async throws {
+        struct Failure: Error {}
+        let log = SnapshotLog()
+        let form = FormModel(
+            definition: try FormDefinition(json: tour), engineOptions: FormEngineOptions(onAfterSubmit: { _, _ in throw Failure() }),
+            options: log.options, restoring: snapshot(step: "last")
+        ) { _, _ in
+            log.calls.append("send")
+            return nil
+        }
+        form.start()
+        await form.submit()
         await nextTurn()
         #expect(log.calls == ["send"])
         #expect(log.snapshots.last == .some(nil))

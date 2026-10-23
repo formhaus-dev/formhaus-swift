@@ -10,7 +10,7 @@ private final class Issues {
     var skipped: [[String]] = []
 }
 
-private let trip: JSONValue = [
+let trip: JSONValue = [
     "formatVersion": "1.6", "id": "trip", "title": "Trip", "submit": ["label": "Book"],
     "steps": [
         ["id": "who", "title": "Who", "fields": [["key": "name", "type": "text", "label": "Name", "validation": ["required": true]]]],

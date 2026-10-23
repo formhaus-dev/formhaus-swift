@@ -62,6 +62,7 @@ final class ModelHolder {
                 model.updateHandlers(engineOptions: form.engine, options: form.renderer, onSubmit: form.submit)
                 return model
             }
+            if let model, owned { UploadStore.retire(owner: ObjectIdentifier(model)) }
             let created = FormModel(
                 definition: form.definition, initialValues: form.values, engineOptions: form.engine, options: form.renderer,
                 restoring: form.restoring, onSubmit: form.submit)

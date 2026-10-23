@@ -53,16 +53,7 @@ extension View {
     fileprivate func hardTopEdge(_ background: Color) -> some View {
         #if os(iOS)
             if #available(iOS 26, *) {
-                toolbarBackground(background, for: .navigationBar)
-                    .overlay {
-                        GeometryReader { proxy in
-                            let top = proxy.frame(in: .global).minY
-                            background.frame(height: max(0, top)).offset(y: -top)
-                        }
-                        .ignoresSafeArea(edges: .horizontal)
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                    }
+                modifier(BareTopCover(background: background))
             } else {
                 toolbarBackground(background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
             }
@@ -71,3 +62,33 @@ extension View {
         #endif
     }
 }
+
+#if os(iOS)
+    private struct BareTopCover: ViewModifier {
+        let background: Color
+        @State private var bare = false
+
+        func body(content: Content) -> some View {
+            content
+                .toolbarBackground(background, for: .navigationBar)
+                .overlay {
+                    if bare {
+                        GeometryReader { proxy in
+                            let top = proxy.frame(in: .global).minY
+                            background.frame(height: max(0, top)).offset(y: -top)
+                        }
+                        .ignoresSafeArea(edges: .horizontal)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                    }
+                }
+                .background {
+                    BarReader { bar in
+                        let zero = bar.window?.safeAreaInsets.top == 0
+                        guard zero != bare else { return }
+                        Task { @MainActor in bare = zero }
+                    }
+                }
+        }
+    }
+#endif

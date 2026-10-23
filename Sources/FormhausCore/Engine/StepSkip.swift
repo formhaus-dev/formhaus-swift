@@ -1,6 +1,6 @@
 extension EngineCore {
-    private func resetStepValues() -> Values {
-        let fields = valueFields(currentStep?.fields ?? [])
+    private func resetStepValues(_ step: FormStep?) -> Values {
+        let fields = valueFields(step?.fields ?? [])
         var next = values
         for field in fields { next.remove(field.key) }
         next.merge(createValues(fields))
@@ -8,7 +8,7 @@ extension EngineCore {
     }
 
     func skipTarget() -> FormStep? {
-        let steps = activeSteps(definition, resetStepValues().json)
+        let steps = activeSteps(definition, resetStepValues(currentStep).json)
         return steps.indices.contains(currentStepIndex + 1) ? steps[currentStepIndex + 1] : nil
     }
 
@@ -16,10 +16,11 @@ extension EngineCore {
         currentStep.map(skip)
     }
 
+    @discardableResult
     func skip(_ step: FormStep) -> StartValues.Restore {
         let fieldKeys = valueFields(step.fields).map(\.key)
         baselineFields()
-        replaceValues(resetStepValues())
+        replaceValues(resetStepValues(step))
         let restore = visibility.starts.reseed(fieldKeys, values)
         visibility.unsettle()
         for key in errors.keys where fieldKeys.containsText(visibility.owner(key)) { errors.removeValue(forKey: key) }

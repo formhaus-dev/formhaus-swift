@@ -107,7 +107,7 @@ extension EngineCore {
         let steps = definition.steps ?? []
         for id in snapshot.skipped {
             guard let step = steps.first(where: { sameText($0.id, id) }) else { continue }
-            markSkipped(step.id, valueFields(step.fields).map(\.key))
+            skip(step)
         }
         if let id = snapshot.step, let target = steps.first(where: { sameText($0.id, id) }) {
             let visible = visibleSteps
