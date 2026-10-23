@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.7
+
+### FormhausCore
+
+- Passes the conformance suite of `@formhaus/core` 1.3.0.
+- New `matrix-options-mismatch` warning for a row of a `layout: "matrix"` section whose option values differ from those of the first field. Rows that use `optionsFrom` are not checked.
+
 ## 0.1.6
 
 ### FormhausCore

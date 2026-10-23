@@ -14,10 +14,8 @@
 </p>
 
 <p align="center">
-  <a href="https://formhaus.dev/guide/">Documentation</a> ·
-  <a href="https://formhaus.dev/playground">Playground</a> ·
-  <a href="https://github.com/formhaus-dev/formhaus">TypeScript core</a> ·
-  <a href="#demo-app">Demo</a>
+  <a href="https://formhaus.dev/guide/ios">Documentation</a> ·
+  <a href="https://formhaus.dev/playground">Playground</a>
 </p>
 
 ## Install
@@ -26,7 +24,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.6"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.1.7"),
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -307,6 +305,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.1.7 | 1.3.0 | 1.6 |
 | 0.1.6 | 1.2.2 | 1.6 |
 | 0.1.5 | 1.2.0 | 1.6 |
 | 0.1.4 | 1.1.1 | 1.6 |
@@ -317,12 +316,12 @@ Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/form
 
 ## Performance
 
-Patterns run on a native ECMAScript 2025 regex engine with `new RegExp(p).test(s)` semantics. Patterns without backreferences match in time linear in the input.
+Patterns run on a native ECMAScript 2025 regex engine, so a pattern matches the same values as in the browser. Patterns without backreferences match in time linear in the input, and every match has a step budget, so no pattern can hang the app.
 
-- An email pattern check takes 0.79 µs, and 12 µs on a 10,000 character value.
-- `(a+)+$` on 9,999 `a` and `!` takes 2.8 µs.
-- A label that recalls four answers resolves in 3.7 µs with the identity formatter.
+- An email pattern check takes 0.79 µs.
 - A form with 3,000 picture options renders in 152 ms, and a selection takes 3.5 ms.
+
+Measured on an Apple M5 Pro with macOS 26.6 and Swift 6.4, in a release build.
 
 In the demo app, a 4-step form with picture options, conditions, a rating and a server error:
 
@@ -333,39 +332,6 @@ In the demo app, a 4-step form with picture options, conditions, a rating and a 
 | Peak memory of the whole app | 66 MB |
 
 Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is `phys_footprint_peak` on an iPhone 17 Pro simulator with iOS 27 after the full fill and submit.
-
-Measured on an Apple M5 Pro with macOS 26.6 and Swift 6.4, in a release build, as the package-benchmark median of 2 runs. Each row is one `validateFieldValue` call with a `pattern` rule. It compares `new RegExp(p).test(s)` in JavaScriptCore, the engine the package used before, with the formhaus native engine, on the same patterns and inputs. Long inputs have 10,000 code units.
-
-| Benchmark | JavaScriptCore | formhaus | Difference |
-| --- | ---: | ---: | --- |
-| match email, short | 1.5 µs | 🟢 0.79 µs | ×1.9 faster |
-| match email, long | 21 µs | 🟢 12 µs | ×1.8 faster |
-| match phone, short | 1.4 µs | 🟢 0.77 µs | ×1.8 faster |
-| match phone, long | 44 µs | 🟢 2.8 µs | ×16 faster |
-| match postcode, short | 1.5 µs | 🟢 0.79 µs | ×1.9 faster |
-| match postcode, long | 44 µs | 🟢 2.8 µs | ×16 faster |
-| match IBAN, short | 1.4 µs | 🟢 0.80 µs | ×1.7 faster |
-| match IBAN, long | 44 µs | 🟢 2.9 µs | ×15 faster |
-| match password, short | 1.7 µs | 🟢 1.3 µs | ×1.3 faster |
-| match password, long | 120 µs | 🟢 72 µs | ×1.7 faster |
-| `(a+)+$` on 9,999 `a` and `!` | 882 ms | 🟢 2.8 µs | ×320,000 faster |
-| `(a\|aa)+$` on 9,999 `a` and `!` | 1,249 ms | 🟢 2.8 µs | ×450,000 faster |
-| `(x+x+)+y` on 10,000 `x` | 929 ms | 🟢 5.0 µs | ×190,000 faster |
-| `(?:a\|[]()…)*\1(?!)` with 15,000 `()` on 9,999 `a` | 5.4 ms | 🟢 5.4 ms | ×1.0 faster |
-| `(?=(?!b)[^]*x)y(?:z\|$)` on 9,999 `y` and `x` | 46 ms | 🟢 2.6 ms | ×17 faster |
-| `[^]*a[^]{3900}$` on 10,000 random `a` and `b` | 12 µs | 🟢 7.9 µs | ×1.5 faster |
-| `[a-z]{0,4001}1` on 6,000 `b` and `1` | 26 ms | 🟢 4.1 µs | ×6,300 faster |
-| `[ab]*a[ab]{12}$` on 10,000 random `a` and `b` | 15 µs | 🟢 1.8 µs | ×8.5 faster |
-| match quoted (backreference), short | 1.3 µs | 🟢 1.1 µs | ×1.2 faster |
-| match quoted (backreference), long | 93 µs | 🟢 20 µs | ×4.7 faster |
-| compile email ✓ | 3.0 µs | 🔴 7.4 µs | ×2.5 slower |
-| compile phone ✓ | 2.8 µs | 🔴 8.3 µs | ×3.0 slower |
-| compile postcode ✓ | 3.1 µs | 🔴 7.1 µs | ×2.3 slower |
-| compile IBAN ✓ | 2.9 µs | 🔴 8.9 µs | ×3.1 slower |
-| compile password (3 lookaheads) ✓ | 3.3 µs | 🔴 16 µs | ×5.0 slower |
-| compile quoted (backreference) ✓ | 2.5 µs | 🔴 3.4 µs | ×1.3 slower |
-
-✓ A pattern compiles once and is then served from the 256-pattern cache, so this is a one-time cost when a form first renders. A compile row uses a new pattern on every call, so it includes the first match. The pattern with 15,000 captures runs out of steps and fails the rule.
 
 ## Differences from TypeScript
 
