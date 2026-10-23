@@ -9,7 +9,7 @@ struct CorpusCheckTests {
         "check-container-nesting", "check-container-scope", "check-container-shape", "check-contains-not-list",
         "check-contains-options", "check-custom-type-names", "check-default-items", "check-disabled-not-applicable",
         "check-escaped-property", "check-exclusive", "check-field-rules", "check-group-item-ceiling", "check-group-scope",
-        "check-image-urls", "check-matrix", "check-missing-required", "check-null-lists", "check-numeric-id",
+        "check-image-urls", "check-matrix", "check-matrix-options", "check-missing-required", "check-null-lists", "check-numeric-id",
         "check-outdated-version-1-0", "check-outdated-version-contains", "check-outdated-version-exclusive",
         "check-outdated-version-missing", "check-outdated-version-newer", "check-outdated-version-randomize",
         "check-randomize", "check-randomize-type", "check-scale", "check-scale-range",

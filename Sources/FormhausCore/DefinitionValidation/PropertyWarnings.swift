@@ -87,6 +87,26 @@ private func randomizeWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     ]
 }
 
+private func optionValues(_ json: JSONObject) -> [JSONValue]? {
+    if json["optionsFrom"]?.isTruthy == true { return nil }
+    return json["options"]?.arrayValue?.map { $0.objectValue?["value"] ?? .null }
+}
+
+private func matrixWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
+    let field = entry.field
+    guard let matrix = entry.parent?.section, matrix.json["layout"]?.stringValue == "matrix",
+        let columns = matrix.fields.first.flatMap({ optionValues($0.json) }),
+        field.type == "radio" || field.type == "multiselect",
+        (optionValues(field.json) ?? columns) != columns
+    else { return [] }
+    return [
+        warning(
+            "matrix-options-mismatch", "\(entry.path)/options",
+            "the option values of \"\(field.key)\" differ from the columns of the matrix \"\(matrix.key)\"",
+            "Use the options of the first field in every row")
+    ]
+}
+
 private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     let field = entry.field
     let path = entry.path
@@ -98,7 +118,7 @@ private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     for (index, option) in (field.options ?? []).enumerated() {
         issues += optionWarnings(field, option, "\(path)/options/\(index)")
     }
-    issues += randomizeWarnings(entry)
+    issues += randomizeWarnings(entry) + matrixWarnings(entry)
     if let validation = field.validation { issues += unknown(validation.json, "\(path)/validation", Properties.validation) }
     if field.json["columns"] != nil, !field.hasPictures || entry.parent?.json["layout"]?.stringValue == "matrix" {
         issues.append(

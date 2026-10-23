@@ -1,0 +1,164 @@
+{
+  "name": "check-matrix-options",
+  "covers": [
+    "warns about matrix rows whose option values differ from the first row",
+    "ignores matrix rows that load their options from a provider"
+  ],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "matrix-options-mismatch",
+      "path": "/fields/0/fields/2/options"
+    },
+    {
+      "code": "matrix-options-mismatch",
+      "path": "/fields/0/fields/3/options"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "f",
+    "title": "F",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "grid",
+        "type": "section",
+        "layout": "matrix",
+        "title": "Grid",
+        "fields": [
+          {
+            "key": "clear",
+            "type": "radio",
+            "label": "Clear",
+            "options": [
+              {
+                "value": "no",
+                "label": "NO"
+              },
+              {
+                "value": "yes",
+                "label": "YES"
+              }
+            ]
+          },
+          {
+            "key": "heard",
+            "type": "radio",
+            "label": "Heard",
+            "options": [
+              {
+                "value": "no",
+                "label": "Nope"
+              },
+              {
+                "value": "yes",
+                "label": "Yep"
+              }
+            ]
+          },
+          {
+            "key": "fair",
+            "type": "radio",
+            "label": "Fair",
+            "options": [
+              {
+                "value": "yes",
+                "label": "YES"
+              },
+              {
+                "value": "no",
+                "label": "NO"
+              }
+            ]
+          },
+          {
+            "key": "calm",
+            "type": "radio",
+            "label": "Calm",
+            "options": [
+              {
+                "value": "no",
+                "label": "NO"
+              },
+              {
+                "value": "yes",
+                "label": "YES"
+              },
+              {
+                "value": "maybe",
+                "label": "MAYBE"
+              }
+            ]
+          },
+          {
+            "key": "live",
+            "type": "radio",
+            "label": "Live",
+            "optionsFrom": "answers"
+          }
+        ]
+      },
+      {
+        "key": "plain",
+        "type": "section",
+        "title": "Plain",
+        "fields": [
+          {
+            "key": "open",
+            "type": "radio",
+            "label": "Open",
+            "options": [
+              {
+                "value": "no",
+                "label": "NO"
+              },
+              {
+                "value": "yes",
+                "label": "YES"
+              }
+            ]
+          },
+          {
+            "key": "kind",
+            "type": "radio",
+            "label": "Kind",
+            "options": [
+              {
+                "value": "maybe",
+                "label": "MAYBE"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "remote",
+        "type": "section",
+        "layout": "matrix",
+        "title": "Remote",
+        "fields": [
+          {
+            "key": "first",
+            "type": "radio",
+            "label": "First",
+            "optionsFrom": "answers"
+          },
+          {
+            "key": "second",
+            "type": "radio",
+            "label": "Second",
+            "options": [
+              {
+                "value": "maybe",
+                "label": "MAYBE"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
