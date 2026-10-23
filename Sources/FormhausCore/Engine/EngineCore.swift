@@ -2,6 +2,7 @@ final class EngineCore {
     private(set) var definition: FormDefinition
     let validators: Validators
     private let messageSource: MessageSource?
+    private let locale: [LocaleCatalog]
     private let missingMessage: MissingMessageFn?
     private(set) var messages: ResolveMessage
     private(set) var visibility: VisibilityState
@@ -34,13 +35,14 @@ final class EngineCore {
 
     init(
         definition: FormDefinition, values initialValues: JSONObject = JSONObject(), validators: Validators = [:],
-        messages: MessageSource? = nil, keep: Bool = false, missingMessage: MissingMessageFn? = nil
+        messages: MessageSource? = nil, locale: [LocaleCatalog] = [], keep: Bool = false, missingMessage: MissingMessageFn? = nil
     ) {
         self.definition = definition
         self.validators = validators
         messageSource = messages
+        self.locale = locale
         self.missingMessage = missingMessage
-        self.messages = watchedResolver(messages, definition, missingMessage)
+        self.messages = watchedResolver(messages, definition, locale, missingMessage)
         visibility = VisibilityState(definition, keep: keep)
         values = Self.startValues(visibility, Values(fresh: initialValues), &errors)
     }
@@ -54,7 +56,7 @@ final class EngineCore {
     func load(_ next: FormDefinition, _ initialValues: Values) {
         definition = next
         definitionGeneration += 1
-        messages = watchedResolver(messageSource, next, missingMessage)
+        messages = watchedResolver(messageSource, next, locale, missingMessage)
         visibility = VisibilityState(next, keep: visibility.keep)
         replaceValues(Self.startValues(visibility, initialValues, &errors))
     }

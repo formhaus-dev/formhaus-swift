@@ -63,6 +63,10 @@ func recallLocale(_ tag: String) -> Locale {
     return locale
 }
 
+func formatNumber(_ number: Double, _ locale: Locale) -> String {
+    (number + 0).formatted(.number.precision(.significantDigits(1...21)).locale(locale))
+}
+
 private func stamp(_ type: String, _ value: String) -> Date? {
     let digits = value.split { !$0.isASCIIDigit }.compactMap { Int($0) }
     let parts = type == "time" ? [1970, 1, 1] + digits : digits
@@ -87,7 +91,7 @@ private func localized(_ answer: RecallAnswer, _ type: String, _ locale: Locale)
         return items.formatted(.list(type: .and, width: .standard).locale(locale))
     case .number(let number):
         guard numberTypes.contains(type) || type == "group", !jsNumberString(number).contains("e") else { return nil }
-        return (number + 0).formatted(.number.precision(.significantDigits(1...21)).locale(locale))
+        return formatNumber(number, locale)
     case .text(let text):
         guard stampTypes.contains(type), matchesFormat(type, text), let date = stamp(type, text) else { return nil }
         return date.formatted(dateStyle(type, locale))

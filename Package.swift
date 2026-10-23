@@ -10,7 +10,7 @@ let package = Package(
         .library(name: "FormhausResearch", targets: ["FormhausResearch"]),
     ],
     targets: [
-        .target(name: "FormhausCore"),
+        .target(name: "FormhausCore", resources: [.copy("Resources")]),
         .target(name: "FormhausUI", dependencies: ["FormhausCore"]),
         .target(name: "FormhausResearch", dependencies: ["FormhausCore"]),
         .testTarget(

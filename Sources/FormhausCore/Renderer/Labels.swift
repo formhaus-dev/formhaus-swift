@@ -21,27 +21,6 @@ func labelFor(_ key: String, _ params: JSONObject = JSONObject(), _ sources: Lab
     return formatText(defaultLabels[key] ?? "", params)
 }
 
-public struct ErrorEntry: Sendable, Hashable, Identifiable {
-    public let key: String
-    public let label: String
-    public let message: String
-
-    public var id: String { key }
-
-    public var text: String {
-        let closing = label.precomposedStringWithCompatibilityMapping.unicodeScalars.last.map { closingPunctuation.contains($0) } ?? false
-        return label + (closing ? " " : ": ") + message
-    }
-}
-
-public struct ErrorGroup: Sendable, Hashable, Identifiable {
-    public let id: String
-    public let title: String
-    public let entries: [ErrorEntry]
-}
-
-private let closingPunctuation = Set("?!:.\u{3002}".unicodeScalars)
-
 public struct FormActionsState: Sendable, Hashable {
     public let submitAction: FormAction
     public let nextAction: FormAction?
@@ -61,20 +40,20 @@ public struct FormActionsState: Sendable, Hashable {
 }
 
 extension FormEngine {
-    private var definitionLabels: LabelSource? {
-        definition.labels.map { .catalog($0) }
-    }
-
     @_spi(Renderer)
     public func label(_ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject()) -> String {
         #if DEBUG
             reportMissingLabel(key, source, definition, options)
         #endif
-        return labelFor(key, params, source, definitionLabels)
+        return resolvedLabel(key, source, params)
+    }
+
+    private func resolvedLabel(_ key: String, _ source: LabelSource?, _ params: JSONObject = JSONObject()) -> String {
+        labelFor(key, params, source, definition.labels.map { .catalog($0) }, localeLabels(options.locale))
     }
 
     private func label(_ key: String, _ source: LabelSource?, shown: Bool) -> String {
-        shown ? label(key, source) : labelFor(key, JSONObject(), source, definitionLabels)
+        shown ? label(key, source) : resolvedLabel(key, source)
     }
 
     @_spi(Renderer)
@@ -83,30 +62,6 @@ extension FormEngine {
         let params: JSONObject = ["label": name.map { .string($0) } ?? .null, "index": .number(Double(index + 1))]
         if let template = group.itemLabel { return itemTemplate(template, RecallItem(group: group.key, index: index), params) }
         return cut(label("itemLabel", source, params))
-    }
-
-    @_spi(Renderer)
-    public func errorGroups(_ source: LabelSource?) -> [ErrorGroup] {
-        let errors = core.errors
-        guard !errors.isEmpty else { return [] }
-        let values = core.values.json
-        let sections: [(id: String, title: String?, fields: [FormNode])] =
-            isMultiStep
-            ? visibleSteps.map { ($0.id, recalledTitle($0.json), $0.fields) }
-            : [(definition.id, recalledTitle(definition.json), definition.fields ?? [])]
-        return sections.enumerated().compactMap { index, section in
-            let entries = errorKeys(section.fields, errors, values).compactMap { key -> ErrorEntry? in
-                let item = core.visibility.activeItem(key, values)
-                guard let raw = item?.field ?? core.visibility.activeField(key, values), let message = errors[key] else { return nil }
-                let field = recalled(raw, at: item == nil ? nil : key)
-                let name = field.label ?? ""
-                let label = item.map { "\(name) (\(itemTitle($0.group, $0.index, source)))" } ?? name
-                return ErrorEntry(key: key, label: label, message: message)
-            }
-            guard !entries.isEmpty else { return nil }
-            let title = section.title.flatMap { $0.isEmpty ? nil : $0 } ?? label("stepTitle", source, ["index": .number(Double(index + 1))])
-            return ErrorGroup(id: section.id, title: title, entries: entries)
-        }
     }
 
     @_spi(Renderer)
