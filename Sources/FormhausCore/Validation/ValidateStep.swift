@@ -20,29 +20,25 @@ struct ShownChecks {
     var options: ValidateOptions { ValidateOptions(validators: validators, messages: messages) }
 }
 
-private func validateItems(_ group: FormField, _ values: JSONObject, _ scope: JSONObject, _ checks: ShownChecks) -> FieldErrors {
-    var errors = FieldErrors()
-    for (index, item) in itemsOf(values[group.key]).enumerated() {
-        let own = itemScope(group, item, values)
-        let shown = itemScope(group, item, scope)
-        for field in group.items where isVisible(field, shown, limits: checks.limits) {
-            if let error = validateFieldValue(field, own[field.key], own, options: checks.options) {
-                errors[itemPath(group.key, index, field.key)] = error
-            }
+func visitShown(
+    _ fields: [FormNode], _ values: JSONObject, _ scope: JSONObject, _ limits: ListLimits,
+    _ visit: (String, FormField, JSONObject) -> Void
+) {
+    for field in shownFields(fields, scope, limits) {
+        visit(field.key, field, values)
+        guard field.isGroup, typeError(field, values[field.key]) == nil else { continue }
+        for (index, item) in itemsOf(values[field.key]).enumerated() {
+            let own = itemScope(field, item, values)
+            let shown = itemScope(field, item, scope)
+            for rule in field.items where isVisible(rule, shown, limits: limits) { visit(itemPath(field.key, index, rule.key), rule, own) }
         }
     }
-    return errors
 }
 
 func validateShown(_ fields: [FormNode], _ values: JSONObject, _ scope: JSONObject, _ checks: ShownChecks) -> FieldErrors {
     var errors = FieldErrors()
-    for field in shownFields(fields, scope, checks.limits) {
-        if let error = validateFieldValue(field, values[field.key], values, options: checks.options) {
-            errors[field.key] = error
-        }
-        if field.isGroup, typeError(field, values[field.key]) == nil {
-            errors.merge(validateItems(field, values, scope, checks))
-        }
+    visitShown(fields, values, scope, checks.limits) { path, field, own in
+        if let error = validateFieldValue(field, own[field.key], own, options: checks.options) { errors[path] = error }
     }
     return errors
 }

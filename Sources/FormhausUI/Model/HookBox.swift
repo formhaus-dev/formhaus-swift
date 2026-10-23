@@ -24,6 +24,10 @@ final class HookBox {
             guard let hook = current.onStepValidate else { return nil }
             return try await hook(step, values)
         }
+        options.onValidate = { [self] values, context in
+            guard let hook = current.onValidate else { return nil }
+            return try await hook(values, context)
+        }
         if current.onFormEvent != nil { options.onFormEvent = { [self] in current.onFormEvent?($0) } }
         return options
     }

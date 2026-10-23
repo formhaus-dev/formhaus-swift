@@ -41,7 +41,7 @@ extension EngineCore {
         return fieldError(item.field, scope[item.field.key], scope)
     }
 
-    func applyValidationErrors(_ found: FieldErrors, server: Bool = false, formErrors: [String] = []) {
+    func applyValidationErrors(_ found: FieldErrors, server: Bool = false, formErrors: [String] = [], navigate: Bool = false) {
         var bound = FieldErrors()
         var general = formErrors
         for (key, message) in found {
@@ -57,8 +57,12 @@ extension EngineCore {
         }
         replaceErrors(serverErrors.merging(bound))
         topLevelErrors = server ? general : serverFormErrors + general
-        let structureChanged = server && moveToFirstError(bound)
+        let structureChanged = navigate && moveToFirstError(bound)
         notify(structureChanged: structureChanged)
+    }
+
+    func clearFormErrors() {
+        topLevelErrors = serverFormErrors
     }
 
     func moveToFirstError(_ found: FieldErrors) -> Bool {
