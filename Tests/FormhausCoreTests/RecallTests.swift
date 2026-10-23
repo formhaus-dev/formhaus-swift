@@ -53,7 +53,7 @@ struct RecallTests {
         let group = try #require(engine.definition.allFields.last)
         #expect(engine.itemTitle(group, 0, nil) == "Bo #1 of Guests of {index}")
         engine.validate()
-        let errors = engine.errorGroups(nil)
+        let errors = errorSummary(engine).groups
         #expect(errors.first?.title == "Form for {index}")
         #expect(errors.first?.entries.first?.label == "Name of  ( #2 of Guests of {index})")
     }

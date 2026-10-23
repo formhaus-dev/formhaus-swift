@@ -211,7 +211,7 @@ public final class FormModel {
             lastErrors = errors
             lastStructureVersion = structureVersion
             lastValuesVersion = valuesVersion
-            assign(\.errorGroups, engine.errorGroups(options.labels))
+            assign(\.errorGroups, errorSummary(engine, options: ErrorSummaryOptions(labels: options.labels)).groups)
             assign(\.stepErrorCounts, engine.stepErrors.reduce(into: [:]) { $0[$1.key] = $1.value.count })
         }
         refreshDisabled()
