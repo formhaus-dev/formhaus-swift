@@ -256,13 +256,13 @@ Snapshot values can hold personal data. User defaults are not encrypted, so for 
 Formhaus ships message and label catalogs for `en`, `es`, `fr`, `fr-CA`, `de`, `pt-BR`, `it`, `ja`, `zh-CN`, `ru` and `uk`:
 
 ```swift
-let locale = localeChain(Locale.current.identifier).compactMap(LocaleCatalog.bundled)
+let locale = localeChain(Locale.current.identifier(.bcp47)).compactMap(LocaleCatalog.bundled)
 FormhausForm(definition: definition, options: FormEngineOptions(locale: locale)) { values, _ in
     try await send(values)
 }
 ```
 
-Per key, `messages` wins over the definition's `messages`, which wins over the catalogs in list order, which win over the built-in English. `localeChain` adds the likely region, so `zh-Hans-CN` also finds `zh-CN`. A text can be `PluralForms`, picked by `{count}`, `{min}` or `{max}` with the CLDR rules of the catalog locale, and that number is formatted for the same locale. `checkCatalog(_:)` lists the missing and unknown keys of a catalog JSON. The engine reads `locale` when it is created.
+Per key, `messages` wins over the definition's `messages`, which wins over the catalogs in list order, which win over the built-in English. `localeChain` adds the likely region, so `zh-Hans-CN` also finds `zh-CN`. A text can be `PluralForms`, picked by `{count}`, `{min}` or `{max}` with the CLDR rules of the catalog locale, and that number is formatted for the same locale. `checkCatalog(_:)` lists the missing and unknown keys of a catalog JSON. Set `engine.locale` to switch the language of an open form. `FormhausForm` does this when the `locale` in its options changes.
 
 `missingKeys(messages:labels:)` lists the built-in message and label keys that a catalog lacks, for a unit test of your translations. In debug builds, a form with a `messages` or `labels` catalog reports `missing-message-key` or `missing-label-key` through `onWarning` when it shows a text that neither the catalog nor the definition's own `messages` or `labels` supply. Each key is reported once per process.
 
@@ -367,7 +367,7 @@ Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is 
 - A `file` field writes the URL of a copy in the temporary directory. Read it with `FormModel.pickedFile(forKey:)`.
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - There are no drafts and no Cloud client.
-- The engine reads `locale` when it is created. Plural rules cover the languages of the shipped catalogs, and other languages use the `other` form.
+- Plural rules cover the languages of the shipped catalogs, and other languages use the `other` form.
 
 ## Demo app
 
