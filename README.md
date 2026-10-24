@@ -159,6 +159,10 @@ Apply it with `.formhausComponents(.kiln)`. `.formhausFocus` joins focus to the 
 
 Switching the components or the theme of a running form keeps its values, step and errors.
 
+`context.minLength` and `context.maxLength` hold the length limits of `text`, `email`, `phone`, `password` and `textarea` fields, for a character counter.
+
+`revealTargets(nodes)` returns, for each node of a list, the choice field and option that reveal it, following the Revealed fields rule of the [specification](https://github.com/formhaus-dev/formhaus/blob/main/docs/spec.md#revealed-fields). Use it to draw a field under the option that shows it.
+
 ## Validate on the server
 
 `validateSubmission` checks the values against the same definition, with the visibility, steps and routes of the client:
@@ -331,6 +335,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.4.0 | 1.6.0 | 1.6 |
 | 0.3.0 | 1.4.2 | 1.6 |
 | 0.2.0 | 1.3.0 | 1.6 |
 | 0.1.7 | 1.3.0 | 1.6 |
@@ -340,7 +345,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 81 definition files with their issues, value cases, recall cases and option order vectors, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 82 definition files with their issues, value cases, recall cases, option order vectors and revealed fields, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 
@@ -371,6 +376,7 @@ Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is 
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - There are no drafts and no Cloud client.
 - Plural rules cover the languages of the shipped catalogs, and other languages use the `other` form.
+- The built-in component sets draw revealed fields in place, not under their option.
 
 ## Demo app
 
