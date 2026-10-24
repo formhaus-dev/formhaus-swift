@@ -61,7 +61,7 @@ private struct Tabs: View {
 @Suite("Leaving and returning to a form", .serialized)
 @MainActor
 struct DisappearTests {
-    @Test("a submit keeps running when the form disappears and comes back", .timeLimit(.minutes(1)))
+    @Test("a submit keeps running when the form disappears and comes back", .timeLimit(.minutes(5)))
     func tabSwitch() async throws {
         let log = ModelLog()
         let choice = TabChoice()

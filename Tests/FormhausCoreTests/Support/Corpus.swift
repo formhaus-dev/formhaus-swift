@@ -74,6 +74,7 @@ struct CorpusFixture {
     let texts: JSONObject?
     let cases: [CorpusCase]
     let recall: [RecallCase]
+    let reveals: JSONValue?
 
     init(_ json: JSONValue) {
         issues = IssueEntry.list(json["issues"]) ?? []
@@ -84,6 +85,7 @@ struct CorpusFixture {
         texts = json["texts"]?.objectValue
         cases = (json["cases"]?.arrayValue ?? []).map(CorpusCase.init)
         recall = (json["recall"]?.arrayValue ?? []).map(RecallCase.init)
+        reveals = json["reveals"]
     }
 
     func runtime() throws -> FormDefinition {

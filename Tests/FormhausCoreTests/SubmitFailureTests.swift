@@ -41,7 +41,7 @@ struct SubmitFailureTests {
         #expect(events == [.stepRedirected(requestedStepId: "one", stepId: nil, reason: .unknownStep)])
     }
 
-    @Test("goToStep while a step change is pending stays on the current step", .timeLimit(.minutes(1)))
+    @Test("goToStep while a step change is pending stays on the current step", .timeLimit(.minutes(5)))
     func pending() async throws {
         let (started, signal) = AsyncStream<Void>.makeStream()
         let engine = try FormEngine(

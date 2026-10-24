@@ -19,7 +19,7 @@ struct CorpusCheckTests {
         "i18n-signup-steps",
         "impossible-dates", "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "option-order", "options-from",
         "proto-keys", "recall-branches", "recall-groups", "recall-inactive", "recall-limit", "recall-no-reexpansion",
-        "recall-sensitive", "recall-steps", "recall-syntax", "recall-translations", "recall-values", "recall-version",
+        "recall-sensitive", "recall-steps", "recall-syntax", "recall-translations", "recall-values", "recall-version", "reveal",
         "shared-key-branches", "slow-pattern-quadratic", "times-and-hidden", "trimmed-conditions", "trimmed-text",
         "unsupported-format-version",
     ]

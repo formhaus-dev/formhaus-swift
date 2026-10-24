@@ -26,6 +26,7 @@ Each file holds one `definition`, the issues `checkDefinition` reports for it, a
 - `cases` lists value cases. It may be empty or missing.
 - `recall` lists answer recall cases. It may be missing. See [Recall](#recall).
 - `orders` lists option order vectors. It may be missing. See [Option order](#option-order).
+- `reveals` maps revealed nodes to their parents. It may be missing. See [Revealed fields](#revealed-fields).
 
 ## Checks
 
@@ -39,6 +40,7 @@ The checks run on the definition as written, without `overlay`. A structural err
 6. If `issues` is empty, run each case.
 7. `recall`: if set, run each recall case on the definition after the overlay.
 8. `orders`: if set, run each option order vector.
+9. `reveals`: if set, apply the rule of the specification under Revealed fields to every node list of the definition, as written.
 
 ## Cases
 
@@ -62,6 +64,14 @@ Option order is an opt-in research feature: `@formhaus/core/research` in TypeScr
 
 ```json
 { "seed": "seed", "key": "plan", "count": 4, "pinned": [0], "order": [0, 3, 1, 2] }
+```
+
+## Revealed fields
+
+`reveals` maps the JSON pointer of each revealed node to `{ parent, option }`: the pointer of the field that reveals it and the index of the option in its written `options`. The node lists are `/fields` or each `/steps/<i>/fields`, and the `fields` of each section in them without `layout: "matrix"`. Every node not named is not revealed.
+
+```json
+{ "/steps/0/fields/1": { "parent": "/steps/0/fields/0", "option": 0 } }
 ```
 
 ## Semantics
