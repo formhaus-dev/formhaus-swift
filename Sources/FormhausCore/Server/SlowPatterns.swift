@@ -22,16 +22,27 @@ func patternVerdict(_ pattern: String) -> PatternVerdict {
     return result
 }
 
-enum QuadraticPatterns {
-    @TaskLocal static var current: Set<[UInt16]> = []
+struct QuadraticPatterns: Sendable {
+    @TaskLocal static var current = QuadraticPatterns()
+
+    private var patterns: [String: [String]] = [:]
+
+    mutating func insert(_ pattern: String) {
+        guard !contains(pattern) else { return }
+        patterns[pattern, default: []].append(pattern)
+    }
+
+    func contains(_ pattern: String) -> Bool {
+        patterns[pattern]?.contains { $0.utf16.elementsEqual(pattern.utf16) } == true
+    }
 
     static func valueLimit(_ pattern: String) -> Int {
-        current.isEmpty || !current.contains(Array(pattern.utf16)) ? maxStringLength : quadraticValueLength
+        current.patterns.isEmpty || !current.contains(pattern) ? maxStringLength : quadraticValueLength
     }
 }
 
-func refuseSlowPatterns(_ definition: FormDefinition) throws(FormDefinitionError) -> Set<[UInt16]> {
-    var quadratic = Set<[UInt16]>()
+func refuseSlowPatterns(_ definition: FormDefinition) throws(FormDefinitionError) -> QuadraticPatterns {
+    var quadratic = QuadraticPatterns()
     var issues: [DefinitionIssue] = []
     for entry in CheckContext(definition).entries {
         guard let pattern = entry.field.validation?.pattern else { continue }
@@ -42,7 +53,7 @@ func refuseSlowPatterns(_ definition: FormDefinition) throws(FormDefinitionError
                     .slowPattern, "\(entry.path)/validation/pattern",
                     "the pattern of \"\(entry.field.key)\" can take very long on some values, so the server does not run it",
                     "Rewrite it without nested or overlapping repeats, in 1000 characters or less"))
-        case .quadratic: quadratic.insert(Array(pattern.utf16))
+        case .quadratic: quadratic.insert(pattern)
         case .safe: break
         }
     }
