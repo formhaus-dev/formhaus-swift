@@ -1,0 +1,98 @@
+name: Core drift
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths: ['.github/workflows/core-drift.yml']
+  repository_dispatch:
+    types: [core-release]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: core-drift
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: swift
+        run: echo "version=$(swift --version 2>&1 | shasum -a 256 | cut -c1-16)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            .build
+            !.build/tools
+          key: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
+          restore-keys: spm-${{ runner.os }}-${{ steps.swift.outputs.version }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+      - name: Compare with the latest core release
+        id: version
+        run: |
+          pinned=$(sed -n 's/^ref: @formhaus\/core@//p' Tests/FormhausCoreTests/Fixtures/VERSION)
+          latest=$(npm view @formhaus/core version)
+          [ -n "$pinned" ] || { echo "::error::No @formhaus/core tag in Tests/FormhausCoreTests/Fixtures/VERSION"; exit 1; }
+          echo "pinned=$pinned" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          if [ "$pinned" = "$latest" ]; then echo "behind=false" >> "$GITHUB_OUTPUT"; else echo "behind=true" >> "$GITHUB_OUTPUT"; fi
+          echo "formhaus-swift follows core $pinned, latest is $latest"
+
+      - name: Close the drift issue
+        if: steps.version.outputs.behind == 'false'
+        run: |
+          gh issue list --state open --search 'Core drift in:title' --json number,title \
+            --jq '.[] | select(.title | test("^Core .+ drift$")) | .number' |
+            while read -r number; do
+              gh issue close "$number" --comment "formhaus-swift follows core ${{ steps.version.outputs.pinned }}, the latest release."
+            done
+
+      - name: Sync the fixtures of the latest core release
+        if: steps.version.outputs.behind == 'true'
+        run: |
+          git clone --quiet --depth 1 --branch "@formhaus/core@${{ steps.version.outputs.latest }}" \
+            https://github.com/formhaus-dev/formhaus.git "$RUNNER_TEMP/core"
+          scripts/sync-fixtures.sh "@formhaus/core@${{ steps.version.outputs.latest }}" "$RUNNER_TEMP/core"
+
+      - name: Run the conformance suite
+        id: conformance
+        if: steps.version.outputs.behind == 'true'
+        continue-on-error: true
+        run: swift test --filter FormhausCoreTests
+
+      - name: Report the drift
+        if: steps.version.outputs.behind == 'true'
+        env:
+          PINNED: ${{ steps.version.outputs.pinned }}
+          LATEST: ${{ steps.version.outputs.latest }}
+          CONFORMANCE: ${{ steps.conformance.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Core $LATEST drift"
+          if [ "$CONFORMANCE" = success ]; then
+            result="The conformance suite passes against the fixtures of core $LATEST."
+            action="Sync the fixtures with \`scripts/sync-fixtures.sh @formhaus/core@$LATEST\`, update the compatibility table and release."
+          else
+            result="The conformance suite fails against the fixtures of core $LATEST."
+            action="Port the changes of core $LATEST, sync the fixtures with \`scripts/sync-fixtures.sh @formhaus/core@$LATEST\` and release."
+          fi
+          printf '%s\n\n%s\n\n%s\n\n[Workflow run](%s)\n' \
+            "formhaus-swift follows core $PINNED. The latest release is $LATEST." "$result" "$action" "$RUN_URL" > "$RUNNER_TEMP/body.md"
+          number=$(gh issue list --state open --search 'Core drift in:title' --json number,title \
+            --jq '[.[] | select(.title | test("^Core .+ drift$"))][0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh issue create --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          fi
+          echo "::error::formhaus-swift follows core $PINNED, latest is $LATEST. $result"
+          exit 1
