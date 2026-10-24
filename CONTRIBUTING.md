@@ -78,6 +78,12 @@ scripts/heavy-tests.sh benchmarks
 
 Run it before a release and after changes to the renderer, the regex engine or the engine core. CI runs the thread sanitizer on pull requests that change `Sources/FormhausCore/Regex`.
 
+`scripts/reveal-fuzz.sh` compares `revealTargets` with the TypeScript one on 50,000 generated definitions. It takes the built entry of `@formhaus/core` at the pinned tag, by default `../formhaus/packages/core/dist/index.js`, and an optional count:
+
+```sh
+scripts/reveal-fuzz.sh ../formhaus/packages/core/dist/index.js 50000
+```
+
 To run one benchmark target:
 
 ```sh
