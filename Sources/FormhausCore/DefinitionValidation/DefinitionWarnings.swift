@@ -109,12 +109,11 @@ private func ruleWarnings(_ context: CheckContext, _ entry: FieldEntry) -> [Defi
     }
     issues += itemLimitWarnings(entry)
     if let pattern = rules["pattern"]?.stringValue, let slow = slowPattern(pattern) {
-        let nested = slow == .nested
-        let problem = nested ? "nests quantifiers" : "repeats overlapping parts next to each other"
+        let (problem, hint) = slowPatternTexts(slow)
         issues.append(
             warning(
                 "slow-pattern", "\(entry.path)/validation/pattern", "the pattern of \"\(field.key)\" \(problem) and can be very slow",
-                nested ? "Remove the inner or outer quantifier" : "Merge the repeated parts into one"))
+                hint))
     }
     if let validator = rules["validator"]?.stringValue, let validators = context.validators, !validators.contains(validator) {
         issues.append(
@@ -185,4 +184,12 @@ func definitionWarnings(_ context: CheckContext) -> [DefinitionIssue] {
     versionWarnings(context) + propertyWarnings(context) + context.conditions.flatMap { conditionWarnings(context, $0) }
         + context.entries.flatMap { fieldWarnings(context, $0) } + routeWarnings(context) + recallWarnings(context)
         + exclusiveWarnings(context)
+}
+
+private func slowPatternTexts(_ slow: SlowPattern) -> (problem: String, hint: String) {
+    switch slow {
+    case .nested: ("nests quantifiers", "Remove the inner or outer quantifier")
+    case .adjacent: ("repeats overlapping parts next to each other", "Merge the repeated parts into one")
+    case .long: ("is longer than 1000 characters", "Shorten it to 1000 characters or less")
+    }
 }
