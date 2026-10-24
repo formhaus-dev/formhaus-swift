@@ -1,0 +1,329 @@
+{
+  "name": "reveal",
+  "covers": [],
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.6",
+    "id": "reveal",
+    "title": "Reveal",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "contact",
+        "title": "Contact",
+        "fields": [
+          {
+            "key": "contact",
+            "type": "radio",
+            "label": "Contact",
+            "options": [
+              {
+                "value": "email",
+                "label": "Email"
+              },
+              {
+                "value": "phone",
+                "label": "Phone"
+              },
+              {
+                "value": "post",
+                "label": "Post"
+              }
+            ]
+          },
+          {
+            "key": "email",
+            "type": "text",
+            "label": "email",
+            "show": [
+              {
+                "field": "contact",
+                "eq": "email"
+              }
+            ]
+          },
+          {
+            "key": "confirm",
+            "type": "text",
+            "label": "confirm",
+            "showAny": [
+              {
+                "field": "contact",
+                "eq": "email"
+              }
+            ]
+          },
+          {
+            "key": "phone",
+            "type": "text",
+            "label": "phone",
+            "show": [
+              {
+                "field": "contact",
+                "eq": "phone"
+              }
+            ]
+          },
+          {
+            "key": "note",
+            "type": "text",
+            "label": "note"
+          },
+          {
+            "key": "letter",
+            "type": "text",
+            "label": "letter",
+            "show": [
+              {
+                "field": "contact",
+                "eq": "post"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "more",
+        "title": "More",
+        "fields": [
+          {
+            "key": "interests",
+            "type": "section",
+            "title": "Interests",
+            "fields": [
+              {
+                "key": "topics",
+                "type": "multiselect",
+                "label": "Topics",
+                "options": [
+                  {
+                    "value": "news",
+                    "label": "News"
+                  },
+                  {
+                    "value": "offers",
+                    "label": "Offers"
+                  },
+                  {
+                    "value": "events",
+                    "label": "Events"
+                  }
+                ]
+              },
+              {
+                "key": "newsText",
+                "type": "text",
+                "label": "newsText",
+                "show": [
+                  {
+                    "field": "topics",
+                    "contains": "news"
+                  }
+                ]
+              },
+              {
+                "key": "eventsText",
+                "type": "text",
+                "label": "eventsText",
+                "show": [
+                  {
+                    "field": "topics",
+                    "contains": "events"
+                  }
+                ]
+              },
+              {
+                "key": "offersText",
+                "type": "text",
+                "label": "offersText",
+                "show": [
+                  {
+                    "field": "topics",
+                    "contains": "offers"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "size",
+            "type": "radio",
+            "label": "Size",
+            "layout": "inline",
+            "options": [
+              {
+                "value": "s",
+                "label": "S"
+              },
+              {
+                "value": "m",
+                "label": "M"
+              }
+            ]
+          },
+          {
+            "key": "sizeNote",
+            "type": "text",
+            "label": "sizeNote",
+            "show": [
+              {
+                "field": "size",
+                "eq": "s"
+              }
+            ]
+          },
+          {
+            "key": "kids",
+            "type": "radio",
+            "label": "Kids",
+            "options": [
+              {
+                "value": "yes",
+                "label": "Yes"
+              },
+              {
+                "value": "no",
+                "label": "No"
+              }
+            ]
+          },
+          {
+            "key": "ages",
+            "type": "radio",
+            "label": "Ages",
+            "show": [
+              {
+                "field": "kids",
+                "eq": "yes"
+              }
+            ],
+            "options": [
+              {
+                "value": "young",
+                "label": "Young"
+              },
+              {
+                "value": "old",
+                "label": "Old"
+              }
+            ]
+          },
+          {
+            "key": "ageNote",
+            "type": "text",
+            "label": "ageNote",
+            "show": [
+              {
+                "field": "ages",
+                "eq": "old"
+              }
+            ]
+          },
+          {
+            "key": "names",
+            "type": "text",
+            "label": "names",
+            "show": [
+              {
+                "field": "kids",
+                "eq": "yes"
+              }
+            ]
+          },
+          {
+            "key": "both",
+            "type": "text",
+            "label": "both",
+            "show": [
+              {
+                "field": "kids",
+                "eq": "yes"
+              },
+              {
+                "field": "size",
+                "eq": "m"
+              }
+            ]
+          },
+          {
+            "key": "rating",
+            "type": "section",
+            "title": "Rating",
+            "layout": "matrix",
+            "fields": [
+              {
+                "key": "speed",
+                "type": "radio",
+                "label": "Speed",
+                "options": [
+                  {
+                    "value": "good",
+                    "label": "Good"
+                  },
+                  {
+                    "value": "bad",
+                    "label": "Bad"
+                  }
+                ]
+              },
+              {
+                "key": "price",
+                "type": "radio",
+                "label": "Price",
+                "options": [
+                  {
+                    "value": "good",
+                    "label": "Good"
+                  },
+                  {
+                    "value": "bad",
+                    "label": "Bad"
+                  }
+                ],
+                "show": [
+                  {
+                    "field": "speed",
+                    "eq": "bad"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "reveals": {
+    "/steps/0/fields/1": {
+      "parent": "/steps/0/fields/0",
+      "option": 0
+    },
+    "/steps/0/fields/2": {
+      "parent": "/steps/0/fields/0",
+      "option": 0
+    },
+    "/steps/0/fields/3": {
+      "parent": "/steps/0/fields/0",
+      "option": 1
+    },
+    "/steps/1/fields/0/fields/1": {
+      "parent": "/steps/1/fields/0/fields/0",
+      "option": 0
+    },
+    "/steps/1/fields/0/fields/2": {
+      "parent": "/steps/1/fields/0/fields/0",
+      "option": 2
+    },
+    "/steps/1/fields/4": {
+      "parent": "/steps/1/fields/3",
+      "option": 0
+    },
+    "/steps/1/fields/5": {
+      "parent": "/steps/1/fields/4",
+      "option": 1
+    }
+  }
+}
