@@ -93,6 +93,41 @@ struct QuadraticPatternTests {
         #expect(validateFieldValue(field, .string(long), [:]) == nil)
     }
 
+    @Test("group items and multiselect values over 1000 characters get the pattern error on the server")
+    @MainActor func itemsAndLists() throws {
+        let first = String(repeating: "1", count: 600)
+        let second = String(repeating: "2", count: 600)
+        let group: JSONValue = ["key": "people", "type": "group", "label": "P", "fields": [text("name", "^\\d+\\.?\\d*$")]]
+        let tags: JSONValue = [
+            "key": "tags", "type": "multiselect", "label": "T",
+            "options": [["value": .string(first), "label": "A"], ["value": .string(second), "label": "B"]],
+            "validation": ["pattern": "^[0-9,]+\\.?[0-9,]*$"],
+        ]
+        let definition = form([group, tags])
+        let long = String(repeating: "1", count: 1001)
+        let people: JSONValue = [["name": .string(long)], ["name": .string(String(long.dropLast()))]]
+        let values: JSONValue = ["people": people, "tags": [.string(first), .string(second)]]
+        let result = try validateSubmission(definition, values)
+        #expect(result.errors == ["people.0.name": "Invalid format", "tags": "Invalid format"])
+        #expect(try validateSubmission(definition, ["people": [["name": "12"]], "tags": [.string(first)]]).errors.isEmpty)
+        let engine = try FormEngine(definition: definition, values: values.objectValue ?? JSONObject())
+        #expect(engine.validate().isEmpty)
+    }
+
+    @Test("verdicts agree when computed concurrently")
+    func concurrentVerdicts() async {
+        let patterns = (0..<64).map { "^\\d+\\.?[\\d\($0 % 10)]*$" } + (0..<64).map { "(a{\($0)}+)+" }
+        let serial = patterns.map(patternVerdict)
+        let concurrent = await withTaskGroup(of: (Int, PatternVerdict).self) { group in
+            for (index, pattern) in patterns.enumerated() { group.addTask { (index, patternVerdict(pattern)) } }
+            var results = [PatternVerdict](repeating: .safe, count: patterns.count)
+            for await (index, verdict) in group { results[index] = verdict }
+            return results
+        }
+        #expect(concurrent == serial)
+        #expect(serial.contains(.quadratic) && serial.contains(.refused))
+    }
+
     @Test("ASCII sets count and name single members")
     func asciiSets() {
         var set = AsciiSet()
