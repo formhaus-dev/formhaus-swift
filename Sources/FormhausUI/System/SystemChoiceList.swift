@@ -21,7 +21,7 @@ struct SystemChoiceList: View {
                     .accessibilityFocused($spoken, equals: index)
                 if index == 0 {
                     row.formhausScrollAnchor(context)
-                        .onFormhausFocus(context) { spoken = 0 }
+                        .onFormhausFocus(context) { spoken = focusedOption(context, selected) }
                         .sensoryFeedback(.selection, trigger: selected)
                 } else {
                     row
@@ -29,6 +29,11 @@ struct SystemChoiceList: View {
             }
         }
     }
+}
+
+func focusedOption(_ context: FieldContext, _ selected: Set<String>) -> Int {
+    guard context.field.type == "radio" else { return 0 }
+    return context.options.firstIndex { selected.contains($0.value ?? "") } ?? 0
 }
 
 struct SystemCheckRow: View {

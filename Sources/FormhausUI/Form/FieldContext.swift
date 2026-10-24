@@ -1,6 +1,8 @@
 @_spi(Renderer) import FormhausCore
 import SwiftUI
 
+private let countedTypes: Set = ["text", "email", "phone", "password", "textarea"]
+
 @MainActor
 public struct FieldContext {
     public let field: FormField
@@ -48,6 +50,8 @@ public struct FieldContext {
     }
 
     public var helperText: String? { helper.flatMap { $0.isEmpty ? nil : $0 } }
+    public var minLength: Double? { countedTypes.contains(field.type) ? field.validation?.minLength : nil }
+    public var maxLength: Double? { countedTypes.contains(field.type) ? field.validation?.maxLength : nil }
     public var isRequired: Bool { field.isRequired }
     public var advancesOnCommit: Bool { !isItem && field.advancesOnCommit }
 
