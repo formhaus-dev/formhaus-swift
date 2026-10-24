@@ -29,6 +29,7 @@ struct CorpusCase {
     let expectedErrors: JSONValue
     let canSubmit: Bool
     let serverValues: JSONValue?
+    let serverErrors: JSONValue?
 
     init(_ json: JSONValue) {
         name = json["name"]?.stringValue ?? ""
@@ -39,6 +40,7 @@ struct CorpusCase {
         expectedErrors = json["expected"]?["errors"] ?? .object(JSONObject())
         canSubmit = json["canSubmit"]?.boolValue ?? false
         serverValues = json["serverValues"]
+        serverErrors = json["serverErrors"]
     }
 }
 
@@ -66,6 +68,7 @@ struct RecallCase {
 struct CorpusFixture {
     let issues: [IssueEntry]
     let warnings: [IssueEntry]?
+    let refused: [IssueEntry]?
     let definition: JSONValue
     let overlay: JSONValue?
     let texts: JSONObject?
@@ -75,6 +78,7 @@ struct CorpusFixture {
     init(_ json: JSONValue) {
         issues = IssueEntry.list(json["issues"]) ?? []
         warnings = IssueEntry.list(json["warnings"])
+        refused = IssueEntry.list(json["refused"])
         definition = json["definition"] ?? .null
         overlay = json["overlay"]
         texts = json["texts"]?.objectValue
