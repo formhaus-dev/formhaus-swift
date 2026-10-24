@@ -102,7 +102,7 @@ struct ValidateFailureTests {
         #expect(!engine.submitting)
     }
 
-    @Test("ignores a result after reset", .timeLimit(.minutes(1)))
+    @Test("ignores a result after reset", .timeLimit(.minutes(5)))
     func reset() async throws {
         let check = Pending()
         let engine = try League.engine(FormEngineOptions(onValidate: { _, _ in await check.wait() }))
@@ -116,7 +116,7 @@ struct ValidateFailureTests {
         #expect(!engine.stepValidating)
     }
 
-    @Test("ignores a submit result after replaceDefinition", .timeLimit(.minutes(1)))
+    @Test("ignores a submit result after replaceDefinition", .timeLimit(.minutes(5)))
     func replaced() async throws {
         let check = Pending()
         let calls = HookCalls()

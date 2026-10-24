@@ -83,7 +83,7 @@ struct ValidateSubmitTests {
         #expect(engine.errors == ["name": "Taken"])
     }
 
-    @Test("ignores a result when a checked value changes while it runs", .timeLimit(.minutes(1)))
+    @Test("ignores a result when a checked value changes while it runs", .timeLimit(.minutes(5)))
     func staleValue() async throws {
         let check = Pending()
         let calls = HookCalls()

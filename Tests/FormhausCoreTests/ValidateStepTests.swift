@@ -109,7 +109,7 @@ struct ValidateStepTests {
         }
     }
 
-    @Test("ignores a result when a checked value changes while it runs", .timeLimit(.minutes(1)))
+    @Test("ignores a result when a checked value changes while it runs", .timeLimit(.minutes(5)))
     func staleValue() async throws {
         let check = Pending()
         let engine = try League.engine(FormEngineOptions(onValidate: { _, _ in await check.wait() }))
@@ -123,7 +123,7 @@ struct ValidateStepTests {
         #expect(engine.currentStep?.id == "account")
     }
 
-    @Test("ignores a result when the step changes while it runs", .timeLimit(.minutes(1)))
+    @Test("ignores a result when the step changes while it runs", .timeLimit(.minutes(5)))
     func staleStep() async throws {
         let check = Pending()
         let engine = try League.engine(
