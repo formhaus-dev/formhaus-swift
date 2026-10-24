@@ -27,11 +27,12 @@ private func boundError(_ size: Double, _ rule: String, _ rules: FieldValidation
 
 private func patternError(_ value: JSONValue, _ rules: FieldValidation, _ message: () -> String) -> String? {
     guard let source = rules.pattern, let pattern = JSRegex(source) else { return nil }
-    return rejects(pattern, jsString(value)) ? rules.message("patternMessage") ?? message() : nil
+    let limit = QuadraticPatterns.valueLimit(source)
+    return rejects(pattern, jsString(value), limit: limit) ? rules.message("patternMessage") ?? message() : nil
 }
 
-func rejects(_ pattern: JSRegex, _ text: String) -> Bool {
-    text.jsLength > maxStringLength || CallBudget.current?.admitsPatternTest() == false || pattern.test(text) != true
+func rejects(_ pattern: JSRegex, _ text: String, limit: Int = maxStringLength) -> Bool {
+    text.jsLength > limit || CallBudget.current?.admitsPatternTest() == false || pattern.test(text) != true
 }
 
 private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: FormField, _ resolve: ResolveMessage) -> String? {

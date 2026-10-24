@@ -101,13 +101,14 @@ private func withSkipped(_ source: JSONObject, _ prepared: Prepared) -> JSONObje
 public func validateSubmission(_ definition: JSONValue, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions())
     throws(FormDefinitionError) -> SubmissionResult
 {
-    validateSubmission(try FormDefinition(json: definition), values, options: options)
+    try validateSubmission(try FormDefinition(json: definition), values, options: options)
 }
 
 public func validateSubmission(_ definition: FormDefinition, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions())
-    -> SubmissionResult
+    throws(FormDefinitionError) -> SubmissionResult
 {
-    CallBudget.run { submissionResult(definition, values, options) }
+    let quadratic = try refuseSlowPatterns(definition)
+    return CallBudget.run { QuadraticPatterns.$current.withValue(quadratic) { submissionResult(definition, values, options) } }
 }
 
 private func submissionResult(_ definition: FormDefinition, _ values: JSONValue, _ options: SubmissionOptions) -> SubmissionResult {

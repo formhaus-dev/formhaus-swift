@@ -46,7 +46,7 @@ struct APISurfaceTests {
         let field = try #require(fields.first?.field)
         #expect(validateFieldValue(field, "x", ["a": "x"]) == nil)
         #expect(validateFieldValue(field, nil, [:]) == "This field is required")
-        #expect(validateSubmission(form, ["a": "lock"]).errors.isEmpty)
+        #expect(try validateSubmission(form, ["a": "lock"]).errors.isEmpty)
     }
 
     @Test("issue codes and message keys are open string sets")
