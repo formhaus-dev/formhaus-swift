@@ -2,7 +2,9 @@
   "name": "check-slow-pattern",
   "covers": [
     "warns about a pattern that repeats a group with a quantifier or alternation",
-    "warns about overlapping repeats split by optional parts or groups"
+    "warns about overlapping repeats split by optional parts or groups",
+    "warns about a repeated group with a backreference to a separator",
+    "runs a pattern on the server when it is a flat sequence with one pair of overlapping repeats"
   ],
   "issues": [],
   "warnings": [
@@ -24,10 +26,6 @@
     },
     {
       "code": "slow-pattern",
-      "path": "/fields/4/validation/pattern"
-    },
-    {
-      "code": "slow-pattern",
       "path": "/fields/13/validation/pattern"
     },
     {
@@ -41,6 +39,308 @@
     {
       "code": "slow-pattern",
       "path": "/fields/16/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/19/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/20/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/21/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/22/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/23/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/24/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/25/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/26/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/27/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/28/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/29/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/30/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/31/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/32/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/33/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/34/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/35/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/36/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/37/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/38/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/39/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/40/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/41/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/42/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/43/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/44/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/45/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/46/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/47/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/48/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/49/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/50/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/51/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/52/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/53/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/54/validation/pattern"
+    }
+  ],
+  "refused": [
+    {
+      "code": "slow-pattern",
+      "path": "/fields/0/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/1/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/2/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/3/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/16/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/19/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/20/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/21/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/22/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/23/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/24/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/25/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/26/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/27/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/28/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/29/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/30/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/32/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/33/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/34/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/35/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/36/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/38/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/39/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/40/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/41/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/42/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/43/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/44/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/45/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/46/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/47/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/48/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/49/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/50/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/51/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/52/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/53/validation/pattern"
+    },
+    {
+      "code": "slow-pattern",
+      "path": "/fields/54/validation/pattern"
     }
   ],
   "definition": {
@@ -184,6 +484,310 @@
         "label": "code16",
         "validation": {
           "pattern": "^\\w+.?\\w+@"
+        }
+      },
+      {
+        "key": "code17",
+        "type": "text",
+        "label": "code17",
+        "validation": {
+          "pattern": "^([\\w-]+\\.)+[a-z]{2,}$"
+        }
+      },
+      {
+        "key": "code18",
+        "type": "text",
+        "label": "code18",
+        "validation": {
+          "pattern": "^[a-z]+(?:,\\s*[a-z]+)*$"
+        }
+      },
+      {
+        "key": "code19",
+        "type": "text",
+        "label": "code19",
+        "validation": {
+          "pattern": "^(a+\\.a+)+$"
+        }
+      },
+      {
+        "key": "code20",
+        "type": "text",
+        "label": "code20",
+        "validation": {
+          "pattern": "(\\.?[a-z]+\\.)+"
+        }
+      },
+      {
+        "key": "code21",
+        "type": "text",
+        "label": "code21",
+        "validation": {
+          "pattern": "^(?:\\.a+)+(?:\\.a+)+(?:\\.a+)+$"
+        }
+      },
+      {
+        "key": "code22",
+        "type": "text",
+        "label": "code22",
+        "validation": {
+          "pattern": "^(ab)+(ab)+(ab)+$"
+        }
+      },
+      {
+        "key": "code23",
+        "type": "text",
+        "label": "code23",
+        "validation": {
+          "pattern": "^(?:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa)$"
+        }
+      },
+      {
+        "key": "code24",
+        "type": "text",
+        "label": "code24",
+        "validation": {
+          "pattern": "(-)(?:a*\\1*-)+$"
+        }
+      },
+      {
+        "key": "code25",
+        "type": "text",
+        "label": "code25",
+        "validation": {
+          "pattern": "(?<s>-)(?:a*\\k<s>*-)+$"
+        }
+      },
+      {
+        "key": "code26",
+        "type": "text",
+        "label": "code26",
+        "validation": {
+          "pattern": "(?<s>a)a*\\k<s>*$"
+        }
+      },
+      {
+        "key": "code27",
+        "type": "text",
+        "label": "code27",
+        "validation": {
+          "pattern": "\\k<(a+)+>"
+        }
+      },
+      {
+        "key": "code28",
+        "type": "text",
+        "label": "code28",
+        "validation": {
+          "pattern": "\\k<(a|a)+>"
+        }
+      },
+      {
+        "key": "code29",
+        "type": "text",
+        "label": "code29",
+        "validation": {
+          "pattern": "(?<ä>a)a*\\k<ä>*$"
+        }
+      },
+      {
+        "key": "code30",
+        "type": "text",
+        "label": "code30",
+        "validation": {
+          "pattern": "(?<s>a)a*\\k<\\u{73}>*$"
+        }
+      },
+      {
+        "key": "code31",
+        "type": "text",
+        "label": "code31",
+        "validation": {
+          "pattern": "^\\d+\\.?\\d*$"
+        }
+      },
+      {
+        "key": "code32",
+        "type": "text",
+        "label": "code32",
+        "validation": {
+          "pattern": "^\\d*\\d*\\d*$"
+        }
+      },
+      {
+        "key": "code33",
+        "type": "text",
+        "label": "code33",
+        "validation": {
+          "pattern": "\\d+\\.?\\d*$"
+        }
+      },
+      {
+        "key": "code34",
+        "type": "text",
+        "label": "code34",
+        "validation": {
+          "pattern": "^\\d+\\.?\\d*$|^x$"
+        }
+      },
+      {
+        "key": "code35",
+        "type": "text",
+        "label": "code35",
+        "validation": {
+          "pattern": "^[ab]+[bc]+[ac]+$"
+        }
+      },
+      {
+        "key": "code36",
+        "type": "text",
+        "label": "code36",
+        "validation": {
+          "pattern": "^\\w+.?\\w+@\\w+\\.\\w+$"
+        }
+      },
+      {
+        "key": "code37",
+        "type": "text",
+        "label": "code37",
+        "validation": {
+          "pattern": "^(\\d+)\\.?(\\d*)$"
+        }
+      },
+      {
+        "key": "code38",
+        "type": "text",
+        "label": "code38",
+        "validation": {
+          "pattern": "^\\d+(?:a|\\d*)\\d*$"
+        }
+      },
+      {
+        "key": "code39",
+        "type": "text",
+        "label": "code39",
+        "validation": {
+          "pattern": "^\\d+(?:-?\\d+)?\\d*$"
+        }
+      },
+      {
+        "key": "code40",
+        "type": "text",
+        "label": "code40",
+        "validation": {
+          "pattern": "^(?:\\d+\\d+)?\\d+$"
+        }
+      },
+      {
+        "key": "code41",
+        "type": "text",
+        "label": "code41",
+        "validation": {
+          "pattern": "^\\d+\\d+x\\d+\\d+$"
+        }
+      },
+      {
+        "key": "code42",
+        "type": "text",
+        "label": "code42",
+        "validation": {
+          "pattern": "^\\d*(?=\\d+\\d+$)"
+        }
+      },
+      {
+        "key": "code43",
+        "type": "text",
+        "label": "code43",
+        "validation": {
+          "pattern": "^\\d+\\d*1\\d*$"
+        }
+      },
+      {
+        "key": "code44",
+        "type": "text",
+        "label": "code44",
+        "validation": {
+          "pattern": "^\\d+\\d*\\d{1,999}\\d*$"
+        }
+      },
+      {
+        "key": "code45",
+        "type": "text",
+        "label": "code45",
+        "validation": {
+          "pattern": "^\\d+\\d?\\d?\\d*$"
+        }
+      },
+      {
+        "key": "code46",
+        "type": "text",
+        "label": "code46",
+        "validation": {
+          "pattern": "^\\d+\\d{0,999}\\d*$"
+        }
+      },
+      {
+        "key": "code47",
+        "type": "text",
+        "label": "code47",
+        "validation": {
+          "pattern": "^(\\d)\\d*\\1*$"
+        }
+      },
+      {
+        "key": "code48",
+        "type": "text",
+        "label": "code48",
+        "validation": {
+          "pattern": "^\\d+\\B\\d+\\B\\d+\\d+$"
+        }
+      },
+      {
+        "key": "code49",
+        "type": "text",
+        "label": "code49",
+        "validation": {
+          "pattern": "^\\d+\\B\\d+\\d+$"
+        }
+      },
+      {
+        "key": "code50",
+        "type": "text",
+        "label": "code50",
+        "validation": {
+          "pattern": "^\\d{1,1000}\\d{1,1000}\\d+\\d+$"
+        }
+      },
+      {
+        "key": "code51",
+        "type": "text",
+        "label": "code51",
+        "validation": {
+          "pattern": "^\\d{1,1000}\\d+\\d+$"
+        }
+      },
+      {
+        "key": "code52",
+        "type": "text",
+        "label": "code52",
+        "validation": {
+          "pattern": "^[^\\x00-\\x2f]+[^\\x30-\\x7f]+[^\\x00-\\x2f]+[^\\x00-\\x2f]+$"
+        }
+      },
+      {
+        "key": "code53",
+        "type": "text",
+        "label": "code53",
+        "validation": {
+          "pattern": "^\\d+\\D?\\d*$"
+        }
+      },
+      {
+        "key": "code54",
+        "type": "text",
+        "label": "code54",
+        "validation": {
+          "pattern": "^\\d+é?\\d*$"
         }
       }
     ]

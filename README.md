@@ -24,7 +24,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.2.0"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.3.0"),
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -168,7 +168,7 @@ import FormhausCore
 
 let definition = try FormDefinition(json: JSONValue(parsing: definitionData))
 
-let result = validateSubmission(definition, try JSONValue(parsing: requestBody))
+let result = try validateSubmission(definition, try JSONValue(parsing: requestBody))
 if result.errors.isEmpty {
     save(result.values)
 } else {
@@ -177,6 +177,8 @@ if result.errors.isEmpty {
 ```
 
 The body is the values object. `result.values` holds the values of the active path, and `result.errors` maps keys to messages. Pass skipped steps and custom validators in `SubmissionOptions`. `checkDefinition(json)` lists the issues of a definition before you use it.
+
+`validateSubmission` throws `FormDefinitionError` when a pattern can take very long on some values, so the server does not run it. `checkDefinition` reports these patterns as `slow-pattern` warnings. Patterns with one overlapping repeat after `^`, such as `^\d+\.?\d*$`, still run on values of up to 1,000 characters; a longer value gets the pattern error.
 
 ## Validate in code
 
@@ -329,6 +331,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.3.0 | 1.4.2 | 1.6 |
 | 0.2.0 | 1.3.0 | 1.6 |
 | 0.1.7 | 1.3.0 | 1.6 |
 | 0.1.6 | 1.2.2 | 1.6 |
@@ -337,7 +340,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 79 definition files with their issues, value cases, recall cases and option order vectors, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 81 definition files with their issues, value cases, recall cases and option order vectors, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 

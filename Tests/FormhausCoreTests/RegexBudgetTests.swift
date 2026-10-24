@@ -4,6 +4,7 @@ import Testing
 
 private let heavy = "^(?:a?b?c?d?e?f?g?h?){10000}$"
 private let heavyText = String(repeating: "a", count: 9990) + "!"
+private let wide = "^[a-h]{0,10000}[a-h]{0,10000}$"
 
 @Suite("Pattern budgets and cache keys")
 struct RegexBudgetTests {
@@ -41,7 +42,7 @@ struct RegexBudgetTests {
     @Test("a submission fails closed on every field once its budget runs out")
     func submissionBudget() throws {
         let fields: [JSONValue] = (0..<3).map { index in
-            ["key": .string("f\(index)"), "type": "text", "label": "F", "validation": ["pattern": .string(heavy)]]
+            ["key": .string("f\(index)"), "type": "text", "label": "F", "validation": ["pattern": .string(wide)]]
         }
         let definition: JSONValue = ["id": "p", "submit": ["label": "S"], "fields": .array(fields)]
         let values: JSONValue = ["f0": .string(heavyText), "f1": "abc", "f2": "abc"]

@@ -1,5 +1,7 @@
-import FormhausCore
+import Foundation
 import Testing
+
+@testable import FormhausCore
 
 private func patternForm(_ patterns: [String]) -> JSONValue {
     let fields = patterns.enumerated().map { index, pattern -> JSONValue in
@@ -37,14 +39,29 @@ struct SlowPatternTests {
             String(repeating: "(", count: 500) + String(repeating: "+)+", count: 500), String(repeating: "((a+)+", count: 1000),
         ]
         for pattern in patterns + [String(repeating: "(a|", count: 300) + "b"] {
-            #expect(codes([pattern]) == ["error invalid-pattern /fields/0/validation/pattern"])
+            #expect(codes([pattern]).filter { $0.hasPrefix("error") } == ["error invalid-pattern /fields/0/validation/pattern"])
         }
     }
 
-    @Test("patterns are scanned up to 1000 characters")
+    @Test("patterns are scanned up to 1000 characters and longer ones are reported")
     func length() {
         let pattern = { (length: Int) in "(a+)+" + String(repeating: "b", count: length - 5) }
         #expect(codes([pattern(1000)]) == ["warning slow-pattern /fields/0/validation/pattern"])
-        #expect(codes([pattern(1001)]).isEmpty)
+        #expect(codes([pattern(1001)]) == ["warning slow-pattern /fields/0/validation/pattern"])
+        let long = checkDefinition(patternForm([String(repeating: "a", count: 1001)])).first
+        #expect(long?.hint == "Shorten it to 1000 characters or less.")
+    }
+
+    @Test("edge patterns get the verdicts of core")
+    func coreVerdicts() throws {
+        let url = (Bundle.module.resourceURL ?? Bundle.module.bundleURL).appendingPathComponent("Fixtures/slow-patterns.json")
+        let rows = try JSONValue(parsing: Data(contentsOf: url)).arrayValue ?? []
+        #expect(rows.count > 300)
+        for row in rows {
+            let items = row.arrayValue ?? []
+            let pattern = items.first?.stringValue ?? ""
+            #expect(slowPattern(pattern).map { "\($0)" } == items[1].stringValue, "\(pattern)")
+            #expect(isQuadratic(Array(pattern.utf16)) == items[2].boolValue, "\(pattern)")
+        }
     }
 }
