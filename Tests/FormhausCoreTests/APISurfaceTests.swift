@@ -30,6 +30,19 @@ struct APISurfaceTests {
         #expect(!isVisible(try #require(section.section), ["a": "y"]))
     }
 
+    @Test("revealTargets maps each node of a list to the option that reveals it")
+    func revealedFields() throws {
+        let form = try FormDefinition(json: [
+            "id": "f", "submit": ["label": "S"],
+            "fields": [
+                ["key": "a", "type": "radio", "label": "A", "options": [["value": "x", "label": "X"], ["value": "y", "label": "Y"]]],
+                ["key": "b", "type": "text", "label": "B", "show": [["field": "a", "eq": "y"]]],
+                ["key": "c", "type": "text", "label": "C"],
+            ],
+        ])
+        #expect(revealTargets(try #require(form.fields)) == [nil, RevealTarget(parent: 0, option: 1), nil])
+    }
+
     @Test("conditions, disabled actions and field validation are callable on their own")
     func standaloneChecks() throws {
         let form = try FormDefinition(json: [
