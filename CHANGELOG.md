@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+### FormhausCore
+
+- Passes the conformance suite of `@formhaus/core` 1.4.2.
+- **Breaking:** `validateSubmission(_:_:options:)` with a `FormDefinition` now throws `FormDefinitionError`.
+- `validateSubmission` refuses a definition with a `slow-pattern` pattern and reports each one as a `slow-pattern` error. A pattern with one overlapping repeat after `^`, such as `^\d+\.?\d*$`, still runs, on values of up to 1,000 characters. A longer value gets the pattern error without matching.
+- The `slow-pattern` warning also covers backreferences, named backreferences and patterns longer than 1,000 characters.
+- Fixed `slow-pattern` warnings for repeated groups split by a separator, such as `^([\w-]+\.)+[a-z]{2,}$`.
+
 ## 0.2.0
 
 ### FormhausCore
