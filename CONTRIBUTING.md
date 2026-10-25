@@ -1,5 +1,7 @@
 # Contributing
 
+Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Setup
 
 ```sh
