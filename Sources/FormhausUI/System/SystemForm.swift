@@ -66,8 +66,6 @@ private struct StepSlide: Transition {
 }
 
 struct SystemPage: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.formhausBehavior) private var behavior
     @Environment(\.formhausComponents) private var components
     let model: FormModel
     let actions: ActionsContext
@@ -93,10 +91,7 @@ struct SystemPage: View {
             .formhausTestId(model.testId(.form))
             .scrollDismissesKeyboard(.interactively)
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
-            .onChange(of: model.focusRequest) { _, request in
-                guard let request, let target = ScrollTarget.focus(request, summary: behavior.errorSummary) else { return }
-                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { target.scroll(proxy, model: model) }
-            }
+            .modifier(SystemFocusScroll(model: model, proxy: proxy))
         }
     }
 }

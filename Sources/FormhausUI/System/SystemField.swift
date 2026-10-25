@@ -49,6 +49,7 @@ struct SystemRow<Content: View>: View {
         }
         .formhausTestContainer(context.testId)
         .disabled(context.isLocked)
+        .scrollVisibility(context.key)
         .formhausScrollAnchor(context)
     }
 }
@@ -64,14 +65,13 @@ struct SystemRowLabel: View {
 }
 
 struct SystemNotes: View {
-    @Environment(\.formhausFooterErrors) private var footerErrors
     let context: FieldContext
 
     var body: some View {
         if let helper = context.helperText {
             Text(verbatim: helper).font(.footnote).systemSecondaryText().fixedSize(horizontal: false, vertical: true)
         }
-        if !footerErrors, let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
+        if let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
     }
 }
 
@@ -113,6 +113,7 @@ struct SystemBlock<Content: View>: View {
             }
             .formhausTestContainer(context.testId)
             .disabled(context.isLocked)
+            .scrollVisibility(context.key)
             .scrollAnchor(anchored, context)
         } else {
             Section {
@@ -124,6 +125,7 @@ struct SystemBlock<Content: View>: View {
                     .accessibilityLabel(Text(verbatim: context.accessibilityName))
                     .accessibilityAddTraits(.isHeader)
                     .formhausTestId(rows ? context.testId : nil)
+                    .questionVisibility(context.key)
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
                     SystemNotes(context: context)
@@ -137,7 +139,7 @@ struct SystemBlock<Content: View>: View {
 extension View {
     @ViewBuilder
     fileprivate func scrollAnchor(_ anchored: Bool, _ context: FieldContext) -> some View {
-        if anchored { formhausScrollAnchor(context) } else { self }
+        if anchored { scrollVisibility(context.key).formhausScrollAnchor(context) } else { self }
     }
 }
 
