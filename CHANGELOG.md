@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### FormhausCore
+
+- Passes the conformance suite of `@formhaus/core` 1.6.1.
+- Fixed `validateSubmission` throwing `FormDefinitionError` for definitions with a `slow-pattern` pattern. Every pattern runs again, on values of up to 10,000 characters.
+- The `slow-pattern` warning no longer covers repeated groups that start or end with a separator nothing else in the group matches, such as `^[A-Za-z]+([ '-][A-Za-z]+)*$`, or small bounded repeats, such as `^#(?:[0-9a-fA-F]{3}){1,2}$`.
+
 ### FormhausUI
 
 - Fixed the error of an empty text or number field disappearing when the field takes focus after a failed submit on iOS.
