@@ -66,8 +66,6 @@ private struct StepSlide: Transition {
 }
 
 struct SystemPage: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.formhausBehavior) private var behavior
     @Environment(\.formhausComponents) private var components
     let model: FormModel
     let actions: ActionsContext
@@ -93,24 +91,7 @@ struct SystemPage: View {
             .formhausTestId(model.testId(.form))
             .scrollDismissesKeyboard(.interactively)
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
-            .onChange(of: model.focusRequest) { _, request in
-                guard let request, let target = ScrollTarget.focus(request, summary: behavior.errorSummary) else { return }
-                Task {
-                    if case .field(let key) = target {
-                        await showSystemField(key, model: model, proxy: proxy)
-                    } else {
-                        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { target.scroll(proxy, model: model) }
-                    }
-                    try? await Task.sleep(for: .milliseconds(300))
-                    model.refocus(request)
-                }
-            }
-            #if os(iOS)
-                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
-                    guard let key = model.focusedKey else { return }
-                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { proxy.scrollTo(key) }
-                }
-            #endif
+            .modifier(SystemFocusScroll(model: model, proxy: proxy))
         }
     }
 }
