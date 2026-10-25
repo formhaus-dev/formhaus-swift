@@ -122,6 +122,7 @@ struct SystemBlock<Content: View>: View {
                 if errorFirst { SystemFieldError(context: context) }
             }
             .formhausTestContainer(context.testId)
+            .scrollVisibility(context.key)
             .formhausScrollAnchor(context)
             content
             if context.helperText != nil || !errorFirst && context.isInvalid {

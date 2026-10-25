@@ -41,9 +41,8 @@ struct SystemNodes: View {
         ForEach(systemChunks(placed) { isSystemBlock($0, components, limit: behavior.inlineChoiceLimit) }) { chunk in
             switch chunk {
             case .rows(let rows):
-                let fields = rows.compactMap(\.node.field)
                 Section {
-                    ForEach(fields, id: \.nodeID) { field in FormhausField(field, model: model) }
+                    ForEach(rows, id: \.id) { SystemNodeRow(placed: $0, matrix: false, model: model) }
                 }
             case .node(let placed):
                 SystemNodeRow(placed: placed, matrix: false, model: model)
@@ -110,10 +109,10 @@ private struct SystemSection: View {
                         SystemNodeRow(placed: placed, matrix: section.isMatrix, model: model)
                     }
                 }
+                .environment(\.formhausSectionRows, true)
             }
         }
         .environment(\.formhausNested, true)
-        .environment(\.formhausSectionRows, true)
     }
 
     private var description: String? {
