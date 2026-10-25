@@ -111,7 +111,6 @@ struct SystemFocusScroll: ViewModifier {
                 task = Task { await scroll(to: target, for: request, replacing: previous) }
             }
             .onChange(of: model.structure.stepIndex) { stop() }
-            .onChange(of: model.valuesVersion) { task?.cancel() }
             .onDisappear { stop() }
             #if os(iOS)
                 .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
