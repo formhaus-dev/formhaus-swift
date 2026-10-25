@@ -18,14 +18,16 @@ public struct FieldContext {
     public let placeholder: String?
     private let helper: String?
     let state: FieldState
+    let reveals: [FieldReveal]
 
     public init(field: FormField, key: String? = nil, model: FormModel) {
         let key = key ?? field.key
         self.init(field: field, key: key, state: model.field(key), model: model)
     }
 
-    init(field: FormField, key: String, state: FieldState, model: FormModel) {
+    init(field: FormField, key: String, state: FieldState, model: FormModel, reveals: [FieldReveal] = []) {
         self.field = field
+        self.reveals = reveals
         let texts = model.texts(for: field, at: key)
         label = texts.label ?? ""
         placeholder = texts.placeholder

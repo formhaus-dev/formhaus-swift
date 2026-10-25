@@ -161,7 +161,19 @@ Switching the components or the theme of a running form keeps its values, step a
 
 `context.minLength` and `context.maxLength` hold the length limits of `text`, `email`, `phone`, `password` and `textarea` fields, for a character counter.
 
-`revealTargets(nodes)` returns, for each node of a list, the choice field and option that reveal it, following the Revealed fields rule of the [specification](https://github.com/formhaus-dev/formhaus/blob/main/docs/spec.md#revealed-fields). Use it to draw a field under the option that shows it.
+`revealTargets(nodes)` returns, for each node of a list, the choice field and option that reveal it, following the Revealed fields rule of the [specification](https://github.com/formhaus-dev/formhaus/blob/main/docs/spec.md#revealed-fields). Use it to draw a field under the option that shows it in a layout of your own.
+
+## Show a field under its option
+
+Turn on `conditionalReveal` to draw a field shown by a `radio` or `multiselect` answer under that option, indented with a line on its left:
+
+```swift
+.formhausBehavior(FormBehavior(conditionalReveal: true))
+```
+
+A field goes under an option when its only condition is `eq` on the `radio` right before it, or `contains` on the `multiselect` right before it. A revealed `radio` can reveal fields of its own. Values, validation and the submit payload do not change. VoiceOver reads the revealed block as a group named after its option, right after that option. The error of a choice field with revealed fields shows above its options.
+
+The `.system` set draws the block under inline choice lists. Fields of menu and pushed pickers, of choices with `layout: "inline"`, picture options or `optionsFrom`, of matrix sections and of group items stay in place, and so do fields of a type you replace with `.field(_:_:)`. See [Show a field under its option](https://formhaus.dev/guide/conditions#show-a-field-under-its-option).
 
 ## Validate on the server
 
@@ -376,7 +388,6 @@ Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is 
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - There are no drafts and no Cloud client.
 - Plural rules cover the languages of the shipped catalogs, and other languages use the `other` form.
-- The built-in component sets draw revealed fields in place, not under their option.
 
 ## Demo app
 

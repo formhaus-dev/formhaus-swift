@@ -6,6 +6,7 @@ enum NativeMetrics {
     static let indicatorRadius: CGFloat = 5
     static let textareaHeight: CGFloat = 112
     static let progressHeight: CGFloat = 4
+    static let revealLine: CGFloat = 4
     static let maxWidth: CGFloat = 640
     static let compactWidth: CGFloat = 480
     static let matrixWidth: CGFloat = 560

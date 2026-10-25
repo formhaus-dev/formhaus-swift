@@ -31,6 +31,7 @@ func isSystemBlock(_ field: FormField, _ components: FormComponents, limit: Int)
 
 extension EnvironmentValues {
     @Entry var formhausNested = false
+    @Entry var formhausSectionRows = false
 }
 
 struct SystemRow<Content: View>: View {
@@ -66,11 +67,20 @@ struct SystemRowLabel: View {
 
 struct SystemNotes: View {
     let context: FieldContext
+    var showsError = true
 
     var body: some View {
         if let helper = context.helperText {
             Text(verbatim: helper).font(.footnote).systemSecondaryText().fixedSize(horizontal: false, vertical: true)
         }
+        if showsError { SystemFieldError(context: context) }
+    }
+}
+
+struct SystemFieldError: View {
+    let context: FieldContext
+
+    var body: some View {
         if let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
     }
 }
@@ -91,6 +101,7 @@ struct SystemErrorText: View {
 
 struct SystemBlock<Content: View>: View {
     @Environment(\.formhausNested) private var nested
+    @Environment(\.formhausSectionRows) private var sectionRows
     @Environment(\.formhausTokens) private var tokens
     let context: FieldContext
     let anchored: Bool
@@ -105,35 +116,58 @@ struct SystemBlock<Content: View>: View {
     }
 
     var body: some View {
-        if nested {
-            VStack(alignment: .leading, spacing: 8) {
+        if nested, rows, sectionRows {
+            VStack(alignment: .leading, spacing: 4) {
                 SystemRowLabel(context: context).accessibilityAddTraits(.isHeader)
-                content
-                SystemNotes(context: context)
+                if errorFirst { SystemFieldError(context: context) }
             }
             .formhausTestContainer(context.testId)
-            .disabled(context.isLocked)
             .scrollVisibility(context.key)
-            .scrollAnchor(anchored, context)
+            .formhausScrollAnchor(context)
+            content
+            if context.helperText != nil || !errorFirst && context.isInvalid {
+                VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context, showsError: !errorFirst) }
+            }
+        } else if nested {
+            VStack(alignment: .leading, spacing: 8) {
+                SystemRowLabel(context: context).accessibilityAddTraits(.isHeader)
+                if errorFirst { SystemFieldError(context: context) }
+                content
+                SystemNotes(context: context, showsError: !errorFirst)
+            }
+            .formhausTestContainer(context.testId)
+            .disabled(context.isLocked && !rows)
+            .scrollVisibility(context.key)
+            .formhausScrollAnchor(context)
         } else {
             Section {
-                content.formhausTestContainer(rows ? nil : context.testId).disabled(context.isLocked).scrollAnchor(anchored, context)
+                content.formhausTestContainer(rows ? nil : context.testId).disabled(context.isLocked && !rows).scrollAnchor(
+                    anchored, context)
             } header: {
-                tokens.marked(context.label, required: context.isRequired)
-                    .textCase(nil)
-                    .systemSecondaryText()
-                    .accessibilityLabel(Text(verbatim: context.accessibilityName))
-                    .accessibilityAddTraits(.isHeader)
-                    .formhausTestId(rows ? context.testId : nil)
-                    .questionVisibility(context.key)
+                VStack(alignment: .leading, spacing: 4) {
+                    tokens.marked(context.label, required: context.isRequired)
+                        .systemSecondaryText()
+                        .accessibilityLabel(Text(verbatim: context.accessibilityName))
+                        .accessibilityAddTraits(.isHeader)
+                        .formhausTestId(rows ? context.testId : nil)
+                    if errorFirst { SystemFieldError(context: context) }
+                }
+                .textCase(nil)
+                .questionVisibility(context.key)
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
-                    SystemNotes(context: context)
-                    if context.isRequired, (context.error ?? "").isEmpty { Text(verbatim: " ").font(.footnote).accessibilityHidden(true) }
+                    SystemNotes(context: context, showsError: !errorFirst)
+                    if context.isRequired, errorFirst || (context.error ?? "").isEmpty {
+                        Text(verbatim: " ").font(.footnote).accessibilityHidden(true)
+                    }
                 }
             }
         }
     }
+}
+
+extension SystemBlock {
+    fileprivate var errorFirst: Bool { !context.reveals.isEmpty }
 }
 
 extension View {

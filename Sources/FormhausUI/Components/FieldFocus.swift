@@ -41,8 +41,7 @@ private struct FieldFocus: ViewModifier {
                 focused.wrappedValue = true
                 spoken = true
             }
-            .onChange(of: focused.wrappedValue) { _, now in context.state.noteFocus(now) }
-            .onDisappear { context.state.noteFocus(false) }
+            .notesFocus(context, focused.wrappedValue)
     }
 }
 
@@ -57,6 +56,11 @@ extension View {
 
     public func formhausScrollAnchor(_ context: FieldContext) -> some View {
         id(context.key)
+    }
+
+    func notesFocus(_ context: FieldContext, _ focused: Bool) -> some View {
+        onChange(of: focused) { _, now in context.state.noteFocus(now) }
+            .onDisappear { context.state.noteFocus(false) }
     }
 
     func onFormhausFocus(_ state: FieldState, model: FormModel, disabled: Bool, perform: @escaping @MainActor () -> Void) -> some View {

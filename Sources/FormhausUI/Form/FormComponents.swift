@@ -46,11 +46,12 @@ public struct FormBehavior: Sendable {
     public var stepScroll = StepScroll.screenTop
     public var inlineChoiceLimit = 6
     public var titleDisplayMode = TitleDisplayMode.automatic
+    public var conditionalReveal = false
 
     public init(
         errorSummary: Bool = true, confirmRemove: Bool = true, stepErrorMarks: Bool = false,
         backPlacement: BackPlacement = .automatic, stepScroll: StepScroll = .screenTop, inlineChoiceLimit: Int = 6,
-        titleDisplayMode: TitleDisplayMode = .automatic
+        titleDisplayMode: TitleDisplayMode = .automatic, conditionalReveal: Bool = false
     ) {
         self.errorSummary = errorSummary
         self.confirmRemove = confirmRemove
@@ -59,6 +60,7 @@ public struct FormBehavior: Sendable {
         self.stepScroll = stepScroll
         self.inlineChoiceLimit = inlineChoiceLimit
         self.titleDisplayMode = titleDisplayMode
+        self.conditionalReveal = conditionalReveal
     }
 }
 

@@ -57,6 +57,7 @@ public struct Controls: Sendable {
     public var indicator: CGFloat = NativeMetrics.indicator
     public var textareaHeight: CGFloat = NativeMetrics.textareaHeight
     public var progressHeight: CGFloat = NativeMetrics.progressHeight
+    public var revealLine: CGFloat = NativeMetrics.revealLine
     public var maxWidth: CGFloat = NativeMetrics.maxWidth
     public var compactWidth: CGFloat = NativeMetrics.compactWidth
     public var matrixWidth: CGFloat = NativeMetrics.matrixWidth

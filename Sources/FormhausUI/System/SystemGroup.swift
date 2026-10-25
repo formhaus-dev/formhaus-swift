@@ -24,6 +24,7 @@ struct SystemGroup<Confirmation: ViewModifier>: View {
                 if item.index == 0 { header }
             }
             .environment(\.formhausNested, true)
+            .environment(\.formhausSectionRows, false)
         }
         Section {
             if context.canAdd {

@@ -67,6 +67,7 @@ private struct StepSlide: Transition {
 
 struct SystemPage: View {
     @Environment(\.formhausComponents) private var components
+    private let place = RevealPlacement()
     let model: FormModel
     let actions: ActionsContext
     let nodes: [FormNode]
@@ -91,7 +92,9 @@ struct SystemPage: View {
             .formhausTestId(model.testId(.form))
             .scrollDismissesKeyboard(.interactively)
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
-            .modifier(SystemFocusScroll(model: model, proxy: proxy))
+            .modifier(
+                SystemFocusScroll(model: model, proxy: proxy) { revealRow(of: $0, in: place(nodes, model), sections: { place($0, model) }) }
+            )
         }
     }
 }

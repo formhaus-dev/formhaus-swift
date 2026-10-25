@@ -33,6 +33,7 @@ public struct FieldShell<Content: View>: View {
                 Text(verbatim: helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
                     .padding(.top, -tokens.spacing.s1)
             }
+            if errorFirst { error }
             HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s3) {
                 content.measured("\(context.key)/control")
                 if variant == .inline { LoadingIndicator(visible: context.loading) }
@@ -41,9 +42,7 @@ public struct FieldShell<Content: View>: View {
                 Text(verbatim: helper).formhausText(.helper).fixedSize(horizontal: false, vertical: true).padding(.leading, inset)
                     .padding(.top, -tokens.spacing.s1)
             }
-            if let error = context.error, !error.isEmpty {
-                FieldError(text: error).padding(.leading, inset)
-            }
+            if !errorFirst { error }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
@@ -55,6 +54,14 @@ public struct FieldShell<Content: View>: View {
     }
 
     private var isInline: Bool { variant == .inline || variant == .row }
+
+    private var errorFirst: Bool { !context.reveals.isEmpty }
+
+    @ViewBuilder private var error: some View {
+        if let error = context.error, !error.isEmpty {
+            FieldError(text: error).padding(.leading, inset)
+        }
+    }
 
     private var inset: CGFloat { variant == .inline ? tokens.controls.indicator + tokens.spacing.s5 : 0 }
 }
