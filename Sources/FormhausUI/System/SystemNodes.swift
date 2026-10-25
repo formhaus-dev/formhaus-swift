@@ -113,6 +113,7 @@ private struct SystemSection: View {
             }
         }
         .environment(\.formhausNested, true)
+        .environment(\.formhausSectionRows, true)
     }
 
     private var description: String? {

@@ -31,6 +31,7 @@ func isSystemBlock(_ field: FormField, _ components: FormComponents, limit: Int)
 
 extension EnvironmentValues {
     @Entry var formhausNested = false
+    @Entry var formhausSectionRows = false
 }
 
 struct SystemRow<Content: View>: View {
@@ -100,6 +101,7 @@ struct SystemErrorText: View {
 
 struct SystemBlock<Content: View>: View {
     @Environment(\.formhausNested) private var nested
+    @Environment(\.formhausSectionRows) private var sectionRows
     @Environment(\.formhausTokens) private var tokens
     let context: FieldContext
     let anchored: Bool
@@ -114,7 +116,18 @@ struct SystemBlock<Content: View>: View {
     }
 
     var body: some View {
-        if nested {
+        if nested, rows, sectionRows {
+            VStack(alignment: .leading, spacing: 4) {
+                SystemRowLabel(context: context).accessibilityAddTraits(.isHeader)
+                if errorFirst { SystemFieldError(context: context) }
+            }
+            .formhausTestContainer(context.testId)
+            .formhausScrollAnchor(context)
+            content
+            if context.helperText != nil || !errorFirst && context.isInvalid {
+                VStack(alignment: .leading, spacing: 4) { SystemNotes(context: context, showsError: !errorFirst) }
+            }
+        } else if nested {
             VStack(alignment: .leading, spacing: 8) {
                 SystemRowLabel(context: context).accessibilityAddTraits(.isHeader)
                 if errorFirst { SystemFieldError(context: context) }
