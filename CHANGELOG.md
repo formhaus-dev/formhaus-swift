@@ -12,6 +12,8 @@
 
 - Fixed the error of an empty text or number field disappearing when the field takes focus after a failed submit on iOS.
 - Fixed VoiceOver reading "Selected" on unchecked options of multiselect fields and `.system` choice lists.
+- Fixed the large navigation title of the `.system` set covering the first rows after a failed submit scrolled to a field that was already on screen.
+- Fixed a failed submit in the `.system` set not focusing a text field that was off screen.
 
 ## 0.4.0
 

@@ -18,6 +18,11 @@ extension FormModel {
         return engine.value(at: key)
     }
 
+    func refocus(_ request: FocusRequest) {
+        guard focusRequest == request, let key = request.key, fieldStates[key]?.hasFocus != true else { return }
+        field(key).requestFocus(request.id)
+    }
+
     public func commitValue(_ value: JSONValue?, forKey key: String) {
         guard !disabled else { return }
         let step = engine.currentStep?.nodeID

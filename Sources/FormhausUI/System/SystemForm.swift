@@ -95,7 +95,13 @@ struct SystemPage: View {
             .sensoryFeedback(.error, trigger: model.invalidAttempts)
             .onChange(of: model.focusRequest) { _, request in
                 guard let request, let target = ScrollTarget.focus(request, summary: behavior.errorSummary) else { return }
-                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { target.scroll(proxy, model: model) }
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+                    if case .field(let key) = target { proxy.scrollTo(key) } else { target.scroll(proxy, model: model) }
+                }
+                Task {
+                    try? await Task.sleep(for: .milliseconds(300))
+                    model.refocus(request)
+                }
             }
         }
     }
