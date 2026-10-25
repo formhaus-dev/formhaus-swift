@@ -8,19 +8,80 @@ struct ScrollStep {
     let anchor: UnitPoint?
 }
 
+@MainActor
+final class VisibleRows {
+    private(set) var visible: Set<String> = []
+    private(set) var questions: Set<String> = []
+
+    func update(_ id: String, visible shown: Bool) {
+        if shown { visible.insert(id) } else { visible.remove(id) }
+    }
+
+    func noteQuestion(_ key: String) {
+        questions.insert(key)
+    }
+
+    func shows(_ key: String) -> Bool {
+        visible.contains(key) && (!questions.contains(key) || visible.contains(Self.question(key)))
+    }
+
+    static func question(_ key: String) -> String { "\(key)#question" }
+}
+
+extension EnvironmentValues {
+    @Entry var formhausVisibleRows: VisibleRows?
+}
+
+private struct VisibilityProbe: ViewModifier {
+    @Environment(\.formhausVisibleRows) private var rows
+    let id: String
+    let question: String?
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18, macOS 15, *), let rows {
+            content
+                .onAppear { if let question { rows.noteQuestion(question) } }
+                .onScrollVisibilityChange(threshold: 0.99) { rows.update(id, visible: $0) }
+                .onDisappear { rows.update(id, visible: false) }
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    func scrollVisibility(_ id: String) -> some View {
+        modifier(VisibilityProbe(id: id, question: nil))
+    }
+
+    func questionVisibility(_ key: String) -> some View {
+        modifier(VisibilityProbe(id: VisibleRows.question(key), question: key))
+    }
+}
+
 extension FormModel {
     var focusedKey: String? { fieldStates.first { $0.value.hasFocus }?.key }
 
-    func refocus(_ request: FocusRequest) -> Bool {
-        guard focusRequest == request, !request.summary, let key = request.key, focusedKey == nil,
-            structure.visibleFields.contains(where: { $0.key == key && textInputTypes.contains($0.type) })
+    private var focusOrder: [(key: String, field: FormField)] {
+        structure.visibleFields.filter { $0.type != "hidden" }.flatMap { field -> [(key: String, field: FormField)] in
+            guard field.isGroup else { return [(field.key, field)] }
+            return engine.items(field.key).enumerated().flatMap { index, item in
+                item.fields.filter { $0.type != "hidden" }.map { ("\(field.key).\(index).\($0.key)", $0) }
+            }
+        }
+    }
+
+    func refocus(_ request: FocusRequest, errorSummary: Bool, replacing previous: String?) -> Bool {
+        guard focusRequest == request, !(request.summary && errorSummary), let key = request.key,
+            focusedKey == nil || focusedKey == previous && previous != key,
+            focusOrder.contains(where: { $0.key == key && textInputTypes.contains($0.field.type) })
         else { return false }
         field(key).requestFocus(request.id)
         return true
     }
 
     func scrollSteps(to key: String) -> [ScrollStep] {
-        let keys = structure.visibleFields.filter { $0.type != "hidden" }.map(\.key)
+        let keys = focusOrder.map(\.key)
         guard let index = keys.firstIndex(of: key), index > 0 else {
             return [ScrollStep(id: key, anchor: keys.first == key ? .center : nil)]
         }
@@ -33,19 +94,22 @@ struct SystemFocusScroll: ViewModifier {
     @Environment(\.formhausBehavior) private var behavior
     @State private var task: Task<Void, Never>?
     @State private var keyboardKey: String?
+    @State private var rows = VisibleRows()
     let model: FormModel
     let proxy: ScrollViewProxy
 
     func body(content: Content) -> some View {
         content
+            .environment(\.formhausVisibleRows, rows)
             .onChange(of: model.focusRequest) { _, request in
-                task?.cancel()
-                keyboardKey = nil
+                stop()
                 guard let request, let target = ScrollTarget.focus(request, summary: behavior.errorSummary) else { return }
-                task = Task { await scroll(to: target, for: request) }
+                let previous = model.focusedKey
+                task = Task { await scroll(to: target, for: request, replacing: previous) }
             }
-            .onChange(of: model.structure.stepIndex) { task?.cancel() }
-            .onDisappear { task?.cancel() }
+            .onChange(of: model.structure.stepIndex) { stop() }
+            .onChange(of: model.valuesVersion) { task?.cancel() }
+            .onDisappear { stop() }
             #if os(iOS)
                 .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
                     guard let key = keyboardKey else { return }
@@ -58,21 +122,28 @@ struct SystemFocusScroll: ViewModifier {
 
     private var animation: Animation? { reduceMotion ? nil : .easeOut(duration: 0.2) }
 
-    private func scroll(to target: ScrollTarget, for request: FocusRequest) async {
+    private func stop() {
+        task?.cancel()
+        keyboardKey = nil
+    }
+
+    private func scroll(to target: ScrollTarget, for request: FocusRequest, replacing previous: String?) async {
         guard case .field(let key) = target else {
             withAnimation(animation) { target.scroll(proxy, model: model) }
             return
         }
         keyboardKey = key
-        let steps = model.scrollSteps(to: key)
-        for (index, step) in steps.enumerated() {
-            if index > 0 { await Task.yield() }
-            guard !Task.isCancelled else { return }
-            withAnimation(index == steps.count - 1 ? animation : nil) { proxy.scrollTo(step.id, anchor: step.anchor) }
+        if !rows.shows(key) {
+            let steps = model.scrollSteps(to: key)
+            for (index, step) in steps.enumerated() {
+                if index > 0 { await Task.yield() }
+                guard !Task.isCancelled else { return }
+                withAnimation(index == steps.count - 1 ? animation : nil) { proxy.scrollTo(step.id, anchor: step.anchor) }
+            }
         }
         for _ in 0..<3 {
             try? await Task.sleep(for: .milliseconds(150))
-            guard !Task.isCancelled, model.refocus(request) else { return }
+            guard !Task.isCancelled, model.refocus(request, errorSummary: behavior.errorSummary, replacing: previous) else { return }
         }
     }
 }

@@ -20,7 +20,7 @@ struct SystemChoiceList: View {
                     .formhausTestId(context.optionTestId(value))
                     .accessibilityFocused($spoken, equals: index)
                 if index == 0 {
-                    row.formhausScrollAnchor(context)
+                    row.scrollVisibility(context.key).formhausScrollAnchor(context)
                         .onFormhausFocus(context) { spoken = focusedOption(context, selected) }
                         .sensoryFeedback(.selection, trigger: selected)
                 } else {
