@@ -84,9 +84,7 @@ public final class FormModel {
         self.hooks = hooks
     }
 
-    func updateHandlers(
-        engineOptions: FormEngineOptions? = nil, options: FormRendererOptions? = nil, onSubmit: SubmitHandler? = nil
-    ) {
+    func updateHandlers(engineOptions: FormEngineOptions? = nil, options: FormRendererOptions? = nil, onSubmit: SubmitHandler? = nil) {
         if let engineOptions {
             hooks?.current = engineOptions
             if engineOptions.locale != engine.locale { engine.locale = engineOptions.locale }
@@ -218,6 +216,7 @@ public final class FormModel {
 
     @ObservationIgnored private var lastStructureVersion = -1
     @ObservationIgnored private var lastValuesVersion = -1
+    @ObservationIgnored var revealPlan: RevealPlan?
 
     func refreshDisabled() {
         assign(\.disabled, loading || engine.stepValidating || engine.submitting)

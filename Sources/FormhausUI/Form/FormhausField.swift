@@ -6,6 +6,7 @@ public struct FormhausField: View {
     let field: FormField
     let key: String
     let model: FormModel
+    var reveals: [FieldReveal] = []
 
     public init(_ field: FormField, key: String? = nil, model: FormModel) {
         self.field = field
@@ -13,8 +14,13 @@ public struct FormhausField: View {
         self.model = model
     }
 
+    init(_ field: FormField, model: FormModel, reveals: [FieldReveal]) {
+        self.init(field, model: model)
+        self.reveals = reveals
+    }
+
     public var body: some View {
-        let context = FieldContext(field: field, key: key, state: model.field(key), model: model)
+        let context = FieldContext(field: field, key: key, state: model.field(key), model: model, reveals: reveals)
         if let custom = components.fields[field.type] {
             custom(context)
         } else if components.system {
