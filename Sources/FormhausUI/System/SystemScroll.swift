@@ -94,6 +94,9 @@ struct SystemFocusScroll: ViewModifier {
     @Environment(\.formhausBehavior) private var behavior
     @State private var task: Task<Void, Never>?
     @State private var keyboardKey: String?
+    #if os(iOS)
+        @State private var keyboardShown = false
+    #endif
     @State private var rows = VisibleRows()
     let model: FormModel
     let proxy: ScrollViewProxy
@@ -112,13 +115,28 @@ struct SystemFocusScroll: ViewModifier {
             .onDisappear { stop() }
             #if os(iOS)
                 .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
-                    guard let key = keyboardKey else { return }
-                    keyboardKey = nil
-                    guard model.focusedKey == key else { return }
-                    withAnimation(animation) { proxy.scrollTo(key) }
+                    keyboardShown = true
+                    showFocusedField()
                 }
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                    keyboardShown = false
+                }
+                .onChange(of: keyboardKey.map { model.field($0).hasFocus } ?? false) { showFocusedField() }
             #endif
     }
+
+    #if os(iOS)
+        private func showFocusedField() {
+            guard let key = keyboardKey, let focused = model.focusedKey else { return }
+            guard focused == key else {
+                keyboardKey = nil
+                return
+            }
+            guard keyboardShown else { return }
+            keyboardKey = nil
+            withAnimation(animation) { proxy.scrollTo(key) }
+        }
+    #endif
 
     private var animation: Animation? { reduceMotion ? nil : .easeOut(duration: 0.2) }
 
