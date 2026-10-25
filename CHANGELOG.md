@@ -10,6 +10,10 @@
 
 ### FormhausUI
 
+- New `conditionalReveal` option on `FormBehavior` draws a field shown by a `radio` or `multiselect` answer under that option, indented with a line on its left. Off by default.
+- With `conditionalReveal`, the error of a choice field that reveals fields shows above its options.
+- The `.system` set reveals under inline choice lists. Menu and pushed pickers and custom field views keep the fields in place.
+- New `revealLine` on `Controls` sets the width of the line beside revealed fields.
 - Fixed the error of an empty text or number field disappearing when the field takes focus after a failed submit on iOS.
 - Fixed VoiceOver reading "Selected" on unchecked options of multiselect fields and `.system` choice lists.
 - Fixed the large navigation title of the `.system` set covering the first rows after a failed submit scrolled to a field that was already on screen.
