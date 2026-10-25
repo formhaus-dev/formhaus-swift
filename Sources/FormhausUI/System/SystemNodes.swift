@@ -2,23 +2,23 @@
 import SwiftUI
 
 enum SystemChunk: Identifiable {
-    case rows([FormField])
-    case node(FormNode)
+    case rows([RevealedNode])
+    case node(RevealedNode)
 
     var id: Int {
         switch self {
-        case .rows(let fields): fields.first?.nodeID ?? -1
-        case .node(let node): node.nodeID
+        case .rows(let rows): rows.first?.id ?? -1
+        case .node(let node): node.id
         }
     }
 }
 
-func systemChunks(_ nodes: [FormNode], alone: (FormField) -> Bool) -> [SystemChunk] {
+func systemChunks(_ nodes: [RevealedNode], alone: (FormField) -> Bool) -> [SystemChunk] {
     var result: [SystemChunk] = []
-    var rows: [FormField] = []
+    var rows: [RevealedNode] = []
     for node in nodes {
-        if let field = node.field, !field.isGroup, !alone(field) {
-            rows.append(field)
+        if let field = node.node.field, !field.isGroup, !alone(field) {
+            rows.append(node)
             continue
         }
         if !rows.isEmpty { result.append(.rows(rows)) }
@@ -32,38 +32,39 @@ func systemChunks(_ nodes: [FormNode], alone: (FormField) -> Bool) -> [SystemChu
 struct SystemNodes: View {
     @Environment(\.formhausComponents) private var components
     @Environment(\.formhausBehavior) private var behavior
+    private let place = RevealPlacement()
     let nodes: [FormNode]
     let model: FormModel
 
     var body: some View {
-        ForEach(systemChunks(nodes) { isSystemBlock($0, components, limit: behavior.inlineChoiceLimit) }) { chunk in
+        let placed = place(nodes, model)
+        ForEach(systemChunks(placed) { isSystemBlock($0, components, limit: behavior.inlineChoiceLimit) }) { chunk in
             switch chunk {
-            case .rows(let fields):
+            case .rows(let rows):
+                let fields = rows.compactMap(\.node.field)
                 Section {
                     ForEach(fields, id: \.nodeID) { field in FormhausField(field, model: model) }
                 }
-            case .node(.section(let section)):
-                SystemSection(section: section, texts: model.texts(for: section), model: model)
-            case .node(let node):
-                SystemNodeRow(node: node, matrix: false, model: model)
+            case .node(let placed):
+                SystemNodeRow(placed: placed, matrix: false, model: model)
             }
         }
     }
 }
 
 struct SystemNodeRow: View {
-    let node: FormNode
+    let placed: RevealedNode
     let matrix: Bool
     let model: FormModel
 
     var body: some View {
-        switch node {
+        switch placed.node {
         case .field(let field) where field.isGroup:
             GroupNode(group: field, model: model)
         case .field(let field) where matrix && field.type == "radio":
             SystemPickerRow(context: FieldContext(field: field, model: model), matrix: true)
         case .field(let field):
-            FormhausField(field, model: model)
+            FormhausField(field, model: model, reveals: placed.reveals)
         case .section(let section):
             SystemSection(section: section, texts: model.texts(for: section), model: model)
         }
@@ -72,20 +73,21 @@ struct SystemNodeRow: View {
 
 private struct SystemSection: View {
     @Environment(\.formhausComponents) private var components
+    private let place = RevealPlacement()
     let section: FormSection
     let texts: RecalledTexts
     let model: FormModel
 
     var body: some View {
-        let nodes = section.fields.filter { $0.type != "hidden" }
+        let placed = place(section.fields.filter { $0.type != "hidden" }, model)
         Group {
             if let custom = components.slots.section {
                 custom(
                     SectionContext(
                         section: section, title: texts.title ?? "", description: description,
-                        content: AnyView(ForEach(nodes, id: \.nodeID) { SystemNodeRow(node: $0, matrix: section.isMatrix, model: model) })))
+                        content: AnyView(ForEach(placed, id: \.id) { SystemNodeRow(placed: $0, matrix: section.isMatrix, model: model) })))
             } else {
-                let chunks = systemChunks(nodes) { _ in false }
+                let chunks = systemChunks(placed) { _ in false }
                 if case .node? = chunks.first {
                     Section {
                     } header: {
@@ -96,16 +98,16 @@ private struct SystemSection: View {
                 }
                 ForEach(Array(chunks.enumerated()), id: \.element.id) { index, chunk in
                     switch chunk {
-                    case .rows(let fields):
+                    case .rows(let rows):
                         Section {
-                            ForEach(fields, id: \.nodeID) { SystemNodeRow(node: .field($0), matrix: section.isMatrix, model: model) }
+                            ForEach(rows, id: \.id) { SystemNodeRow(placed: $0, matrix: section.isMatrix, model: model) }
                         } header: {
                             if index == 0 { header }
                         } footer: {
                             if index == 0 { footer }
                         }
-                    case .node(let node):
-                        SystemNodeRow(node: node, matrix: section.isMatrix, model: model)
+                    case .node(let placed):
+                        SystemNodeRow(placed: placed, matrix: section.isMatrix, model: model)
                     }
                 }
             }

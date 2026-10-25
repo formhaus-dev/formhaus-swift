@@ -66,11 +66,20 @@ struct SystemRowLabel: View {
 
 struct SystemNotes: View {
     let context: FieldContext
+    var showsError = true
 
     var body: some View {
         if let helper = context.helperText {
             Text(verbatim: helper).font(.footnote).systemSecondaryText().fixedSize(horizontal: false, vertical: true)
         }
+        if showsError { SystemFieldError(context: context) }
+    }
+}
+
+struct SystemFieldError: View {
+    let context: FieldContext
+
+    var body: some View {
         if let error = context.error, !error.isEmpty { SystemErrorText(text: error) }
     }
 }
@@ -108,32 +117,43 @@ struct SystemBlock<Content: View>: View {
         if nested {
             VStack(alignment: .leading, spacing: 8) {
                 SystemRowLabel(context: context).accessibilityAddTraits(.isHeader)
+                if errorFirst { SystemFieldError(context: context) }
                 content
-                SystemNotes(context: context)
+                SystemNotes(context: context, showsError: !errorFirst)
             }
             .formhausTestContainer(context.testId)
-            .disabled(context.isLocked)
+            .disabled(context.isLocked && !rows)
             .scrollVisibility(context.key)
-            .scrollAnchor(anchored, context)
+            .formhausScrollAnchor(context)
         } else {
             Section {
-                content.formhausTestContainer(rows ? nil : context.testId).disabled(context.isLocked).scrollAnchor(anchored, context)
+                content.formhausTestContainer(rows ? nil : context.testId).disabled(context.isLocked && !rows).scrollAnchor(
+                    anchored, context)
             } header: {
-                tokens.marked(context.label, required: context.isRequired)
-                    .textCase(nil)
-                    .systemSecondaryText()
-                    .accessibilityLabel(Text(verbatim: context.accessibilityName))
-                    .accessibilityAddTraits(.isHeader)
-                    .formhausTestId(rows ? context.testId : nil)
-                    .questionVisibility(context.key)
+                VStack(alignment: .leading, spacing: 4) {
+                    tokens.marked(context.label, required: context.isRequired)
+                        .systemSecondaryText()
+                        .accessibilityLabel(Text(verbatim: context.accessibilityName))
+                        .accessibilityAddTraits(.isHeader)
+                        .formhausTestId(rows ? context.testId : nil)
+                    if errorFirst { SystemFieldError(context: context) }
+                }
+                .textCase(nil)
+                .questionVisibility(context.key)
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
-                    SystemNotes(context: context)
-                    if context.isRequired, (context.error ?? "").isEmpty { Text(verbatim: " ").font(.footnote).accessibilityHidden(true) }
+                    SystemNotes(context: context, showsError: !errorFirst)
+                    if context.isRequired, errorFirst || (context.error ?? "").isEmpty {
+                        Text(verbatim: " ").font(.footnote).accessibilityHidden(true)
+                    }
                 }
             }
         }
     }
+}
+
+extension SystemBlock {
+    fileprivate var errorFirst: Bool { !context.reveals.isEmpty }
 }
 
 extension View {

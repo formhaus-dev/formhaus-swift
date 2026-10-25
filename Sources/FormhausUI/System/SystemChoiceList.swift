@@ -7,6 +7,7 @@ func isInlineChoice(_ field: FormField, limit: Int) -> Bool {
 }
 
 struct SystemChoiceList: View {
+    @Environment(\.formhausNested) private var nested
     @AccessibilityFocusState private var spoken: Int?
     let context: FieldContext
 
@@ -18,13 +19,17 @@ struct SystemChoiceList: View {
                 let value = option.value ?? ""
                 let row = SystemCheckRow(label: option.label ?? value, checked: selected.contains(value)) { selection.choose(value) }
                     .formhausTestId(context.optionTestId(value))
+                    .disabled(context.isLocked)
                     .accessibilityFocused($spoken, equals: index)
                 if index == 0 {
-                    row.scrollVisibility(context.key).formhausScrollAnchor(context)
+                    row.id(nested ? "\(context.key)/options" : context.key).scrollVisibility(context.key)
                         .onFormhausFocus(context) { spoken = focusedOption(context, selected) }
                         .sensoryFeedback(.selection, trigger: selected)
                 } else {
                     row
+                }
+                if let reveal = context.openReveal(option) {
+                    RevealBlock(reveal: reveal, model: context.model).id(revealRowID(context.key, option))
                 }
             }
         }
