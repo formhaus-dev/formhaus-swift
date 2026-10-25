@@ -40,7 +40,7 @@ struct CorpusCaseTests {
         let options = SubmissionOptions(skippedSteps: testCase.skippedSteps, hiddenValues: testCase.hiddenValues)
         let result = try validateSubmission(try fixture.runtime(), testCase.values, options: options)
         #expect(strictlyEqual(.object(result.values), testCase.serverValues ?? testCase.expectedValues))
-        #expect(strictlyEqual(json(result.errors), testCase.serverErrors ?? testCase.expectedErrors))
+        #expect(strictlyEqual(json(result.errors), testCase.expectedErrors))
     }
 
     @Test("browser engine", arguments: Corpus.caseNames)
@@ -59,7 +59,7 @@ struct CorpusCaseTests {
     @MainActor func acceptedPayloadPassesServer(id: String) async throws {
         let (fixture, testCase) = try Corpus.testCase(id)
         let definition = try fixture.runtime()
-        guard testCase.serverErrors == nil, try await browserCanSubmit(definition, testCase) else { return }
+        guard try await browserCanSubmit(definition, testCase) else { return }
         let options = SubmissionOptions(skippedSteps: testCase.skippedSteps, hiddenValues: testCase.hiddenValues)
         #expect(try validateSubmission(definition, testCase.values, options: options).errors.isEmpty)
     }

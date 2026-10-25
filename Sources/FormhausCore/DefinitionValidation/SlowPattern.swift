@@ -4,109 +4,57 @@ enum SlowPattern {
     case long
 }
 
-let slowPatternLengthLimit = 1000
+private let maxBoundedRepeat = 10.0
+
+private struct Part {
+    let chars: PatternChars
+    let quantifier: PatternQuantifier
+    let atom: Bool
+}
 
 private struct PatternGroup {
     var look = false
     var inner = false
+    var unbounded = false
     var alternated = false
-    var entry = AsciiSet()
-    var previous = AsciiSet()
-    var chars = AsciiCounts()
-    var hasLead = false
-    var lead: UInt16?
-    var tail: UInt16?
+    var entry: PatternChars = []
+    var previous: PatternChars = []
+    var chars: PatternChars = []
+    var parts: [Part] = []
 
-    var separated: UInt16? {
-        guard !alternated else { return nil }
-        return [lead, tail].lazy.compactMap(\.self).first(where: chars.appearsOnce)
+    func separator(at index: Int) -> Part? {
+        guard parts.indices.contains(index) else { return nil }
+        let part = parts[index]
+        var others = parts
+        others.remove(at: index)
+        guard part.atom, part.quantifier.mandatory, !overlaps(part.chars, others.flatMap(\.chars)) else { return nil }
+        return part.quantifier.exact || others.contains(where: \.quantifier.mandatory) ? part : nil
     }
 
-    mutating func separate(alternation: Bool) {
-        inner = inner || alternation
-        alternated = alternated || alternation
-        previous = alternation ? entry : AsciiSet()
+    var separators: (lead: PatternChars?, tail: PatternChars?) {
+        guard !alternated else { return (nil, nil) }
+        let lead = separator(at: 0)
+        let tail = separator(at: parts.count - 1)
+        if let lead, lead.quantifier.exact || tail?.quantifier.exact != true { return (lead.chars, nil) }
+        return (nil, tail?.chars)
     }
 
-    mutating func append(_ added: AsciiCounts, separator: UInt16?) {
-        chars.add(added)
-        if !hasLead { (hasLead, lead) = (true, separator) }
-        tail = separator
-    }
-}
-
-private struct Repeated {
-    let own: AsciiCounts
-    let first: AsciiSet
-    let last: AsciiSet
-
-    init(own: AsciiCounts, first: AsciiSet, last: AsciiSet) {
-        self.own = own
-        self.first = first
-        self.last = last
-    }
-
-    init(_ set: AsciiSet) {
-        var counts = AsciiCounts()
-        counts.add(set)
-        self.init(own: counts, first: set, last: set)
-    }
-}
-
-private struct Sampler {
-    private var cache: [ArraySlice<UInt16>: AsciiSet] = [:]
-
-    mutating func samples(_ atom: ArraySlice<UInt16>) -> AsciiSet {
-        if let cached = cache[atom] { return cached }
-        let result = sample(atom)
-        cache[atom] = result
-        return result
-    }
-
-    private func sample(_ atom: ArraySlice<UInt16>) -> AsciiSet {
-        if atom.count > 1, atom.first == code("\\") {
-            let next = atom[atom.startIndex + 1]
-            if next == code("k") || (code("1")...code("9")).contains(next) { return .all }
-        }
-        return asciiMatches("^(?:" + String(decoding: atom, as: UTF16.self) + ")$")
-    }
-}
-
-private func isSeparatorAtom(_ atom: ArraySlice<UInt16>) -> Bool {
-    switch atom.count {
-    case 1: !isWordUnit(atom[atom.startIndex])
-    case 2: atom.first == code("\\") && !isWordUnit(atom[atom.startIndex + 1])
-    default: false
+    func repeats(_ quantifier: PatternQuantifier) -> Bool {
+        guard inner, quantifier.repeats, !quantifier.exact else { return false }
+        return quantifier.unbounded || unbounded || quantifier.bound > maxBoundedRepeat
     }
 }
 
 private enum Trailing {
     case adjacent
-    case previous(AsciiSet)
+    case previous(PatternChars)
 }
 
-private func trailing(_ previous: AsciiSet, _ quantifier: PatternQuantifier, _ repeated: Repeated) -> Trailing {
-    guard quantifier.unbounded else { return .previous(quantifier.optional ? previous : AsciiSet()) }
-    if previous.intersects(repeated.first) { return .adjacent }
-    return .previous(quantifier.optional ? previous.union(repeated.last) : repeated.last)
-}
-
-private enum Closing {
-    case invalid
-    case nested
-    case closed(PatternGroup, Repeated)
-}
-
-private func close(_ groups: inout [PatternGroup], _ quantifier: PatternQuantifier) -> Closing {
-    guard groups.count >= 2 else { return .invalid }
-    let closed = groups.removeLast()
-    let separated = closed.separated
-    if closed.inner && separated == nil && quantifier.repeats { return .nested }
-    let all = closed.chars.once
-    let first = separated.map { $0 == closed.lead ? AsciiSet($0) : all } ?? all
-    let last = separated.map { $0 == closed.tail ? AsciiSet($0) : all } ?? all
-    groups[groups.count - 1].inner = groups[groups.count - 1].inner || closed.inner
-    return .closed(closed, Repeated(own: closed.chars, first: first, last: last))
+private func trailing(_ previous: PatternChars, _ quantifier: PatternQuantifier, first: PatternChars, last: PatternChars) -> Trailing {
+    if quantifier.keepsPrevious { return .previous(previous) }
+    guard quantifier.unbounded else { return .previous([]) }
+    if overlaps(previous, first) { return .adjacent }
+    return .previous(quantifier.addsToPrevious ? previous + last : last)
 }
 
 private enum ScanStep {
@@ -115,38 +63,41 @@ private enum ScanStep {
 }
 
 private struct SlowPatternScan {
-    private var sampler = Sampler()
     private var groups = [PatternGroup()]
 
     mutating func open(look: Bool) {
-        let entry = look ? AsciiSet() : groups[groups.count - 1].previous
+        let entry = look ? [] : groups[groups.count - 1].previous
         groups.append(PatternGroup(look: look, entry: entry, previous: entry))
     }
 
     mutating func separate(alternation: Bool) {
-        groups[groups.count - 1].separate(alternation: alternation)
+        let current = groups.count - 1
+        if alternation { (groups[current].inner, groups[current].alternated) = (true, true) }
+        groups[current].previous = alternation ? groups[current].entry : []
     }
 
     mutating func atom(_ atom: ArraySlice<UInt16>, _ quantifier: PatternQuantifier) -> ScanStep {
-        let parts: (repeated: Repeated, closed: PatternGroup?, separator: UInt16?)
-        if atom.first == code(")") {
-            switch close(&groups, quantifier) {
-            case .invalid: return .done(nil)
-            case .nested: return .done(.nested)
-            case .closed(let group, let repeated): parts = (repeated, group, nil)
-            }
-        } else {
-            let own = sampler.samples(atom)
-            parts = (Repeated(own), nil, !quantifier.present && isSeparatorAtom(atom) ? own.single : nil)
-        }
+        let closed = atom.first == code(")") ? groups.removeLast() : nil
+        guard !groups.isEmpty else { return .done(nil) }
         let current = groups.count - 1
-        groups[current].append(parts.repeated.own, separator: parts.separator)
-        if let closed = parts.closed, closed.look || !quantifier.present {
-            groups[current].previous = closed.look || closed.alternated ? AsciiSet() : closed.previous
+        let chars = closed?.chars ?? atomChars(atom)
+        var (first, last) = (chars, chars)
+        if let closed {
+            let (lead, tail) = closed.separators
+            if lead == nil && tail == nil && closed.repeats(quantifier) { return .done(.nested) }
+            (first, last) = (lead ?? chars, tail ?? chars)
+            groups[current].inner = groups[current].inner || closed.inner
+            groups[current].unbounded = groups[current].unbounded || closed.unbounded
+        }
+        groups[current].chars += chars
+        groups[current].parts.append(Part(chars: chars, quantifier: quantifier, atom: closed == nil))
+        if let closed, closed.look || !quantifier.present {
+            groups[current].previous = closed.look || closed.alternated ? [] : closed.previous
             return .next
         }
-        groups[current].inner = groups[current].inner || quantifier.present
-        switch trailing(groups[current].previous, quantifier, parts.repeated) {
+        groups[current].inner = groups[current].inner || !quantifier.exact
+        groups[current].unbounded = groups[current].unbounded || quantifier.unbounded
+        switch trailing(groups[current].previous, quantifier, first: first, last: last) {
         case .adjacent:
             return .done(.adjacent)
         case .previous(let next):
@@ -159,7 +110,7 @@ private struct SlowPatternScan {
 func slowPattern(_ pattern: String) -> SlowPattern? {
     let lexer = PatternLexer(Array(pattern.utf16))
     let units = lexer.units
-    guard units.count <= slowPatternLengthLimit else { return .long }
+    guard units.count <= 1000 else { return .long }
     var scan = SlowPatternScan()
     var index = 0
     while index < units.count {

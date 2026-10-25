@@ -1,0 +1,1568 @@
+[
+  {
+    "use": "email",
+    "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^\\S+@\\S+\\.\\S+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^\\S+@\\S+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[\\w.+-]+@[\\w-]+\\.[\\w.-]+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[\\w.+-]+@([\\w-]+\\.)+[\\w-]{2,}$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^\\w+([.-]?\\w+)*@\\w+([.-]?\\w+)*(\\.\\w{2,3})+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^.+@.+\\..+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[^@]+@[^@]+\\.[a-z]{2,}$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^\\w+.?\\w+@\\w+\\.\\w+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$",
+    "valid": "ADA@EXAMPLE.COM",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^([\\w-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([\\w-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[a-z0-9]+@[a-z0-9]+\\.[a-z]+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,})$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "email",
+    "pattern": "^\\w+@\\w+\\.\\w+$",
+    "valid": "ada@example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\d{10}$",
+    "valid": "5550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\(?\\d{3}\\)?[-. ]?\\d{3}[-. ]?\\d{4}$",
+    "valid": "555-010-0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\(?([0-9]{3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$",
+    "valid": "555-010-0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?1?\\d{10}$",
+    "valid": "+15550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^(\\+1\\s?)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^[0-9]{3}-[0-9]{3}-[0-9]{4}$",
+    "valid": "555-010-0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\d{3}-\\d{3}-\\d{4}$",
+    "valid": "555-010-0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+[1-9]\\d{1,14}$",
+    "valid": "+15550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?[1-9]\\d{1,14}$",
+    "valid": "+15550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?[0-9 ()-]{7,20}$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?[0-9\\s\\-()]+$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^[0-9\\-\\+\\s\\(\\)]*$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?\\d+[\\d\\s-]*$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^[0-9]+\\s?[0-9]+$",
+    "valid": "5550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+(?:[0-9] ?){6,14}[0-9]$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^(\\+\\d{1,3}[- ]?)?\\d{10}$",
+    "valid": "+15550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?(\\d[\\d\\-. ]+)?(\\([\\d\\-. ]+\\))?[\\d\\-. ]+\\d$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^[+]?[(]?[0-9]{3}[)]?[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4,6}$",
+    "valid": "+15550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\d{3}[\\s.-]?\\d{3}[\\s.-]?\\d{4}$",
+    "valid": "555-010-0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^(\\d{3}[- .]?){2}\\d{4}$",
+    "valid": "555-010-0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^1?[2-9]\\d{2}[2-9]\\d{6}$",
+    "valid": "2125550199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+44\\s?7\\d{3}\\s?\\d{6}$",
+    "valid": "+44 7911 123456",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^0\\d{9,10}$",
+    "valid": "05550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?[\\d\\s]+$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^[\\d\\s+()-]+$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?\\d[\\d\\s]*\\d$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^(\\+\\d{1,3})?$",
+    "valid": "+1",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?[0-9]+$",
+    "valid": "+15550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^[0-9+ ]+$",
+    "valid": "+1 555 010 0199",
+    "invalid": "<>"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?\\d{1,3}[\\s-]?\\d+[\\s-]?\\d+$",
+    "valid": "+15550100199",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^\\d{5}$",
+    "valid": "94107",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^\\d{5}(-\\d{4})?$",
+    "valid": "94107",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[0-9]{5}(?:-[0-9]{4})?$",
+    "valid": "94107",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^\\d{5}(?:[-\\s]\\d{4})?$",
+    "valid": "94107",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[A-Za-z]\\d[A-Za-z][ -]?\\d[A-Za-z]\\d$",
+    "valid": "K1A 0B1",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[ABCEGHJ-NPRSTVXY]\\d[ABCEGHJ-NPRSTV-Z][ -]?\\d[ABCEGHJ-NPRSTV-Z]\\d$",
+    "valid": "K1A 0B1",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}$",
+    "valid": "SW1A 1AA",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^([A-Za-z][A-Ha-hJ-Yj-y]?[0-9][A-Za-z0-9]? ?[0-9][A-Za-z]{2}|[Gg][Ii][Rr] ?0[Aa]{2})$",
+    "valid": "SW1A 1AA",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[0-9]{5}$",
+    "valid": "94107",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^(?:0[1-9]|[1-8]\\d|9[0-8])\\d{3}$",
+    "valid": "94107",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[1-9][0-9]{3}\\s?[a-zA-Z]{2}$",
+    "valid": "1234 AB",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[1-9][0-9]{3} ?(?!sa|sd|ss)[A-Za-z]{2}$",
+    "valid": "1234 AB",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^\\d{4}$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^\\d{3}-\\d{4}$",
+    "valid": "123-4567",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[0-9]{6}$",
+    "valid": "123456",
+    "invalid": "<>"
+  },
+  {
+    "use": "postcode",
+    "pattern": "^[0-9]{9}$",
+    "valid": "123456789",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+$",
+    "valid": "Ada",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-Z ]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z\\s]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-Z]+[a-zA-Z ]*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+( [A-Za-z]+)*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+\\s?[A-Za-z]*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-Z]+(?:[\\s'-][a-zA-Z]+)*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Z][a-z]+(?: [A-Z][a-z]+)*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-Z\\s'-]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+(?:[ '-][A-Za-z]+)*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[\\p{L} '-]+$",
+    "valid": "pL L",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-ZÀ-ÿ\\s'-]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^(\\w+\\s?)+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]{2,}$",
+    "valid": "Ada",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-Z]+ [a-zA-Z]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^\\w+\\s\\w+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z][A-Za-z' -]*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-Z][a-zA-Z\\s]*$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+[ ]?[A-Za-z]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z .'-]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Z][a-z]+$",
+    "valid": "Ada",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+(?: [A-Za-z]+)?$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+\\s[A-Za-z]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "name",
+    "pattern": "^[a-zA-Z]+\\s?[a-zA-Z]+$",
+    "valid": "Ada Lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^[a-zA-Z0-9_]{3,16}$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^[a-zA-Z0-9_]+$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^[a-z0-9_-]{3,16}$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^[a-zA-Z][a-zA-Z0-9_]{2,15}$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^@?(\\w){1,15}$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^[\\w.-]+$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^[a-z][a-z0-9_]*$",
+    "valid": "ada_lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "username",
+    "pattern": "^[a-zA-Z][a-zA-Z0-9]*$",
+    "valid": "ada",
+    "invalid": "<>"
+  },
+  {
+    "use": "slug",
+    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+    "valid": "my-page-2",
+    "invalid": "<>"
+  },
+  {
+    "use": "slug",
+    "pattern": "^[a-z0-9-]+$",
+    "valid": "my-page-2",
+    "invalid": "<>"
+  },
+  {
+    "use": "slug",
+    "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$",
+    "valid": "my-page-2",
+    "invalid": "<>"
+  },
+  {
+    "use": "slug",
+    "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+    "valid": "my-page-2",
+    "invalid": "<>"
+  },
+  {
+    "use": "slug",
+    "pattern": "^[a-z0-9_-]+$",
+    "valid": "my-page-2",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^(?=.*[A-Z])(?=.*\\d).{8,}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$",
+    "valid": "Secret12",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,32}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^.{8,}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^\\S{8,}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^(?=.*\\d).{6,}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "(?=.*[A-Z])(?=.*[0-9])",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "password",
+    "pattern": "^[A-Za-z0-9!@#$%^&*]{8,64}$",
+    "valid": "Secret123!",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^https?://.+$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^https?://[^\\s]+$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^https?:\\/\\/[\\w.-]+(?:\\.[\\w.-]+)+[\\w\\-._~:/?#[\\]@!$&'()*+,;=]*$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^(https?:\\/\\/)?([\\da-z.-]+)\\.([a-z.]{2,6})([\\/\\w .-]*)*\\/?$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^(https?://)?([\\w-]+\\.)+[\\w-]+(/[\\w-./?%&=]*)?$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^(ftp|http|https):\\/\\/[^ \"]+$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^www\\.[a-z0-9-]+\\.[a-z]{2,}$",
+    "valid": "www.example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$",
+    "valid": "example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.[A-Za-z]{2,})+$",
+    "valid": "example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^https:\\/\\/(www\\.)?linkedin\\.com\\/in\\/[\\w-]+\\/?$",
+    "valid": "https://www.linkedin.com/in/ada-lovelace",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^https?:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\/.+$",
+    "valid": "https://www.youtube.com/watch",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^([\\w-]+\\.)+[a-z]{2,}$",
+    "valid": "example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "url",
+    "pattern": "^https?:\\/\\/\\S+$",
+    "valid": "https://example.com",
+    "invalid": "<>"
+  },
+  {
+    "use": "ipv4",
+    "pattern": "^(\\d{1,3}\\.){3}\\d{1,3}$",
+    "valid": "192.168.0.1",
+    "invalid": "<>"
+  },
+  {
+    "use": "ipv4",
+    "pattern": "^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$",
+    "valid": "192.168.0.1",
+    "invalid": "<>"
+  },
+  {
+    "use": "ipv4",
+    "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$",
+    "valid": "192.168.0.1",
+    "invalid": "<>"
+  },
+  {
+    "use": "ipv4",
+    "pattern": "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$",
+    "valid": "192.168.0.1",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+    "valid": "2024-05-17",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+    "valid": "2024-05-17",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^(0[1-9]|1[0-2])\\/(0[1-9]|[12]\\d|3[01])\\/\\d{4}$",
+    "valid": "05/17/2024",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^\\d{1,2}\\/\\d{1,2}\\/\\d{4}$",
+    "valid": "05/17/2024",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^(0?[1-9]|[12][0-9]|3[01])[\\/\\-.](0?[1-9]|1[012])[\\/\\-.]\\d{4}$",
+    "valid": "17.05.2024",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^\\d{2}\\.\\d{2}\\.\\d{4}$",
+    "valid": "17.05.2024",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
+    "valid": "05/27",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^(0[1-9]|1[0-2])/[0-9]{2}$",
+    "valid": "05/27",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^(19|20)\\d{2}$",
+    "valid": "1999",
+    "invalid": "<>"
+  },
+  {
+    "use": "date",
+    "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+    "valid": "05/17/2024",
+    "invalid": "<>"
+  },
+  {
+    "use": "time",
+    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+    "valid": "09:30",
+    "invalid": "<>"
+  },
+  {
+    "use": "time",
+    "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+    "valid": "09:30",
+    "invalid": "<>"
+  },
+  {
+    "use": "time",
+    "pattern": "^(0?[1-9]|1[0-2]):[0-5]\\d\\s?(AM|PM|am|pm)$",
+    "valid": "9:30 AM",
+    "invalid": "<>"
+  },
+  {
+    "use": "time",
+    "pattern": "^\\d{2}:\\d{2}(:\\d{2})?$",
+    "valid": "09:30",
+    "invalid": "<>"
+  },
+  {
+    "use": "time",
+    "pattern": "^\\d{1,2}:\\d{2}$",
+    "valid": "09:30",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+\\.?\\d*$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d*\\.?\\d*$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^-?\\d+\\.?\\d*$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[0-9]+[.,]?[0-9]*$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+(\\.\\d{1,2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+(?:\\.\\d{2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\$?\\d+(\\.\\d{2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\$?\\d+(,\\d{3})*(\\.\\d{2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\$?(\\d{1,3}(,\\d{3})*|\\d+)(\\.\\d{2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^-?\\d*\\.?\\d+$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^-?\\d+(\\.\\d+)?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[+-]?\\d+(\\.\\d+)?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[0-9]*\\.?[0-9]+$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d{1,3}(,\\d{3})*(\\.\\d+)?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+([.,]\\d{1,2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[1-9]\\d*(\\.\\d+)?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d*[.,]?\\d+$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^(0|[1-9]\\d*)(\\.\\d+)?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^-?\\d{1,3}(?:[ .]\\d{3})*(?:,\\d+)?$",
+    "valid": "12",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^€?\\s?\\d+([.,]\\d{2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[0-9]+(\\.[0-9]{1,2})?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+\\.\\d{2}$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^-?[0-9]+$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[1-9][0-9]*$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[0-9]{1,6}$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[0-9]+$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+(\\.\\d+)?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\$?\\d+\\.?\\d*$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d+,?\\d*$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^[0-9]+([,.][0-9]+)?$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "money",
+    "pattern": "^\\d*\\.\\d+$",
+    "valid": "12.50",
+    "invalid": "<>"
+  },
+  {
+    "use": "percent",
+    "pattern": "^(100|[1-9]?\\d)%?$",
+    "valid": "42%",
+    "invalid": "<>"
+  },
+  {
+    "use": "percent",
+    "pattern": "^\\d+(\\.\\d+)?%$",
+    "valid": "42.5%",
+    "invalid": "<>"
+  },
+  {
+    "use": "percent",
+    "pattern": "^(100(\\.0+)?|\\d{1,2}(\\.\\d+)?)$",
+    "valid": "42",
+    "invalid": "<>"
+  },
+  {
+    "use": "percent",
+    "pattern": "^\\d{1,3}%$",
+    "valid": "42%",
+    "invalid": "<>"
+  },
+  {
+    "use": "percent",
+    "pattern": "^\\d+\\.?\\d*%?$",
+    "valid": "42.5%",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^\\d{16}$",
+    "valid": "4111111111111111",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^\\d{4}[ -]?\\d{4}[ -]?\\d{4}[ -]?\\d{4}$",
+    "valid": "4111111111111111",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^(\\d{4}[- ]?){3}\\d{4}$",
+    "valid": "4111111111111111",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^[0-9]{13,19}$",
+    "valid": "4111111111111111",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^4[0-9]{12}(?:[0-9]{3})?$",
+    "valid": "4111111111111111",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})$",
+    "valid": "4111111111111111",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^\\d{3,4}$",
+    "valid": "123",
+    "invalid": "<>"
+  },
+  {
+    "use": "card",
+    "pattern": "^[0-9\\s]{13,19}$",
+    "valid": "4111111111111111",
+    "invalid": "<>"
+  },
+  {
+    "use": "national id",
+    "pattern": "^\\d{3}-\\d{2}-\\d{4}$",
+    "valid": "123-45-6789",
+    "invalid": "<>"
+  },
+  {
+    "use": "national id",
+    "pattern": "^(?!000|666|9\\d{2})\\d{3}-(?!00)\\d{2}-(?!0000)\\d{4}$",
+    "valid": "123-45-6789",
+    "invalid": "<>"
+  },
+  {
+    "use": "national id",
+    "pattern": "^\\d{3}-?\\d{2}-?\\d{4}$",
+    "valid": "123-45-6789",
+    "invalid": "<>"
+  },
+  {
+    "use": "national id",
+    "pattern": "^\\d{3}[ -]?\\d{3}[ -]?\\d{3}$",
+    "valid": "123456789",
+    "invalid": "<>"
+  },
+  {
+    "use": "national id",
+    "pattern": "^\\d{9}$",
+    "valid": "123456789",
+    "invalid": "<>"
+  },
+  {
+    "use": "national id",
+    "pattern": "^[A-CEGHJ-PR-TW-Z]{2}\\d{6}[A-D]$",
+    "valid": "AB123456C",
+    "invalid": "<>"
+  },
+  {
+    "use": "vat",
+    "pattern": "^[A-Z]{2}[0-9A-Z]{2,12}$",
+    "valid": "DE123456789",
+    "invalid": "<>"
+  },
+  {
+    "use": "vat",
+    "pattern": "^(GB)?\\d{9}$",
+    "valid": "GB123456789",
+    "invalid": "<>"
+  },
+  {
+    "use": "vat",
+    "pattern": "^DE\\d{9}$",
+    "valid": "DE123456789",
+    "invalid": "<>"
+  },
+  {
+    "use": "vat",
+    "pattern": "^FR[0-9A-Z]{2}\\d{9}$",
+    "valid": "FR12345678901",
+    "invalid": "<>"
+  },
+  {
+    "use": "vat",
+    "pattern": "^[A-Z]{2}[0-9]+$",
+    "valid": "DE123456789",
+    "invalid": "<>"
+  },
+  {
+    "use": "vat",
+    "pattern": "^NL\\d{9}B\\d{2}$",
+    "valid": "NL123456789B01",
+    "invalid": "<>"
+  },
+  {
+    "use": "iban",
+    "pattern": "^[A-Z]{2}\\d{2}[A-Z0-9]{1,30}$",
+    "valid": "DE89370400440532013000",
+    "invalid": "<>"
+  },
+  {
+    "use": "iban",
+    "pattern": "^[A-Z]{2}[0-9]{2}(?:[ ]?[0-9A-Z]{4}){2,7}(?:[ ]?[0-9A-Z]{1,4})?$",
+    "valid": "DE89370400440532013000",
+    "invalid": "<>"
+  },
+  {
+    "use": "iban",
+    "pattern": "^DE\\d{20}$",
+    "valid": "DE89370400440532013000",
+    "invalid": "<>"
+  },
+  {
+    "use": "iban",
+    "pattern": "^GB\\d{2}[A-Z]{4}\\d{14}$",
+    "valid": "GB29NWBK60161331926819",
+    "invalid": "<>"
+  },
+  {
+    "use": "color",
+    "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+    "valid": "#ff8800",
+    "invalid": "<>"
+  },
+  {
+    "use": "color",
+    "pattern": "^#?([a-f0-9]{6}|[a-f0-9]{3})$",
+    "valid": "#ff8800",
+    "invalid": "<>"
+  },
+  {
+    "use": "color",
+    "pattern": "^#[0-9a-fA-F]{6}$",
+    "valid": "#ff8800",
+    "invalid": "<>"
+  },
+  {
+    "use": "color",
+    "pattern": "^#(?:[0-9a-fA-F]{3}){1,2}$",
+    "valid": "#ff8800",
+    "invalid": "<>"
+  },
+  {
+    "use": "uuid",
+    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    "valid": "123e4567-e89b-42d3-a456-426614174000",
+    "invalid": "<>"
+  },
+  {
+    "use": "uuid",
+    "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+    "valid": "123e4567-e89b-42d3-a456-426614174000",
+    "invalid": "<>"
+  },
+  {
+    "use": "semver",
+    "pattern": "^\\d+\\.\\d+\\.\\d+$",
+    "valid": "1.2.3",
+    "invalid": "<>"
+  },
+  {
+    "use": "semver",
+    "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+    "valid": "1.2.3",
+    "invalid": "<>"
+  },
+  {
+    "use": "semver",
+    "pattern": "^v?\\d+(\\.\\d+){2}$",
+    "valid": "1.2.3",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[A-Z]{3}$",
+    "valid": "ABC",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[A-Z]+$",
+    "valid": "ABC",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[a-z]+$",
+    "valid": "hello",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[0-9]{4}$",
+    "valid": "1234",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^.{1,280}$",
+    "valid": "hello",
+    "invalid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "use": "text",
+    "pattern": "^[^<>]*$",
+    "valid": "hello",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[\\s\\S]{0,500}$",
+    "valid": "hello",
+    "invalid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+    "use": "text",
+    "pattern": "^[A-Za-z0-9 ,.'-]+$",
+    "valid": "hello",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^\\d+\\s[A-Za-z]+\\s[A-Za-z]+$",
+    "valid": "12 Main Street",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^\\d+\\s+\\w+(\\s\\w+)*$",
+    "valid": "12 Main",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[a-z]+(?:,\\s*[a-z]+)*$",
+    "valid": "hello",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[\\w\\s.,!?'-]+$",
+    "valid": "hello",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^(?:yes|no)$",
+    "valid": "yes",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[0-9a-zA-Z]{6}$",
+    "valid": "AB12CD",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[A-Z0-9]{6,10}$",
+    "valid": "AB12CD",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[1-9]\\d{0,2}$",
+    "valid": "42",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^(1[89]|[2-9]\\d)$",
+    "valid": "42",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^\\d{3}$",
+    "valid": "123",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^\\d+\\s?[A-Za-z]*$",
+    "valid": "42",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[a-zA-Z0-9]+$",
+    "valid": "hello",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^[A-Za-z0-9]+(?:[ -][A-Za-z0-9]+)*$",
+    "valid": "hello",
+    "invalid": "<>"
+  },
+  {
+    "use": "text",
+    "pattern": "^\\d+[A-Za-z]?$",
+    "valid": "42",
+    "invalid": "<>"
+  },
+  {
+    "use": "country",
+    "pattern": "^[A-Za-zÀ-ÖØ-öø-ɏ̀-ٟ٪-ۯۺ-ۿऀ-॥॰-๏๚-๿Ḁ-ỿ぀-ヿ一-鿿가-힣][A-Za-zÀ-ÖØ-öø-ɏ̀-ٟ٪-ۯۺ-ۿऀ-॥॰-๏๚-๿Ḁ-ỿ぀-ヿ一-鿿가-힣 .,'’()&\\-]{1,99}$",
+    "valid": "Côte d'Ivoire",
+    "invalid": "<script>"
+  },
+  {
+    "use": "country",
+    "pattern": "^[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬᝮ-ᝰក-ឳៗៜᠠ-ᡸᢀ-ᢄᢇ-ᢨᢪᢰ-ᣵᤀ-ᤞᥐ-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉᨀ-ᨖᨠ-ᩔᪧᬅ-ᬳᭅ-ᭌᮃ-ᮠᮮᮯᮺ-ᯥᰀ-ᰣᱍ-ᱏᱚ-ᱽᲀ-ᲊᲐ-ᲺᲽ-Ჿᳩ-ᳬᳮ-ᳳᳵᳶᳺᴀ-ᶿḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥ][A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬᝮ-ᝰក-ឳៗៜᠠ-ᡸᢀ-ᢄᢇ-ᢨᢪᢰ-ᣵᤀ-ᤞᥐ-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉᨀ-ᨖᨠ-ᩔᪧᬅ-ᬳᭅ-ᭌᮃ-ᮠᮮᮯᮺ-ᯥᰀ-ᰣᱍ-ᱏᱚ-ᱽᲀ-ᲊᲐ-ᲺᲽ-Ჿᳩ-ᳬᳮ-ᳳᳵᳶᳺᴀ-ᶿḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥ .,'’()&\\-]{1,99}$",
+    "valid": "São Tomé & Príncipe",
+    "invalid": "1234"
+  },
+  {
+    "use": "phone",
+    "pattern": "^(?=[^0-9]*[0-9])[^<>\\u0000-\\u001F\\u007F]{1,40}$",
+    "valid": "+1 (555) 010-0199",
+    "invalid": "call me"
+  },
+  {
+    "use": "phone",
+    "pattern": "^\\+?[0-9]{1,3}(?:[ -]?\\(?[0-9]{2,4}\\)?)?(?:[ -]?[0-9]{2,4}){2,3}$",
+    "valid": "+44 (20) 7946 0958",
+    "invalid": "+44 20"
+  },
+  {
+    "use": "phone",
+    "pattern": "^(?:\\+?1[ .-]?)?(?:\\(\\d{3}\\)|\\d{3})[ .-]?\\d{3}[ .-]?\\d{4}$",
+    "valid": "+1 (555) 010-0199",
+    "invalid": "555-0199"
+  },
+  {
+    "use": "url",
+    "pattern": "^/[^\\s?#]{0,200}$",
+    "valid": "/pricing/teams",
+    "invalid": "/pricing?plan=pro"
+  },
+  {
+    "use": "text",
+    "pattern": "^(en|es|ar|pt|br)$",
+    "valid": "pt",
+    "invalid": "fr"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬ]+(?:[ '-][A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬ]+)*$",
+    "valid": "José Müller-O'Brien",
+    "invalid": "José  Müller"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸ]+(?:\\s+[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸ]+)*$",
+    "valid": "Zoë   Łukasiewicz",
+    "invalid": "Zoë-Ann"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬᝮ-ᝰក-ឳៗៜᠠ-ᡸᢀ-ᢄᢇ-ᢨᢪᢰ-ᣵᤀ-ᤞᥐ-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉᨀ-ᨖᨠ-ᩔᪧᬅ-ᬳᭅ-ᭌᮃ-ᮠᮮᮯᮺ-ᯥᰀ-ᰣᱍ-ᱏᱚ-ᱽᲀ-ᲊᲐ-ᲺᲽ-Ჿᳩ-ᳬᳮ-ᳳᳵᳶᳺᴀ-ᶿḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥῲ-ῴῶ-ῼⁱⁿₐ-ₜℂℇℊ-ℓℕℙ-ℝℤΩℨK-ℭℯ-ℹℼ-ℿⅅ-ⅉⅎↃↄⰀ-ⳤⳫ-ⳮⳲⳳⴀ-ⴥⴧⴭⴰ-ⵧⵯⶀ-ⶖⶠ-ⶦⶨ-ⶮⶰ-ⶶⶸ-ⶾⷀ-ⷆⷈ-ⷎⷐ-ⷖⷘ-ⷞⸯ々〆〱-〵〻〼ぁ-ゖゝ-ゟァ-ヺー-ヿㄅ-ㄯㄱ-ㆎㆠ-ㆿㇰ-ㇿ㐀-䶿一-ꒌꓐ-ꓽꔀ-ꘌꘐ-ꘟꘪꘫꙀ-ꙮꙿ-ꚝꚠ-ꛥꜗ-ꜟꜢ-ꞈꞋ-ꟍꟐꟑꟓꟕ-Ƛꟲ-ꠁꠃ-ꠅꠇ-ꠊꠌ-ꠢꡀ-ꡳꢂ-ꢳꣲ-ꣷꣻꣽꣾꤊ-ꤥꤰ-ꥆꥠ-ꥼꦄ-ꦲꧏꧠ-ꧤꧦ-ꧯꧺ-ꧾꨀ-ꨨꩀ-ꩂꩄ-ꩋꩠ-ꩶꩺꩾ-ꪯꪱꪵꪶꪹ-ꪽꫀꫂꫛ-ꫝꫠ-ꫪꫲ-ꫴꬁ-ꬆꬉ-ꬎꬑ-ꬖꬠ-ꬦꬨ-ꬮꬰ-ꭚꭜ-ꭩꭰ-ꯢ가-힣ힰ-ퟆퟋ-ퟻ 'ʼ’.-]{1,100}$",
+    "valid": "Ana María Pérez-Ñúñez",
+    "invalid": "R2-D2"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬᝮ-ᝰក-ឳៗៜᠠ-ᡸᢀ-ᢄᢇ-ᢨᢪᢰ-ᣵᤀ-ᤞᥐ-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉᨀ-ᨖᨠ-ᩔᪧᬅ-ᬳᭅ-ᭌᮃ-ᮠᮮᮯᮺ-ᯥᰀ-ᰣᱍ-ᱏᱚ-ᱽᲀ-ᲊᲐ-ᲺᲽ-Ჿᳩ-ᳬᳮ-ᳳᳵᳶᳺᴀ-ᶿḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥῲ-ῴῶ-ῼⁱⁿₐ-ₜℂℇℊ-ℓℕℙ-ℝℤΩℨK-ℭℯ-ℹℼ-ℿⅅ-ⅉⅎↃↄⰀ-ⳤⳫ-ⳮⳲⳳⴀ-ⴥⴧⴭⴰ-ⵧⵯⶀ-ⶖⶠ-ⶦⶨ-ⶮⶰ-ⶶⶸ-ⶾⷀ-ⷆⷈ-ⷎⷐ-ⷖⷘ-ⷞⸯ々〆〱-〵〻〼ぁ-ゖゝ-ゟァ-ヺ]+(?:[ '-][A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆՙՠ-ֈא-תׯ-ײؠ-يٮٯٱ-ۓەۥۦۮۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࡠ-ࡪࡰ-ࢇࢉ-ࢎࢠ-ࣉऄ-हऽॐक़-ॡॱ-ঀঅ-ঌএঐও-নপ-রলশ-হঽৎড়ঢ়য়-ৡৰৱৼਅ-ਊਏਐਓ-ਨਪ-ਰਲਲ਼ਵਸ਼ਸਹਖ਼-ੜਫ਼ੲ-ੴઅ-ઍએ-ઑઓ-નપ-રલળવ-હઽૐૠૡૹଅ-ଌଏଐଓ-ନପ-ରଲଳଵ-ହଽଡ଼ଢ଼ୟ-ୡୱஃஅ-ஊஎ-ஐஒ-கஙசஜஞடணதந-பம-ஹௐఅ-ఌఎ-ఐఒ-నప-హఽౘ-ౚౝౠౡಀಅ-ಌಎ-ಐಒ-ನಪ-ಳವ-ಹಽೝೞೠೡೱೲഄ-ഌഎ-ഐഒ-ഺഽൎൔ-ൖൟ-ൡൺ-ൿඅ-ඖක-නඳ-රලව-ෆก-ะาำเ-ๆກຂຄຆ-ຊຌ-ຣລວ-ະາຳຽເ-ໄໆໜ-ໟༀཀ-ཇཉ-ཬྈ-ྌက-ဪဿၐ-ၕၚ-ၝၡၥၦၮ-ၰၵ-ႁႎႠ-ჅჇჍა-ჺჼ-ቈቊ-ቍቐ-ቖቘቚ-ቝበ-ኈኊ-ኍነ-ኰኲ-ኵኸ-ኾዀዂ-ዅወ-ዖዘ-ጐጒ-ጕጘ-ፚᎀ-ᎏᎠ-Ᏽᏸ-ᏽᐁ-ᙬᙯ-ᙿᚁ-ᚚᚠ-ᛪᛱ-ᛸᜀ-ᜑᜟ-ᜱᝀ-ᝑᝠ-ᝬᝮ-ᝰក-ឳៗៜᠠ-ᡸᢀ-ᢄᢇ-ᢨᢪᢰ-ᣵᤀ-ᤞᥐ-ᥭᥰ-ᥴᦀ-ᦫᦰ-ᧉᨀ-ᨖᨠ-ᩔᪧᬅ-ᬳᭅ-ᭌᮃ-ᮠᮮᮯᮺ-ᯥᰀ-ᰣᱍ-ᱏᱚ-ᱽᲀ-ᲊᲐ-ᲺᲽ-Ჿᳩ-ᳬᳮ-ᳳᳵᳶᳺᴀ-ᶿḀ-ἕἘ-Ἕἠ-ὅὈ-Ὅὐ-ὗὙὛὝὟ-ώᾀ-ᾴᾶ-ᾼιῂ-ῄῆ-ῌῐ-ΐῖ-Ίῠ-Ῥῲ-ῴῶ-ῼⁱⁿₐ-ₜℂℇℊ-ℓℕℙ-ℝℤΩℨK-ℭℯ-ℹℼ-ℿⅅ-ⅉⅎↃↄⰀ-ⳤⳫ-ⳮⳲⳳⴀ-ⴥⴧⴭⴰ-ⵧⵯⶀ-ⶖⶠ-ⶦⶨ-ⶮⶰ-ⶶⶸ-ⶾⷀ-ⷆⷈ-ⷎⷐ-ⷖⷘ-ⷞⸯ々〆〱-〵〻〼ぁ-ゖゝ-ゟァ-ヺ]+)*$",
+    "valid": "Łukasz Żółć-Nowak",
+    "invalid": "Łukasz 2"
+  },
+  {
+    "use": "name",
+    "pattern": "^[A-Za-z]+(?:\\s[A-Za-z]+)*$",
+    "valid": "Ada King Lovelace",
+    "invalid": "Ada  King"
+  },
+  {
+    "use": "name",
+    "pattern": "^\\w+(?:\\s+\\w+)*$",
+    "valid": "Ada  Lovelace",
+    "invalid": "Ada-Lovelace"
+  },
+  {
+    "use": "name",
+    "pattern": "^[\\p{L}]+(?:[ '-][\\p{L}]+)*$",
+    "valid": "L pL",
+    "invalid": "Ada Lovelace"
+  },
+  {
+    "use": "name",
+    "pattern": "^[\\p{L}\\p{M}' -]{2,60}$",
+    "valid": "L M",
+    "invalid": "Ada"
+  },
+  {
+    "use": "name",
+    "pattern": "^[\\p{L}\\p{M}]+(?:[ '\\-][\\p{L}\\p{M}]+)*$",
+    "valid": "LM-pM",
+    "invalid": "Ada"
+  },
+  {
+    "use": "company",
+    "pattern": "^[\\p{L}0-9]+(?:[ &.,'()-]+[\\p{L}0-9]+)*$",
+    "valid": "L & 3, pL",
+    "invalid": "Acme"
+  },
+  {
+    "use": "company",
+    "pattern": "^[A-Za-z0-9]+(?:[ &.,'()-]+[A-Za-z0-9]+)*\\.?$",
+    "valid": "Smith & Sons (UK) Ltd.",
+    "invalid": "Acme!"
+  },
+  {
+    "use": "company",
+    "pattern": "^[A-Za-z0-9À-ÿ][A-Za-z0-9À-ÿ &.,'()-]{1,99}$",
+    "valid": "Café Müller & Co.",
+    "invalid": "-Acme"
+  },
+  {
+    "use": "company",
+    "pattern": "^[A-Za-z0-9][A-Za-z0-9 &.,'()/-]{0,99}$",
+    "valid": "AT&T (US), Inc./Ltd",
+    "invalid": "@acme"
+  },
+  {
+    "use": "email",
+    "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*@[a-z0-9]+(?:[.-][a-z0-9]+)*\\.[a-z]{2,}$",
+    "valid": "ada.lovelace@mail.example.com",
+    "invalid": "ada..lovelace@example.com"
+  }
+]

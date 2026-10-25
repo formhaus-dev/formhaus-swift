@@ -5,11 +5,25 @@ enum TokenKind {
 }
 
 struct PatternQuantifier {
+    enum Kind {
+        case none, star, plus, question, braced
+    }
+
     var end: Int
-    var present = false
-    var repeats = false
-    var unbounded = false
-    var optional = false
+    var kind = Kind.none
+    var minimum: ArraySlice<UInt16> = []
+    var maximum: ArraySlice<UInt16>?
+
+    var present: Bool { kind != .none }
+    var exact: Bool { kind == .none || (kind == .braced && maximum.map { $0.elementsEqual(minimum) } ?? true) }
+    var mandatory: Bool { exact || kind == .plus || (kind == .braced && maximum != nil && minimum.first != code("0")) }
+    var repeats: Bool { kind == .star || kind == .plus || kind == .braced }
+    var unbounded: Bool { kind == .star || kind == .plus || (kind == .braced && maximum?.isEmpty == true) }
+    var bound: Double { maximum.flatMap { Double(String(decoding: $0, as: UTF16.self)) } ?? 0 }
+
+    private var fromZero: Bool { kind == .braced && minimum.elementsEqual([code("0")]) }
+    var keepsPrevious: Bool { kind == .question || (fromZero && maximum?.isEmpty != true) }
+    var addsToPrevious: Bool { kind == .star || (fromZero && maximum?.isEmpty == true) }
 }
 
 struct PatternLexer {
@@ -109,11 +123,11 @@ struct PatternLexer {
     }
 
     func quantifier(at start: Int) -> PatternQuantifier {
+        let kinds: [UInt16: PatternQuantifier.Kind] = [code("*"): .star, code("+"): .plus, code("?"): .question]
         var result = PatternQuantifier(end: start)
         guard let char = unit(start) else { return result }
-        if [code("*"), code("+"), code("?")].contains(char) {
-            result = PatternQuantifier(
-                end: start + 1, present: true, repeats: char != code("?"), unbounded: char != code("?"), optional: char != code("+"))
+        if let kind = kinds[char] {
+            result = PatternQuantifier(end: start + 1, kind: kind)
         } else if char == code("{"), let braced = braced(at: start) {
             result = braced
         } else {
@@ -127,14 +141,13 @@ struct PatternLexer {
         let minimumEnd = digitsEnd(from: start + 1)
         guard minimumEnd > start + 1 else { return nil }
         var index = minimumEnd
-        var open = false
+        var maximum: ArraySlice<UInt16>?
         if unit(index) == code(",") {
             index = digitsEnd(from: index + 1)
-            open = index == minimumEnd + 1
+            maximum = units[(minimumEnd + 1)..<index]
         }
         guard unit(index) == code("}") else { return nil }
-        let zero = minimumEnd == start + 2 && unit(start + 1) == code("0")
-        return PatternQuantifier(end: index + 1, present: true, repeats: true, unbounded: open, optional: zero)
+        return PatternQuantifier(end: index + 1, kind: .braced, minimum: units[(start + 1)..<minimumEnd], maximum: maximum)
     }
 }
 
