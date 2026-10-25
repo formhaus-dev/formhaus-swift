@@ -18,6 +18,10 @@ extension FormModel {
         return engine.value(at: key)
     }
 
+    #if os(iOS)
+        var focusedKey: String? { fieldStates.first { $0.value.hasFocus }?.key }
+    #endif
+
     func refocus(_ request: FocusRequest) {
         guard focusRequest == request, let key = request.key, fieldStates[key]?.hasFocus != true else { return }
         field(key).requestFocus(request.id)

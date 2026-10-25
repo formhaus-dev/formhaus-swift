@@ -96,13 +96,23 @@ struct SystemPage: View {
             .onChange(of: model.focusRequest) { _, request in
                 guard let request, let target = ScrollTarget.focus(request, summary: behavior.errorSummary) else { return }
                 withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
-                    if case .field(let key) = target { proxy.scrollTo(key) } else { target.scroll(proxy, model: model) }
+                    if case .field(let key) = target {
+                        showSystemField(key, model: model, proxy: proxy)
+                    } else {
+                        target.scroll(proxy, model: model)
+                    }
                 }
                 Task {
                     try? await Task.sleep(for: .milliseconds(300))
                     model.refocus(request)
                 }
             }
+            #if os(iOS)
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+                    guard let key = model.focusedKey else { return }
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { showSystemField(key, model: model, proxy: proxy) }
+                }
+            #endif
         }
     }
 }

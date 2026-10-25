@@ -14,6 +14,8 @@
 - Fixed VoiceOver reading "Selected" on unchecked options of multiselect fields and `.system` choice lists.
 - Fixed the large navigation title of the `.system` set covering the first rows after a failed submit scrolled to a field that was already on screen.
 - Fixed a failed submit in the `.system` set not focusing a text field that was off screen.
+- The `.system` set shows a field's error under its row instead of in the section footer.
+- A failed submit in the `.system` set keeps the question of the invalid field on screen, and the field with its error above the keyboard.
 
 ## 0.4.0
 
