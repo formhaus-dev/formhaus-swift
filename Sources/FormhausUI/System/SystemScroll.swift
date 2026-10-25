@@ -100,7 +100,7 @@ struct SystemFocusScroll: ViewModifier {
     @State private var rows = VisibleRows()
     let model: FormModel
     let proxy: ScrollViewProxy
-    let reveal: (String) -> (choice: String, row: String?)?
+    let reveal: (String) -> (choice: String, row: String)?
 
     func body(content: Content) -> some View {
         content
@@ -153,7 +153,7 @@ struct SystemFocusScroll: ViewModifier {
         keyboardKey = key
         let revealed = reveal(key)
         if !rows.shows(revealed?.row ?? key) {
-            let steps = model.scrollSteps(to: revealed?.choice ?? key) + (revealed.map { [ScrollStep(id: $0.row ?? key, anchor: nil)] } ?? [])
+            let steps = model.scrollSteps(to: revealed?.choice ?? key) + (revealed.map { [ScrollStep(id: $0.row, anchor: nil)] } ?? [])
             for (index, step) in steps.enumerated() {
                 if index > 0 { await Task.yield() }
                 guard !Task.isCancelled else { return }

@@ -97,12 +97,9 @@ func revealRowID(_ key: String, _ option: FieldOption) -> String {
     "\(key)/reveal/\(option.value ?? "")"
 }
 
-func revealRow(of key: String, in placed: [RevealedNode], sections: ([FormNode]) -> [RevealedNode]) -> (choice: String, row: String?)? {
-    for node in placed {
-        if let section = node.node.section {
-            let parent = sections(section.fields).first { $0.reveals.contains { $0.contains(key) } }
-            if let field = parent?.node.field { return (field.key, nil) }
-        } else if let field = node.node.field, let reveal = node.reveals.first(where: { $0.contains(key) }) {
+func revealRow(of key: String, in placed: [RevealedNode], sections: ([FormNode]) -> [RevealedNode]) -> (choice: String, row: String)? {
+    for node in placed.flatMap({ $0.node.section.map { sections($0.fields) } ?? [$0] }) {
+        if let field = node.node.field, let reveal = node.reveals.first(where: { $0.contains(key) }) {
             return (field.key, revealRowID(field.key, reveal.option))
         }
     }
@@ -133,6 +130,7 @@ struct RevealBlock: View {
         }
         .padding(.leading, components.system ? 0 : tokens.spacing.s6 + (tokens.controls.indicator - tokens.controls.revealLine) / 2)
         .environment(\.formhausNested, true)
+        .environment(\.formhausSectionRows, false)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(verbatim: reveal.option.label ?? reveal.option.value ?? ""))
     }

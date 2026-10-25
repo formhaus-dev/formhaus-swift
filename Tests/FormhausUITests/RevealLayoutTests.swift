@@ -64,7 +64,7 @@ struct RevealLayoutTests {
         #expect(revealRow(of: "delivery", in: placed, sections: sections) == nil)
     }
 
-    @Test("a field revealed inside a section scrolls to the row of its choice")
+    @Test("a field revealed inside a section scrolls to the row of its block")
     func sectionRows() throws {
         let definition: JSONValue = [
             "id": "c", "title": "C", "submit": ["label": "Send"],
@@ -73,7 +73,7 @@ struct RevealLayoutTests {
         let model = try revealModel(definition, ["contact": "email"])
         let can = FormComponents.system.revealable(FormBehavior(conditionalReveal: true))
         let row = revealRow(of: "email", in: layout(model, .system)) { model.revealLayout($0, can: can) }
-        #expect(row?.choice == "contact" && row?.row == nil)
+        #expect(row?.choice == "contact" && row?.row == "contact/reveal/email")
     }
 
     @Test("a field stays in place when its choice is not in the list")
