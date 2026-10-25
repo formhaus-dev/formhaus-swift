@@ -16,13 +16,14 @@ public struct FormFields: View {
 struct FormNodeView: View {
     let node: FormNode
     let model: FormModel
+    var reveals: [FieldReveal] = []
 
     var body: some View {
         switch node {
         case .field(let field) where field.isGroup:
             GroupNode(group: field, model: model)
         case .field(let field):
-            FormhausField(field, model: model)
+            FormhausField(field, model: model, reveals: reveals)
         case .section(let section):
             SectionNode(section: section, model: model)
         }
@@ -78,14 +79,17 @@ struct SectionFields: View {
 
 struct NodeStack: View {
     @Environment(\.formhausTokens) private var tokens
+    private let place = RevealPlacement()
     let nodes: [FormNode]
     let model: FormModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.spacing.gap) {
-            ForEach(Array(nodes.enumerated()), id: \.element.nodeID) { index, node in
+            let placed = place(nodes, model)
+            ForEach(Array(placed.enumerated()), id: \.element.id) { index, item in
+                let node = item.node
                 let container = node.section != nil || node.field?.isGroup == true
-                FormNodeView(node: node, model: model)
+                FormNodeView(node: node, model: model, reveals: item.reveals)
                     .padding(.top, container && index > 0 ? tokens.spacing.s5 : 0)
                     .padding(.bottom, container ? tokens.spacing.s5 : 0)
             }

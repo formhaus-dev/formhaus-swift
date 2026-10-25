@@ -60,7 +60,8 @@ public struct ChoiceSelection {
 
 struct ChoiceList: View {
     @Environment(\.formhausTokens) private var tokens
-    @FocusState private var focused: Bool
+    @FocusState private var focused: Int?
+    @AccessibilityFocusState private var spoken: Int?
     @State private var zoomed: Zoomed?
     let context: FieldContext
     let shape: IndicatorShape
@@ -68,8 +69,12 @@ struct ChoiceList: View {
     var body: some View {
         FieldShell(context, variant: .group) {
             options
-                .disabled(context.isLocked)
-                .formhausFocus(context, $focused)
+                .onFormhausFocus(context) {
+                    let index = focusedOption(context, Set(ChoiceSelection(context: context).values))
+                    focused = index
+                    spoken = index
+                }
+                .notesFocus(context, focused != nil)
         }
         .onAppear {
             OptionImages.shared.prefetch(
@@ -85,15 +90,21 @@ struct ChoiceList: View {
         let selected = Set(ChoiceSelection.values(context.value, multiple: shape == .checkbox))
         if options.contains(where: { $0.image?.isEmpty == false }) {
             LazyVGrid(columns: gridColumns, alignment: .leading, spacing: tokens.spacing.s5) {
-                ForEach(Array(options.enumerated()), id: \.offset) { _, option in card(option, selected: selected, picture: true) }
+                ForEach(Array(options.enumerated()), id: \.offset) { index, option in card(option, index, selected: selected, picture: true)
+                }
             }
         } else if context.field.layout?.stringValue == "inline" {
             FlowLayout(spacing: tokens.spacing.s3) {
-                ForEach(Array(options.enumerated()), id: \.offset) { _, option in card(option, selected: selected, picture: false) }
+                ForEach(Array(options.enumerated()), id: \.offset) { index, option in
+                    card(option, index, selected: selected, picture: false)
+                }
             }
         } else {
             LazyVStack(alignment: .leading, spacing: tokens.spacing.s3) {
-                ForEach(Array(options.enumerated()), id: \.offset) { _, option in card(option, selected: selected, picture: false) }
+                ForEach(Array(options.enumerated()), id: \.offset) { index, option in
+                    card(option, index, selected: selected, picture: false)
+                    if let reveal = context.openReveal(option) { RevealBlock(reveal: reveal, model: context.model) }
+                }
             }
         }
     }
@@ -110,7 +121,7 @@ struct ChoiceList: View {
         ]
     }
 
-    private func card(_ option: FieldOption, selected: Set<String>, picture: Bool) -> some View {
+    private func card(_ option: FieldOption, _ index: Int, selected: Set<String>, picture: Bool) -> some View {
         let value = option.value ?? ""
         let selection = ChoiceSelection(context: context)
         let image = ImageKey(option.safeImage ?? "", digest: option.imageKey)
@@ -124,6 +135,9 @@ struct ChoiceList: View {
             zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: image) }
         )
         .equatable()
+        .disabled(context.isLocked)
+        .focused($focused, equals: index)
+        .accessibilityFocused($spoken, equals: index)
     }
 }
 
