@@ -20,14 +20,13 @@ struct CorpusCheckTests {
         "impossible-dates", "invalid-labels", "invalid-messages", "localized-catalog", "localized-overlay", "option-order", "options-from",
         "proto-keys", "recall-branches", "recall-groups", "recall-inactive", "recall-limit", "recall-no-reexpansion",
         "recall-sensitive", "recall-steps", "recall-syntax", "recall-translations", "recall-values", "recall-version", "reveal",
-        "shared-key-branches", "slow-pattern-quadratic", "times-and-hidden", "trimmed-conditions", "trimmed-text",
+        "shared-key-branches", "times-and-hidden", "trimmed-conditions", "trimmed-text",
         "unsupported-format-version",
     ]
 
     static let withWarnings = Corpus.names.filter { Corpus.fixture($0).warnings != nil }
     static let rejected = Corpus.names.filter { !Corpus.fixture($0).issues.isEmpty }
     static let slow = Corpus.names.filter { Corpus.fixture($0).warnings?.contains { $0.code == "slow-pattern" } == true }
-    static let withRefused = Corpus.names.filter { Corpus.fixture($0).refused != nil }
 
     private func entries(_ issues: [DefinitionIssue], _ severity: DefinitionIssue.Severity) -> [IssueEntry] {
         IssueEntry.sorted(issues.filter { $0.severity == severity }.map { IssueEntry(code: $0.code.rawValue, path: $0.path) })
@@ -57,21 +56,20 @@ struct CorpusCheckTests {
         #expect(throws: FormDefinitionError.self) { try validateSubmission(fixture.definition, .object(JSONObject())) }
     }
 
-    @Test("lists the patterns the server refuses wherever slow patterns are reported")
-    func refusedListed() {
-        #expect(Self.slow.filter { Corpus.fixture($0).refused == nil }.isEmpty)
-        #expect(!Self.withRefused.isEmpty)
+    @Test("says the server refuses no pattern wherever slow patterns are reported")
+    func refusesNone() {
+        let listed = Self.slow.filter { Corpus.fixture($0).refused?.isEmpty != true }
+        #expect(listed.isEmpty)
     }
 
-    @Test("slow patterns refused by the server", arguments: withRefused)
-    func refusedByServer(name: String) {
-        let fixture = Corpus.fixture(name)
-        var issues: [IssueEntry] = []
+    @Test("the server refuses no pattern", arguments: Corpus.names)
+    func serverRunsEveryPattern(name: String) {
+        var codes: [IssueCode] = []
         do {
-            _ = try validateSubmission(fixture.definition, .object(JSONObject()))
+            _ = try validateSubmission(Corpus.fixture(name).definition, .object(JSONObject()))
         } catch {
-            issues = error.issues.map { IssueEntry(code: $0.code.rawValue, path: $0.path) }
+            codes = error.issues.map(\.code)
         }
-        #expect(IssueEntry.sorted(issues) == IssueEntry.sorted(fixture.refused ?? []))
+        #expect(!codes.contains(.slowPattern))
     }
 }

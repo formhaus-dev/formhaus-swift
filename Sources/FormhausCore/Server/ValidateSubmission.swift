@@ -107,8 +107,7 @@ public func validateSubmission(_ definition: JSONValue, _ values: JSONValue, opt
 public func validateSubmission(_ definition: FormDefinition, _ values: JSONValue, options: SubmissionOptions = SubmissionOptions())
     throws(FormDefinitionError) -> SubmissionResult
 {
-    let quadratic = try refuseSlowPatterns(definition)
-    return CallBudget.run { QuadraticPatterns.$current.withValue(quadratic) { submissionResult(definition, values, options) } }
+    CallBudget.run { submissionResult(definition, values, options) }
 }
 
 private func submissionResult(_ definition: FormDefinition, _ values: JSONValue, _ options: SubmissionOptions) -> SubmissionResult {

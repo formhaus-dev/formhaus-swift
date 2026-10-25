@@ -44,6 +44,19 @@ sync_dir() {
   echo "synced $source_dir at $recorded_ref ($sha)"
 }
 
+sync_file() {
+  source_file=$1
+  target=$2
+  git -C "$source_repo" show "$sha:$source_file" >"$target.tmp" || {
+    rm -f "$target.tmp"
+    echo "error: $source_file does not exist at $ref ($sha)" >&2
+    exit 1
+  }
+  mv "$target.tmp" "$target"
+  echo "synced $source_file at $recorded_ref ($sha)"
+}
+
 sync_dir packages/core/fixtures/conformance "$root/Tests/FormhausCoreTests/Fixtures" conformance
 sync_dir packages/core/tokens "$root/Tests/FormhausUITests/Fixtures" tokens
 sync_dir packages/core/locales "$root/Sources/FormhausCore/Resources" locales
+sync_file packages/core/__tests__/server/real-world-patterns.json "$root/Tests/FormhausCoreTests/Fixtures/real-world-patterns.json"

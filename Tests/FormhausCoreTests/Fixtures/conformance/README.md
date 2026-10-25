@@ -20,7 +20,7 @@ Each file holds one `definition`, the issues `checkDefinition` reports for it, a
 - `definition` is the form definition. It may be malformed.
 - `issues` lists the issues with severity `error` that `checkDefinition` reports, as `{ code, path }`. Use `[]` for none.
 - `warnings` lists the issues with severity `warning`, as `{ code, path }`. When the key is missing, warnings are not checked. `[]` means there must be none.
-- `refused` lists the `slow-pattern` issues the server validation reports as errors, as `{ code, path }`. It is set in every file whose `warnings` list `slow-pattern` entries. `[]` means the server runs every pattern.
+- `refused` lists the `slow-pattern` issues the server validation reports as errors, as `{ code, path }`. It is set in every file whose `warnings` list `slow-pattern` entries. Since 1.6.1 it is always `[]`: the server runs every pattern.
 - `overlay` is an optional i18n overlay. Apply it to the definition with `localize` before running `cases`, as described in the specification under Translations.
 - `texts` maps text slot addresses to the text they hold after the overlay is applied, such as `"steps.account.fields.email.label": "Почта"`. Addresses are those of the specification under Translations, Addresses. Only the listed addresses are checked; an address with no text slot fails.
 - `cases` lists value cases. It may be empty or missing.
@@ -48,9 +48,8 @@ A case has `name`, `input` (`values`, `skippedSteps` and an optional `hiddenValu
 
 - Server: validating `input.values` with `input.skippedSteps` returns `expected`. The returned values are a plain object.
 - Browser engine: creating the engine with `input.values`, then `validate()` returns `expected.errors`, and the submit values equal `expected.values`. `canSubmit` says whether stepping through every step and submitting is allowed: on each step before the last, `next.disabled` does not match the submit values and `next()` succeeds; on the last, `validate()` returns no errors and `submit.disabled` does not match.
-- A payload the browser accepts passes server validation without errors, unless the case sets `serverErrors`.
+- A payload the browser accepts passes server validation without errors.
 - `serverValues` is optional. When set, the server returns it in place of `expected.values`. The server drops a value with a type error, and the browser engine keeps it. With `hiddenValues` set to `keep`, the server also drops a hidden value that fails any other rule except `required`.
-- `serverErrors` is optional. When set, the server returns it in place of `expected.errors`. The server gives the `pattern` error, without matching, to a value longer than 1000 characters when the field's pattern is a quadratic `slow-pattern` pattern. The browser engine matches such values.
 
 ## Recall
 
@@ -91,7 +90,7 @@ The corpus and the scenarios assume the ECMAScript semantics of the TypeScript i
 
 The corpus and the scenarios change with `@formhaus/core`. An implementation pins them to a release tag of this repository, such as `@formhaus/core@0.18.0`, and states which tag it passes.
 
-Since 1.4.1, the server runs a quadratic `slow-pattern` pattern on values of at most 1000 characters, as the specification describes under Field validation, and `refused` lists the patterns it refuses. In 1.4.0 the server refuses every `slow-pattern` pattern.
+Since 1.6.1, the server runs every pattern, including those reported as `slow-pattern`, and no case sets `serverErrors`. From 1.4.1 to 1.6.0, the server refuses most `slow-pattern` patterns, runs quadratic ones on values of at most 1000 characters and `serverErrors` holds the errors it returns in place of `expected.errors`. In 1.4.0 the server refuses every `slow-pattern` pattern.
 
 Since 0.21, `serverValues` and `fixtures/submissions` expect the server to drop every value that fails its type check, at top level and in group items. Earlier tags expect a top-level value with a type error to be returned with its error.
 
