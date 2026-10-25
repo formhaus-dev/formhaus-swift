@@ -13,6 +13,11 @@ extension FormModel {
         options.onFieldChange?(key, value, engine.values)
     }
 
+    func pendingValue(forKey key: String) -> JSONValue? {
+        if let held = heldEdits[key] { return held }
+        return engine.value(at: key)
+    }
+
     public func commitValue(_ value: JSONValue?, forKey key: String) {
         guard !disabled else { return }
         let step = engine.currentStep?.nodeID

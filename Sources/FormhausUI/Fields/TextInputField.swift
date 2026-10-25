@@ -60,7 +60,7 @@ extension FieldContext {
         return Binding(
             get: shown,
             set: { text in
-                guard text != shown() else { return }
+                guard text != shown() || text != pendingText else { return }
                 draft.wrappedValue = text
                 setValue(numberValue(text))
             })

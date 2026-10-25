@@ -55,14 +55,9 @@ public struct FieldContext {
     public var isRequired: Bool { field.isRequired }
     public var advancesOnCommit: Bool { !isItem && field.advancesOnCommit }
 
-    public var text: String {
-        switch value {
-        case .string(let text)?: text
-        case .number(let number)?: numberText(number)
-        case .bool(let flag)?: flag ? "true" : "false"
-        default: ""
-        }
-    }
+    public var text: String { displayText(value) }
+
+    var pendingText: String { displayText(model.pendingValue(forKey: key)) }
 
     public func setValue(_ value: JSONValue?) {
         model.setValue(value, forKey: key)
@@ -85,11 +80,20 @@ public struct FieldContext {
     }
 
     public var textBinding: Binding<String> {
-        Binding(get: { text }, set: { if $0 != text { setValue(.string($0)) } })
+        Binding(get: { text }, set: { if $0 != pendingText { setValue(.string($0)) } })
     }
 
     public var boolBinding: Binding<Bool> {
         Binding(get: { value?.boolValue == true }, set: { setValue(.bool($0)) })
+    }
+}
+
+private func displayText(_ value: JSONValue?) -> String {
+    switch value {
+    case .string(let text)?: text
+    case .number(let number)?: numberText(number)
+    case .bool(let flag)?: flag ? "true" : "false"
+    default: ""
     }
 }
 
