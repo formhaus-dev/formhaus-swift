@@ -52,16 +52,19 @@ public struct TextInputField: View {
 extension FieldContext {
     func numberBinding(_ draft: Binding<String>) -> Binding<String> {
         Binding(
-            get: {
-                if !draft.wrappedValue.isEmpty, let parsed = parseNumber(draft.wrappedValue), value == .number(parsed) {
-                    return draft.wrappedValue
-                }
-                return text
-            },
+            get: { shownNumber(draft) },
             set: { text in
+                guard text != shownNumber(draft) || text != pendingText else { return }
                 draft.wrappedValue = text
                 setValue(numberValue(text))
             })
+    }
+
+    private func shownNumber(_ draft: Binding<String>) -> String {
+        if !draft.wrappedValue.isEmpty, let parsed = parseNumber(draft.wrappedValue), value == .number(parsed) {
+            return draft.wrappedValue
+        }
+        return text
     }
 }
 

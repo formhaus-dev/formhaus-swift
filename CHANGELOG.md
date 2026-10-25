@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### FormhausUI
+
+- Fixed the error of an empty text or number field disappearing when the field takes focus after a failed submit on iOS.
+- Fixed VoiceOver reading "Selected" on unchecked options of multiselect fields and `.system` choice lists.
+
 ## 0.4.0
 
 ### FormhausCore

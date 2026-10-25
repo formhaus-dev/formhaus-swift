@@ -47,8 +47,8 @@ struct SystemCheckRow: View {
                 Text(verbatim: label).foregroundStyle(Color.primary).multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 12)
-                Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(.tint).opacity(checked ? 1 : 0)
-                    .accessibilityHidden(true)
+                let mark = Image(systemName: "checkmark").fontWeight(.semibold)
+                mark.hidden().overlay { Rectangle().fill(.tint).mask { mark }.opacity(checked ? 1 : 0) }
             }
             .frame(minHeight: 44)
             .contentShape(Rectangle())
