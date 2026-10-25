@@ -85,7 +85,7 @@ public struct FieldContext {
     }
 
     public var textBinding: Binding<String> {
-        Binding(get: { text }, set: { setValue(.string($0)) })
+        Binding(get: { text }, set: { if $0 != text { setValue(.string($0)) } })
     }
 
     public var boolBinding: Binding<Bool> {
