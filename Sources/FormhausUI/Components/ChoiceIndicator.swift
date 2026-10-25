@@ -30,9 +30,8 @@ public struct ChoiceIndicator: View {
                     RoundedRectangle(cornerRadius: tokens.radii.indicator, style: .continuous),
                     fill: selected ? tokens.colors.primary : tokens.colors.background, border: stroke, lineWidth: 1.5,
                     motion: tokens.quick)
-                Image(systemName: "checkmark")
-                    .font(.system(size: size * 0.62, weight: .bold))
-                    .foregroundStyle(tokens.colors.onPrimary)
+                tokens.colors.onPrimary
+                    .mask { Image(systemName: "checkmark").font(.system(size: size * 0.62, weight: .bold)) }
                     .animation(tokens.quick) { $0.opacity(selected ? 1 : 0) }
             }
         }
