@@ -24,7 +24,7 @@ Add the package with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.3.0"),
+    .package(url: "https://github.com/formhaus-dev/formhaus-swift.git", from: "0.5.0"),
 ],
 targets: [
     .target(name: "App", dependencies: [
@@ -347,6 +347,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.5.0 | 1.6.1 | 1.6 |
 | 0.4.0 | 1.6.0 | 1.6 |
 | 0.3.0 | 1.4.2 | 1.6 |
 | 0.2.0 | 1.3.0 | 1.6 |
