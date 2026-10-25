@@ -134,13 +134,14 @@ struct SystemBlock<Content: View>: View {
 }
 
 @MainActor
-func showSystemField(_ key: String, model: FormModel, proxy: ScrollViewProxy) {
+func showSystemField(_ key: String, model: FormModel, proxy: ScrollViewProxy) async {
     let keys = model.structure.visibleFields.filter { $0.type != "hidden" }.map(\.key)
     guard let index = keys.firstIndex(of: key), index > 0 else {
         proxy.scrollTo(key, anchor: keys.first == key ? .center : nil)
         return
     }
     proxy.scrollTo(keys[index - 1])
+    try? await Task.sleep(for: .milliseconds(30))
     proxy.scrollTo(key)
 }
 
