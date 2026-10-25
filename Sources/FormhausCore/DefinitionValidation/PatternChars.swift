@@ -1,4 +1,4 @@
-struct CharRange: Equatable {
+struct CharRange {
     let low: Int
     let high: Int
 
@@ -23,7 +23,7 @@ private let controls: [UInt16: Int] = [code("n"): 10, code("t"): 9, code("r"): 1
 private let classes: [UInt16: PatternChars] = [code("d"): digitUnits, code("w"): wordUnits, code("s"): spaceUnits]
 
 private func complement(_ set: PatternChars) -> PatternChars {
-    let sorted = set.enumerated().sorted { ($0.element.low, $0.offset) < ($1.element.low, $1.offset) }.map(\.element)
+    let sorted = set.sorted { $0.low < $1.low }
     var result: PatternChars = []
     var next = 0
     for range in sorted {
