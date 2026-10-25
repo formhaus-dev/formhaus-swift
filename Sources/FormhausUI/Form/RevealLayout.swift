@@ -97,11 +97,19 @@ func revealRowID(_ key: String, _ option: FieldOption) -> String {
     "\(key)/reveal/\(option.value ?? "")"
 }
 
-func revealRow(of key: String, in placed: [RevealedNode], sections: ([FormNode]) -> [RevealedNode]) -> (choice: String, row: String)? {
+struct RevealScroll {
+    let choice: String
+    let row: String
+    let anchor: UnitPoint?
+}
+
+func revealRow(of key: String, in placed: [RevealedNode], sections: ([FormNode]) -> [RevealedNode]) -> RevealScroll? {
     for node in placed.flatMap({ $0.node.section.map { sections($0.fields) } ?? [$0] }) {
-        if let field = node.node.field, let reveal = node.reveals.first(where: { $0.contains(key) }) {
-            return (field.key, revealRowID(field.key, reveal.option))
-        }
+        guard let field = node.node.field, let reveal = node.reveals.first(where: { $0.contains(key) }) else { continue }
+        let count = reveal.nodes.count
+        let index = reveal.nodes.firstIndex { $0.node.field?.key == key || $0.reveals.contains { $0.contains(key) } } ?? 0
+        let anchor = count > 1 ? UnitPoint(x: 0.5, y: Double(index + 1) / Double(count)) : nil
+        return RevealScroll(choice: field.key, row: revealRowID(field.key, reveal.option), anchor: anchor)
     }
     return nil
 }

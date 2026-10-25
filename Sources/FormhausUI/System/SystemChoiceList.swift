@@ -22,14 +22,16 @@ struct SystemChoiceList: View {
                     .disabled(context.isLocked)
                     .accessibilityFocused($spoken, equals: index)
                 if index == 0 {
-                    row.id(nested ? "\(context.key)/options" : context.key).scrollVisibility(context.key)
+                    let id = nested ? "\(context.key)/options" : context.key
+                    row.scrollVisibility(id).id(id)
                         .onFormhausFocus(context) { spoken = focusedOption(context, selected) }
                         .sensoryFeedback(.selection, trigger: selected)
                 } else {
                     row
                 }
                 if let reveal = context.openReveal(option) {
-                    RevealBlock(reveal: reveal, model: context.model).id(revealRowID(context.key, option))
+                    let id = revealRowID(context.key, option)
+                    RevealBlock(reveal: reveal, model: context.model).scrollVisibility(id).id(id)
                 }
             }
         }
