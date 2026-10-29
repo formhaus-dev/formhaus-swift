@@ -48,6 +48,7 @@
     "submit": "Submit",
     "stepTitle": "Step {index}",
     "stepErrors": "Errors: {count}",
+    "fileCount": "Files: {count}",
     "or": "or",
     "select": "Select"
   }

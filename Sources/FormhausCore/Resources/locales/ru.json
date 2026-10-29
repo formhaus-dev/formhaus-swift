@@ -58,6 +58,7 @@
     "submit": "Отправить",
     "stepTitle": "Шаг {index}",
     "stepErrors": "Ошибок: {count}",
+    "fileCount": "Файлов: {count}",
     "or": "или",
     "select": "Выберите"
   }

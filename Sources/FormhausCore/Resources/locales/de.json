@@ -48,6 +48,7 @@
     "submit": "Absenden",
     "stepTitle": "Schritt {index}",
     "stepErrors": "Fehler: {count}",
+    "fileCount": "Dateien: {count}",
     "or": "oder",
     "select": "Bitte auswählen"
   }

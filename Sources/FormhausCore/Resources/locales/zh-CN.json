@@ -48,6 +48,7 @@
     "submit": "提交",
     "stepTitle": "第{index}步",
     "stepErrors": "{count}个错误",
+    "fileCount": "{count}个文件",
     "or": "或",
     "select": "请选择"
   }
