@@ -15,7 +15,10 @@ extension FormModel {
 
     func attachUploads() -> Bool {
         let owner = ObjectIdentifier(self)
-        engine.storedFileName = { value in MainActor.assumeIsolated { UploadStore.owned(value, by: owner)?.lastPathComponent } }
+        let earlier = engine.storedFileName
+        engine.storedFileName = { value in
+            MainActor.assumeIsolated { UploadStore.owned(value, by: owner)?.lastPathComponent } ?? earlier?(value)
+        }
         guard engine.restored else { return false }
         var dropped = false
         for field in engine.definition.allFields where field.type == "file" {
