@@ -99,20 +99,19 @@ struct StepScrollTests {
     @Test("a hosted form scrolls the host scroll view back to its very top")
     func hostedScreenTop() async throws {
         let form = try stepsForm(["a": "x"])
-        #expect(try await hostedOffset(form, page(form, .screenTop)) < 1)
+        try await expectScroll(form, page(form, .screenTop)) { $0 < 1 }
     }
 
     @Test("the form-top option scrolls a hosted form only to its own top")
     func hostedFormTop() async throws {
         let form = try stepsForm(["a": "x"])
-        let offset = try await hostedOffset(form, page(form, .formTop))
-        #expect(offset > 850 && offset < 950)
+        try await expectScroll(form, page(form, .formTop)) { $0 > 850 && $0 < 950 }
     }
 
     @Test("FormhausForm scrolls its own scroll view back to its very top")
     func ownedScreenTop() async throws {
         let form = try stepsForm(["a": "x"])
-        #expect(try await hostedOffset(form, FormhausForm(model: form), height: 120, start: 60) < 1)
+        try await expectScroll(form, FormhausForm(model: form), height: 120, start: 60) { $0 < 1 }
     }
 }
 
@@ -128,10 +127,11 @@ private func page(_ form: FormModel, _ mode: StepScroll) -> some View {
 }
 
 @MainActor
-private func hostedOffset(
-    _ form: FormModel, _ page: some View, height: CGFloat = 400, start: CGFloat = 1200
-) async throws -> CGFloat {
-    let view = host(page, height: height)
+private func expectScroll(
+    _ form: FormModel, _ page: some View, height: CGFloat = 400, start: CGFloat = 1200,
+    sourceLocation: SourceLocation = #_sourceLocation, to reached: (CGFloat) -> Bool
+) async throws {
+    let view = host(page.environment(\.formhausScrollAnimation, nil), height: height)
     let window = NSWindow(contentRect: view.frame, styleMask: [.borderless], backing: .buffered, defer: false)
     window.contentView = view
     settle(view)
@@ -142,15 +142,11 @@ private func hostedOffset(
     settle(view)
     #expect(scroller.contentView.bounds.origin.y == start)
     await form.next()
-    var offset = scroller.contentView.bounds.origin.y
-    for _ in 0..<40 {
-        settle(view)
-        let next = scroller.contentView.bounds.origin.y
-        if next == offset, next != start { break }
-        offset = next
-    }
-    return offset
+    settle(view) { reached(scroller.contentView.bounds.origin.y) }
+    let offset = scroller.contentView.bounds.origin.y
+    #expect(reached(offset), "offset \(offset)", sourceLocation: sourceLocation)
 }
+
 @MainActor
 private func scrollView(in view: NSView) -> NSScrollView? {
     if let scroll = view as? NSScrollView { return scroll }

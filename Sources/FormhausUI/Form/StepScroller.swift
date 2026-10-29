@@ -63,6 +63,15 @@ final class TopRequests {
 
 extension EnvironmentValues {
     @Entry var formhausTopRequests: TopRequests?
+    @Entry var formhausScrollAnimation: Animation? = .easeOut(duration: 0.2)
+}
+
+@propertyWrapper
+struct ScrollMotion: DynamicProperty {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.formhausScrollAnimation) private var animation
+
+    var wrappedValue: Animation? { reduceMotion ? nil : animation }
 }
 
 enum ScrollAnchor {
@@ -82,7 +91,7 @@ enum ScrollAnchor {
 }
 
 struct StepScroller: ViewModifier {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScrollMotion private var animation
     @Environment(\.formhausBehavior) private var behavior
     @Environment(\.formhausTopRequests) private var topRequests
     let model: FormModel
@@ -102,20 +111,19 @@ struct StepScroller: ViewModifier {
             topRequests.request()
             return
         }
-        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+        withAnimation(animation) {
             target.scroll(proxy, model: model)
         }
     }
 }
 
 struct ScreenTopScroller: ViewModifier {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScrollMotion private var animation
     let requests: TopRequests
     let proxy: ScrollViewProxy
     let anchor: String
 
     func body(content: Content) -> some View {
-        let animation: Animation? = reduceMotion ? nil : .easeOut(duration: 0.2)
         if #available(iOS 18, macOS 15, *) {
             content.modifier(EdgeTopPosition(count: requests.issued, animation: animation))
         } else {
