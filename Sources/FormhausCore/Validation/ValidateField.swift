@@ -65,6 +65,10 @@ func isListEntry(_ item: JSONValue) -> Bool {
     item != .null && item != .string("")
 }
 
+@_spi(Renderer) public func listedFiles(_ value: JSONValue?) -> [JSONValue] {
+    fileItems(value).filter(isListEntry)
+}
+
 private func isFileItem(_ item: JSONValue) -> Bool {
     item.stringValue.map { !$0.isEmpty } ?? (item.objectValue?["name"]?.stringValue != nil)
 }
@@ -85,7 +89,7 @@ func fieldValueError(
     _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, _ validators: Validators, _ messages: MessageSource?,
     required: Bool = true
 ) -> String? {
-    let value = field.isFileList ? .array(fileItems(input).filter(isListEntry)) : trimValue(field, input)
+    let value = field.isFileList ? .array(listedFiles(input)) : trimValue(field, input)
     let rules = field.isFileList ? fileListRules(field) : field.validation ?? FieldValidation(json: JSONObject())
     let resolve = namedResolver(messageResolver(messages))
     let matchMessage = { rules.message("matchFieldMessage") ?? resolve("matchField", [:], field) }

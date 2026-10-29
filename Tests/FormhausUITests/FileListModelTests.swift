@@ -55,7 +55,7 @@ struct FileListModelTests {
         let urls = first + more
         #expect(form.pickedFiles(forKey: "docs") == urls)
         #expect(form.pickedFile(forKey: "docs") == nil)
-        #expect(try docsContext(form).fileValueText == "3")
+        #expect(try docsContext(form).fileValueText == "Files: 3")
         await form.submit()
         #expect(log.values == [["docs": .array(urls.map { .string($0.absoluteString) })]])
         UploadStore.release(owner: ObjectIdentifier(form))

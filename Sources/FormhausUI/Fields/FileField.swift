@@ -68,7 +68,8 @@ extension FieldContext {
 
     var fileValueText: String {
         let count = field.isFileList ? fileRows.count : 0
-        return count > 0 ? count.formatted() : fileName ?? reference ?? text(forLabel: "chooseFile")
+        return count > 0
+            ? text(forLabel: "fileCount", ["count": .number(Double(count))]) : fileName ?? reference ?? text(forLabel: "chooseFile")
     }
 
     func replaceFile(with url: URL?) {

@@ -31,13 +31,13 @@ extension FormModel {
     }
 
     func fileRoom(_ field: FormField, _ value: JSONValue?) -> Int {
-        max(0, engine.fileLimit(field).count - fileRows(value).count)
+        max(0, engine.fileLimit(field).count - listedFiles(value).count)
     }
 
     func addFiles(_ urls: [URL], to field: FormField, at key: String, overflow: Bool) {
         let items = fileItems(engine.value(at: key))
         let limit = engine.fileLimit(field)
-        let held = fileRows(.array(items)).count
+        let held = listedFiles(.array(items)).count
         let added = Array(urls.prefix(max(0, limit.count - held)))
         for url in urls.dropFirst(added.count) { UploadStore.discard(url, owner: ObjectIdentifier(self)) }
         var notes: [String] = []
