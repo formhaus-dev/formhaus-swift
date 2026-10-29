@@ -1,0 +1,279 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "step-errors-clear",
+  "definition": {
+    "id": "step-errors",
+    "title": "Step errors",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "one",
+        "title": "One",
+        "fields": [
+          {
+            "key": "a",
+            "type": "text",
+            "label": "A",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "b",
+            "type": "text",
+            "label": "B"
+          },
+          {
+            "key": "h",
+            "type": "hidden"
+          }
+        ]
+      },
+      {
+        "id": "two",
+        "title": "Two",
+        "fields": [
+          {
+            "key": "c",
+            "type": "text",
+            "label": "C"
+          }
+        ]
+      },
+      {
+        "id": "three",
+        "title": "Three",
+        "fields": [
+          {
+            "key": "d",
+            "type": "text",
+            "label": "D"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "drops an onStepValidate error of the step on the next passing Continue",
+      "values": {
+        "a": "x",
+        "b": "y"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": {
+              "b": "bad b"
+            }
+          },
+          {
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "one",
+            "errors": {
+              "b": "bad b"
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "two",
+            "errors": {}
+          }
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "one",
+            "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops an onStepValidate error of a hidden field on the next passing Continue",
+      "values": {
+        "a": "x"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": {
+              "h": "bad h"
+            }
+          },
+          {
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "one",
+            "errors": {
+              "h": "bad h"
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "two",
+            "errors": {},
+            "topLevelErrors": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "brings back a setErrors error that a step error replaced",
+      "values": {
+        "a": "x"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": {
+              "b": "bad b"
+            }
+          },
+          {
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setErrors",
+          "errors": {
+            "b": "Server error on b"
+          }
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "b": "bad b"
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "two",
+            "errors": {
+              "b": "Server error on b"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps errors of other steps",
+      "values": {
+        "a": "x"
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "a",
+          "value": ""
+        },
+        {
+          "do": "validateField",
+          "key": "a",
+          "returns": "This field is required"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "three",
+            "errors": {
+              "a": "This field is required"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps errors of the step on Back",
+      "values": {
+        "a": "x"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": null
+          },
+          {
+            "return": {
+              "c": "bad c"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "one",
+            "errors": {
+              "c": "bad c"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

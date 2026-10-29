@@ -162,6 +162,7 @@ extension FormEngine {
     private func commit(_ move: StepMove) {
         if move.forward { core.emit(move.skipping ? .stepSkipped(stepId: move.step.id) : .stepCompleted(stepId: move.step.id)) }
         if move.skipping { _ = core.skipCurrentStep() }
+        if move.validating { core.clearPassedErrors(move.step.fields) }
         moveTo(move.index)
     }
 }

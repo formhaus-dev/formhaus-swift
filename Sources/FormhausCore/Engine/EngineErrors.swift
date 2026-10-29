@@ -78,6 +78,11 @@ extension EngineCore {
         errors[key] = serverErrors[key]
     }
 
+    func clearPassedErrors(_ nodes: [FormNode]) {
+        let hidden = valueFields(nodes).filter { $0.type == "hidden" && errors[$0.key] != nil }.map(\.key)
+        for key in errorKeys(nodes, errors, values.json) + hidden { clearError(key) }
+    }
+
     func dropServerErrors(_ keys: some Sequence<String>) {
         let dropped = KeySet(keys)
         for key in serverErrors.keys where dropped.contains(key) || dropped.contains(visibility.owner(key)) {
