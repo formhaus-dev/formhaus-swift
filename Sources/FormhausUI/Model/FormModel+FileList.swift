@@ -39,10 +39,15 @@ extension FormModel {
         for url in urls.dropFirst(added.count) { UploadStore.discard(url, owner: ObjectIdentifier(self)) }
         var notes: [String] = []
         if !added.isEmpty {
-            setValue(.array(items + added.map { .string($0.absoluteString) }), forKey: key)
+            let value = JSONValue.array(items + added.map { .string($0.absoluteString) })
+            setValue(value, forKey: key)
             notes.append(text(forLabel: "itemAdded", ["item": .string(added.map(\.lastPathComponent).joined(separator: ", "))]))
+            if items.count + added.count >= limit.count, let last = fileRows(value).last { requestFocus(removeFileKey(key, last.index)) }
         }
-        if overflow || added.count < urls.count { notes.append(limit.message) }
+        if overflow || added.count < urls.count {
+            notes.append(limit.message)
+            self.field(key).showNotice(limit.message)
+        }
         if !notes.isEmpty { announce(notes.joined(separator: " ")) }
     }
 
@@ -51,6 +56,7 @@ extension FormModel {
         guard let row = fileRows(.array(items)).first(where: { $0.index == index }) else { return }
         items.remove(at: index)
         setValue(.array(items), forKey: key)
+        field(key).showNotice(nil)
         if let url = row.url { UploadStore.discard(url, owner: ObjectIdentifier(self)) }
         let left = fileRows(.array(items)).map(\.index)
         let next = left.first { $0 >= index } ?? left.last

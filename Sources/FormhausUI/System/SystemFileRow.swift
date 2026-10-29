@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SystemFileRow: View {
+    @Environment(\.formhausTokens) private var tokens
     @FocusState private var focused: Bool
     @State private var picking = false
     let context: FieldContext
@@ -34,6 +35,9 @@ struct SystemFileRow: View {
             if context.field.isFileList {
                 ForEach(context.fileRows, id: \.index) { row in
                     SystemFileItem(context: context, index: row.index, name: row.name)
+                }
+                if let notice = context.state.notice {
+                    Text(verbatim: notice).font(.footnote).foregroundStyle(tokens.colors.error).fixedSize(horizontal: false, vertical: true)
                 }
             }
         }

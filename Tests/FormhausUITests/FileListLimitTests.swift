@@ -21,7 +21,7 @@ struct FileListLimitTests {
         #expect(form.focusRequest?.key == "docs#remove1")
     }
 
-    @Test("picking stops at maxLength, counting references, and drops the rest")
+    @Test("picking stops at maxLength, counting references, drops the rest and shows the limit until a removal")
     func limit() async throws {
         let form = try receiptsForm(["docs": ["upload-1"]], validation: ["maxLength": 2])
         form.start()
@@ -32,6 +32,10 @@ struct FileListLimitTests {
         #expect(urls.dropFirst().allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
         #expect(try docsContext(form).isFileListFull)
         #expect(form.engine.validate().isEmpty)
+        #expect(form.field("docs").notice == "At most 2 allowed")
+        #expect(form.focusRequest?.key == "docs#remove1")
+        try docsContext(form).removeFile(at: 0)
+        #expect(form.field("docs").notice == nil)
         UploadStore.release(owner: ObjectIdentifier(form))
     }
 
@@ -59,7 +63,7 @@ struct FileListLimitTests {
         try docsContext(filled).receiveFiles(
             try await pickedCopies(filled, ["receipt-march.pdf", "a-very-long-hotel-invoice-name-2026.pdf"]))
         let full = try receiptsForm(validation: ["maxLength": 2])
-        try docsContext(full).receiveFiles(try await pickedCopies(full, ["one.pdf", "two.pdf"]))
+        try docsContext(full).receiveFiles(try await pickedCopies(full, ["one.pdf", "two.pdf", "three.pdf"]))
         let invalid = try receiptsForm()
         await invalid.submit()
         let rows = [("empty", empty), ("files", filled), ("full", full), ("error", invalid)]

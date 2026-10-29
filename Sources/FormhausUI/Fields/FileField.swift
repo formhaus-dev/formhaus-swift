@@ -15,6 +15,9 @@ public struct FileField: View {
                 VStack(alignment: .leading, spacing: tokens.spacing.s3) {
                     PickerControl(context: context, active: picking, clearable: false, cleared: .null, label: summary) { picking = true }
                     FileList(context: context)
+                    if let notice = context.state.notice {
+                        Text(verbatim: notice).formhausText(.error).fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
             .filePicker(context, isPresented: $picking)
