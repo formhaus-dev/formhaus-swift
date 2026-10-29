@@ -1,3 +1,4 @@
+@_spi(Renderer) import FormhausCore
 import SwiftUI
 
 struct FileList: View {
@@ -12,7 +13,6 @@ struct FileList: View {
 
 private struct FileListRow: View {
     @Environment(\.formhausTokens) private var tokens
-    @Environment(\.dynamicTypeSize) private var typeSize
     @FocusState private var focused: Bool
     let context: FieldContext
     let index: Int
@@ -24,15 +24,13 @@ private struct FileListRow: View {
                 .accessibilityHidden(true)
             Text(verbatim: name)
                 .formhausText(.body)
-                .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
-                .truncationMode(.middle)
+                .fileNameWrapping()
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button(action: { context.removeFile(at: index) }, label: { Text(verbatim: context.removeFileLabel) })
                 .buttonStyle(FormButtonStyle(.danger, compact: true))
                 .disabled(context.isLocked)
                 .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
-                .focused($focused)
-                .onFormhausFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked) { focused = true }
+                .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
         }
         .padding(.leading, tokens.spacing.s4)
         .frame(minHeight: tokens.controls.hitTarget)
@@ -40,7 +38,28 @@ private struct FileListRow: View {
     }
 }
 
+private struct FileNameWrapping: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    func body(content: Content) -> some View {
+        content
+            .lineLimit(typeSize.isAccessibilitySize ? 4 : 2)
+            .truncationMode(.middle)
+    }
+}
+
+extension View {
+    func fileNameWrapping() -> some View {
+        modifier(FileNameWrapping())
+    }
+}
+
 extension FieldContext {
+    var pickerHint: String? {
+        let parts = [helperText, isFileListFull ? model.engine.fileLimit(field).message : nil].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
+    }
+
     var fileRows: [FileRow] { model.fileRows(value) }
 
     var fileRoom: Int { model.fileRoom(field, value) }
@@ -50,7 +69,7 @@ extension FieldContext {
     var removeFileLabel: String { text(forLabel: "removeItem") }
 
     func removeFileName(_ name: String) -> String {
-        text(forLabel: "removeItemNamed", ["label": .string(removeFileLabel), "item": .string(name)])
+        text(forLabel: "removeItemNamed", ["label": .string(removeFileLabel), "item": .string(isolatedFileName(name))])
     }
 
     func removeFocus(_ index: Int) -> FieldState {

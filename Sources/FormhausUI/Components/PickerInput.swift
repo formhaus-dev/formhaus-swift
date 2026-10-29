@@ -35,6 +35,6 @@ struct PickerControl<Label: View>: View {
         .inputChrome(focused: focused || active, invalid: context.isInvalid, disabled: context.isLocked || context.isFileListFull)
         .disabled(context.isLocked || context.isFileListFull)
         .formhausFocus(context, $focused)
-        .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+        .accessibilityHint(Text(verbatim: context.pickerHint ?? ""))
     }
 }
