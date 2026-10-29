@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.3
+
+### FormhausUI
+
+- The Remove button lines up with the file name at accessibility text sizes.
+
 ## 0.6.2
 
 ### FormhausUI
