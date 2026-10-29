@@ -161,11 +161,14 @@ private func isEmpty(_ field: FormField, _ value: JSONValue?) -> Bool {
     isBlank(value) && (field.isList || value?.arrayValue == nil)
 }
 
-private func fileListError(_ field: FormField, _ value: JSONValue, _ fail: Fail) -> String? {
+func fileLimitMessage(_ field: FormField, _ resolve: ResolveMessage) -> String {
+    field.validation?.message("maxLengthMessage") ?? resolve("maxItems", ["max": .number(field.maxItems)], field)
+}
+
+private func fileListError(_ field: FormField, _ value: JSONValue, _ resolve: @escaping ResolveMessage) -> String? {
+    let fail: Fail = { key, params in resolve(key, params, field) }
     guard let items = value.arrayValue else { return fail("file", [:]) }
-    if Double(items.count) > field.maxItems {
-        return field.validation?.message("maxLengthMessage") ?? fail("maxItems", ["max": .number(field.maxItems)])
-    }
+    if Double(items.count) > field.maxItems { return fileLimitMessage(field, resolve) }
     let references = items.allSatisfy { item in item.stringValue.map { !$0.isEmpty && $0.jsLength <= maxStringLength } == true }
     return references ? nil : fail("file", [:])
 }
@@ -190,7 +193,7 @@ func typeError(_ field: FormField, _ input: JSONValue?, _ resolve: @escaping Res
         return point == true ? nil : fail("option", [:])
     }
     if listTypes.contains(field.type) { return multiselectError(field, value, fail) }
-    if field.isFileList { return fileListError(field, value, fail) }
+    if field.isFileList { return fileListError(field, value, resolve) }
     if field.type == "file" { return stringError(field, value, "file", fail) }
     if let format = Format(field.type) { return formatError(field, value, format, fail) }
     if field.type == "select" || field.type == "radio" {
