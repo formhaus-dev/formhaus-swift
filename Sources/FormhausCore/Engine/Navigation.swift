@@ -78,11 +78,25 @@ func suspended<T>(_ body: () async throws -> T) async throws -> T {
 extension FormEngine {
     func reportErrors(_ action: () async throws -> Bool) async throws -> Bool {
         let generation = core.errorsGeneration
+        let operation = core.operationEpoch + 1
+        defer { if core.reportedErrors?.operation == operation { core.reportedErrors = nil } }
         let done = try await CallBudget.run { try await suspended(action) }
-        if !done && core.errorsGeneration != generation {
-            for (fieldKey, error) in core.errors { core.emit(.fieldError(fieldKey: fieldKey, error: error)) }
+        let reported = core.reportedErrors?.operation == operation ? core.reportedErrors : nil
+        if !done && core.errorsGeneration != (reported?.generation ?? generation) {
+            emitFieldErrors(skipping: reported?.errors ?? FieldErrors())
         }
         return done
+    }
+
+    func reportRuleErrors() {
+        core.reportedErrors = (core.operationEpoch, core.errorsGeneration, core.errors)
+        emitFieldErrors(skipping: FieldErrors())
+    }
+
+    private func emitFieldErrors(skipping reported: FieldErrors) {
+        for (fieldKey, error) in core.errors where reported[fieldKey] != error {
+            core.emit(.fieldError(fieldKey: fieldKey, error: error))
+        }
     }
 
     func afterCommit(_ phase: FormLifecycleError.Phase, _ callback: () async throws -> Void) async throws {

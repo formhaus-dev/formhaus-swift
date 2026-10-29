@@ -21,6 +21,7 @@ extension FormEngine {
         _ validate: ValidateFn, _ values: JSONObject, _ stale: () -> Bool, submit: Bool, ruleErrors: FieldErrors
     ) async throws -> Bool {
         let core = core
+        if !ruleErrors.isEmpty { reportRuleErrors() }
         var fields: [String] = []
         let scope = core.visibility.conditionValues(core.values.json)
         visitShown(validatedNodes(submit: submit), core.getSubmitValues(), scope, core.visibility.limits(core.values.json)) { path, _, _ in

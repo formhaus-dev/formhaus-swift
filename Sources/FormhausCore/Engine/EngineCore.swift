@@ -22,6 +22,7 @@ final class EngineCore {
     var stepValidating = false
     var validateWithRules = false
     var onValidate: ValidateFn?
+    var reportedErrors: (operation: Int, generation: Int, errors: FieldErrors)?
     var submitting = false
     var skipped: [(id: String, keys: [String])] = []
     var validationEpoch = 0
