@@ -6,11 +6,6 @@ extension FormModel {
         engine.value(at: key)?.stringValue.flatMap { UploadStore.owned($0, by: ObjectIdentifier(self)) }
     }
 
-    func nameStoredFiles() {
-        let owner = ObjectIdentifier(self)
-        engine.storedFileName = { value in MainActor.assumeIsolated { UploadStore.owned(value, by: owner)?.lastPathComponent } }
-    }
-
     func dropMissingFiles() {
         guard !disabled else { return }
         for field in engine.definition.allFields where field.type == "file" {
@@ -18,9 +13,10 @@ extension FormModel {
         }
     }
 
-    func adoptRestoredUploads() -> Bool {
-        guard engine.restored else { return false }
+    func attachUploads() -> Bool {
         let owner = ObjectIdentifier(self)
+        engine.storedFileName = { value in MainActor.assumeIsolated { UploadStore.owned(value, by: owner)?.lastPathComponent } }
+        guard engine.restored else { return false }
         var dropped = false
         for field in engine.definition.allFields where field.type == "file" {
             guard let kept = withoutFiles(field, engine.values[field.key], where: { !UploadStore.adopt($0, owner: owner) }) else {

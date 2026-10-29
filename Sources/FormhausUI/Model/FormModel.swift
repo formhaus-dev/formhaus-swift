@@ -56,8 +56,7 @@ public final class FormModel {
         actions = engine.actionsState(options.labels)
         lastValues = engine.values
         lastErrors = engine.errors
-        nameStoredFiles()
-        if adoptRestoredUploads() {
+        if attachUploads() {
             structure = FormStructure(engine)
             lastValues = engine.values
         }
