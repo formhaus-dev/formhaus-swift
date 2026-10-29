@@ -8,7 +8,8 @@ struct FileRow {
 }
 
 private func lastSegment(_ text: String) -> String {
-    let trimmed = text.reversed().drop { $0 == "/" }.reversed()
+    let path = text.prefix { $0 != "?" && $0 != "#" }
+    let trimmed = path.reversed().drop { $0 == "/" }.reversed()
     let segment = String(trimmed.split(separator: "/", omittingEmptySubsequences: false).last ?? [])
     return segment.isEmpty ? text : segment
 }
@@ -30,20 +31,21 @@ extension FormModel {
     }
 
     func fileRoom(_ field: FormField, _ value: JSONValue?) -> Int {
-        max(0, engine.fileLimit(field).count - fileItems(value).count)
+        max(0, engine.fileLimit(field).count - fileRows(value).count)
     }
 
     func addFiles(_ urls: [URL], to field: FormField, at key: String, overflow: Bool) {
         let items = fileItems(engine.value(at: key))
         let limit = engine.fileLimit(field)
-        let added = Array(urls.prefix(max(0, limit.count - items.count)))
+        let held = fileRows(.array(items)).count
+        let added = Array(urls.prefix(max(0, limit.count - held)))
         for url in urls.dropFirst(added.count) { UploadStore.discard(url, owner: ObjectIdentifier(self)) }
         var notes: [String] = []
         if !added.isEmpty {
             let value = JSONValue.array(items + added.map { .string($0.absoluteString) })
             setValue(value, forKey: key)
             notes.append(text(forLabel: "itemAdded", ["item": .string(added.map(\.lastPathComponent).joined(separator: ", "))]))
-            if items.count + added.count >= limit.count, let last = fileRows(value).last { requestFocus(removeFileKey(key, last.index)) }
+            if held + added.count >= limit.count, let last = fileRows(value).last { requestFocus(removeFileKey(key, last.index)) }
         }
         if overflow || added.count < urls.count {
             notes.append(limit.message)

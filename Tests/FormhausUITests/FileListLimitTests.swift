@@ -10,7 +10,8 @@ struct FileListLimitTests {
     @Test("every list item with a name gets a row, references by their last path segment")
     func rows() throws {
         let values: JSONValue = [
-            "upload-123", "https://cdn.example.com/a/cv.pdf", ["name": "scan.png"], 5, "", ["id": "x"], "https://cdn.example.com/", "a/b/",
+            "upload-123", "https://cdn.example.com/a/cv.pdf?sig=1#page=2", ["name": "scan.png"], 5, "", ["id": "x"],
+            "https://cdn.example.com/", "a/b/",
             "/",
         ]
         let form = try receiptsForm(["docs": values])
@@ -27,17 +28,17 @@ struct FileListLimitTests {
 
     @Test("picking stops at maxLength, counting references, drops the rest and shows the limit until a removal")
     func limit() async throws {
-        let form = try receiptsForm(["docs": ["upload-1"]], validation: ["maxLength": 2])
+        let form = try receiptsForm(["docs": ["upload-1", "", nil]], validation: ["maxLength": 2])
         form.start()
         let urls = try await pickedCopies(form, ["a.pdf", "b.pdf", "c.pdf"])
         #expect(try docsContext(form).fileRoom == 1)
         try docsContext(form).receiveFiles(urls)
-        #expect(form.engine.values["docs"] == ["upload-1", .string(urls[0].absoluteString)])
+        #expect(form.engine.values["docs"] == ["upload-1", "", nil, .string(urls[0].absoluteString)])
         #expect(urls.dropFirst().allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
         #expect(try docsContext(form).isFileListFull)
         #expect(form.engine.validate().isEmpty)
         #expect(form.field("docs").notice == "At most 2 allowed")
-        #expect(form.focusRequest?.key == "docs#remove1")
+        #expect(form.focusRequest?.key == "docs#remove3")
         try docsContext(form).removeFile(at: 0)
         #expect(form.field("docs").notice == nil)
         UploadStore.release(owner: ObjectIdentifier(form))
