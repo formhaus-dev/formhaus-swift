@@ -73,11 +73,14 @@ extension FormEngine {
     }
 
     private func approveSubmission(_ checked: JSONObject, _ stale: () -> Bool) async throws -> JSONObject? {
-        if stale() || invalid(stale) { return nil }
-        if let validate = options.onValidate, try await !passesValidate(validate, checked, stale, submit: true) {
-            if !stale() { core.emit(.formSubmitFailed(reason: .validation)) }
-            return nil
+        if stale() { return nil }
+        let ruleErrors = core.validate(navigate: true)
+        if stale() { return nil }
+        if !ruleErrors.isEmpty && !validatesWithRules { return failed(stale) }
+        if let validate = options.onValidate, try await !passesValidate(validate, checked, stale, submit: true, ruleErrors: ruleErrors) {
+            return failed(stale)
         }
+        if !ruleErrors.isEmpty { return failed(stale) }
         guard let before = options.onBeforeSubmit else { return checked }
         let allowed = try await suspended { try await before(checked) }
         if stale() || allowed == false || invalid(stale) { return nil }
@@ -86,8 +89,13 @@ extension FormEngine {
 
     private func invalid(_ stale: () -> Bool) -> Bool {
         if core.validate(navigate: true).isEmpty { return stale() }
-        if !stale() { core.emit(.formSubmitFailed(reason: .validation)) }
+        _ = failed(stale)
         return true
+    }
+
+    private func failed(_ stale: () -> Bool) -> JSONObject? {
+        if !stale() { core.emit(.formSubmitFailed(reason: .validation)) }
+        return nil
     }
 
     private func send(_ submit: SubmitHandler, _ values: JSONObject, _ skippedSteps: [String]) async throws -> SubmitResult? {

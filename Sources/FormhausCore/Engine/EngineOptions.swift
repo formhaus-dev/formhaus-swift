@@ -180,13 +180,14 @@ public struct FormEngineOptions: Sendable {
     public var seed: String?
     public var research: (any FormResearch)?
     public var hiddenValues: HiddenValues
+    public var validateWithRules: Bool
 
     public init(
         onBeforeStepChange: BeforeStepChangeFn? = nil, onAfterStepChange: AfterStepChangeFn? = nil,
         onBeforeSubmit: BeforeSubmitFn? = nil, onAfterSubmit: AfterSubmitFn? = nil, onStepValidate: StepValidateFn? = nil,
         onValidate: ValidateFn? = nil, onFormEvent: FormEventFn? = nil, onWarning: WarningFn? = nil, validators: Validators = [:],
         messages: MessageSource? = nil, locale: [LocaleCatalog] = [], lang: String? = nil, formatRecall: RecallFormatFn? = nil,
-        seed: String? = nil, research: (any FormResearch)? = nil, hiddenValues: HiddenValues = .clear
+        seed: String? = nil, research: (any FormResearch)? = nil, hiddenValues: HiddenValues = .clear, validateWithRules: Bool = false
     ) {
         self.onBeforeStepChange = onBeforeStepChange
         self.onAfterStepChange = onAfterStepChange
@@ -204,5 +205,6 @@ public struct FormEngineOptions: Sendable {
         self.seed = seed
         self.research = research
         self.hiddenValues = hiddenValues
+        self.validateWithRules = validateWithRules
     }
 }

@@ -4,12 +4,14 @@ struct StepMove {
     let index: Int
     let forward: Bool
     let skipping: Bool
+    let ruleErrors: FieldErrors
 
     var validating: Bool { forward && !skipping }
+    var invalid: Bool { !ruleErrors.isEmpty }
 }
 
 extension EngineCore {
-    func plannedMove(forward: Bool, reason: StepChangeReason) -> StepMove? {
+    func plannedMove(forward: Bool, reason: StepChangeReason, withRules: Bool) -> StepMove? {
         let skipping = reason == .skip
         guard isMultiStep, !stepValidating, !submitting else { return nil }
         if !skipping && (forward ? isLastStep : isFirstStep) { return nil }
@@ -17,12 +19,13 @@ extension EngineCore {
         clearFormErrors()
         let validating = forward && !skipping
         if validating { includeCurrentStep() }
-        if validating && hasStepErrors() { return nil }
+        let ruleErrors = validating ? stepErrors() : FieldErrors()
+        guard let ruleErrors, ruleErrors.isEmpty || withRules else { return nil }
         let index = currentStepIndex + (forward ? 1 : -1)
         let steps = visibleSteps
         let target = skipping ? skipTarget() : steps.indices.contains(index) ? steps[index] : nil
         guard let target else { return nil }
-        return StepMove(step: step, target: target, index: index, forward: forward, skipping: skipping)
+        return StepMove(step: step, target: target, index: index, forward: forward, skipping: skipping, ruleErrors: ruleErrors)
     }
 
     func beginOperation() -> Int {
@@ -46,13 +49,17 @@ extension EngineCore {
         }
     }
 
-    func hasStepErrors() -> Bool {
-        guard let step = currentStep else { return true }
+    private func stepErrors() -> FieldErrors? {
+        guard let step = currentStep else { return nil }
         let found = fieldsErrors(step.fields)
-        if found.isEmpty { return false }
+        if found.isEmpty { return found }
         replaceErrors(errors.merging(found))
         notify()
-        return true
+        return found
+    }
+
+    func hasStepErrors() -> Bool {
+        stepErrors()?.isEmpty != true
     }
 }
 
@@ -104,7 +111,7 @@ extension FormEngine {
 
     func changeStep(forward: Bool, reason: StepChangeReason) async throws -> Bool {
         let core = core
-        guard let move = core.plannedMove(forward: forward, reason: reason) else { return false }
+        guard let move = core.plannedMove(forward: forward, reason: reason, withRules: validatesWithRules) else { return false }
         let step = move.step
         var committed = false
         let context = StepChangeContext(
@@ -140,7 +147,18 @@ extension FormEngine {
 
     private func approve(_ move: StepMove, _ context: StepChangeContext, _ stale: () -> Bool) async throws -> Bool {
         if stale() { return false }
-        if move.validating, let validate = options.onStepValidate {
+        guard try await passesStepHooks(move, context, stale) else { return false }
+        if let before = options.onBeforeStepChange {
+            let allowed = try await suspended { try await before(context) }
+            if stale() || allowed == false { return false }
+        }
+        if stale() { return false }
+        return !(move.validating && core.hasStepErrors())
+    }
+
+    private func passesStepHooks(_ move: StepMove, _ context: StepChangeContext, _ stale: () -> Bool) async throws -> Bool {
+        guard move.validating else { return true }
+        if !move.invalid, let validate = options.onStepValidate {
             let result = try await suspended { try await validate(move.step.id, context.values) }
             if stale() { return false }
             if let result, !result.isEmpty {
@@ -148,15 +166,12 @@ extension FormEngine {
                 return false
             }
         }
-        if move.validating, let validate = options.onValidate, try await !passesValidate(validate, context.values, stale, submit: false) {
+        if let validate = options.onValidate,
+            try await !passesValidate(validate, context.values, stale, submit: false, ruleErrors: move.ruleErrors)
+        {
             return false
         }
-        if let before = options.onBeforeStepChange {
-            let allowed = try await suspended { try await before(context) }
-            if stale() || allowed == false { return false }
-        }
-        if stale() { return false }
-        return !(move.validating && core.hasStepErrors())
+        return !move.invalid
     }
 
     private func commit(_ move: StepMove) {

@@ -60,6 +60,7 @@ public final class FormEngine {
     let options: FormEngineOptions
     public let seed: String
     @_spi(Renderer) public let restored: Bool
+    @_spi(Renderer) public var validateWithRules: Bool
     private let listeners = Listeners()
 
     public convenience init(
@@ -74,6 +75,7 @@ public final class FormEngine {
         restoring snapshot: FormSnapshot? = nil
     ) {
         self.options = options
+        validateWithRules = options.validateWithRules
         reportWarnings(definition, options)
         let restoring = snapshot?.matching(definition, options)
         restored = restoring != nil

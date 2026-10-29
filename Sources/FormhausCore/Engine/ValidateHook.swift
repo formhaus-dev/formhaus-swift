@@ -1,11 +1,15 @@
 extension FormEngine {
+    var validatesWithRules: Bool { validateWithRules && options.onValidate != nil }
+
     private func validatedNodes(submit: Bool) -> [FormNode] {
         guard submit else { return core.currentStep?.fields ?? [] }
         guard core.isMultiStep else { return definition.fields ?? [] }
         return core.visibleSteps.filter { !core.isStepSkipped($0.id) }.flatMap(\.fields)
     }
 
-    func passesValidate(_ validate: ValidateFn, _ values: JSONObject, _ stale: () -> Bool, submit: Bool) async throws -> Bool {
+    func passesValidate(
+        _ validate: ValidateFn, _ values: JSONObject, _ stale: () -> Bool, submit: Bool, ruleErrors: FieldErrors
+    ) async throws -> Bool {
         let core = core
         var fields: [String] = []
         let scope = core.visibility.conditionValues(core.values.json)
@@ -22,6 +26,7 @@ extension FormEngine {
         for (key, message) in result {
             if scoped.contains(key) { errors[key] = message } else { general.append(message) }
         }
+        errors.merge(ruleErrors)
         core.applyValidationErrors(errors, formErrors: general, navigate: submit)
         return false
     }
