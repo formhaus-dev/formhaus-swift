@@ -59,7 +59,6 @@ extension FormModel {
         guard let row = fileRows(.array(items)).first(where: { $0.index == index }) else { return }
         items.remove(at: index)
         setValue(.array(items), forKey: key)
-        field(key).showNotice(nil)
         if let url = row.url { UploadStore.discard(url, owner: ObjectIdentifier(self)) }
         let left = fileRows(.array(items)).map(\.index)
         let next = left.first { $0 >= index } ?? left.last
