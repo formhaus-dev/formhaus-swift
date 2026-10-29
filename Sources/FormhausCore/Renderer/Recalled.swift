@@ -19,7 +19,8 @@ extension FormEngine {
         let visibility = core.visibility
         let values = core.values.json
         return RecallScope(
-            visibility: visibility, values: core.getSubmitValues(), lang: options.lang, format: options.formatRecall
+            visibility: visibility, values: core.getSubmitValues(), lang: options.lang, format: options.formatRecall,
+            fileName: storedFileName ?? { _ in nil }
         ) { visibility.activeField($0, values) }
     }
 
