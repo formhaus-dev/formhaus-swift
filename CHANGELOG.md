@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.2
+
+### FormhausUI
+
+- File rows stack the name above the Remove button at accessibility text sizes.
+
 ## 0.6.1
 
 ### FormhausUI
