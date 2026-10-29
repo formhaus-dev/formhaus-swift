@@ -107,7 +107,7 @@ private func usedLabels(_ definition: FormDefinition) -> KeySet {
     add(fields.contains { pickerTypes.contains($0.type) || $0.type == "file" }, ["clear"])
     add(fields.contains { pickerTypes.contains($0.type) }, ["done"])
     add(fields.contains { $0.type == "file" }, ["chooseFile"])
-    add(fields.contains(where: \.isFileList), ["removeItem", "removeItemNamed", "itemAdded", "itemRemoved"])
+    add(fields.contains(where: \.isFileList), ["removeItem", "removeItemNamed", "itemAdded", "itemRemoved", "fileCount"])
     return labels
 }
 
