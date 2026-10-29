@@ -95,7 +95,7 @@ struct FileListModelTests {
         let form = try receiptsForm()
         let field = try docsContext(form)
         #expect(field.removeFileLabel == "Remove")
-        #expect(field.removeFileName("a.pdf") == "Remove a.pdf")
+        #expect(field.removeFileName("a.pdf") == "Remove \u{2068}a.pdf\u{2069}")
         #expect(field.fileName == nil && field.reference == nil)
         #expect(field.fileValueText == "Choose file")
     }

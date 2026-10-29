@@ -14,6 +14,10 @@ private func lastSegment(_ text: String) -> String {
     return segment.isEmpty ? text : segment
 }
 
+func isolatedFileName(_ name: String) -> String {
+    "\u{2068}\(name)\u{2069}"
+}
+
 extension FormModel {
     public func pickedFiles(forKey key: String) -> [URL] {
         fileRows(engine.value(at: key)).compactMap(\.url)
@@ -44,7 +48,8 @@ extension FormModel {
         if !added.isEmpty {
             let value = JSONValue.array(items + added.map { .string($0.absoluteString) })
             setValue(value, forKey: key)
-            notes.append(text(forLabel: "itemAdded", ["item": .string(added.map(\.lastPathComponent).joined(separator: ", "))]))
+            let names = added.map { isolatedFileName($0.lastPathComponent) }.joined(separator: ", ")
+            notes.append(text(forLabel: "itemAdded", ["item": .string(names)]))
             if held + added.count >= limit.count, let last = fileRows(value).last { requestFocus(removeFileKey(key, last.index)) }
         }
         if overflow || added.count < urls.count {
@@ -63,7 +68,7 @@ extension FormModel {
         let left = fileRows(.array(items)).map(\.index)
         let next = left.first { $0 >= index } ?? left.last
         requestFocus(next.map { removeFileKey(key, $0) } ?? key)
-        announce(text(forLabel: "itemRemoved", ["item": .string(row.name)]))
+        announce(text(forLabel: "itemRemoved", ["item": .string(isolatedFileName(row.name))]))
     }
 
     func removeFileKey(_ key: String, _ index: Int) -> String {

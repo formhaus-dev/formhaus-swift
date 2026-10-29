@@ -16,7 +16,7 @@ public struct FileField: View {
                     PickerControl(context: context, active: picking, clearable: false, cleared: .null, label: summary) { picking = true }
                     FileList(context: context)
                     if let notice = context.state.notice {
-                        Text(verbatim: notice).formhausText(.error).fixedSize(horizontal: false, vertical: true)
+                        Text(verbatim: notice).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }

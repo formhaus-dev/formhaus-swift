@@ -28,8 +28,10 @@ private struct FocusRequestReader: ViewModifier {
     }
 }
 
-private struct FieldFocus: ViewModifier {
-    let context: FieldContext
+private struct SpokenFocus: ViewModifier {
+    let state: FieldState
+    let model: FormModel
+    let disabled: Bool
     let focused: FocusState<Bool>.Binding
     @AccessibilityFocusState private var spoken: Bool
 
@@ -37,10 +39,20 @@ private struct FieldFocus: ViewModifier {
         content
             .focused(focused)
             .accessibilityFocused($spoken)
-            .onFormhausFocus(context) {
+            .onFormhausFocus(state, model: model, disabled: disabled) {
                 focused.wrappedValue = true
                 spoken = true
             }
+    }
+}
+
+private struct FieldFocus: ViewModifier {
+    let context: FieldContext
+    let focused: FocusState<Bool>.Binding
+
+    func body(content: Content) -> some View {
+        content
+            .spokenFocus(context.state, model: context.model, disabled: context.isLocked, focused)
             .notesFocus(context, focused.wrappedValue)
     }
 }
@@ -48,6 +60,10 @@ private struct FieldFocus: ViewModifier {
 extension View {
     public func formhausFocus(_ context: FieldContext, _ focused: FocusState<Bool>.Binding) -> some View {
         modifier(FieldFocus(context: context, focused: focused))
+    }
+
+    func spokenFocus(_ state: FieldState, model: FormModel, disabled: Bool, _ focused: FocusState<Bool>.Binding) -> some View {
+        modifier(SpokenFocus(state: state, model: model, disabled: disabled, focused: focused))
     }
 
     public func onFormhausFocus(_ context: FieldContext, perform: @escaping @MainActor () -> Void) -> some View {

@@ -108,7 +108,9 @@ public struct FieldError: View {
 
 @MainActor
 func announce(_ message: String) {
-    AccessibilityNotification.Announcement(message).post()
+    var spoken = AttributedString(message)
+    spoken.accessibilitySpeechAnnouncementPriority = .high
+    AccessibilityNotification.Announcement(spoken).post()
 }
 
 extension FormhausTokens {

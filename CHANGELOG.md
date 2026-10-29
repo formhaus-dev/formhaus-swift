@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### FormhausUI
+
+- VoiceOver focus moves to the Remove button after a file is added to a full list or removed.
+- Announcements are posted with high priority so a focus change does not drop them.
+- A full file list tells VoiceOver the limit in the picker hint.
+- File names in Remove labels and announcements are isolated for mixed-direction text.
+- File names wrap to two lines, or four at accessibility text sizes.
+- The file list limit message uses the helper style instead of the error style.
+
 ## 0.6.0
 
 ### FormhausCore
