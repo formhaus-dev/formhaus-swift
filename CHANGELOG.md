@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
 
 ### FormhausCore
 
+- Passes the conformance suite of `@formhaus/core` 1.8.0.
 - Format 1.7: `"multiple": true` on a `file` field keeps a list of files. Below 1.7 the field keeps one file.
 - `[]` and `null` are empty for a file list.
 - `""` and `null` entries of a file list are not files. They are not counted, and `validateSubmission` drops them.
@@ -13,7 +14,7 @@
 - `validateSubmission` reads a file list as an array of string references, and a single string as a list of one.
 - New `multiple-not-applicable` warning for `multiple` on a field other than `file`.
 - `FormDefinition.supportedFormatVersion` is `"1.7"`.
-- New `validateWithRules` option on `FormEngineOptions` runs `onValidate` even when the definition rules fail; the definition error wins on the same field.
+- New `validateWithRules` option on `FormEngineOptions` runs `onValidate` even when the definition rules fail. The definition error wins on the same field.
 - Fixed field errors from `onValidate` and `onStepValidate` staying on a step after its next Continue passed, and showing again after Back.
 
 ### FormhausUI
