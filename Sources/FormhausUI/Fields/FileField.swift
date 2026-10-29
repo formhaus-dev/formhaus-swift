@@ -37,7 +37,7 @@ public struct FileField: View {
             Text(verbatim: context.fileName ?? context.reference ?? context.placeholder ?? context.text(forLabel: "chooseFile"))
                 .formhausText(.body, colored: false)
                 .foregroundStyle(summaryColor)
-                .lineLimit(1)
+                .accessibleLineLimit(1)
                 .truncationMode(.middle)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

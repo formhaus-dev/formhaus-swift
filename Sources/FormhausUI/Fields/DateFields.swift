@@ -91,7 +91,7 @@ public struct DateField: View {
                 .foregroundStyle(
                     display == nil ? tokens.colors.control : context.isLocked ? tokens.colors.textMuted : tokens.colors.text
                 )
-                .lineLimit(2)
+                .accessibleLineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if display == nil {

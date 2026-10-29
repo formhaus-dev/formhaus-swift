@@ -16,7 +16,7 @@ public struct SelectField: View {
                 Text(verbatim: selectedLabel ?? context.placeholder ?? "")
                     .formhausText(.body, colored: false)
                     .foregroundStyle(textColor)
-                    .lineLimit(1)
+                    .accessibleLineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 LoadingIndicator(visible: context.loading)
                 Image(systemName: "chevron.up.chevron.down")
