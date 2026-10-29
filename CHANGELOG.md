@@ -4,11 +4,24 @@
 
 ### FormhausCore
 
+- Format 1.7: `"multiple": true` on a `file` field keeps a list of files. Below 1.7 the field keeps one file.
+- `[]` and `null` are empty for a file list.
+- `""` and `null` entries of a file list are not files. They are not counted, and `validateSubmission` drops them.
+- `minLength` and `maxLength` count the files of a list.
+- A file list holds at most `maxLength` files, rounded down, 100 without it and never more than 1000.
+- A number or an object without a string `name` in a file list fails with the `file` message.
+- `validateSubmission` reads a file list as an array of string references, and a single string as a list of one.
+- New `multiple-not-applicable` warning for `multiple` on a field other than `file`.
+- `FormDefinition.supportedFormatVersion` is `"1.7"`.
 - New `validateWithRules` option on `FormEngineOptions` runs `onValidate` even when the definition rules fail; the definition error wins on the same field.
 - Fixed field errors from `onValidate` and `onStepValidate` staying on a step after its next Continue passed, and showing again after Back.
 
 ### FormhausUI
 
+- A `file` field with `multiple` shows the chosen files below the picker, each with a Remove button.
+- Picking adds files until the list is full. Extra files are dropped and the limit message shows under the list.
+- The picker of a full file list is disabled.
+- New `FormModel.pickedFiles(forKey:)` returns the picked files of a list.
 - The `validateWithRules` engine option reaches `FormhausForm` and `FormModel`.
 
 ## 0.5.0

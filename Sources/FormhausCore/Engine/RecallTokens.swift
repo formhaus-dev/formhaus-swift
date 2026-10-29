@@ -38,3 +38,8 @@ func formatParts(_ version: JSONValue?) -> (major: Double, minor: Double) {
     let parts = text.split(separator: ".", omittingEmptySubsequences: false).map { jsNumber(fromString: String($0)) }
     return (parts[0], parts.count > 1 ? parts[1] : 0)
 }
+
+func formatAtLeast(_ version: JSONValue?, _ minor: Double) -> Bool {
+    let parts = formatParts(version)
+    return parts.major > 1 || parts.minor >= minor
+}

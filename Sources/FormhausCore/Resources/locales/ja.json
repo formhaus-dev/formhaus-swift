@@ -48,6 +48,7 @@
     "submit": "送信",
     "stepTitle": "ステップ {index}",
     "stepErrors": "エラー {count}件",
+    "fileCount": "ファイル {count}件",
     "or": "または",
     "select": "選択してください"
   }

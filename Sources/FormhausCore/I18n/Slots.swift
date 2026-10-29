@@ -17,7 +17,7 @@ struct Slot {
 private let bounds = ["minLength": "min", "maxLength": "max", "min": "min", "max": "max"]
 
 private func ruleKey(_ field: FormField, _ rule: String) -> String {
-    (listTypes.contains(field.type) || field.isGroup) && rule.hasSuffix("Length")
+    (field.isList || field.isGroup) && rule.hasSuffix("Length")
         ? rule.replacingOccurrences(of: "Length", with: "Items") : rule
 }
 
@@ -107,6 +107,7 @@ private func usedLabels(_ definition: FormDefinition) -> KeySet {
     add(fields.contains { pickerTypes.contains($0.type) || $0.type == "file" }, ["clear"])
     add(fields.contains { pickerTypes.contains($0.type) }, ["done"])
     add(fields.contains { $0.type == "file" }, ["chooseFile"])
+    add(fields.contains(where: \.isFileList), ["removeItem", "removeItemNamed", "itemAdded", "itemRemoved", "fileCount"])
     return labels
 }
 

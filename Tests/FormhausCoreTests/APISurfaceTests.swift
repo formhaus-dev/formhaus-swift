@@ -130,7 +130,7 @@ struct APISurfaceTests {
     @Test("locale helpers run from any thread")
     func localeHelpers() async {
         #expect(await Task.detached { localeChain("pt_br") }.value == ["pt-BR", "pt", "en"])
-        #expect(await Task.detached { checkCatalog(["locale": "x"]).missing.count }.value == 47)
+        #expect(await Task.detached { checkCatalog(["locale": "x"]).missing.count }.value == 48)
         #expect(await Task.detached { LocaleCatalog.bundled("de")?.locale }.value == "de")
     }
 
@@ -140,7 +140,7 @@ struct APISurfaceTests {
         #expect(engine.isMultiStep)
         #expect(engine.currentStep?.id == "one")
         #expect(engine.validate().isEmpty)
-        #expect(FormDefinition.supportedFormatVersion == "1.6")
+        #expect(FormDefinition.supportedFormatVersion == "1.7")
     }
 
     @Test("subscribers hear every change until they cancel")

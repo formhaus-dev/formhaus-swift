@@ -44,10 +44,11 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
     public let options: [FieldOption]?
     let optionIndex: OptionIndex?
     public let fields: [FormNode]?
+    public let isFileList: Bool
 
-    init(json: JSONObject, ordinals: inout Int) {
+    init(json: JSONObject, nodes: inout NodeBuilder) {
         self.json = json
-        ordinal = nextOrdinal(&ordinals)
+        ordinal = nodes.next()
         key = json["key"]?.stringValue ?? ""
         type = json["type"]?.stringValue ?? ""
         show = conditions(json["show"])
@@ -55,7 +56,8 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
         validation = json["validation"]?.objectValue.map(FieldValidation.init(json:))
         options = json["options"]?.arrayValue.map { $0.compactMap { $0.objectValue.map(FieldOption.init(json:)) } }
         optionIndex = options.map(OptionIndex.init)
-        fields = type == "group" ? formNodes(json["fields"], &ordinals) : nil
+        fields = type == "group" ? formNodes(json["fields"], &nodes) : nil
+        isFileList = nodes.listsFiles && type == "file" && json["multiple"] == .bool(true)
     }
 
     public var label: String? { json["label"]?.stringValue }
@@ -108,13 +110,13 @@ public struct FormSection: Sendable, Conditional, NodeIdentity {
     public let showAny: [ShowCondition]?
     public internal(set) var fields: [FormNode]
 
-    init(json: JSONObject, ordinals: inout Int) {
+    init(json: JSONObject, nodes: inout NodeBuilder) {
         self.json = json
-        ordinal = nextOrdinal(&ordinals)
+        ordinal = nodes.next()
         key = json["key"]?.stringValue ?? ""
         show = conditions(json["show"])
         showAny = conditions(json["showAny"])
-        fields = formNodes(json["fields"], &ordinals) ?? []
+        fields = formNodes(json["fields"], &nodes) ?? []
     }
 
     public var title: String? { json["title"]?.stringValue }
@@ -191,16 +193,25 @@ protocol NodeIdentity {
     var ordinal: Int { get }
 }
 
-func nextOrdinal(_ ordinals: inout Int) -> Int {
-    defer { ordinals += 1 }
-    return ordinals
+struct NodeBuilder {
+    let listsFiles: Bool
+    private var count = 0
+
+    init(listsFiles: Bool) {
+        self.listsFiles = listsFiles
+    }
+
+    mutating func next() -> Int {
+        defer { count += 1 }
+        return count
+    }
 }
 
-func formNodes(_ value: JSONValue?, _ ordinals: inout Int) -> [FormNode]? {
+func formNodes(_ value: JSONValue?, _ nodes: inout NodeBuilder) -> [FormNode]? {
     guard let items = value?.arrayValue else { return nil }
     return items.compactMap { item in
         guard let object = item.objectValue else { return nil }
-        if object["type"]?.stringValue == "section" { return .section(FormSection(json: object, ordinals: &ordinals)) }
-        return .field(FormField(json: object, ordinals: &ordinals))
+        if object["type"]?.stringValue == "section" { return .section(FormSection(json: object, nodes: &nodes)) }
+        return .field(FormField(json: object, nodes: &nodes))
     }
 }

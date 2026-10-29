@@ -360,7 +360,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 81 definition files with their issues, value cases, recall cases, option order vectors and revealed fields, and 454 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 87 definition files with their issues, value cases, recall cases, option order vectors and revealed fields, and 477 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 
@@ -387,7 +387,7 @@ Sizes come from the linker map of a stripped Release arm64 iOS build. Memory is 
 - A pattern match stops after 10,000,000 steps, and one validation call has 20,000,000 steps for all its patterns. A pattern that runs out fails its rule. Values are at most 10,000 code units long, and a pattern with more than 100 nested groups is invalid.
 - The JSON parser rejects unpaired surrogate escapes and documents nested deeper than 512 levels.
 - Hooks are always `async`. Without `onWarning`, definition warnings go to `os.Logger` with subsystem `dev.formhaus`.
-- A `file` field writes the URL of a copy in the temporary directory. Read it with `FormModel.pickedFile(forKey:)`.
+- A `file` field writes the URL of a copy in the temporary directory. Read it with `FormModel.pickedFile(forKey:)`, or with `FormModel.pickedFiles(forKey:)` for a field with `multiple`.
 - Hidden field `source` values are not resolved. Pass them in the initial values.
 - There are no drafts and no Cloud client.
 - Plural rules cover the languages of the shipped catalogs, and other languages use the `other` form.

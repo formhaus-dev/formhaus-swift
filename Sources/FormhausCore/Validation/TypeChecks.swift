@@ -77,7 +77,9 @@ func trimValue(_ field: FormField, _ value: JSONValue?) -> JSONValue? {
 }
 
 func normalizeValue(_ field: FormField, _ input: JSONValue?) -> JSONValue? {
-    if let items = input?.arrayValue, items.isEmpty, !listTypes.contains(field.type), builtInTypes.contains(field.type) { return nil }
+    if let items = input?.arrayValue, items.isEmpty, !field.isList, builtInTypes.contains(field.type) { return nil }
+    if field.isFileList, case .string(let text)? = input, !text.isEmpty { return .array([.string(text)]) }
+    if field.isFileList, let items = input?.arrayValue { return .array(items.filter(isListEntry)) }
     if field.isGroup { return normalizeItems(field, input) }
     let value = trimValue(field, input)
     guard numberTypes.contains(field.type), case .string(let text)? = value, decimal.test(text) == true else { return value }
@@ -157,7 +159,19 @@ private func primitiveError(_ field: FormField, _ value: JSONValue, _ fail: Fail
 }
 
 private func isEmpty(_ field: FormField, _ value: JSONValue?) -> Bool {
-    isBlank(value) && (listTypes.contains(field.type) || value?.arrayValue == nil)
+    isBlank(value) && (field.isList || value?.arrayValue == nil)
+}
+
+func fileLimitMessage(_ field: FormField, _ resolve: ResolveMessage) -> String {
+    field.validation?.message("maxLengthMessage") ?? resolve("maxItems", ["max": .number(Double(field.fileListLimit))], field)
+}
+
+private func fileListError(_ field: FormField, _ value: JSONValue, _ resolve: @escaping ResolveMessage) -> String? {
+    let fail: Fail = { key, params in resolve(key, params, field) }
+    guard let items = value.arrayValue else { return fail("file", [:]) }
+    if items.count > field.fileListLimit { return fileLimitMessage(field, resolve) }
+    let references = items.allSatisfy { item in item.stringValue.map { !$0.isEmpty && $0.jsLength <= maxStringLength } == true }
+    return references ? nil : fail("file", [:])
 }
 
 private func groupError(_ field: FormField, _ value: JSONValue, _ fail: Fail) -> String? {
@@ -180,6 +194,7 @@ func typeError(_ field: FormField, _ input: JSONValue?, _ resolve: @escaping Res
         return point == true ? nil : fail("option", [:])
     }
     if listTypes.contains(field.type) { return multiselectError(field, value, fail) }
+    if field.isFileList { return fileListError(field, value, resolve) }
     if field.type == "file" { return stringError(field, value, "file", fail) }
     if let format = Format(field.type) { return formatError(field, value, format, fail) }
     if field.type == "select" || field.type == "radio" {
@@ -195,7 +210,7 @@ func typeMessageKeys(_ field: FormField) -> [MessageKey] {
     if field.isScale { return ["option"] }
     if listTypes.contains(field.type) { return ["options", "option"] + (exclusiveValues(field).isEmpty ? [] : ["exclusive"]) }
     if let format = Format(field.type) { return [format.key, "maxLength"] }
-    if field.type == "file" { return ["file", "maxLength"] }
+    if field.type == "file" { return ["file", field.isFileList ? "maxItems" : "maxLength"] }
     if field.type == "select" || field.type == "radio" { return ["option", "maxLength"] }
     return [textTypes.contains(field.type) ? "string" : "value", "maxLength"] + (field.type == "hidden" ? ["hidden"] : [])
 }
@@ -207,4 +222,10 @@ func clientTypeError(_ field: FormField, _ value: JSONValue?, _ resolve: @escapi
 
 extension FormField {
     var maxItems: Double { min(validation?.maxLength ?? defaultGroupItems, Double(maxGroupItems)) }
+    var fileListLimit: Int {
+        let max = validation?.maxLength.flatMap { $0.isFinite ? $0 : nil } ?? defaultGroupItems
+        return clampedInt(max, 0...maxGroupItems) ?? maxGroupItems
+    }
+
+    var isList: Bool { listTypes.contains(type) || isFileList }
 }

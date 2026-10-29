@@ -1,0 +1,130 @@
+{
+  "name": "file-multiple-limits",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "limits",
+    "title": "Limits",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "half",
+        "type": "file",
+        "label": "Half",
+        "multiple": true,
+        "validation": {
+          "maxLength": 2.5
+        }
+      },
+      {
+        "key": "negative",
+        "type": "file",
+        "label": "Negative",
+        "multiple": true,
+        "validation": {
+          "maxLength": -5
+        }
+      },
+      {
+        "key": "huge",
+        "type": "file",
+        "label": "Huge",
+        "multiple": true,
+        "validation": {
+          "maxLength": 1e300
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "a maxLength that is not whole rounds down",
+      "input": {
+        "values": {
+          "half": ["a", "b", "c"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "half": ["a", "b", "c"]
+        },
+        "errors": {
+          "half": "At most 2 allowed"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    },
+    {
+      "name": "a rounded maxLength keeps its whole count",
+      "input": {
+        "values": {
+          "half": ["a", "b"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "half": ["a", "b"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "a negative maxLength allows no file",
+      "input": {
+        "values": {
+          "negative": ["a"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "negative": ["a"]
+        },
+        "errors": {
+          "negative": "At most 0 allowed"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    },
+    {
+      "name": "a negative maxLength allows an empty list",
+      "input": {
+        "values": {
+          "negative": []
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "negative": []
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "a huge maxLength caps at 1000",
+      "input": {
+        "values": {
+          "huge": ["a", "b", "c"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "huge": ["a", "b", "c"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

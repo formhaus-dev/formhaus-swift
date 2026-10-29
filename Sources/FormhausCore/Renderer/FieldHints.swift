@@ -17,6 +17,11 @@ public func dividerBefore(_ field: FormField, _ options: [FieldOption], _ index:
 
 extension FormEngine {
     @_spi(Renderer)
+    public func fileLimit(_ field: FormField) -> (count: Int, message: String) {
+        (field.fileListLimit, fileLimitMessage(field, core.messages))
+    }
+
+    @_spi(Renderer)
     public func autocomplete(_ field: FormField, at path: String? = nil) -> String? {
         guard let written = field.autocomplete?.stringValue else { return nil }
         let token = written.jsTrimmed

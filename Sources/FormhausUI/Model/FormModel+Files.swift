@@ -9,7 +9,7 @@ extension FormModel {
     func dropMissingFiles() {
         guard !disabled else { return }
         for field in engine.definition.allFields where field.type == "file" {
-            if engine.values[field.key]?.stringValue.map(UploadStore.isMissing) == true { engine.setValue(field.key, .null) }
+            if let kept = withoutFiles(field, engine.values[field.key], where: UploadStore.isMissing) { engine.setValue(field.key, kept) }
         }
     }
 
@@ -18,8 +18,10 @@ extension FormModel {
         let owner = ObjectIdentifier(self)
         var dropped = false
         for field in engine.definition.allFields where field.type == "file" {
-            guard let value = engine.values[field.key]?.stringValue, !UploadStore.adopt(value, owner: owner) else { continue }
-            engine.setValue(field.key, .null)
+            guard let kept = withoutFiles(field, engine.values[field.key], where: { !UploadStore.adopt($0, owner: owner) }) else {
+                continue
+            }
+            engine.setValue(field.key, kept)
             dropped = true
         }
         return dropped
@@ -31,6 +33,18 @@ extension FormModel {
         var files = Set<String>()
         for value in values.values { collectFiles(value, into: &files) }
         UploadStore.prune(owner: ObjectIdentifier(self), keeping: files)
+    }
+}
+
+private func withoutFiles(_ field: FormField, _ value: JSONValue?, where gone: (String) -> Bool) -> JSONValue? {
+    switch value {
+    case .string(let text)? where gone(text):
+        return .null
+    case .array(let items)? where field.isFileList:
+        let kept = items.filter { $0.stringValue.map(gone) != true }
+        return kept.count == items.count ? nil : .array(kept)
+    default:
+        return nil
     }
 }
 

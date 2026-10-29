@@ -53,6 +53,32 @@ private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: Fo
     }
 }
 
+@_spi(Renderer) public func fileItems(_ value: JSONValue?) -> [JSONValue] {
+    switch value {
+    case .array(let items)?: items
+    case nil, .null?, .string("")?: []
+    case let single?: [single]
+    }
+}
+
+func isListEntry(_ item: JSONValue) -> Bool {
+    item != .null && item != .string("")
+}
+
+@_spi(Renderer) public func listedFiles(_ value: JSONValue?) -> [JSONValue] {
+    fileItems(value).filter(isListEntry)
+}
+
+private func isFileItem(_ item: JSONValue) -> Bool {
+    item.stringValue.map { !$0.isEmpty } ?? (item.objectValue?["name"]?.stringValue != nil)
+}
+
+private func fileListRules(_ field: FormField) -> FieldValidation {
+    var json = field.validation?.json ?? JSONObject()
+    json["maxLength"] = .number(Double(field.fileListLimit))
+    return FieldValidation(json: json)
+}
+
 public func validateFieldValue(
     _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, options: ValidateOptions = ValidateOptions()
 ) -> String? {
@@ -63,8 +89,8 @@ func fieldValueError(
     _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, _ validators: Validators, _ messages: MessageSource?,
     required: Bool = true
 ) -> String? {
-    let value = trimValue(field, input)
-    let rules = field.validation ?? FieldValidation(json: JSONObject())
+    let value = field.isFileList ? .array(listedFiles(input)) : trimValue(field, input)
+    let rules = field.isFileList ? fileListRules(field) : field.validation ?? FieldValidation(json: JSONObject())
     let resolve = namedResolver(messageResolver(messages))
     let matchMessage = { rules.message("matchFieldMessage") ?? resolve("matchField", [:], field) }
     guard let present = value, !isEmptyValue(value, field) else {
@@ -74,6 +100,7 @@ func fieldValueError(
         if let match = rules.matchField, !isBlank(allValues[match]) { return matchMessage() }
         return nil
     }
+    if field.isFileList, present.arrayValue?.allSatisfy(isFileItem) == false { return resolve("file", [:], field) }
     if let issue = clientTypeError(field, present, resolve), !issue.isEmpty { return issue }
     let issue =
         sizeError(present, rules, field, resolve)

@@ -1,0 +1,113 @@
+{
+  "name": "file-multiple-items",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "items",
+    "title": "Items",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "docs",
+        "type": "file",
+        "label": "Documents",
+        "multiple": true,
+        "validation": {
+          "required": true,
+          "maxLength": 2
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "empty entries are not items and do not count",
+      "input": {
+        "values": {
+          "docs": ["upload-1", "", null, "upload-2"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["upload-1", "", null, "upload-2"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true,
+      "serverValues": {
+        "docs": ["upload-1", "upload-2"]
+      }
+    },
+    {
+      "name": "a list of only empty entries is empty for required",
+      "input": {
+        "values": {
+          "docs": ["", null]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["", null]
+        },
+        "errors": {
+          "docs": "This field is required"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "docs": []
+      }
+    },
+    {
+      "name": "a number is not a file",
+      "input": {
+        "values": {
+          "docs": ["upload-1", 5]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["upload-1", 5]
+        },
+        "errors": {
+          "docs": "Must be a file reference"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    },
+    {
+      "name": "an object without a name is not a file",
+      "input": {
+        "values": {
+          "docs": [
+            {
+              "id": "upload-1"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": [
+            {
+              "id": "upload-1"
+            }
+          ]
+        },
+        "errors": {
+          "docs": "Must be a file reference"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    }
+  ]
+}
