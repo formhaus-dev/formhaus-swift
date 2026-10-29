@@ -11,6 +11,12 @@ private func once(_ result: FieldErrors, when: @escaping @Sendable (Bool) -> Boo
     }
 }
 
+@MainActor
+private func replies(_ list: [FieldErrors?]) -> StepValidateFn {
+    var left = list
+    return { _, _ in left.isEmpty ? nil : left.removeFirst() }
+}
+
 private struct Offline: Error {}
 
 @Suite("onValidate form errors")
@@ -129,5 +135,60 @@ struct ValidateFailureTests {
         #expect(calls.names.isEmpty)
         #expect(engine.errors.isEmpty)
         #expect(!engine.submitting)
+    }
+}
+
+@Suite("field errors of a passed step")
+@MainActor
+struct PassedStepErrorTests {
+    @Test("drop onValidate errors of the step on the next Continue and after Back")
+    func dropped() async throws {
+        let engine = try League.engine(FormEngineOptions(onValidate: once(["email": "Taken"])))
+        #expect(try await engine.next() == false)
+        #expect(engine.errors == ["email": "Taken"])
+        #expect(try await engine.next())
+        #expect(engine.errors.isEmpty)
+        #expect(try await engine.back())
+        #expect(engine.errors.isEmpty)
+    }
+
+    @Test("drop onStepValidate errors of group items on the next Continue")
+    func items() async throws {
+        let engine = try League.engine(FormEngineOptions(onStepValidate: replies([nil, ["players.0.name": "Taken"]])))
+        try await engine.next()
+        #expect(try await engine.next() == false)
+        #expect(engine.errors == ["players.0.name": "Taken"])
+        #expect(try await engine.next())
+        #expect(engine.errors.isEmpty)
+    }
+
+    @Test("bring back the setErrors error a step error replaced")
+    func server() async throws {
+        let engine = try League.engine(FormEngineOptions(onValidate: once(["email": "Taken"])))
+        engine.setErrors(["email": "Server says no"])
+        #expect(try await engine.next() == false)
+        #expect(engine.errors == ["email": "Taken"])
+        #expect(try await engine.next())
+        #expect(engine.errors == ["email": "Server says no"])
+    }
+
+    @Test("keep errors of other steps")
+    func otherSteps() async throws {
+        let engine = try League.engine(FormEngineOptions())
+        try await engine.next()
+        engine.setValue("email", "")
+        engine.validateField("email")
+        #expect(try await engine.next())
+        #expect(engine.errors == ["email": "This field is required"])
+    }
+
+    @Test("keep errors of the step on Back")
+    func back() async throws {
+        let engine = try League.engine(
+            FormEngineOptions(onValidate: { _, context in context.stepId == "roster" ? ["players.0.name": "Taken"] : nil }))
+        try await engine.next()
+        #expect(try await engine.next() == false)
+        #expect(try await engine.back())
+        #expect(engine.errors == ["players.0.name": "Taken"])
     }
 }

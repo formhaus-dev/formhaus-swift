@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### FormhausCore
+
+- Fixed field errors from `onValidate` and `onStepValidate` staying on a step after its next Continue passed, and showing again after Back. Errors from `setErrors` and the submit handler stay as before.
+
 ## 0.5.0
 
 ### FormhausCore
