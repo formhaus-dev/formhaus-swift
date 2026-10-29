@@ -10,6 +10,7 @@ extension FormModel {
         heldEdits[key] = nil
         dropFocusRequest()
         engine.setValue(key, value)
+        fieldStates[key]?.showNotice(nil)
         options.onFieldChange?(key, value, engine.values)
     }
 

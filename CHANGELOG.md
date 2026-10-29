@@ -24,6 +24,8 @@
 - New `FormModel.pickedFiles(forKey:)` returns the picked files of a list.
 - The `validateWithRules` engine option reaches `FormhausForm` and `FormModel`.
 - Fixed `{{key}}` recall of a picked file showing its `file://` path instead of its name.
+- Fixed the file list limit message staying after the app changed the field value with `setValue`.
+- Fixed a `storedFileName` callback set on the engine being lost when a `FormModel` is created for it.
 
 ## 0.5.0
 
