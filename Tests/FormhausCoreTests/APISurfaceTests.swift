@@ -140,7 +140,7 @@ struct APISurfaceTests {
         #expect(engine.isMultiStep)
         #expect(engine.currentStep?.id == "one")
         #expect(engine.validate().isEmpty)
-        #expect(FormDefinition.supportedFormatVersion == "1.6")
+        #expect(FormDefinition.supportedFormatVersion == "1.7")
     }
 
     @Test("subscribers hear every change until they cancel")

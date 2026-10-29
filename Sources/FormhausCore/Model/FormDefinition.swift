@@ -10,11 +10,11 @@ public struct FormStep: Sendable, Conditional, NodeIdentity {
     public let back: StepButton
     public let skip: StepButton
 
-    init(json: JSONObject, ordinals: inout Int) {
+    init(json: JSONObject, nodes: inout NodeBuilder) {
         self.json = json
-        ordinal = nextOrdinal(&ordinals)
+        ordinal = nodes.next()
         id = json["id"]?.stringValue ?? ""
-        fields = formNodes(json["fields"], &ordinals) ?? []
+        fields = formNodes(json["fields"], &nodes) ?? []
         show = conditions(json["show"])
         showAny = conditions(json["showAny"])
         routes = json["routes"]?.arrayValue.map { $0.compactMap { $0.objectValue.map(StepRoute.init(json:)) } }
@@ -37,7 +37,7 @@ public struct FormStep: Sendable, Conditional, NodeIdentity {
 }
 
 public struct FormDefinition: Sendable {
-    public static let supportedFormatVersion = "1.6"
+    public static let supportedFormatVersion = "1.7"
 
     let json: JSONObject
     public let id: String
@@ -46,18 +46,19 @@ public struct FormDefinition: Sendable {
     public let fields: [FormNode]?
     public let steps: [FormStep]?
     let recallsAnswers: Bool
+    let listsFiles: Bool
 
     init(unchecked json: JSONObject) {
-        var ordinals = 0
         self.json = json
-        let (major, minor) = formatParts(json["formatVersion"])
-        recallsAnswers = major > 1 || minor >= 5
+        recallsAnswers = formatAtLeast(json["formatVersion"], 5)
+        listsFiles = formatAtLeast(json["formatVersion"], 7)
+        var nodes = NodeBuilder(listsFiles: listsFiles)
         id = json["id"]?.stringValue ?? ""
         submit = FormAction(json: json["submit"]?.objectValue ?? JSONObject())
         cancel = json["cancel"]?.objectValue.map(FormAction.init(json:))
-        fields = formNodes(json["fields"], &ordinals)
+        fields = formNodes(json["fields"], &nodes)
         steps = json["steps"]?.arrayValue.map { items in
-            items.compactMap { item in item.objectValue.map { FormStep(json: $0, ordinals: &ordinals) } }
+            items.compactMap { item in item.objectValue.map { FormStep(json: $0, nodes: &nodes) } }
         }
     }
 
