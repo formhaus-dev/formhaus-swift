@@ -8,7 +8,7 @@ extension FormModel {
 
     func nameStoredFiles() {
         let owner = ObjectIdentifier(self)
-        engine.storedFileNames = { UploadStore.names(owner: owner) }
+        engine.storedFileName = { value in MainActor.assumeIsolated { UploadStore.owned(value, by: owner)?.lastPathComponent } }
     }
 
     func dropMissingFiles() {

@@ -36,6 +36,25 @@ struct FileRecallTests {
         UploadStore.release(owner: ObjectIdentifier(form))
     }
 
+    @Test("a file list recalls the names of picked files and references as written")
+    func list() async throws {
+        let definition: JSONValue = [
+            "formatVersion": "1.7", "id": "claims", "title": "Claims", "submit": ["label": "Send"],
+            "fields": [
+                ["key": "docs", "type": "file", "label": "Receipts", "multiple": true],
+                ["key": "note", "type": "text", "label": "Note", "helperText": "You attached {{docs}}"],
+            ],
+        ]
+        let form = FormModel(definition: try FormDefinition(json: definition), initialValues: ["docs": ["upload-9"]]) { _, _ in nil }
+        form.start()
+        try docsContext(form).receiveFiles(try await pickedCopies(form, ["march.pdf", "april.pdf"]))
+        #expect(
+            form.engine.recallText("{{docs}}", options: RecallOptions(format: { answer, _, _ in answer.stored }))
+                == "upload-9, march.pdf, april.pdf")
+        #expect(try helper(form) == "You attached upload-9, march.pdf, and april.pdf")
+        UploadStore.release(owner: ObjectIdentifier(form))
+    }
+
     @Test("an app reference recalls as written", arguments: ["upload-123", "file:///Users/x/cv.pdf"])
     func reference(value: String) throws {
         let form = FormModel(definition: try FormDefinition(json: application), initialValues: ["cv": .string(value)]) { _, _ in nil }
