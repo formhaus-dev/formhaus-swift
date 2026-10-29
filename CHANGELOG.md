@@ -4,7 +4,12 @@
 
 ### FormhausCore
 
+- New `validateWithRules` option on `FormEngineOptions` runs `onValidate` even when the definition rules fail; the definition error wins on the same field.
 - Fixed field errors from `onValidate` and `onStepValidate` staying on a step after its next Continue passed, and showing again after Back.
+
+### FormhausUI
+
+- The `validateWithRules` engine option reaches `FormhausForm` and `FormModel`.
 
 ## 0.5.0
 

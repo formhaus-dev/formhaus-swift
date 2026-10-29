@@ -82,6 +82,8 @@ public final class FormEngine {
             definition: definition, values: restoring?.values ?? values, validators: options.validators, messages: options.messages,
             locale: options.locale, keep: options.hiddenValues == .keep, missingMessage: missingMessageReporter(options))
         if let restoring { core.restore(restoring) }
+        core.validateWithRules = options.validateWithRules
+        core.onValidate = options.onValidate
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
         }

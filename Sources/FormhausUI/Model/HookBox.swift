@@ -8,6 +8,16 @@ final class HookBox {
         current = options
     }
 
+    var onValidate: ValidateFn? {
+        guard current.onValidate != nil else { return nil }
+        return { [self] values, context in try await current.onValidate?(values, context) }
+    }
+
+    func update(_ options: FormEngineOptions, on engine: FormEngine) {
+        current = options
+        engine.onValidate = onValidate
+    }
+
     func forwarding() -> FormEngineOptions {
         var options = current
         options.onBeforeStepChange = { [self] context in
@@ -24,10 +34,7 @@ final class HookBox {
             guard let hook = current.onStepValidate else { return nil }
             return try await hook(step, values)
         }
-        options.onValidate = { [self] values, context in
-            guard let hook = current.onValidate else { return nil }
-            return try await hook(values, context)
-        }
+        options.onValidate = onValidate
         if current.onFormEvent != nil { options.onFormEvent = { [self] in current.onFormEvent?($0) } }
         return options
     }
