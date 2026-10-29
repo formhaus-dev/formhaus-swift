@@ -17,7 +17,7 @@ final class EventLog {
 
 @MainActor
 struct ScenarioHooks {
-    static let names = ["onBeforeStepChange", "onAfterStepChange", "onBeforeSubmit", "onAfterSubmit", "onStepValidate"]
+    static let names = ["onBeforeStepChange", "onAfterStepChange", "onBeforeSubmit", "onAfterSubmit", "onStepValidate", "onValidate"]
 
     let scenario: JSONObject
     let script: Script
@@ -37,6 +37,7 @@ struct ScenarioHooks {
         }
         addStepHooks(&options)
         addSubmitHooks(&options)
+        addValidateHook(&options)
         for (name, spec) in scenario["validators"]?.objectValue ?? JSONObject() {
             let reject = spec["reject"]?.arrayValue ?? []
             let error = spec["error"]?.stringValue ?? ""
@@ -46,6 +47,7 @@ struct ScenarioHooks {
         options.seed = scenario["seed"]?.stringValue
         options.research = Research()
         options.hiddenValues = scenario["hiddenValues"]?.stringValue.flatMap(HiddenValues.init) ?? .clear
+        options.validateWithRules = scenario["validateWithRules"]?.boolValue ?? false
         return options
     }
 
@@ -88,6 +90,19 @@ struct ScenarioHooks {
                 log.record(["call": "onAfterSubmit", "values": .object(values), "skippedSteps": json(skipped)])
                 _ = try await script.reply(replies.next())
             }
+        }
+    }
+
+    private func addValidateHook(_ options: inout FormEngineOptions) {
+        let (log, script) = (log, script)
+        guard let replies = replies("onValidate") else { return }
+        options.onValidate = { values, context in
+            var entry: JSONObject = ["call": "onValidate"]
+            entry["stepId"] = context.stepId.map(JSONValue.string)
+            entry["values"] = .object(values)
+            entry["submit"] = .bool(context.submit)
+            log.record(entry)
+            return fieldErrors(try await script.reply(replies.next()))
         }
     }
 }
