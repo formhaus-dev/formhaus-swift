@@ -1,0 +1,866 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "on-validate",
+  "definition": {
+    "id": "signup",
+    "title": "Sign up",
+    "submit": {
+      "label": "Send"
+    },
+    "steps": [
+      {
+        "id": "account",
+        "title": "Account",
+        "fields": [
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "confirm",
+            "type": "text",
+            "label": "Confirm"
+          }
+        ]
+      },
+      {
+        "id": "profile",
+        "title": "Profile",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "minLength": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "runs onValidate on Continue only after the step rules pass",
+      "hooks": {
+        "onValidate": [
+          {
+            "return": {
+              "confirm": "Emails must match"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "This field is required"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "email",
+          "value": "a@example.com"
+        },
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "account",
+            "errors": {
+              "confirm": "Emails must match"
+            },
+            "log": [
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {
+                  "email": "a@example.com"
+                },
+                "submit": false
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "confirm",
+                  "error": "Emails must match"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "runs onValidate on Submit only after the form rules pass",
+      "values": {
+        "email": "a@example.com"
+      },
+      "hooks": {
+        "onValidate": [
+          {
+            "return": null
+          },
+          {
+            "return": {
+              "name": "Taken"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "profile",
+            "log": [
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {
+                  "email": "a@example.com"
+                },
+                "submit": false
+              },
+              {
+                "event": {
+                  "type": "step_completed",
+                  "stepId": "account"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "A"
+        },
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "name": "Minimum length is 2"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ann"
+        },
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "profile",
+            "errors": {
+              "name": "Taken"
+            },
+            "topLevelErrors": [],
+            "log": [
+              {
+                "call": "onValidate",
+                "stepId": "profile",
+                "values": {
+                  "email": "a@example.com",
+                  "name": "Ann"
+                },
+                "submit": true
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "Taken"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules merges the onValidate errors on Continue and keeps the definition error on the same field",
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "return": {
+              "email": "Use a work email",
+              "confirm": "Emails must match"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "account",
+            "errors": {
+              "email": "This field is required",
+              "confirm": "Emails must match"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": false
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "confirm",
+                  "error": "Emails must match"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules on Submit calls onValidate on the step with the first definition error",
+      "values": {
+        "email": "a@example.com"
+      },
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "return": null
+          },
+          {
+            "return": {
+              "email": "Use a work email",
+              "name": "Taken"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setValue",
+          "key": "email",
+          "value": ""
+        },
+        {
+          "expect": {
+            "step": "profile"
+          }
+        },
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "account",
+            "errors": {
+              "email": "This field is required",
+              "name": "Taken"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {
+                  "email": ""
+                },
+                "submit": true
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "Taken"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "shows the empty key as a form error",
+      "definition": {
+        "id": "contact",
+        "title": "Contact",
+        "submit": {
+          "label": "Send"
+        },
+        "fields": [
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      "values": {
+        "email": "a@example.com"
+      },
+      "hooks": {
+        "onValidate": [
+          {
+            "return": {
+              "": "Service down"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {},
+            "topLevelErrors": ["Service down"],
+            "log": [
+              {
+                "call": "onValidate",
+                "values": {
+                  "email": "a@example.com"
+                },
+                "submit": true
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops an onValidate reply when a checked value changes while it runs",
+      "values": {
+        "email": "a@example.com"
+      },
+      "hooks": {
+        "onValidate": [
+          {
+            "defer": "check",
+            "return": {
+              "email": "Use a work email"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "expect": {
+            "stepValidating": true,
+            "step": "account"
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "confirm",
+          "value": "b@example.com"
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "stepValidating": false,
+            "step": "account",
+            "errors": {},
+            "topLevelErrors": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules shows a key outside the fields as a form error",
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "return": {
+              "nickname": "Pick another nickname"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "account",
+            "errors": {
+              "email": "This field is required"
+            },
+            "topLevelErrors": ["Pick another nickname"],
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules drops an onValidate reply when a checked value changes while it runs",
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "defer": "check",
+            "return": {
+              "confirm": "Emails must match",
+              "": "Check the form"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "await": false,
+          "returns": false
+        },
+        {
+          "expect": {
+            "stepValidating": true,
+            "step": "account",
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": false
+              }
+            ]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "confirm",
+          "value": "b@example.com"
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "stepValidating": false,
+            "step": "account",
+            "errors": {
+              "email": "This field is required"
+            },
+            "topLevelErrors": [],
+            "log": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules stops the step when onValidate throws",
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "throw": "Service down"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "throws": {
+            "name": "Error",
+            "message": "Service down"
+          }
+        },
+        {
+          "expect": {
+            "step": "account",
+            "stepValidating": false,
+            "errors": {
+              "email": "This field is required"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules reports each error once when a second submit arrives while onValidate runs",
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "defer": "check",
+            "return": {
+              "confirm": "Emails must match"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "await": false,
+          "returns": false
+        },
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "submitting": true,
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": true
+              }
+            ]
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "check"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "submitting": false,
+            "errors": {
+              "email": "This field is required",
+              "confirm": "Emails must match"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "confirm",
+                  "error": "Emails must match"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules reports the full error set again on a second submit",
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "return": {
+              "name": "Taken"
+            }
+          },
+          {
+            "return": {
+              "name": "Taken"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": true
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "Taken"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "This field is required",
+              "name": "Taken"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": true
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              },
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "name",
+                  "error": "Taken"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules on Submit keeps the definition error when onValidate names the same field",
+      "validateWithRules": true,
+      "hooks": {
+        "onValidate": [
+          {
+            "return": {
+              "email": "Use a work email"
+            }
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "submit",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "email": "This field is required"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              },
+              {
+                "call": "onValidate",
+                "stepId": "account",
+                "values": {},
+                "submit": true
+              },
+              {
+                "event": {
+                  "type": "form_submit_failed",
+                  "reason": "validation"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "validateWithRules has no effect without onValidate",
+      "validateWithRules": true,
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "account",
+            "stepValidating": false,
+            "errors": {
+              "email": "This field is required"
+            },
+            "log": [
+              {
+                "event": {
+                  "type": "field_error",
+                  "fieldKey": "email",
+                  "error": "This field is required"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

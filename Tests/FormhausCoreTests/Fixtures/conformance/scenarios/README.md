@@ -19,7 +19,7 @@ Each file holds a `definition` and a list of scenarios that drive `FormEngine` t
 
 ## Running a scenario
 
-1. Take the scenario's own `definition` if it has one, and the file's `definition` otherwise. Apply the file's `overlay` to it, if set. Create the engine with `values`, the `seed` and `hiddenValues` options if set, and the options the scenario lists.
+1. Take the scenario's own `definition` if it has one, and the file's `definition` otherwise. Apply the file's `overlay` to it, if set. Create the engine with `values`, the `seed`, `hiddenValues` and `validateWithRules` options if set, and the options the scenario lists.
 2. If `throws` is set, the constructor must throw an error with that name. Such a scenario has no steps and no options.
 3. Run `steps` in order. An action step calls the engine method named in `do` and awaits it. `returns` is compared with the result. `throws` is compared with the `name` of the error the action throws or rejects with, and with its `phase` and `message` if the expectation lists them.
 4. With `"await": false`, the action starts, the runner waits one macrotask, and moves on. `settle` awaits every started action and checks its `returns` or `throws`. Outside JavaScript, waiting one macrotask means letting every started action run until it finishes or waits on an unresolved `defer` reply.
@@ -33,6 +33,7 @@ Each file holds a `definition` and a list of scenarios that drive `FormEngine` t
 - `hooks` installs only the listed hooks. Each call takes the next reply from its list. An exhausted list replies with nothing (`undefined`).
 - A reply returns `return`, or throws an `Error` with the message `throw`, synchronously. The thrown error has the name `Error`. A reply with `defer` returns a promise instead, and each `defer` name appears once in a scenario. It stays pending until a `resolve` step names it, and then resolves with `return` or rejects with `throw`. After `resolve`, the runner waits one macrotask. Resolving an unknown or already resolved name is an error.
 - `onStepValidate` always returns a promise of its reply.
+- `onValidate` replies with errors keyed by field path, or `null` to pass.
 - Only a `false` reply from `onBeforeStepChange` or `onBeforeSubmit` cancels. Any other reply, such as `null`, `0` or nothing, lets the action continue.
 - `submit` always passes a handler, which takes its replies from the action's `handler` list. `skip` passes a handler only when the action has a `handler` key, so on the last step `"handler": []` submits and a missing `handler` does not.
 - `validators` maps a validator name to a list of values it rejects with `error`. Values are compared as JSON.
@@ -44,7 +45,7 @@ The runner records, in order:
 
 - `{ "event": FormEvent }` for every `onFormEvent` call. The handler is always installed.
 - `{ "warning": { "code", "path" } }` for every `onWarning` call. Without `onWarning`, an implementation reports warnings to its platform log, which scenarios do not check.
-- `{ "call": "<hook>", ... }` for every installed hook and handler call, with its arguments: `context` for step hooks, `values` and `skippedSteps` for submit hooks and handlers, `stepId` and `values` for `onStepValidate`.
+- `{ "call": "<hook>", ... }` for every installed hook and handler call, with its arguments: `context` for step hooks, `values` and `skippedSteps` for submit hooks and handlers, `stepId` and `values` for `onStepValidate`, and `stepId`, `values` and `submit` from the context for `onValidate`. A single-step form has no `stepId`.
 
 Every `expect` step clears the log. `"log": [...]` compares the entries recorded since the previous `expect`. Entries recorded after the last `expect` are not checked.
 

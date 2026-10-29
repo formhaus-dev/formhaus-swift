@@ -73,6 +73,9 @@
         "hiddenValues": {
           "enum": ["clear", "keep"]
         },
+        "validateWithRules": {
+          "type": "boolean"
+        },
         "hooks": {
           "type": "object",
           "additionalProperties": false,
@@ -90,6 +93,9 @@
               "$ref": "#/$defs/replies"
             },
             "onStepValidate": {
+              "$ref": "#/$defs/replies"
+            },
+            "onValidate": {
               "$ref": "#/$defs/replies"
             }
           }
@@ -153,6 +159,9 @@
             },
             {
               "required": ["messages"]
+            },
+            {
+              "required": ["validateWithRules"]
             }
           ]
         }
@@ -408,7 +417,15 @@
           "required": ["call"],
           "properties": {
             "call": {
-              "enum": ["onBeforeStepChange", "onAfterStepChange", "onBeforeSubmit", "onAfterSubmit", "onStepValidate", "submit"]
+              "enum": [
+                "onBeforeStepChange",
+                "onAfterStepChange",
+                "onBeforeSubmit",
+                "onAfterSubmit",
+                "onStepValidate",
+                "submit",
+                "onValidate"
+              ]
             },
             "context": {
               "type": "object"
@@ -424,6 +441,9 @@
             },
             "stepId": {
               "type": "string"
+            },
+            "submit": {
+              "type": "boolean"
             }
           }
         }
