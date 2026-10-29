@@ -349,6 +349,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 
 | formhaus-swift | @formhaus/core | Format |
 |---|---|---|
+| 0.6.0 | 1.8.0 | 1.7 |
 | 0.5.0 | 1.6.1 | 1.6 |
 | 0.4.0 | 1.6.0 | 1.6 |
 | 0.3.0 | 1.4.2 | 1.6 |
