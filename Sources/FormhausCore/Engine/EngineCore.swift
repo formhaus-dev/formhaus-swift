@@ -20,6 +20,8 @@ final class EngineCore {
     var currentStepIndex = 0
     var fieldLoading = StringMap<Bool>()
     var stepValidating = false
+    var validateWithRules = false
+    var onValidate: ValidateFn?
     var submitting = false
     var skipped: [(id: String, keys: [String])] = []
     var validationEpoch = 0

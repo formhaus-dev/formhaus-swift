@@ -72,4 +72,28 @@ struct LocaleModelTests {
         #expect(calls == 1)
         #expect(form.topLevelErrors.isEmpty)
     }
+
+    @Test("validateWithRules without onValidate keeps the synchronous step check until a hook arrives")
+    func validateWithRulesWithoutHook() async throws {
+        let form = FormModel(
+            definition: try FormDefinition(json: crew), initialValues: ["name": "Ad"],
+            engineOptions: FormEngineOptions(validateWithRules: true)
+        ) { _, _ in nil }
+        var validating: [Bool] = []
+        let unsubscribe = form.engine.subscribe { validating.append(form.engine.stepValidating) }
+        await form.next()
+        unsubscribe()
+        #expect(!validating.contains(true))
+        #expect(form.structure.currentStep?.id == "one")
+        #expect(form.field("name").error != nil)
+        var calls = 0
+        let onValidate: ValidateFn = { _, _ in
+            calls += 1
+            return ["": "Service down"]
+        }
+        form.updateHandlers(engineOptions: FormEngineOptions(onValidate: onValidate, validateWithRules: true))
+        await form.next()
+        #expect(calls == 1)
+        #expect(form.topLevelErrors == ["Service down"])
+    }
 }

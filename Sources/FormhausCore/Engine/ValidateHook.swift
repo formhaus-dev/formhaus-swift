@@ -1,5 +1,15 @@
 extension FormEngine {
-    var validatesWithRules: Bool { validateWithRules && options.onValidate != nil }
+    @_spi(Renderer) public var validateWithRules: Bool {
+        get { core.validateWithRules }
+        set { core.validateWithRules = newValue }
+    }
+
+    @_spi(Renderer) public var onValidate: ValidateFn? {
+        get { core.onValidate }
+        set { core.onValidate = newValue }
+    }
+
+    var validatesWithRules: Bool { validateWithRules && onValidate != nil }
 
     private func validatedNodes(submit: Bool) -> [FormNode] {
         guard submit else { return core.currentStep?.fields ?? [] }

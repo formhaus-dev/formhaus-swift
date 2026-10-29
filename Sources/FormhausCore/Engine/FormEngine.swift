@@ -60,7 +60,6 @@ public final class FormEngine {
     let options: FormEngineOptions
     public let seed: String
     @_spi(Renderer) public let restored: Bool
-    @_spi(Renderer) public var validateWithRules: Bool
     private let listeners = Listeners()
 
     public convenience init(
@@ -75,7 +74,6 @@ public final class FormEngine {
         restoring snapshot: FormSnapshot? = nil
     ) {
         self.options = options
-        validateWithRules = options.validateWithRules
         reportWarnings(definition, options)
         let restoring = snapshot?.matching(definition, options)
         restored = restoring != nil
@@ -84,6 +82,8 @@ public final class FormEngine {
             definition: definition, values: restoring?.values ?? values, validators: options.validators, messages: options.messages,
             locale: options.locale, keep: options.hiddenValues == .keep, missingMessage: missingMessageReporter(options))
         if let restoring { core.restore(restoring) }
+        core.validateWithRules = options.validateWithRules
+        core.onValidate = options.onValidate
         if let onFormEvent = options.onFormEvent {
             core.emitEvent = { event in MainActor.assumeIsolated { onFormEvent(event) } }
         }

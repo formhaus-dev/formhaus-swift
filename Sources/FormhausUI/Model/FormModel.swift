@@ -86,7 +86,7 @@ public final class FormModel {
 
     func updateHandlers(engineOptions: FormEngineOptions? = nil, options: FormRendererOptions? = nil, onSubmit: SubmitHandler? = nil) {
         if let engineOptions {
-            hooks?.current = engineOptions
+            hooks?.update(engineOptions, on: engine)
             engine.validateWithRules = engineOptions.validateWithRules
             if engineOptions.locale != engine.locale { engine.locale = engineOptions.locale }
         }

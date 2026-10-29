@@ -166,7 +166,7 @@ extension FormEngine {
                 return false
             }
         }
-        if let validate = options.onValidate,
+        if let validate = onValidate,
             try await !passesValidate(validate, context.values, stale, submit: false, ruleErrors: move.ruleErrors)
         {
             return false

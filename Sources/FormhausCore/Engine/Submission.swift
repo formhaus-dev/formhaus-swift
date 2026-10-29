@@ -77,7 +77,7 @@ extension FormEngine {
         let ruleErrors = core.validate(navigate: true)
         if stale() { return nil }
         if !ruleErrors.isEmpty && !validatesWithRules { return failed(stale) }
-        if let validate = options.onValidate, try await !passesValidate(validate, checked, stale, submit: true, ruleErrors: ruleErrors) {
+        if let validate = onValidate, try await !passesValidate(validate, checked, stale, submit: true, ruleErrors: ruleErrors) {
             return failed(stale)
         }
         if !ruleErrors.isEmpty { return failed(stale) }
