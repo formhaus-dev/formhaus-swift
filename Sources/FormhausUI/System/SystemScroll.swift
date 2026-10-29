@@ -90,7 +90,7 @@ extension FormModel {
 }
 
 struct SystemFocusScroll: ViewModifier {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScrollMotion private var animation
     @Environment(\.formhausBehavior) private var behavior
     @State private var task: Task<Void, Never>?
     @State private var keyboardKey: String?
@@ -138,8 +138,6 @@ struct SystemFocusScroll: ViewModifier {
             withAnimation(animation) { proxy.scrollTo(revealed?.row ?? key, anchor: revealed?.anchor) }
         }
     #endif
-
-    private var animation: Animation? { reduceMotion ? nil : .easeOut(duration: 0.2) }
 
     private func stop() {
         task?.cancel()
