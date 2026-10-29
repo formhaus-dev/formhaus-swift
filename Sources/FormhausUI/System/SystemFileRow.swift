@@ -45,25 +45,31 @@ struct SystemFileRow: View {
 }
 
 private struct SystemFileItem: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     @FocusState private var focused: Bool
     let context: FieldContext
     let index: Int
     let name: String
 
     var body: some View {
-        HStack {
-            Label {
+        FileRowStack(spacing: nil) {
+            if typeSize.isAccessibilitySize {
                 Text(verbatim: name).fileNameWrapping()
-            } icon: {
-                Image(systemName: "doc")
+            } else {
+                Label {
+                    Text(verbatim: name).fileNameWrapping()
+                } icon: {
+                    Image(systemName: "doc")
+                }
+                Spacer(minLength: 12)
             }
-            Spacer(minLength: 12)
             Button(role: .destructive) {
                 context.removeFile(at: index)
             } label: {
                 Text(verbatim: context.removeFileLabel).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
+            .fileRemoveSizing()
             .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
             .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
         }

@@ -13,21 +13,25 @@ struct FileList: View {
 
 private struct FileListRow: View {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.dynamicTypeSize) private var typeSize
     @FocusState private var focused: Bool
     let context: FieldContext
     let index: Int
     let name: String
 
     var body: some View {
-        HStack(spacing: tokens.spacing.s3) {
-            Image(systemName: "doc").formhausText(.body, colored: false).foregroundStyle(tokens.colors.textMuted)
-                .accessibilityHidden(true)
+        FileRowStack(spacing: tokens.spacing.s3) {
+            if !typeSize.isAccessibilitySize {
+                Image(systemName: "doc").formhausText(.body, colored: false).foregroundStyle(tokens.colors.textMuted)
+                    .accessibilityHidden(true)
+            }
             Text(verbatim: name)
                 .formhausText(.body)
                 .fileNameWrapping()
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button(action: { context.removeFile(at: index) }, label: { Text(verbatim: context.removeFileLabel) })
                 .buttonStyle(FormButtonStyle(.danger, compact: true))
+                .fileRemoveSizing()
                 .disabled(context.isLocked)
                 .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
                 .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
@@ -35,6 +39,26 @@ private struct FileListRow: View {
         .padding(.leading, tokens.spacing.s4)
         .frame(minHeight: tokens.controls.hitTarget)
         .accessibilityElement(children: .contain)
+    }
+}
+
+struct FileRowStack<Content: View>: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
+    let spacing: CGFloat?
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        let stacked = AnyLayout(VStackLayout(alignment: .leading, spacing: spacing))
+        let inline = AnyLayout(HStackLayout(spacing: spacing))
+        (typeSize.isAccessibilitySize ? stacked : inline) { content }
+    }
+}
+
+private struct FileRemoveSizing: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    func body(content: Content) -> some View {
+        if typeSize.isAccessibilitySize { content.fixedSize() } else { content }
     }
 }
 
@@ -51,6 +75,10 @@ private struct FileNameWrapping: ViewModifier {
 extension View {
     func fileNameWrapping() -> some View {
         modifier(FileNameWrapping())
+    }
+
+    func fileRemoveSizing() -> some View {
+        modifier(FileRemoveSizing())
     }
 }
 
