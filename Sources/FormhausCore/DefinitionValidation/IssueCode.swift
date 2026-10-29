@@ -86,6 +86,7 @@ extension IssueCode {
     public static let exclusiveOptionPosition = IssueCode(rawValue: "exclusive-option-position")
     public static let exclusiveDefaultValue = IssueCode(rawValue: "exclusive-default-value")
     public static let exclusiveWithMinLength = IssueCode(rawValue: "exclusive-with-min-length")
+    public static let multipleNotApplicable = IssueCode(rawValue: "multiple-not-applicable")
     public static let randomizeNotApplicable = IssueCode(rawValue: "randomize-not-applicable")
     public static let matrixOptionsMismatch = IssueCode(rawValue: "matrix-options-mismatch")
     public static let snapshotMismatch = IssueCode(rawValue: "snapshot-mismatch")

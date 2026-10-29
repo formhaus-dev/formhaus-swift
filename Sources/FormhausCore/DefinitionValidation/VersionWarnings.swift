@@ -22,6 +22,9 @@ private func setsOrder(_ field: FormField) -> Bool {
 }
 
 private func outdated(_ context: CheckContext, _ minor: Double) -> (problem: String, needed: Int, hint: String)? {
+    if minor < 7, let entry = context.entries.first(where: { $0.field.type == "file" && $0.field.json.has("multiple") }) {
+        return ("\(entry.path) sets \"multiple\"", 7, "Below 1.7 the field keeps one file")
+    }
     if minor < 6, let entry = context.entries.first(where: { setsOrder($0.field) }) {
         return ("\(entry.path) sets \"randomize\" or \"pinned\"", 6, "Older versions of @formhaus/core show the written order")
     }

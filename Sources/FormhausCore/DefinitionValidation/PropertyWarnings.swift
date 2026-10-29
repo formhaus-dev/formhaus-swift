@@ -107,18 +107,28 @@ private func matrixWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     ]
 }
 
-private func fieldWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
+private func multipleWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
+    guard entry.field.json.has("multiple"), entry.field.type != "file" else { return [] }
+    return [
+        warning(
+            "multiple-not-applicable", "\(entry.path)/multiple", "\"multiple\" of \"\(entry.field.key)\" applies to file fields",
+            "Remove \"multiple\"")
+    ]
+}
+
+private func fieldWarnings(_ entry: FieldEntry, listsFiles: Bool) -> [DefinitionIssue] {
     let field = entry.field
     let path = entry.path
     let visible = field.type != "hidden"
     let empty = visible && field.label.map(\.isBlankText) == true
     var issues = visible ? labeled(field.json, path, labelHint) : []
     if empty { issues.append(warning("missing-label", "\(path)/label", "the label of \"\(field.key)\" is empty", labelHint)) }
-    issues += unknown(field.json, path, field.isGroup ? Properties.group : Properties.field, hint: misplaced)
+    let known = field.isGroup ? Properties.group : Properties.field + (listsFiles ? ["multiple"] : [])
+    issues += unknown(field.json, path, known, hint: misplaced)
     for (index, option) in (field.options ?? []).enumerated() {
         issues += optionWarnings(field, option, "\(path)/options/\(index)")
     }
-    issues += randomizeWarnings(entry) + matrixWarnings(entry)
+    issues += randomizeWarnings(entry) + matrixWarnings(entry) + (listsFiles ? multipleWarnings(entry) : [])
     if let validation = field.validation { issues += unknown(validation.json, "\(path)/validation", Properties.validation) }
     if field.json["columns"] != nil, !field.hasPictures || entry.parent?.json["layout"]?.stringValue == "matrix" {
         issues.append(
@@ -151,5 +161,5 @@ func propertyWarnings(_ context: CheckContext) -> [DefinitionIssue] {
     for entry in context.nodes where entry.node.section != nil {
         issues += required(entry.node.json, entry.path, "title") + unknown(entry.node.json, entry.path, Properties.section)
     }
-    return issues + context.entries.flatMap(fieldWarnings)
+    return issues + context.entries.flatMap { fieldWarnings($0, listsFiles: definition.listsFiles) }
 }
