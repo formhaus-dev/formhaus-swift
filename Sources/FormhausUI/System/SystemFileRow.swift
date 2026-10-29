@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SystemFileRow: View {
-    @Environment(\.formhausTokens) private var tokens
     @FocusState private var focused: Bool
     @State private var picking = false
     let context: FieldContext
@@ -25,7 +24,7 @@ struct SystemFileRow: View {
             .disabled(context.isFileListFull)
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(context.fileValueText)
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.pickerHint ?? ""))
             .formhausFocus(context, $focused)
             .swipeActions {
                 if !context.text.isEmpty, !context.isRequired {
@@ -37,7 +36,7 @@ struct SystemFileRow: View {
                     SystemFileItem(context: context, index: row.index, name: row.name)
                 }
                 if let notice = context.state.notice {
-                    Text(verbatim: notice).font(.footnote).foregroundStyle(tokens.colors.error).fixedSize(horizontal: false, vertical: true)
+                    Text(verbatim: notice).font(.footnote).systemSecondaryText().fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
@@ -54,7 +53,7 @@ private struct SystemFileItem: View {
     var body: some View {
         HStack {
             Label {
-                Text(verbatim: name).lineLimit(1).truncationMode(.middle)
+                Text(verbatim: name).fileNameWrapping()
             } icon: {
                 Image(systemName: "doc")
             }
@@ -66,8 +65,7 @@ private struct SystemFileItem: View {
             }
             .buttonStyle(.borderless)
             .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
-            .focused($focused)
-            .onFormhausFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked) { focused = true }
+            .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
         }
         .frame(minHeight: 44)
         .accessibilityElement(children: .contain)
