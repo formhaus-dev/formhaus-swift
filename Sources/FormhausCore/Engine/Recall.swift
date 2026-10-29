@@ -39,9 +39,9 @@ func substitute(_ definition: FormDefinition, _ text: String, params: JSONObject
     }
 }
 
-private func answerText(_ field: FormField, _ item: JSONValue, _ fileNames: [String: String]) -> RecallAnswer {
+private func answerText(_ field: FormField, _ item: JSONValue, _ fileName: (String) -> String?) -> RecallAnswer {
     if let entry = item.objectValue { return .text(entry["name"]?.stringValue ?? "") }
-    if field.type == "file", let name = item.stringValue.flatMap({ fileNames[$0] }) { return .text(name) }
+    if field.type == "file", let name = item.stringValue.flatMap(fileName) { return .text(name) }
     if let options = field.options, let position = field.optionIndex?.position(of: item), let label = options[position].label {
         return .text(label)
     }
@@ -49,19 +49,19 @@ private func answerText(_ field: FormField, _ item: JSONValue, _ fileNames: [Str
     return .text(jsString(item))
 }
 
-func recallAnswer(_ field: FormField, _ value: JSONValue?, fileNames: [String: String]) -> RecallAnswer? {
+func recallAnswer(_ field: FormField, _ value: JSONValue?, fileName: (String) -> String?) -> RecallAnswer? {
     guard let value, !value.isNull else { return nil }
     if field.isGroup { return value.arrayValue.map { .number(Double($0.count)) } }
     if booleanTypes.contains(field.type) { return value == .bool(true) ? field.label.map(RecallAnswer.text) : nil }
     guard let items = value.arrayValue else {
-        let single = answerText(field, value, fileNames)
+        let single = answerText(field, value, fileName)
         if case .text(let text) = single, text.isBlankText { return nil }
         return single
     }
     guard !items.isEmpty else { return nil }
     return .list(
         items.map { item in
-            switch answerText(field, item, fileNames) {
+            switch answerText(field, item, fileName) {
             case .text(let text): text
             case let other: other.stored
             }
@@ -73,7 +73,7 @@ struct RecallScope {
     let values: JSONObject
     var lang: String?
     var format: RecallFormatFn?
-    var fileNames: [String: String] = [:]
+    var fileName: (String) -> String? = { _ in nil }
     let active: (String) -> FormField?
 
     func resolver(_ options: RecallOptions) -> KeyResolver {
@@ -91,7 +91,7 @@ struct RecallScope {
             let candidates = own == nil ? index.fieldsByKey[key] ?? [] : shared.filter { sameText($0.key, key) }
             guard !candidates.contains(where: { $0.type == "password" }), let field = own ?? active(key) else { return "" }
             let source = own == nil ? values : entry ?? JSONObject()
-            guard source.has(key), let answer = recallAnswer(field, source[key], fileNames: fileNames) else { return "" }
+            guard source.has(key), let answer = recallAnswer(field, source[key], fileName: fileName) else { return "" }
             return format(answer, field, locale)
         }
     }

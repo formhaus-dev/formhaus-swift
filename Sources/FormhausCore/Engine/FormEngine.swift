@@ -60,7 +60,7 @@ public final class FormEngine {
     let options: FormEngineOptions
     public let seed: String
     @_spi(Renderer) public let restored: Bool
-    @_spi(Renderer) public var storedFileNames: (@MainActor () -> [String: String])?
+    @_spi(Renderer) public var storedFileName: ((String) -> String?)?
     private let listeners = Listeners()
 
     public convenience init(
