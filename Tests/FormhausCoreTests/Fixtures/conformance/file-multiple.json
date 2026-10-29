@@ -1,0 +1,432 @@
+{
+  "name": "file-multiple",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "attachments",
+    "title": "Attachments",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "docs",
+        "type": "file",
+        "label": "Documents",
+        "multiple": true,
+        "accept": ".pdf",
+        "validation": {
+          "required": true,
+          "maxLength": 3
+        }
+      },
+      {
+        "key": "photos",
+        "type": "file",
+        "label": "Photos",
+        "helperText": "You sent {{docs}}",
+        "multiple": true,
+        "validation": {
+          "minLength": 2
+        }
+      },
+      {
+        "key": "cover",
+        "type": "file",
+        "label": "Cover letter"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "a list of references",
+      "input": {
+        "values": {
+          "docs": ["upload-1", "upload-2"],
+          "cover": "upload-3"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["upload-1", "upload-2"],
+          "cover": "upload-3"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "an empty list is empty for required",
+      "input": {
+        "values": {
+          "docs": []
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": []
+        },
+        "errors": {
+          "docs": "This field is required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "null is empty for required",
+      "input": {
+        "values": {
+          "docs": null
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": null
+        },
+        "errors": {
+          "docs": "This field is required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "maxLength counts the files",
+      "input": {
+        "values": {
+          "docs": ["a", "b", "c", "d"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["a", "b", "c", "d"]
+        },
+        "errors": {
+          "docs": "At most 3 allowed"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {}
+    },
+    {
+      "name": "minLength counts the files",
+      "input": {
+        "values": {
+          "docs": ["a"],
+          "photos": ["b"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["a"],
+          "photos": ["b"]
+        },
+        "errors": {
+          "photos": "At least 2 required"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "minLength passes with enough files",
+      "input": {
+        "values": {
+          "docs": ["a"],
+          "photos": ["b", "c"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["a"],
+          "photos": ["b", "c"]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "a list holds at most 100 files without maxLength",
+      "input": {
+        "values": {
+          "docs": ["a"],
+          "photos": [
+            "upload-0",
+            "upload-1",
+            "upload-2",
+            "upload-3",
+            "upload-4",
+            "upload-5",
+            "upload-6",
+            "upload-7",
+            "upload-8",
+            "upload-9",
+            "upload-10",
+            "upload-11",
+            "upload-12",
+            "upload-13",
+            "upload-14",
+            "upload-15",
+            "upload-16",
+            "upload-17",
+            "upload-18",
+            "upload-19",
+            "upload-20",
+            "upload-21",
+            "upload-22",
+            "upload-23",
+            "upload-24",
+            "upload-25",
+            "upload-26",
+            "upload-27",
+            "upload-28",
+            "upload-29",
+            "upload-30",
+            "upload-31",
+            "upload-32",
+            "upload-33",
+            "upload-34",
+            "upload-35",
+            "upload-36",
+            "upload-37",
+            "upload-38",
+            "upload-39",
+            "upload-40",
+            "upload-41",
+            "upload-42",
+            "upload-43",
+            "upload-44",
+            "upload-45",
+            "upload-46",
+            "upload-47",
+            "upload-48",
+            "upload-49",
+            "upload-50",
+            "upload-51",
+            "upload-52",
+            "upload-53",
+            "upload-54",
+            "upload-55",
+            "upload-56",
+            "upload-57",
+            "upload-58",
+            "upload-59",
+            "upload-60",
+            "upload-61",
+            "upload-62",
+            "upload-63",
+            "upload-64",
+            "upload-65",
+            "upload-66",
+            "upload-67",
+            "upload-68",
+            "upload-69",
+            "upload-70",
+            "upload-71",
+            "upload-72",
+            "upload-73",
+            "upload-74",
+            "upload-75",
+            "upload-76",
+            "upload-77",
+            "upload-78",
+            "upload-79",
+            "upload-80",
+            "upload-81",
+            "upload-82",
+            "upload-83",
+            "upload-84",
+            "upload-85",
+            "upload-86",
+            "upload-87",
+            "upload-88",
+            "upload-89",
+            "upload-90",
+            "upload-91",
+            "upload-92",
+            "upload-93",
+            "upload-94",
+            "upload-95",
+            "upload-96",
+            "upload-97",
+            "upload-98",
+            "upload-99",
+            "upload-100"
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["a"],
+          "photos": [
+            "upload-0",
+            "upload-1",
+            "upload-2",
+            "upload-3",
+            "upload-4",
+            "upload-5",
+            "upload-6",
+            "upload-7",
+            "upload-8",
+            "upload-9",
+            "upload-10",
+            "upload-11",
+            "upload-12",
+            "upload-13",
+            "upload-14",
+            "upload-15",
+            "upload-16",
+            "upload-17",
+            "upload-18",
+            "upload-19",
+            "upload-20",
+            "upload-21",
+            "upload-22",
+            "upload-23",
+            "upload-24",
+            "upload-25",
+            "upload-26",
+            "upload-27",
+            "upload-28",
+            "upload-29",
+            "upload-30",
+            "upload-31",
+            "upload-32",
+            "upload-33",
+            "upload-34",
+            "upload-35",
+            "upload-36",
+            "upload-37",
+            "upload-38",
+            "upload-39",
+            "upload-40",
+            "upload-41",
+            "upload-42",
+            "upload-43",
+            "upload-44",
+            "upload-45",
+            "upload-46",
+            "upload-47",
+            "upload-48",
+            "upload-49",
+            "upload-50",
+            "upload-51",
+            "upload-52",
+            "upload-53",
+            "upload-54",
+            "upload-55",
+            "upload-56",
+            "upload-57",
+            "upload-58",
+            "upload-59",
+            "upload-60",
+            "upload-61",
+            "upload-62",
+            "upload-63",
+            "upload-64",
+            "upload-65",
+            "upload-66",
+            "upload-67",
+            "upload-68",
+            "upload-69",
+            "upload-70",
+            "upload-71",
+            "upload-72",
+            "upload-73",
+            "upload-74",
+            "upload-75",
+            "upload-76",
+            "upload-77",
+            "upload-78",
+            "upload-79",
+            "upload-80",
+            "upload-81",
+            "upload-82",
+            "upload-83",
+            "upload-84",
+            "upload-85",
+            "upload-86",
+            "upload-87",
+            "upload-88",
+            "upload-89",
+            "upload-90",
+            "upload-91",
+            "upload-92",
+            "upload-93",
+            "upload-94",
+            "upload-95",
+            "upload-96",
+            "upload-97",
+            "upload-98",
+            "upload-99",
+            "upload-100"
+          ]
+        },
+        "errors": {
+          "photos": "At most 100 allowed"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "docs": ["a"]
+      }
+    },
+    {
+      "name": "a single reference is a list of one on the server",
+      "input": {
+        "values": {
+          "docs": "upload-1"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": "upload-1"
+        },
+        "errors": {}
+      },
+      "canSubmit": true,
+      "serverValues": {
+        "docs": ["upload-1"]
+      }
+    },
+    {
+      "name": "the single file field keeps one reference",
+      "input": {
+        "values": {
+          "docs": ["a"],
+          "cover": "upload-9"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": ["a"],
+          "cover": "upload-9"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ],
+  "recall": [
+    {
+      "name": "a file list recalls its file names",
+      "values": {
+        "docs": ["report.pdf", "invoice.pdf"]
+      },
+      "texts": [
+        {
+          "address": "fields.photos.helperText",
+          "text": "You sent report.pdf, invoice.pdf"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "check-multiple-type",
+  "covers": ["rejects multiple that is not a boolean from format 1.7"],
+  "issues": [
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/multiple"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "attachments",
+    "title": "Attachments",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "docs",
+        "type": "file",
+        "label": "Documents",
+        "multiple": "yes"
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "check-multiple",
+  "covers": ["warns about multiple on a field that is not a file field"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "multiple-not-applicable",
+      "path": "/fields/0/multiple"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "attachments",
+    "title": "Attachments",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "multiple": true
+      },
+      {
+        "key": "doc",
+        "type": "file",
+        "label": "Document",
+        "multiple": false
+      }
+    ]
+  }
+}

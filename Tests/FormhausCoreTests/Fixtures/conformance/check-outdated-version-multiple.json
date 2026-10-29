@@ -1,0 +1,49 @@
+{
+  "name": "check-outdated-version-multiple",
+  "covers": ["keeps one file and asks for format 1.7 when a file field sets multiple below 1.7"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    },
+    {
+      "code": "unknown-property",
+      "path": "/fields/0/multiple"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.6",
+    "id": "attachments",
+    "title": "Attachments",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "docs",
+        "type": "file",
+        "label": "Documents",
+        "multiple": true
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "below 1.7 a single reference stays a string",
+      "input": {
+        "values": {
+          "docs": "upload-1"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": "upload-1"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    }
+  ]
+}

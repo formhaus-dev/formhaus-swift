@@ -1,0 +1,156 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "file multiple",
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "attachments",
+    "title": "Attachments",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "docs",
+        "type": "file",
+        "label": "Documents",
+        "multiple": true,
+        "validation": {
+          "required": true,
+          "maxLength": 2
+        }
+      },
+      {
+        "key": "note",
+        "type": "text",
+        "label": "Note",
+        "show": [
+          {
+            "field": "docs",
+            "notEmpty": true
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "setValue keeps a list of references",
+      "values": {},
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "docs",
+          "value": ["upload-1", "upload-2"]
+        },
+        {
+          "expect": {
+            "values": {
+              "docs": ["upload-1", "upload-2"]
+            },
+            "submitValues": {
+              "docs": ["upload-1", "upload-2"]
+            }
+          }
+        },
+        {
+          "do": "validate",
+          "returns": {}
+        }
+      ]
+    },
+    {
+      "name": "an empty list fails required",
+      "values": {
+        "docs": []
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "docs": "This field is required"
+          }
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "docs": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "maxLength counts the files",
+      "values": {},
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "docs",
+          "value": ["a", "b", "c"]
+        },
+        {
+          "do": "validateField",
+          "key": "docs",
+          "returns": "At most 2 allowed"
+        }
+      ]
+    },
+    {
+      "name": "a single reference counts as one file",
+      "values": {
+        "docs": "upload-1"
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {}
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "docs": "upload-1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "notEmpty shows a field once the list has a file",
+      "values": {
+        "docs": []
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "note",
+          "value": "Hidden"
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "docs": []
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "docs",
+          "value": ["upload-1"]
+        },
+        {
+          "do": "setValue",
+          "key": "note",
+          "value": "Shown"
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "docs": ["upload-1"],
+              "note": "Shown"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
