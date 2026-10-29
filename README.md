@@ -360,7 +360,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 85 definition files with their issues, value cases, recall cases, option order vectors and revealed fields, and 459 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 86 definition files with their issues, value cases, recall cases, option order vectors and revealed fields, and 459 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 
