@@ -12,10 +12,20 @@ public struct FileField: View {
     }
 
     public var body: some View {
-        PickerInput(context: context, active: picking, clearable: context.hasFile, cleared: .null, label: summary) {
-            picking = true
+        if context.field.isFileList {
+            FieldShell(context) {
+                VStack(alignment: .leading, spacing: tokens.spacing.s3) {
+                    PickerControl(context: context, active: picking, clearable: false, cleared: .null, label: summary) { picking = true }
+                    FileList(context: context)
+                }
+            }
+            .filePicker(context, isPresented: $picking)
+        } else {
+            PickerInput(context: context, active: picking, clearable: context.hasFile, cleared: .null, label: summary) {
+                picking = true
+            }
+            .filePicker(context, isPresented: $picking)
         }
-        .filePicker(context, isPresented: $picking)
     }
 
     private var summary: some View {
@@ -46,11 +56,11 @@ public struct FileField: View {
 
 extension FieldContext {
     var fileName: String? {
-        UploadStore.owned(text, by: ObjectIdentifier(model))?.lastPathComponent
+        field.isFileList ? nil : UploadStore.owned(text, by: ObjectIdentifier(model))?.lastPathComponent
     }
 
     var reference: String? {
-        text.isEmpty || fileName != nil || UploadStore.isMissing(text) ? nil : text
+        field.isFileList || text.isEmpty || fileName != nil || UploadStore.isMissing(text) ? nil : text
     }
 
     var hasFile: Bool { fileName != nil || reference != nil }
@@ -66,11 +76,20 @@ extension FieldContext {
             UploadStore.discard(previous, owner: ObjectIdentifier(model))
         }
     }
+
+    func receiveFiles(_ urls: [URL]) {
+        if field.isFileList {
+            model.addFiles(urls, forKey: key)
+        } else if let url = urls.first {
+            replaceFile(with: url)
+        }
+    }
 }
 
 private struct FilePicker: ViewModifier {
     @State private var importing = false
     @State private var photo: PhotosPickerItem?
+    @State private var photos: [PhotosPickerItem] = []
     @State private var choosingPhoto = false
     @Binding var isPresented: Bool
     let context: FieldContext
@@ -82,15 +101,12 @@ private struct FilePicker: ViewModifier {
                 isPresented = false
                 if photosOnly { choosingPhoto = true } else { importing = true }
             }
-            .fileImporter(isPresented: $importing, allowedContentTypes: types) { result in
-                guard case .success(let url) = result else { return }
-                let owner = ObjectIdentifier(context.model)
-                Task { if let copy = await UploadStore.copy(url, owner: owner) { context.replaceFile(with: copy) } }
-            }
-            .photosPicker(isPresented: $choosingPhoto, selection: $photo, matching: .images)
-            .onChange(of: photo) { _, item in
-                guard let item else { return }
-                Task { await store(item) }
+            .fileImporter(
+                isPresented: $importing, allowedContentTypes: types, allowsMultipleSelection: context.field.isFileList,
+                onCompletion: imported
+            )
+            .photoPicker(context.field.isFileList, isPresented: $choosingPhoto, item: $photo, items: $photos) { items in
+                Task { await store(items) }
             }
     }
 
@@ -104,12 +120,28 @@ private struct FilePicker: ViewModifier {
 
     private var types: [UTType] { acceptedTypes(context.field.accept?.stringValue) }
 
-    private func store(_ item: PhotosPickerItem) async {
-        defer { photo = nil }
-        guard let data = try? await item.loadTransferable(type: Data.self) else { return }
-        let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
-        guard let url = await UploadStore.write(data, ext: ext, owner: ObjectIdentifier(context.model)) else { return }
-        context.replaceFile(with: url)
+    private func imported(_ result: Result<[URL], any Error>) {
+        guard case .success(let urls) = result else { return }
+        let owner = ObjectIdentifier(context.model)
+        Task {
+            var copies: [URL] = []
+            for url in urls { if let copy = await UploadStore.copy(url, owner: owner) { copies.append(copy) } }
+            context.receiveFiles(copies)
+        }
+    }
+
+    private func store(_ items: [PhotosPickerItem]) async {
+        defer {
+            photo = nil
+            photos = []
+        }
+        var urls: [URL] = []
+        for item in items {
+            guard let data = try? await item.loadTransferable(type: Data.self) else { continue }
+            let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
+            if let url = await UploadStore.write(data, ext: ext, owner: ObjectIdentifier(context.model)) { urls.append(url) }
+        }
+        context.receiveFiles(urls)
     }
 }
 
