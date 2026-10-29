@@ -9,15 +9,19 @@ import Testing
 struct FileListLimitTests {
     @Test("every list item with a name gets a row, references by their last path segment")
     func rows() throws {
-        let values: JSONValue = ["upload-123", "https://cdn.example.com/a/cv.pdf", ["name": "scan.png"], 5, "", ["id": "x"], "folder/"]
+        let values: JSONValue = [
+            "upload-123", "https://cdn.example.com/a/cv.pdf", ["name": "scan.png"], 5, "", ["id": "x"], "https://cdn.example.com/", "a/b/",
+            "/",
+        ]
         let form = try receiptsForm(["docs": values])
         form.start()
         let rows = try docsContext(form).fileRows
-        #expect(rows.map(\.index) == [0, 1, 2, 6])
-        #expect(rows.map(\.name) == ["upload-123", "cv.pdf", "scan.png", "folder/"])
+        #expect(rows.map(\.index) == [0, 1, 2, 6, 7, 8])
+        #expect(rows.map(\.name) == ["upload-123", "cv.pdf", "scan.png", "cdn.example.com", "b", "/"])
         #expect(rows.allSatisfy { $0.url == nil })
         try docsContext(form).removeFile(at: 1)
-        #expect(form.engine.values["docs"] == ["upload-123", ["name": "scan.png"], 5, "", ["id": "x"], "folder/"])
+        #expect(
+            form.engine.values["docs"] == ["upload-123", ["name": "scan.png"], 5, "", ["id": "x"], "https://cdn.example.com/", "a/b/", "/"])
         #expect(form.focusRequest?.key == "docs#remove1")
     }
 

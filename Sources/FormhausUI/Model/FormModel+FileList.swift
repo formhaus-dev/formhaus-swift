@@ -8,7 +8,8 @@ struct FileRow {
 }
 
 private func lastSegment(_ text: String) -> String {
-    let segment = text.split(separator: "/", omittingEmptySubsequences: false).last.map(String.init) ?? ""
+    let trimmed = text.reversed().drop { $0 == "/" }.reversed()
+    let segment = String(trimmed.split(separator: "/", omittingEmptySubsequences: false).last ?? [])
     return segment.isEmpty ? text : segment
 }
 
