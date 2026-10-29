@@ -209,6 +209,8 @@ let options = FormEngineOptions(onValidate: { values, context in
 
 `context.fields` lists the visible field paths in scope, and `context.submit` tells Submit from Continue. Keys outside `fields` show as form errors, and on Submit the form opens the step of the first field error. `errorSummary(engine, options: ErrorSummaryOptions(labels:))` returns the field errors grouped by step for a summary of your own.
 
+With `validateWithRules: true`, `onValidate` also runs when the definition rules fail, so both errors show at once. On Continue it then skips `onStepValidate` and `onBeforeStepChange`. The definition error wins on the same field. Defaults to `false`.
+
 ## Keep hidden values
 
 By default a field hidden by a condition loses its value. An editor of a stored record can keep it:
