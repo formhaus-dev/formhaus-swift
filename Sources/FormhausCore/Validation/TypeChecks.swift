@@ -79,6 +79,7 @@ func trimValue(_ field: FormField, _ value: JSONValue?) -> JSONValue? {
 func normalizeValue(_ field: FormField, _ input: JSONValue?) -> JSONValue? {
     if let items = input?.arrayValue, items.isEmpty, !field.isList, builtInTypes.contains(field.type) { return nil }
     if field.isFileList, case .string(let text)? = input, !text.isEmpty { return .array([.string(text)]) }
+    if field.isFileList, let items = input?.arrayValue { return .array(items.filter(isListEntry)) }
     if field.isGroup { return normalizeItems(field, input) }
     let value = trimValue(field, input)
     guard numberTypes.contains(field.type), case .string(let text)? = value, decimal.test(text) == true else { return value }

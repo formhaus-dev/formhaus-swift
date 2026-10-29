@@ -25,10 +25,17 @@ private let serverCases = [
     ServerCase(version: "1.7", input: "upload-1", values: ["docs": ["upload-1"]], error: nil),
     ServerCase(version: "1.7", input: [], values: ["docs": []], error: nil),
     ServerCase(version: "1.7", input: ["upload-1", 5], values: [:], error: reference),
-    ServerCase(version: "1.7", input: ["upload-1", ""], values: [:], error: reference),
+    ServerCase(version: "1.7", input: ["upload-1", "", nil], values: ["docs": ["upload-1"]], error: nil),
+    ServerCase(version: "1.7", input: [["name": "a.pdf"]], values: [:], error: reference),
     ServerCase(version: "1.7", input: ["id": "upload-1"], values: [:], error: reference),
     ServerCase(version: "1.6", input: "upload-1", values: ["docs": "upload-1"], error: nil),
     ServerCase(version: "1.6", input: ["upload-1"], values: [:], error: reference),
+]
+
+private let entryCases: [(JSONValue, String?)] = [
+    (JSONValue.array([5]), reference), (JSONValue.array([["id": "x"]]), reference), (JSONValue.array(["upload-1", true]), reference),
+    (JSONValue.array([["name": "a.pdf"]]), nil), (JSONValue.array(["", nil]), "This field is required"),
+    (JSONValue.array(["a", "", nil, "b"]), nil), (JSONValue.array(["a", "b", "c", "d", ""]), "At most 3 allowed"),
 ]
 
 @Suite("File lists")
@@ -78,6 +85,14 @@ struct FileListTests {
         #expect(try validateSubmission(definition, .object(over)).errors["docs"] == message)
         #expect(try FormEngine(definition: definition, values: fits).validate().isEmpty)
         #expect(try validateSubmission(definition, .object(fits)).errors.isEmpty)
+    }
+
+    @Test(
+        "the engine fails numbers and objects without a name, and skips empty entries",
+        arguments: entryCases)
+    func entries(value: JSONValue, error: String?) throws {
+        let definition = attachments("1.7", validation: ["required": true, "maxLength": 3])
+        #expect(try FormEngine(definition: definition, values: ["docs": value]).validate()["docs"] == error)
     }
 
     @Test("validators receive the list")
