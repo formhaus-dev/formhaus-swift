@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SystemFileRow: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     @FocusState private var focused: Bool
     @State private var picking = false
     let context: FieldContext
@@ -10,12 +11,12 @@ struct SystemFileRow: View {
             Button {
                 picking = true
             } label: {
-                HStack {
+                FileRowStack(spacing: nil) {
                     SystemRowLabel(context: context)
-                    Spacer(minLength: 12)
+                    if !typeSize.isAccessibilitySize { Spacer(minLength: 12) }
                     Text(verbatim: context.fileName ?? context.reference ?? context.placeholder ?? context.text(forLabel: "chooseFile"))
                         .systemSecondaryText()
-                        .lineLimit(1)
+                        .accessibleLineLimit(1)
                         .truncationMode(.middle)
                 }
                 .contentShape(Rectangle())

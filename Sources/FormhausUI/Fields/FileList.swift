@@ -36,7 +36,7 @@ private struct FileListRow: View {
                 .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
                 .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
         }
-        .padding(.leading, tokens.spacing.s4)
+        .padding(.leading, typeSize.isAccessibilitySize ? 0 : tokens.spacing.s4)
         .frame(minHeight: tokens.controls.hitTarget)
         .accessibilityElement(children: .contain)
     }
@@ -51,6 +51,19 @@ struct FileRowStack<Content: View>: View {
         let stacked = AnyLayout(VStackLayout(alignment: .leading, spacing: spacing))
         let inline = AnyLayout(HStackLayout(spacing: spacing))
         (typeSize.isAccessibilitySize ? stacked : inline) { content }
+    }
+}
+
+private struct AccessibleLineLimit: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var typeSize
+    let lines: Int
+
+    func body(content: Content) -> some View {
+        if typeSize.isAccessibilitySize {
+            content.lineLimit(nil).fixedSize(horizontal: false, vertical: true)
+        } else {
+            content.lineLimit(lines)
+        }
     }
 }
 
@@ -76,6 +89,10 @@ private struct FileNameWrapping: ViewModifier {
 extension View {
     func fileNameWrapping() -> some View {
         modifier(FileNameWrapping())
+    }
+
+    func accessibleLineLimit(_ lines: Int) -> some View {
+        modifier(AccessibleLineLimit(lines: lines))
     }
 
     func fileRemoveSizing(inset: CGFloat = 0) -> some View {

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.4
+
+### FormhausUI
+
+- File, select and date pickers show their full label at accessibility text sizes.
+- File rows start at the picker edge at accessibility text sizes.
+
 ## 0.6.3
 
 ### FormhausUI
