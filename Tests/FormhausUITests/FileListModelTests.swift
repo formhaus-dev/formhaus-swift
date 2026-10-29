@@ -4,21 +4,25 @@ import Testing
 @_spi(Renderer) @testable import FormhausCore
 @testable import FormhausUI
 
-private let receipts: JSONValue = [
-    "formatVersion": "1.7", "id": "receipts", "title": "Receipts", "submit": ["label": "Send"],
-    "fields": [["key": "docs", "type": "file", "label": "Receipts", "multiple": true, "validation": ["required": true]]],
-]
+func receipts(_ validation: JSONObject = ["required": true]) -> JSONValue {
+    [
+        "formatVersion": "1.7", "id": "receipts", "title": "Receipts", "submit": ["label": "Send"],
+        "fields": [["key": "docs", "type": "file", "label": "Receipts", "multiple": true, "validation": .object(validation)]],
+    ]
+}
 
 @MainActor
-private func receiptsForm(_ values: JSONObject = [:], log: SubmitLog = SubmitLog()) throws -> FormModel {
-    FormModel(definition: try FormDefinition(json: receipts), initialValues: values) { values, _ in
+func receiptsForm(_ values: JSONObject = [:], validation: JSONObject = ["required": true], log: SubmitLog = SubmitLog()) throws
+    -> FormModel
+{
+    FormModel(definition: try FormDefinition(json: receipts(validation)), initialValues: values) { values, _ in
         log.values.append(values)
         return nil
     }
 }
 
 @MainActor
-private func picked(_ form: FormModel, _ names: [String]) async throws -> [URL] {
+func pickedCopies(_ form: FormModel, _ names: [String]) async throws -> [URL] {
     var urls: [URL] = []
     for name in names {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -32,7 +36,7 @@ private func picked(_ form: FormModel, _ names: [String]) async throws -> [URL] 
 }
 
 @MainActor
-private func context(_ form: FormModel) throws -> FieldContext {
+func docsContext(_ form: FormModel) throws -> FieldContext {
     FieldContext(field: try #require(form.engine.definition.fields?.first?.field), model: form)
 }
 
@@ -44,12 +48,14 @@ struct FileListModelTests {
         let log = SubmitLog()
         let form = try receiptsForm(log: log)
         form.start()
-        let first = try await picked(form, ["a.pdf"])
-        let more = try await picked(form, ["b.pdf", "c.pdf"])
-        try context(form).receiveFiles(first)
-        try context(form).receiveFiles(more)
+        let first = try await pickedCopies(form, ["a.pdf"])
+        let more = try await pickedCopies(form, ["b.pdf", "c.pdf"])
+        try docsContext(form).receiveFiles(first)
+        try docsContext(form).receiveFiles(more)
         let urls = first + more
-        #expect(try context(form).pickedFiles.map(\.url) == urls)
+        #expect(form.pickedFiles(forKey: "docs") == urls)
+        #expect(form.pickedFile(forKey: "docs") == nil)
+        #expect(try docsContext(form).fileValueText == "3")
         await form.submit()
         #expect(log.values == [["docs": .array(urls.map { .string($0.absoluteString) })]])
         UploadStore.release(owner: ObjectIdentifier(form))
@@ -59,19 +65,18 @@ struct FileListModelTests {
     func remove() async throws {
         let form = try receiptsForm(["docs": ["upload-1"]])
         form.start()
-        let urls = try await picked(form, ["a.pdf", "b.pdf", "c.pdf"])
-        try context(form).receiveFiles(urls)
-        try context(form).removeFile(at: 1)
+        let urls = try await pickedCopies(form, ["a.pdf", "b.pdf", "c.pdf"])
+        try docsContext(form).receiveFiles(urls)
+        try docsContext(form).removeFile(at: 1)
         #expect(!FileManager.default.fileExists(atPath: urls[0].path))
         #expect(form.focusRequest?.key == "docs#remove1")
-        try context(form).removeFile(at: 2)
+        try docsContext(form).removeFile(at: 2)
         #expect(form.focusRequest?.key == "docs#remove1")
-        try context(form).removeFile(at: 1)
+        try docsContext(form).removeFile(at: 1)
+        #expect(form.focusRequest?.key == "docs#remove0")
+        try docsContext(form).removeFile(at: 0)
         #expect(form.focusRequest?.key == "docs")
-        #expect(form.engine.values["docs"] == ["upload-1"])
-        #expect(try context(form).pickedFiles.isEmpty)
-        try context(form).removeFile(at: 0)
-        #expect(form.engine.values["docs"] == ["upload-1"])
+        #expect(form.engine.values["docs"] == [])
         UploadStore.release(owner: ObjectIdentifier(form))
     }
 
@@ -79,8 +84,8 @@ struct FileListModelTests {
     func emptied() async throws {
         let form = try receiptsForm()
         form.start()
-        try context(form).receiveFiles(try await picked(form, ["a.pdf"]))
-        try context(form).removeFile(at: 0)
+        try docsContext(form).receiveFiles(try await pickedCopies(form, ["a.pdf"]))
+        try docsContext(form).removeFile(at: 0)
         #expect(form.engine.getSubmitValues()["docs"] == [])
         #expect(form.engine.validate()["docs"] == "This field is required")
     }
@@ -88,22 +93,11 @@ struct FileListModelTests {
     @Test("the Remove button names the file")
     func names() throws {
         let form = try receiptsForm()
-        let field = try context(form)
+        let field = try docsContext(form)
         #expect(field.removeFileLabel == "Remove")
         #expect(field.removeFileName("a.pdf") == "Remove a.pdf")
         #expect(field.fileName == nil && field.reference == nil)
-    }
-
-    @Test("gallery: an empty list, chosen files and an error in both sets")
-    func gallery() async throws {
-        let empty = try receiptsForm()
-        let filled = try receiptsForm()
-        try context(filled).receiveFiles(try await picked(filled, ["receipt-march.pdf", "a-very-long-hotel-invoice-name-2026.pdf"]))
-        let invalid = try receiptsForm()
-        await invalid.submit()
-        try renderGallery("file-list", GallerySheet(title: "file list", rows: [("empty", empty), ("files", filled), ("error", invalid)]))
-        try renderSystem("file-list", filled, height: 400)
-        UploadStore.release(owner: ObjectIdentifier(filled))
+        #expect(field.fileValueText == "Choose file")
     }
 
     @Test("a restored list keeps the files that still exist")
@@ -114,10 +108,10 @@ struct FileListModelTests {
         try Data("kept".utf8).write(to: kept)
         let values: JSONValue = ["upload-1", .string(gone.absoluteString), .string(kept.absoluteString)]
         let snapshot = FormSnapshot(version: 1, definitionId: "receipts", values: ["docs": values], step: nil, skipped: [], seed: "")
-        let form = FormModel(definition: try FormDefinition(json: receipts), restoring: snapshot) { _, _ in nil }
+        let form = FormModel(definition: try FormDefinition(json: receipts()), restoring: snapshot) { _, _ in nil }
         form.start()
         #expect(form.engine.values["docs"] == ["upload-1", .string(kept.absoluteString)])
-        #expect(try context(form).pickedFiles.map(\.index) == [1])
+        #expect(form.pickedFiles(forKey: "docs").map(\.standardizedFileURL.path) == [kept.standardizedFileURL.path])
         UploadStore.release(owner: ObjectIdentifier(form))
         #expect(!FileManager.default.fileExists(atPath: kept.path))
     }
