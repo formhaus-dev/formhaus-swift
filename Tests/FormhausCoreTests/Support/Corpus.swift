@@ -69,6 +69,7 @@ struct CorpusFixture {
     let refused: [IssueEntry]?
     let definition: JSONValue
     let overlay: JSONValue?
+    let locale: [LocaleCatalog]
     let texts: JSONObject?
     let cases: [CorpusCase]
     let recall: [RecallCase]
@@ -80,6 +81,7 @@ struct CorpusFixture {
         refused = IssueEntry.list(json["refused"])
         definition = json["definition"] ?? .null
         overlay = json["overlay"]
+        locale = (json["locale"]?.arrayValue ?? []).compactMap(LocaleCatalog.init(json:))
         texts = json["texts"]?.objectValue
         cases = (json["cases"]?.arrayValue ?? []).map(CorpusCase.init)
         recall = (json["recall"]?.arrayValue ?? []).map(RecallCase.init)
