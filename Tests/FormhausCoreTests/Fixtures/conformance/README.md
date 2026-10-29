@@ -22,6 +22,7 @@ Each file holds one `definition`, the issues `checkDefinition` reports for it, a
 - `warnings` lists the issues with severity `warning`, as `{ code, path }`. When the key is missing, warnings are not checked. `[]` means there must be none.
 - `refused` lists the `slow-pattern` issues the server validation reports as errors, as `{ code, path }`. It is set in every file whose `warnings` list `slow-pattern` entries. Since 1.6.1 it is always `[]`: the server runs every pattern.
 - `overlay` is an optional i18n overlay. Apply it to the definition with `localize` before running `cases`, as described in the specification under Translations.
+- `locale` is an optional list of built-in locale catalogs (`locale`, `messages`, `labels`). Pass it to the engine and to the server validation as the catalogs of the `locale` option. A message comes from the form translation (the `overlay`), then the definition `messages`, then these catalogs in order, then the default.
 - `texts` maps text slot addresses to the text they hold after the overlay is applied, such as `"steps.account.fields.email.label": "Почта"`. Addresses are those of the specification under Translations, Addresses. Only the listed addresses are checked; an address with no text slot fails.
 - `cases` lists value cases. It may be empty or missing.
 - `recall` lists answer recall cases. It may be missing. See [Recall](#recall).

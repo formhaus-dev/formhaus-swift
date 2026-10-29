@@ -1,0 +1,93 @@
+{
+  "name": "locale-precedence",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "id": "precedence",
+    "title": "Precedence",
+    "submit": {
+      "label": "Send"
+    },
+    "messages": {
+      "required": "Own required",
+      "minLength": "Own at least {min}"
+    },
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "code",
+        "type": "text",
+        "label": "Code",
+        "validation": {
+          "minLength": 5
+        }
+      },
+      {
+        "key": "tag",
+        "type": "text",
+        "label": "Tag",
+        "validation": {
+          "maxLength": 2
+        }
+      },
+      {
+        "key": "email",
+        "type": "email",
+        "label": "Email"
+      }
+    ]
+  },
+  "overlay": {
+    "messages": {
+      "minLength": "Translated at least {min}"
+    }
+  },
+  "locale": [
+    {
+      "locale": "de",
+      "messages": {
+        "required": "Catalog required",
+        "minLength": "Catalog at least {min}",
+        "maxLength": "Catalog at most {max}"
+      },
+      "labels": {}
+    }
+  ],
+  "cases": [
+    {
+      "name": "ranks the form translation over definition messages over the built-in catalog over the default",
+      "input": {
+        "values": {
+          "code": "abc",
+          "tag": "abcd",
+          "email": "x"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "code": "abc",
+          "tag": "abcd",
+          "email": "x"
+        },
+        "errors": {
+          "name": "Own required",
+          "code": "Translated at least 5",
+          "tag": "Catalog at most 2",
+          "email": "Enter a valid email"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "code": "abc"
+      }
+    }
+  ]
+}
