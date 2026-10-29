@@ -24,6 +24,10 @@
             "key": "b",
             "type": "text",
             "label": "B"
+          },
+          {
+            "key": "h",
+            "type": "hidden"
           }
         ]
       },
@@ -101,6 +105,49 @@
           "expect": {
             "step": "one",
             "errors": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "drops an onStepValidate error of a hidden field on the next passing Continue",
+      "values": {
+        "a": "x"
+      },
+      "hooks": {
+        "onStepValidate": [
+          {
+            "return": {
+              "h": "bad h"
+            }
+          },
+          {
+            "return": null
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "step": "one",
+            "errors": {
+              "h": "bad h"
+            }
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "two",
+            "errors": {},
+            "topLevelErrors": []
           }
         }
       ]

@@ -162,6 +162,24 @@ struct PassedStepErrorTests {
         #expect(engine.errors.isEmpty)
     }
 
+    @Test("drop onStepValidate errors of hidden fields on the next Continue")
+    func hidden() async throws {
+        var definition = try #require(League.definition.objectValue)
+        var steps = try #require(definition["steps"]?.arrayValue)
+        var account = try #require(steps[0].objectValue)
+        account["fields"] = .array(try #require(account["fields"]?.arrayValue) + [["key": "ref", "type": "hidden"]])
+        steps[0] = .object(account)
+        definition["steps"] = .array(steps)
+        let engine = try FormEngine(
+            definition: .object(definition), values: League.values,
+            options: FormEngineOptions(onStepValidate: replies([["ref": "Bad link"]])))
+        #expect(try await engine.next() == false)
+        #expect(engine.errors == ["ref": "Bad link"])
+        #expect(try await engine.next())
+        #expect(engine.errors.isEmpty)
+        #expect(engine.topLevelErrors.isEmpty)
+    }
+
     @Test("bring back the setErrors error a step error replaced")
     func server() async throws {
         let engine = try League.engine(FormEngineOptions(onValidate: once(["email": "Taken"])))
