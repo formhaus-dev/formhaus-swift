@@ -33,6 +33,14 @@ enum UploadStore {
         return upload.url
     }
 
+    static func names(owner: ObjectIdentifier) -> [String: String] {
+        var names: [String: String] = [:]
+        for upload in uploads.values where upload.owner == owner && FileManager.default.fileExists(atPath: upload.url.path) {
+            names[upload.url.absoluteString] = upload.url.lastPathComponent
+        }
+        return names
+    }
+
     static func isMissing(_ value: String) -> Bool {
         guard let url = fileURL(value), let entry = entry(url) else { return false }
         return !FileManager.default.fileExists(atPath: entry.file.path)

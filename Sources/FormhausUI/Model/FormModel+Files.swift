@@ -6,6 +6,11 @@ extension FormModel {
         engine.value(at: key)?.stringValue.flatMap { UploadStore.owned($0, by: ObjectIdentifier(self)) }
     }
 
+    func nameStoredFiles() {
+        let owner = ObjectIdentifier(self)
+        engine.storedFileNames = { UploadStore.names(owner: owner) }
+    }
+
     func dropMissingFiles() {
         guard !disabled else { return }
         for field in engine.definition.allFields where field.type == "file" {
