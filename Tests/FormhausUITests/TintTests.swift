@@ -34,6 +34,7 @@ private func swatchColor(_ components: FormComponents) throws -> NSColor? {
     .frame(width: 520, height: 700)
     let host = NSHostingView(rootView: view)
     host.frame = CGRect(x: 0, y: 0, width: 520, height: 700)
+    host.appearance = NSAppearance(named: .aqua)
     settle(host)
     guard let frame = log.frame, let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else { return nil }
     host.cacheDisplay(in: host.bounds, to: rep)
