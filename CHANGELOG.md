@@ -23,6 +23,7 @@
 - The picker of a full file list is disabled.
 - New `FormModel.pickedFiles(forKey:)` returns the picked files of a list.
 - The `validateWithRules` engine option reaches `FormhausForm` and `FormModel`.
+- Fixed `{{key}}` recall of a picked file showing its `file://` path instead of its name.
 
 ## 0.5.0
 
