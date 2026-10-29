@@ -36,6 +36,11 @@ func settle(_ host: NSView) {
 }
 
 @MainActor
+func settle(_ host: NSView, until done: () -> Bool) {
+    for _ in 0..<100 where !done() { settle(host) }
+}
+
+@MainActor
 func host(_ view: some View, width: CGFloat = 400, height: CGFloat = 600) -> NSHostingView<AnyView> {
     _ = NSApplication.shared
     let host = NSHostingView(rootView: AnyView(view.frame(width: width)))

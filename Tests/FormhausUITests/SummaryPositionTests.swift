@@ -43,6 +43,7 @@ struct SummaryPositionTests {
         let log = FrameLog()
         let view = FormhausForm(model: form)
             .environment(\.formhausMeasuring, true)
+            .environment(\.formhausScrollAnimation, nil)
             .coordinateSpace(name: measureSpace)
             .onPreferenceChange(MeasuredFrames.self) { frames in MainActor.assumeIsolated { log.frames = frames } }
         let hosted = host(view, height: 500)
@@ -50,9 +51,10 @@ struct SummaryPositionTests {
         window.contentView = hosted
         settle(hosted)
         await form.submit()
-        for _ in 0..<10 { settle(hosted) }
+        let visible = { (frame: CGRect) in frame.minY >= 0 && frame.maxY <= 500 }
+        settle(hosted) { log.frames["summary"].map(visible) ?? false }
         withExtendedLifetime(window) {}
         let summary = try #require(log.frames["summary"])
-        #expect(summary.minY >= 0 && summary.maxY <= 500)
+        #expect(visible(summary))
     }
 }
