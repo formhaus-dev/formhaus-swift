@@ -5,7 +5,7 @@ import Testing
 @_spi(Renderer) @testable import FormhausCore
 @testable import FormhausUI
 
-private let hostile: [(Double, Int)] = [(.nan, 1000), (.infinity, 1000), (-.infinity, 1000), (1e300, 1000), (-1e300, 0), (-5, 0), (2.7, 2)]
+private let hostile: [(Double, Int)] = [(.nan, 100), (.infinity, 100), (-.infinity, 100), (1e300, 1000), (-1e300, 0), (-5, 0), (2.7, 2)]
 
 @Suite("File lists with hostile limits", .serialized)
 @MainActor

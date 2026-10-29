@@ -162,13 +162,13 @@ private func isEmpty(_ field: FormField, _ value: JSONValue?) -> Bool {
 }
 
 func fileLimitMessage(_ field: FormField, _ resolve: ResolveMessage) -> String {
-    field.validation?.message("maxLengthMessage") ?? resolve("maxItems", ["max": .number(field.maxItems)], field)
+    field.validation?.message("maxLengthMessage") ?? resolve("maxItems", ["max": .number(Double(field.fileListLimit))], field)
 }
 
 private func fileListError(_ field: FormField, _ value: JSONValue, _ resolve: @escaping ResolveMessage) -> String? {
     let fail: Fail = { key, params in resolve(key, params, field) }
     guard let items = value.arrayValue else { return fail("file", [:]) }
-    if Double(items.count) > field.maxItems { return fileLimitMessage(field, resolve) }
+    if items.count > field.fileListLimit { return fileLimitMessage(field, resolve) }
     let references = items.allSatisfy { item in item.stringValue.map { !$0.isEmpty && $0.jsLength <= maxStringLength } == true }
     return references ? nil : fail("file", [:])
 }
@@ -221,5 +221,10 @@ func clientTypeError(_ field: FormField, _ value: JSONValue?, _ resolve: @escapi
 
 extension FormField {
     var maxItems: Double { min(validation?.maxLength ?? defaultGroupItems, Double(maxGroupItems)) }
+    var fileListLimit: Int {
+        let max = validation?.maxLength.flatMap { $0.isFinite ? $0 : nil } ?? defaultGroupItems
+        return clampedInt(max, 0...maxGroupItems) ?? maxGroupItems
+    }
+
     var isList: Bool { listTypes.contains(type) || isFileList }
 }

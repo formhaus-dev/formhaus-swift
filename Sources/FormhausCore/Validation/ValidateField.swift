@@ -63,7 +63,7 @@ private func sizeError(_ value: JSONValue, _ rules: FieldValidation, _ field: Fo
 
 private func fileListRules(_ field: FormField) -> FieldValidation {
     var json = field.validation?.json ?? JSONObject()
-    json["maxLength"] = .number(field.maxItems)
+    json["maxLength"] = .number(Double(field.fileListLimit))
     return FieldValidation(json: json)
 }
 

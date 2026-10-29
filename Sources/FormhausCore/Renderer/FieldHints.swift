@@ -18,7 +18,7 @@ public func dividerBefore(_ field: FormField, _ options: [FieldOption], _ index:
 extension FormEngine {
     @_spi(Renderer)
     public func fileLimit(_ field: FormField) -> (count: Int, message: String) {
-        (clampedInt(field.maxItems, 0...maxGroupItems) ?? maxGroupItems, fileLimitMessage(field, core.messages))
+        (field.fileListLimit, fileLimitMessage(field, core.messages))
     }
 
     @_spi(Renderer)

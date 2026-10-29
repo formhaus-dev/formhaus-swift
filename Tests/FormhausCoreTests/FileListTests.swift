@@ -67,6 +67,19 @@ struct FileListTests {
         #expect(single.contains("messages.minLength") && !single.contains("messages.minItems"))
     }
 
+    @Test("the limit floors maxLength and clamps it to 0 through 1000", arguments: [(2.5, 2), (-5, 0), (1e300, 1000)])
+    func limit(maxLength: Double, max: Int) throws {
+        let definition = attachments("1.7", validation: ["maxLength": .number(maxLength)])
+        let references = (0...max).map { JSONValue.string("upload-\($0)") }
+        let over: JSONObject = ["docs": .array(references)]
+        let fits: JSONObject = ["docs": .array(Array(references.prefix(max)))]
+        let message = "At most \(max) allowed"
+        #expect(try FormEngine(definition: definition, values: over).validate()["docs"] == message)
+        #expect(try validateSubmission(definition, .object(over)).errors["docs"] == message)
+        #expect(try FormEngine(definition: definition, values: fits).validate().isEmpty)
+        #expect(try validateSubmission(definition, .object(fits)).errors.isEmpty)
+    }
+
     @Test("validators receive the list")
     func validators() throws {
         let engine = FormEngine(
