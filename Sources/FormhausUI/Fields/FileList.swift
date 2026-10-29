@@ -31,7 +31,7 @@ private struct FileListRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button(action: { context.removeFile(at: index) }, label: { Text(verbatim: context.removeFileLabel) })
                 .buttonStyle(FormButtonStyle(.danger, compact: true))
-                .fileRemoveSizing()
+                .fileRemoveSizing(inset: tokens.spacing.s4)
                 .disabled(context.isLocked)
                 .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
                 .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
@@ -56,9 +56,10 @@ struct FileRowStack<Content: View>: View {
 
 private struct FileRemoveSizing: ViewModifier {
     @Environment(\.dynamicTypeSize) private var typeSize
+    let inset: CGFloat
 
     func body(content: Content) -> some View {
-        if typeSize.isAccessibilitySize { content.fixedSize() } else { content }
+        if typeSize.isAccessibilitySize { content.fixedSize().padding(.leading, -inset) } else { content }
     }
 }
 
@@ -77,8 +78,8 @@ extension View {
         modifier(FileNameWrapping())
     }
 
-    func fileRemoveSizing() -> some View {
-        modifier(FileRemoveSizing())
+    func fileRemoveSizing(inset: CGFloat = 0) -> some View {
+        modifier(FileRemoveSizing(inset: inset))
     }
 }
 
