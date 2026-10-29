@@ -44,6 +44,25 @@ struct FileListLimitTests {
         UploadStore.release(owner: ObjectIdentifier(form))
     }
 
+    @Test("an app setValue clears the limit notice")
+    func noticeClearsOnExternalChange() throws {
+        let form = try receiptsForm(["docs": ["a", "b"]], validation: ["maxLength": 2])
+        form.start()
+        form.field("docs").showNotice("At most 2 allowed")
+        form.setValue(["a"], forKey: "docs")
+        #expect(form.field("docs").notice == nil)
+    }
+
+    @Test("two models on one engine keep the earlier stored file name callback as a fallback")
+    func sharedEngineKeepsCallback() throws {
+        let first = try receiptsForm()
+        first.engine.storedFileName = { $0 == "known" ? "kept.pdf" : nil }
+        let second = FormModel(engine: first.engine) { _, _ in nil }
+        let lookup = try #require(second.engine.storedFileName)
+        #expect(lookup("known") == "kept.pdf")
+        #expect(lookup("other") == nil)
+    }
+
     @Test("the limit message resolves like the maxItems validation message", arguments: [nil, "Up to {max} receipts"] as [String?])
     func message(custom: String?) throws {
         var validation: JSONObject = ["maxLength": 2]
