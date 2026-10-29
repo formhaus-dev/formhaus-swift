@@ -1,12 +1,11 @@
-import PhotosUI
 import SwiftUI
 
 struct FileList: View {
     let context: FieldContext
 
     var body: some View {
-        ForEach(context.pickedFiles, id: \.url) { file in
-            FileListRow(context: context, index: file.index, name: file.url.lastPathComponent)
+        ForEach(context.fileRows, id: \.index) { row in
+            FileListRow(context: context, index: row.index, name: row.name)
         }
     }
 }
@@ -21,7 +20,8 @@ private struct FileListRow: View {
 
     var body: some View {
         HStack(spacing: tokens.spacing.s3) {
-            Image(systemName: "doc").formhausText(.body, colored: false).foregroundStyle(tokens.colors.textMuted).accessibilityHidden(true)
+            Image(systemName: "doc").formhausText(.body, colored: false).foregroundStyle(tokens.colors.textMuted)
+                .accessibilityHidden(true)
             Text(verbatim: name)
                 .formhausText(.body)
                 .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
@@ -41,7 +41,11 @@ private struct FileListRow: View {
 }
 
 extension FieldContext {
-    var pickedFiles: [(index: Int, url: URL)] { model.pickedFiles(value) }
+    var fileRows: [FileRow] { model.fileRows(value) }
+
+    var fileRoom: Int { model.fileRoom(field, value) }
+
+    var isFileListFull: Bool { field.isFileList && fileRoom == 0 }
 
     var removeFileLabel: String { text(forLabel: "removeItem") }
 
@@ -55,25 +59,5 @@ extension FieldContext {
 
     func removeFile(at index: Int) {
         model.removeFile(at: index, forKey: key)
-    }
-}
-
-extension View {
-    @ViewBuilder
-    func photoPicker(
-        _ multiple: Bool, isPresented: Binding<Bool>, item: Binding<PhotosPickerItem?>, items: Binding<[PhotosPickerItem]>,
-        pick: @escaping ([PhotosPickerItem]) -> Void
-    ) -> some View {
-        if multiple {
-            photosPicker(isPresented: isPresented, selection: items, matching: .images)
-                .onChange(of: items.wrappedValue) { _, picked in
-                    if !picked.isEmpty { pick(picked) }
-                }
-        } else {
-            photosPicker(isPresented: isPresented, selection: item, matching: .images)
-                .onChange(of: item.wrappedValue) { _, picked in
-                    if let picked { pick([picked]) }
-                }
-        }
     }
 }

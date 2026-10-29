@@ -21,6 +21,7 @@ struct SystemFileRow: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .disabled(context.isFileListFull)
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(context.fileValueText)
             .accessibilityHint(Text(verbatim: context.helperText ?? ""))
@@ -31,8 +32,8 @@ struct SystemFileRow: View {
                 }
             }
             if context.field.isFileList {
-                ForEach(context.pickedFiles, id: \.url) { file in
-                    SystemFileItem(context: context, index: file.index, name: file.url.lastPathComponent)
+                ForEach(context.fileRows, id: \.index) { row in
+                    SystemFileItem(context: context, index: row.index, name: row.name)
                 }
             }
         }
