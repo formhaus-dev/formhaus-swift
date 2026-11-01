@@ -223,6 +223,20 @@ FormhausForm(definition: definition, initialValues: record, options: FormEngineO
 
 Hidden fields keep their values in `engine.values` and in the submitted values, together with answers on steps off the active path. Conditions, validation and recall still treat them as unanswered, so they never block Continue or Submit. Pass `SubmissionOptions(hiddenValues: .keep)` to `validateSubmission`, or the server drops them.
 
+## Unsaved changes
+
+`FormModel.isDirty` tells whether the submitted values differ from the values the form started with, and `dirtyKeys` lists the changed field paths:
+
+```swift
+VStack {
+    FormhausForm(model: model)
+    if model.isDirty { Text("Unsaved: \(model.dirtyKeys.joined(separator: ", "))") }
+}
+.interactiveDismissDisabled(model.isDirty)
+```
+
+Call `model.markClean()` after a successful save to take the current values as the baseline. `engine.reset(values)` does the same with the values it loads. Values compare as in the submitted values, so a trim-only edit is not a change, and a field hidden by a condition or on a skipped step is. A `replaceDefinition` alone is not a change. `DirtyTracker(engine:)` follows a `FormEngine` without the renderer.
+
 ## Restore after the app is closed
 
 The system can end the app while it is in the background. Save the form's snapshot and pass it back to `restoring:` to bring back the answers, the current step and the skipped steps. Keep the draft in a store that outlives the form view, so the `nil` sent after a submit is saved too:
