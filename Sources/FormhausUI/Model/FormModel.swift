@@ -9,7 +9,7 @@ public final class FormModel {
     @ObservationIgnored private(set) var submitHandler: SubmitHandler
     @ObservationIgnored private var hooks: HookBox?
     @ObservationIgnored private nonisolated(unsafe) var unsubscribe: (@MainActor () -> Void)?
-    @ObservationIgnored private let dirtyTracker: DirtyTracker
+    @ObservationIgnored let dirtyTracker: DirtyTracker
 
     public private(set) var structure: FormStructure
     public private(set) var stepValidating = false
@@ -21,7 +21,7 @@ public final class FormModel {
     public private(set) var actions: FormActionsState
     public private(set) var actionError: String?
     public private(set) var invalidAttempts = 0
-    public private(set) var dirtyKeys: [String] = []
+    var trackedDirtyKeys: [String] = []
     public private(set) var focusRequest: FocusRequest?
     public private(set) var version = 0
     public private(set) var structureVersion = 0
@@ -58,7 +58,7 @@ public final class FormModel {
         actions = engine.actionsState(options.labels)
         lastValues = engine.values
         lastErrors = engine.errors
-        dirtyTracker = DirtyTracker(engine: engine)
+        dirtyTracker = DirtyTracker(engine: engine, following: false)
         if attachUploads() {
             structure = FormStructure(engine)
             lastValues = engine.values
@@ -199,7 +199,7 @@ public final class FormModel {
         assign(\.stepValidating, engine.stepValidating)
         assign(\.submitting, engine.submitting)
         assign(\.topLevelErrors, engine.topLevelErrors)
-        assign(\.dirtyKeys, dirtyTracker.dirtyKeys)
+        if dirtyTracker.following { assign(\.trackedDirtyKeys, dirtyTracker.dirtyKeys) }
         if engine.errorsVersion != seenErrors {
             seenErrors = engine.errorsVersion
             if !topLevelErrors.isEmpty { alertVersion += 1 }
@@ -227,13 +227,6 @@ public final class FormModel {
 }
 
 extension FormModel {
-    public var isDirty: Bool { !dirtyKeys.isEmpty }
-
-    public func markClean() {
-        dirtyTracker.markClean()
-        assign(\.dirtyKeys, dirtyTracker.dirtyKeys)
-    }
-
     func refreshDisabled() {
         assign(\.disabled, loading || engine.stepValidating || engine.submitting)
     }

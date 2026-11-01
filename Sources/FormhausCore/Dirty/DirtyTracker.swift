@@ -13,10 +13,16 @@ public final class DirtyTracker {
     private var baseline: Baseline
     private var resetCount: Int
     private var unsubscribe: (@MainActor () -> Void)?
+    @_spi(Renderer) public private(set) var following: Bool
     public private(set) var dirtyKeys: [String] = []
 
-    public init(engine: FormEngine) {
+    public convenience init(engine: FormEngine) {
+        self.init(engine: engine, following: true)
+    }
+
+    @_spi(Renderer) public init(engine: FormEngine, following: Bool) {
         self.engine = engine
+        self.following = following
         baseline = Self.capture(engine)
         resetCount = engine.resetCount
         unsubscribe = engine.subscribe { [weak self] in self?.update() }
@@ -27,6 +33,12 @@ public final class DirtyTracker {
     public func markClean() {
         baseline = Self.capture(engine)
         resetCount = engine.resetCount
+        update()
+    }
+
+    @_spi(Renderer) public func follow() {
+        guard !following else { return }
+        following = true
         update()
     }
 
@@ -58,6 +70,7 @@ public final class DirtyTracker {
 
     private func update() {
         if resetCount != engine.resetCount { return markClean() }
+        guard following else { return }
         if baseline.generation != engine.core.definitionGeneration {
             baseline.payload = replayed()
             baseline.generation = engine.core.definitionGeneration

@@ -1,6 +1,7 @@
-import FormhausCore
-import FormhausUI
+@_spi(Renderer) import FormhausCore
 import Testing
+
+@testable import FormhausUI
 
 @Suite("Unsaved changes")
 @MainActor
@@ -19,5 +20,16 @@ struct DirtyModelTests {
         #expect(form.dirtyKeys == ["name"])
         form.engine.reset(["name": "Lin"])
         #expect(!form.isDirty)
+    }
+
+    @Test("a model that never reads them does not compare values, and the first read sees earlier edits")
+    func lazyTracking() throws {
+        let form = try model(signupDefinition, values: ["name": "Ada"])
+        form.setValue("Grace", forKey: "name")
+        form.engine.reset(["name": "Lin"])
+        form.setValue("Sam", forKey: "name")
+        #expect(!form.dirtyTracker.following)
+        #expect(form.dirtyKeys == ["name"])
+        #expect(form.dirtyTracker.following)
     }
 }
