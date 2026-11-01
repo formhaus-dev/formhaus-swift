@@ -32,4 +32,12 @@ struct DirtyModelTests {
         #expect(form.dirtyKeys == ["name"])
         #expect(form.dirtyTracker.following)
     }
+
+    @Test("an edit made before the first read counts")
+    func editBeforeFirstRead() throws {
+        let form = try model(signupDefinition, values: ["name": "Ada"])
+        form.setValue("Grace", forKey: "name")
+        #expect(form.isDirty)
+        #expect(form.dirtyKeys == ["name"])
+    }
 }
