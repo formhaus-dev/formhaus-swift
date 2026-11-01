@@ -7,6 +7,7 @@ final class ScenarioRun {
     let file: ScenarioFile
     let scenario: JSONObject
     let engine: FormEngine
+    let tracker: DirtyTracker
     let script: Script
     let log: EventLog
     var failures: [String]
@@ -21,6 +22,7 @@ final class ScenarioRun {
         failures = hooks.unknownNames.map { "unknown hook \($0)" }
         let values = scenario["values"]?.objectValue ?? JSONObject()
         engine = FormEngine(definition: try file.runtime(scenario), values: values, options: hooks.options())
+        tracker = DirtyTracker(engine: engine)
     }
 
     func handler(_ entries: JSONValue?) -> SubmitHandler {
