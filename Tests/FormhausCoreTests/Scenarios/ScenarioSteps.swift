@@ -25,6 +25,7 @@ extension ScenarioRun {
         case "goToStepWithField": engine.goToStepWithField(key)
         case "goToStep": return json(engine.goToStep(step["stepId"]?.stringValue ?? ""))
         case "reset": engine.reset(step["values"]?.objectValue)
+        case "markClean": tracker.markClean()
         case "replaceDefinition": try engine.replaceDefinition(file.localized(step["definition"] ?? .null))
         case "orderOptions":
             let options = step["options"]?.arrayValue?.compactMap { $0.objectValue.map(FieldOption.init(json:)) }
@@ -45,6 +46,8 @@ extension ScenarioRun {
         case "stepIndex": return .number(Double(engine.currentStepIndex))
         case "steps": return json(engine.visibleSteps.map(\.id))
         case "fields": return json(engine.visibleFields.map(\.key))
+        case "dirty": return .bool(tracker.isDirty)
+        case "dirtyKeys": return json(tracker.dirtyKeys)
         case "skipped": return json((engine.definition.steps ?? []).map(\.id).filter(engine.isStepSkipped))
         case "items", "distinctItemIds":
             let keys = expected?.objectValue?.keys ?? []

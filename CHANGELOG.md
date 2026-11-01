@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### FormhausCore
+
+- New `DirtyTracker` follows an engine and lists unsaved changes in `dirtyKeys` and `isDirty`. `markClean()` takes the current values as the baseline.
+- New `resetCount` on `FormEngine`.
+
+### FormhausUI
+
+- New `isDirty`, `dirtyKeys` and `markClean()` on `FormModel`.
+
 ## 0.6.4
 
 ### FormhausUI

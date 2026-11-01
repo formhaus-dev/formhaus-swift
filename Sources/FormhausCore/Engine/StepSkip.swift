@@ -47,6 +47,7 @@ extension EngineCore {
     func reset(_ initialValues: JSONObject?) {
         let previousValues = values
         restarts += 1
+        resetCount += 1
         baselineFields()
         validationEpoch += 1
         operationEpoch += 1
@@ -69,4 +70,8 @@ extension EngineCore {
         let changed = previousValues.changedKeys(values)
         notify(structureChanged: true, valuesChanged: !changed.isEmpty)
     }
+}
+
+extension FormEngine {
+    public var resetCount: Int { core.resetCount }
 }
