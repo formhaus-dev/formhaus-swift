@@ -9,6 +9,7 @@ public final class FormModel {
     @ObservationIgnored private(set) var submitHandler: SubmitHandler
     @ObservationIgnored private var hooks: HookBox?
     @ObservationIgnored private nonisolated(unsafe) var unsubscribe: (@MainActor () -> Void)?
+    @ObservationIgnored private let dirtyTracker: DirtyTracker
 
     public private(set) var structure: FormStructure
     public private(set) var stepValidating = false
@@ -20,6 +21,7 @@ public final class FormModel {
     public private(set) var actions: FormActionsState
     public private(set) var actionError: String?
     public private(set) var invalidAttempts = 0
+    public private(set) var dirtyKeys: [String] = []
     public private(set) var focusRequest: FocusRequest?
     public private(set) var version = 0
     public private(set) var structureVersion = 0
@@ -56,9 +58,11 @@ public final class FormModel {
         actions = engine.actionsState(options.labels)
         lastValues = engine.values
         lastErrors = engine.errors
+        dirtyTracker = DirtyTracker(engine: engine)
         if attachUploads() {
             structure = FormStructure(engine)
             lastValues = engine.values
+            dirtyTracker.markClean()
         }
         snapshots.last = engine.snapshot()
         refreshStatus()
@@ -68,8 +72,9 @@ public final class FormModel {
     deinit {
         let owner = ObjectIdentifier(self)
         let unsubscribe = unsubscribe
-        Task { @MainActor in
+        Task { @MainActor [dirtyTracker = self.dirtyTracker] in
             unsubscribe?()
+            dirtyTracker.stop()
             UploadStore.release(owner: owner)
         }
     }
@@ -194,6 +199,7 @@ public final class FormModel {
         assign(\.stepValidating, engine.stepValidating)
         assign(\.submitting, engine.submitting)
         assign(\.topLevelErrors, engine.topLevelErrors)
+        assign(\.dirtyKeys, dirtyTracker.dirtyKeys)
         if engine.errorsVersion != seenErrors {
             seenErrors = engine.errorsVersion
             if !topLevelErrors.isEmpty { alertVersion += 1 }
@@ -218,6 +224,15 @@ public final class FormModel {
     @ObservationIgnored private var lastStructureVersion = -1
     @ObservationIgnored private var lastValuesVersion = -1
     @ObservationIgnored var revealPlan: RevealPlan?
+}
+
+extension FormModel {
+    public var isDirty: Bool { !dirtyKeys.isEmpty }
+
+    public func markClean() {
+        dirtyTracker.markClean()
+        assign(\.dirtyKeys, dirtyTracker.dirtyKeys)
+    }
 
     func refreshDisabled() {
         assign(\.disabled, loading || engine.stepValidating || engine.submitting)
