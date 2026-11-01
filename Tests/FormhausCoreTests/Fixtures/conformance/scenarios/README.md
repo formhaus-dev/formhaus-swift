@@ -26,7 +26,8 @@ Each file holds a `definition` and a list of scenarios that drive `FormEngine` t
 5. An `expect` step reads only the properties it lists. All other state is not checked. `items` counts the items of each listed group, and `distinctItemIds` counts the different `id` values among them. `skipped` lists the skipped steps of the definition the engine holds at that moment. `options` lists the option values of each listed key in the order `orderOptions(key)` returns.
 6. `orderOptions` calls `engine.orderOptions(key, options)` and returns the values of the options it returns, in order.
 7. `replaceDefinition` passes the step's `definition` to `engine.replaceDefinition()`, with the file's `overlay` applied if set. It runs synchronously. With an invalid definition it throws `FormDefinitionError` and leaves the engine unchanged.
-8. At the end, the scenario fails if an action started with `"await": false` is still pending or a `defer` reply was never resolved. An awaited action or `settle` that waits on a reply no later step resolves fails too. Unused replies are not an error.
+8. The runner tracks unsaved changes from the moment it creates the engine, with `trackDirty` from `@formhaus/core/dirty` in TypeScript or the port's dirty tracking module. `dirty` and `dirtyKeys` read the tracker, and `markClean` calls its `markClean()`. `reset` calls `engine.reset()`; the tracker sees the reset and takes the result as the baseline. The rules are in the specification under Unsaved changes.
+9. At the end, the scenario fails if an action started with `"await": false` is still pending or a `defer` reply was never resolved. An awaited action or `settle` that waits on a reply no later step resolves fails too. Unused replies are not an error.
 
 ## Hooks and validators
 

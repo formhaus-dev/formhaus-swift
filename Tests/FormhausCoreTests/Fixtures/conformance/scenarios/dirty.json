@@ -1,0 +1,778 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "dirty",
+  "definition": {
+    "id": "profile",
+    "title": "Profile",
+    "submit": {
+      "label": "Save"
+    },
+    "formatVersion": "1.1",
+    "fields": [
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name"
+      },
+      {
+        "key": "company",
+        "type": "checkbox",
+        "label": "Company"
+      },
+      {
+        "key": "vat",
+        "type": "text",
+        "label": "Vat",
+        "show": [
+          {
+            "field": "company",
+            "eq": true
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "itemLabel": "Person {index}",
+        "fields": [
+          {
+            "key": "person",
+            "type": "text",
+            "label": "Person"
+          },
+          {
+            "key": "email",
+            "type": "text",
+            "label": "Email"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "starts clean with initial values",
+      "values": {
+        "name": "Ada",
+        "people": [
+          {
+            "person": "Lin"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "an edit makes the field dirty and editing back makes it clean",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "a trim-only edit stays clean",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "  Ada "
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "a value that becomes hidden is cleared from the comparison",
+      "values": {
+        "company": true,
+        "vat": "DE1"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": false
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["company", "vat"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": true
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "a kept hidden value is still compared",
+      "hiddenValues": "keep",
+      "values": {
+        "company": true,
+        "vat": "DE1"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "company",
+          "value": false
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["company"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "adding and removing group items lists the group",
+      "values": {
+        "people": [
+          {
+            "person": "Lin"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "addItem",
+          "key": "people"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["people"]
+          }
+        },
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 1
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "an item edit lists the item path",
+      "values": {
+        "people": [
+          {
+            "person": "Lin"
+          },
+          {
+            "person": "Sam"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setItemValue",
+          "key": "people",
+          "index": 1,
+          "field": "email",
+          "value": "sam@example.com"
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name", "people.1.email"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "markClean takes the current values as the baseline",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "markClean"
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "an engine reset with values takes them as the baseline",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "reset",
+          "values": {
+            "name": "Lin"
+          }
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": [],
+            "values": {
+              "name": "Lin"
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Ada"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "an engine reset without values takes the defaults as the baseline",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "reset"
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": [],
+            "values": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "replaceDefinition compares the baseline under the new definition",
+      "values": {
+        "name": "Ada",
+        "vat": "DE1",
+        "company": true
+      },
+      "steps": [
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "profile",
+            "title": "Profile",
+            "submit": {
+              "label": "Save"
+            },
+            "formatVersion": "1.1",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Full name"
+              },
+              {
+                "key": "role",
+                "type": "text",
+                "label": "Role",
+                "defaultValue": "admin"
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "role",
+          "value": "owner"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["role"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "role",
+          "value": "admin"
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "an edit made before replaceDefinition stays dirty",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "profile",
+            "title": "Profile",
+            "submit": {
+              "label": "Save"
+            },
+            "formatVersion": "1.1",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              },
+              {
+                "key": "role",
+                "type": "text",
+                "label": "Role",
+                "defaultValue": "admin"
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "replaceDefinition with the same fields stays clean",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "replaceDefinition",
+          "definition": {
+            "id": "profile",
+            "title": "Account",
+            "submit": {
+              "label": "Save"
+            },
+            "formatVersion": "1.1",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              },
+              {
+                "key": "company",
+                "type": "checkbox",
+                "label": "Company"
+              },
+              {
+                "key": "vat",
+                "type": "text",
+                "label": "Vat",
+                "show": [
+                  {
+                    "field": "company",
+                    "eq": true
+                  }
+                ]
+              },
+              {
+                "key": "people",
+                "type": "group",
+                "label": "People",
+                "itemLabel": "Person {index}",
+                "fields": [
+                  {
+                    "key": "person",
+                    "type": "text",
+                    "label": "Person"
+                  },
+                  {
+                    "key": "email",
+                    "type": "text",
+                    "label": "Email"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "null, an empty string and a missing value differ",
+      "values": {
+        "name": null
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": ""
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": null
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "an empty string differs from a missing value",
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": ""
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": null
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "numbers compare by value, so -0 equals 0",
+      "values": {
+        "name": 0
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": -0
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": 1
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "removing the first item and adding one lists item paths",
+      "values": {
+        "people": [
+          {
+            "person": "Lin"
+          },
+          {
+            "person": "Sam"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "removeItem",
+          "key": "people",
+          "index": 0
+        },
+        {
+          "do": "addItem",
+          "key": "people"
+        },
+        {
+          "expect": {
+            "items": {
+              "people": 2
+            },
+            "dirty": true,
+            "dirtyKeys": ["people.0.person", "people.1.person"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "skipping a step drops its values from the comparison",
+      "definition": {
+        "id": "signup",
+        "title": "Signup",
+        "submit": {
+          "label": "Send"
+        },
+        "steps": [
+          {
+            "id": "account",
+            "title": "Account",
+            "fields": [
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name"
+              }
+            ]
+          },
+          {
+            "id": "extras",
+            "title": "Extras",
+            "skip": {
+              "label": "Not now"
+            },
+            "fields": [
+              {
+                "key": "nickname",
+                "type": "text",
+                "label": "Nickname",
+                "defaultValue": "Ace"
+              }
+            ]
+          },
+          {
+            "id": "done",
+            "title": "Done",
+            "fields": [
+              {
+                "key": "notes",
+                "type": "text",
+                "label": "Notes"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["nickname"]
+          }
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "extras",
+            "skipped": ["extras"],
+            "dirty": true
+          }
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "step": "done",
+            "skipped": [],
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "a reset while a submit is pending takes the reset values",
+      "values": {
+        "name": "Ada"
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": "Grace"
+        },
+        {
+          "do": "submit",
+          "handler": [
+            {
+              "defer": "send"
+            }
+          ],
+          "await": false,
+          "returns": true
+        },
+        {
+          "do": "reset",
+          "values": {
+            "name": "Lin"
+          }
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        },
+        {
+          "do": "resolve",
+          "deferred": "send"
+        },
+        {
+          "do": "settle"
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": [],
+            "values": {
+              "name": "Lin"
+            },
+            "submitting": false
+          }
+        }
+      ]
+    }
+  ]
+}
