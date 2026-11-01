@@ -2,9 +2,8 @@
 
 extension FormModel {
     public var dirtyKeys: [String] {
-        dirtyTracker.follow()
-        _ = trackedDirtyKeys
-        return dirtyTracker.dirtyKeys
+        followDirty()
+        return trackedDirtyKeys
     }
 
     public var isDirty: Bool { !dirtyKeys.isEmpty }
@@ -12,6 +11,16 @@ extension FormModel {
     public func markClean() {
         dirtyTracker.follow()
         dirtyTracker.markClean()
+        syncDirtyKeys()
+    }
+
+    private func followDirty() {
+        guard !dirtyTracker.following else { return }
+        dirtyTracker.follow()
+        syncDirtyKeys()
+    }
+
+    private func syncDirtyKeys() {
         if trackedDirtyKeys != dirtyTracker.dirtyKeys { trackedDirtyKeys = dirtyTracker.dirtyKeys }
     }
 }

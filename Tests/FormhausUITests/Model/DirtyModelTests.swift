@@ -40,4 +40,14 @@ struct DirtyModelTests {
         #expect(form.isDirty)
         #expect(form.dirtyKeys == ["name"])
     }
+
+    @Test("a view that first reads after an edit sees the edit undone")
+    func undoAfterFirstRead() throws {
+        let form = try model(signupDefinition, values: ["name": "Ada"])
+        form.setValue("Grace", forKey: "name")
+        var seen = false
+        #expect(fires({ seen = form.isDirty }, when: { form.setValue("Ada", forKey: "name") }))
+        #expect(seen)
+        #expect(!form.isDirty)
+    }
 }
