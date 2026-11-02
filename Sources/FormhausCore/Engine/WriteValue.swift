@@ -33,11 +33,12 @@ extension EngineCore {
         }
     }
 
-    func loadSubmitted(_ submitted: JSONObject) {
+    func loadSubmitted(_ submitted: JSONObject, previous: JSONObject) {
         replaceValues(Values(fresh: submitted))
         reconcileHidden(initial: true)
         visibility.markChanged(true, true)
         visibility.starts.loadPayload()
+        visibility.starts.storeValues(previous)
         visibility.unsettle()
     }
 }
@@ -74,14 +75,22 @@ extension EngineCore {
         return true
     }
 
-    private func shift<V>(_ map: inout StringMap<V>, _ key: String, _ removed: Int) {
+    private func reindex<V>(_ map: inout StringMap<V>, _ key: String, _ place: (Int) -> Int?) {
         var moved = StringMap<V>()
         for errorKey in map.keys {
-            guard let (index, field) = splitPath(key, errorKey), index >= removed else { continue }
-            if index > removed { moved[itemPath(key, index - 1, field)] = map[errorKey] }
+            guard let (index, field) = splitPath(key, errorKey) else { continue }
+            let target = place(index)
+            if target == index { continue }
+            if let target { moved[itemPath(key, target, field)] = map[errorKey] }
             map.removeValue(forKey: errorKey)
         }
         map.merge(moved)
+    }
+
+    private func reindexItems(_ key: String, _ place: (Int) -> Int?) {
+        reindex(&errors, key, place)
+        reindex(&serverErrors, key, place)
+        reindex(&fieldLoading, key, place)
     }
 
     func removeItem(_ key: String, _ index: Int) -> Bool {
@@ -89,13 +98,26 @@ extension EngineCore {
         guard let group = activeGroup(key), items.indices.contains(index), Double(items.count) > group.itemLimits.min else { return false }
         var ids = values.itemIds(key)
         visibility.starts.dropItem(values.itemId(key, index))
-        shift(&errors, key, index)
-        shift(&serverErrors, key, index)
-        shift(&fieldLoading, key, index)
+        reindexItems(key) { $0 == index ? nil : $0 - ($0 > index ? 1 : 0) }
         var next = items
         next.remove(at: index)
         if ids.indices.contains(index) { ids.remove(at: index) }
         writeValue(key, ValueSlot(.array(next), ref: Ref(token: freshToken(), items: ids)))
+        return true
+    }
+
+    func moveItem(_ key: String, _ from: Int, _ to: Int) -> Bool {
+        var items = itemsOf(values[key])
+        guard activeGroup(key) != nil, items.indices.contains(from), items.indices.contains(to), from != to else { return false }
+        reindexItems(key) { position in
+            if position == from { return to }
+            let shifted = position - (position > from ? 1 : 0)
+            return shifted + (shifted >= to ? 1 : 0)
+        }
+        items.insert(items.remove(at: from), at: to)
+        var ids = values.itemIds(key)
+        if ids.indices.contains(from), ids.indices.contains(to) { ids.insert(ids.remove(at: from), at: to) }
+        writeValue(key, ValueSlot(.array(items), ref: Ref(token: freshToken(), items: ids)))
         return true
     }
 
@@ -131,5 +153,12 @@ extension FormField {
     var itemLimits: (min: Double, max: Double) {
         let required = validation?.required?.isTruthy == true
         return (validation?.minLength ?? (required ? 1 : 0), maxItems)
+    }
+}
+
+extension FormEngine {
+    @discardableResult
+    public func moveItem(_ key: String, from: Int, to: Int) -> Bool {
+        core.moveItem(key, from, to)
     }
 }

@@ -1,9 +1,13 @@
 public struct FieldOption: Sendable, Hashable {
     let json: JSONObject
     let imageDigest: Int?
+    public let description: String?
+    public let disabled: ConditionRule?
 
-    init(json: JSONObject) {
+    init(json: JSONObject, rules: Bool = true) {
         self.json = json
+        description = rules ? json["description"]?.stringValue : nil
+        disabled = rules ? ConditionRule(json["disabled"]) : nil
         imageDigest = json["image"]?.stringValue.map { image in
             var hasher = Hasher()
             hasher.combine(image)
@@ -45,6 +49,8 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
     let optionIndex: OptionIndex?
     public let fields: [FormNode]?
     public let isFileList: Bool
+    public let readOnly: ConditionRule?
+    public let reorderable: Bool
 
     init(json: JSONObject, nodes: inout NodeBuilder) {
         self.json = json
@@ -54,10 +60,13 @@ public struct FormField: Sendable, Conditional, NodeIdentity {
         show = conditions(json["show"])
         showAny = conditions(json["showAny"])
         validation = json["validation"]?.objectValue.map(FieldValidation.init(json:))
-        options = json["options"]?.arrayValue.map { $0.compactMap { $0.objectValue.map(FieldOption.init(json:)) } }
+        let rules = nodes.optionRules
+        options = json["options"]?.arrayValue.map { $0.compactMap { $0.objectValue.map { FieldOption(json: $0, rules: rules) } } }
         optionIndex = options.map(OptionIndex.init)
         fields = type == "group" ? formNodes(json["fields"], &nodes) : nil
         isFileList = nodes.listsFiles && type == "file" && json["multiple"] == .bool(true)
+        readOnly = rules ? ConditionRule(json["readOnly"]) : nil
+        reorderable = rules && type == "group" && json["reorderable"] == .bool(true)
     }
 
     public var label: String? { json["label"]?.stringValue }
@@ -195,10 +204,12 @@ protocol NodeIdentity {
 
 struct NodeBuilder {
     let listsFiles: Bool
+    let optionRules: Bool
     private var count = 0
 
-    init(listsFiles: Bool) {
+    init(listsFiles: Bool, optionRules: Bool) {
         self.listsFiles = listsFiles
+        self.optionRules = optionRules
     }
 
     mutating func next() -> Int {

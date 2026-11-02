@@ -41,6 +41,7 @@ private func usedMessages(_ definition: FormDefinition) -> KeySet {
 private func nodeSlots(_ definition: FormDefinition, _ text: TextNode) -> [Slot] {
     let keys = text.node["i18n"]?.objectValue ?? JSONObject()
     return text.kind.slots.compactMap { slot -> Slot? in
+        if text.kind == .option && slot == "description" && !definition.optionRules { return nil }
         if text.kind != .validation {
             guard let source = text.node[slot]?.stringValue else { return nil }
             return Slot(
@@ -108,6 +109,7 @@ private func usedLabels(_ definition: FormDefinition) -> KeySet {
     add(fields.contains { pickerTypes.contains($0.type) }, ["done"])
     add(fields.contains { $0.type == "file" }, ["chooseFile"])
     add(fields.contains(where: \.isFileList), ["removeItem", "removeItemNamed", "itemAdded", "itemRemoved", "fileCount"])
+    add(nodes.contains(where: \.reorderable), ["moveUp", "moveDown", "itemMoved"])
     return labels
 }
 

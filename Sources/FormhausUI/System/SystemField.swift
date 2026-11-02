@@ -7,11 +7,14 @@ struct SystemField: View {
 
     var body: some View {
         switch context.field.type {
+        case "textarea" where context.readOnly: SystemReadOnlyBlock(context: context)
+        case _ where showsReadOnlyValue(context): SystemReadOnlyRow(context: context)
         case "text", "email", "phone", "number", "password": SystemTextRow(context: context)
         case "autocomplete": SystemTextRow(context: context, suggests: true)
         case "textarea": SystemTextArea(context: context)
         case _ where context.field.hasPictureOptions: SystemPictures(context: context)
         case _ where isInlineChoice(context.field, limit: behavior.inlineChoiceLimit): SystemChoiceList(context: context)
+        case _ where context.readOnly && ["radio", "multiselect"].contains(context.field.type): SystemReadOnlyRow(context: context)
         case "select", "radio", "multiselect": SystemPickerRow(context: context)
         case "checkbox", "switch": SystemToggleRow(context: context)
         case "date", "time", "datetime": SystemDateRow(context: context)

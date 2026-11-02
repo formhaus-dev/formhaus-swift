@@ -35,7 +35,8 @@ public struct RatingField: View {
                     .onHover { inside in hovered = inside ? point : (hovered == point ? nil : hovered) }
                     .accessibilityLabel(Text(verbatim: String(point)))
                     .accessibilityAddTraits(current == point ? .isSelected : [])
-                    .accessibilityHint(Text(verbatim: scale.anchor(for: point) ?? ""))
+                    .accessibilityHint(Text(verbatim: context.hint(scale.anchor(for: point))))
+                    .readOnlyControl(context.readOnly)
                     .formhausTestId(context.optionTestId(String(point)))
                 }
                 ScaleAnchors(anchors: scale.anchors)

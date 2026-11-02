@@ -63,6 +63,7 @@ private struct SystemGroupItemTitle: View {
         HStack {
             Text(verbatim: item.title).font(.headline).accessibilityAddTraits(.isHeader)
             Spacer()
+            if item.canMove { MoveButtons(item: item, system: true) }
             if item.canRemove {
                 Button(role: .destructive, action: item.requestRemove) {
                     Text(verbatim: item.removeLabel).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())

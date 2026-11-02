@@ -4,10 +4,28 @@ public typealias Validators = StringMap<ValidatorFn>
 public struct ValidateOptions: Sendable {
     public var validators: Validators
     public var messages: MessageSource?
+    public var previousValues: JSONObject?
 
-    public init(validators: Validators = [:], messages: MessageSource? = nil) {
+    public init(validators: Validators = [:], messages: MessageSource? = nil, previousValues: JSONObject? = nil) {
         self.validators = validators
         self.messages = messages
+        self.previousValues = previousValues
+    }
+}
+
+private func spread(_ value: JSONValue?) -> [JSONValue?] {
+    if case .array(let items)? = value { return items }
+    return [value]
+}
+
+private func choosesDisabled(_ field: FormField, _ value: JSONValue, _ values: JSONObject, _ previous: JSONValue?) -> Bool {
+    guard let options = field.options, options.contains(where: { $0.disabled != nil }) else { return false }
+    let held = spread(previous) + spread(field.defaultValue)
+    let chosen = spread(value)
+    return options.contains { option in
+        guard let rule = option.disabled, let picked = option.json["value"] else { return false }
+        let has = { (list: [JSONValue?]) in list.contains { $0.map { sameValueZero($0, picked) } ?? false } }
+        return has(chosen) && !has(held) && rule.isMet(values)
     }
 }
 
@@ -82,12 +100,14 @@ private func fileListRules(_ field: FormField) -> FieldValidation {
 public func validateFieldValue(
     _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, options: ValidateOptions = ValidateOptions()
 ) -> String? {
-    CallBudget.run { fieldValueError(field, input, allValues, options.validators, options.messages) }
+    CallBudget.run {
+        fieldValueError(field, input, allValues, options.validators, options.messages, previous: options.previousValues?[field.key])
+    }
 }
 
 func fieldValueError(
     _ field: FormField, _ input: JSONValue?, _ allValues: JSONObject, _ validators: Validators, _ messages: MessageSource?,
-    required: Bool = true
+    previous: JSONValue? = nil, required: Bool = true
 ) -> String? {
     let value = field.isFileList ? .array(listedFiles(input)) : trimValue(field, input)
     let rules = field.isFileList ? fileListRules(field) : field.validation ?? FieldValidation(json: JSONObject())
@@ -102,6 +122,7 @@ func fieldValueError(
     }
     if field.isFileList, present.arrayValue?.allSatisfy(isFileItem) == false { return resolve("file", [:], field) }
     if let issue = clientTypeError(field, present, resolve), !issue.isEmpty { return issue }
+    if choosesDisabled(field, present, allValues, previous) { return resolve("option", [:], field) }
     let issue =
         sizeError(present, rules, field, resolve)
         ?? patternError(present, rules, { resolve("pattern", [:], field) })

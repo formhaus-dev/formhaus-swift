@@ -24,9 +24,8 @@ extension FormEngine {
         if !ruleErrors.isEmpty { reportRuleErrors() }
         var fields: [String] = []
         let scope = core.visibility.conditionValues(core.values.json)
-        visitShown(validatedNodes(submit: submit), core.getSubmitValues(), scope, core.visibility.limits(core.values.json)) { path, _, _ in
-            fields.append(path)
-        }
+        let limits = core.visibility.limits(core.values.json)
+        visitShown(validatedNodes(submit: submit), core.getSubmitValues(), scope, limits) { path, _, _, _ in fields.append(path) }
         let context = ValidateContext(stepId: core.currentStep?.id, fields: fields, submit: submit)
         let result = try await suspended { try await validate(values, context) }
         if stale() { return false }

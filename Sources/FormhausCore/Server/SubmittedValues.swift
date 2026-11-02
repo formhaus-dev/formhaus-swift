@@ -74,20 +74,24 @@ func blankItems(_ resolved: inout ActiveValues, _ fields: [FormField], _ resolve
 }
 
 func keepHidden(
-    _ fields: [FormField], _ resolved: ActiveValues, _ submitted: inout JSONObject, _ skipped: [String], _ validators: Validators
+    _ fields: [FormField], _ resolved: ActiveValues, _ submitted: inout JSONObject, _ skipped: [String], _ checks: ValidateOptions
 ) {
+    let validators = checks.validators
+    let previous = checks.previousValues ?? JSONObject()
     let source = resolved.values
     var scope = source
     scope.merge(submitted)
-    let valid = { (field: FormField, value: JSONValue?, values: JSONObject) in
-        fieldValueError(field, value, values, validators, nil, required: false) == nil
+    let valid = { (field: FormField, value: JSONValue?, values: JSONObject, held: JSONValue?) in
+        fieldValueError(field, value, values, validators, nil, previous: held, required: false) == nil
     }
     let items = { (group: FormField, value: [JSONValue], kept: [JSONValue]) -> JSONValue in
-        .array(
+        let holds = itemHolds(previous, group, value)
+        return .array(
             kept.enumerated().map { index, item in
                 guard var entry = item.objectValue, value.indices.contains(index), let from = value[index].objectValue else { return item }
                 let own = itemScope(group, value[index], scope)
-                for field in group.items where from.has(field.key) && !entry.has(field.key) && valid(field, from[field.key], own) {
+                for field in group.items where from.has(field.key) && !entry.has(field.key) {
+                    guard valid(field, from[field.key], own, heldValue(previous, holds, index, field.key)) else { continue }
                     entry[field.key] = from[field.key]
                 }
                 return .object(entry)
@@ -98,7 +102,7 @@ func keepHidden(
             let field = resolved.field(key) ?? fields.first(where: { $0.key == key })
         else { continue }
         let shown = submitted.has(key)
-        if !shown && !valid(field, value, scope) { continue }
+        if !shown && !valid(field, value, scope, previous[key]) { continue }
         let kept = shown ? submitted[key] : value
         if field.isGroup, let list = value.arrayValue, let sent = kept?.arrayValue {
             submitted[key] = items(field, list, shown ? sent : list.map { _ in .object(JSONObject()) })

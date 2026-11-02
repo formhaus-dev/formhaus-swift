@@ -1,0 +1,51 @@
+{
+  "name": "file-multiple-outdated",
+  "definition": {
+    "formatVersion": "1.6",
+    "id": "attachments",
+    "title": "Attachments",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "docs",
+        "type": "file",
+        "label": "Documents",
+        "multiple": true
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "keeps a single reference below 1.7",
+      "input": {
+        "values": {
+          "docs": "upload-1"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "docs": "upload-1"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "drops a list below 1.7",
+      "input": {
+        "values": {
+          "docs": ["upload-1"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "docs": "Must be a file reference"
+        }
+      }
+    }
+  ]
+}

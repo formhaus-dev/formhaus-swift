@@ -1,0 +1,150 @@
+{
+  "name": "multi-step",
+  "definition": {
+    "id": "plans",
+    "title": "Plans",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "account",
+        "title": "Account",
+        "fields": [
+          {
+            "key": "email",
+            "type": "email",
+            "label": "Email",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "plan",
+            "type": "radio",
+            "label": "Plan",
+            "options": [
+              {
+                "value": "free",
+                "label": "Free"
+              },
+              {
+                "value": "pro",
+                "label": "Pro"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "billing",
+        "title": "Billing",
+        "show": [
+          {
+            "field": "plan",
+            "eq": "pro"
+          }
+        ],
+        "fields": [
+          {
+            "key": "company",
+            "type": "text",
+            "label": "Company",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "vatId",
+            "type": "text",
+            "label": "VAT ID",
+            "show": [
+              {
+                "field": "company",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "done",
+        "title": "Done",
+        "fields": [
+          {
+            "key": "notes",
+            "type": "textarea",
+            "label": "Notes"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "validates a visible step",
+      "input": {
+        "values": {
+          "email": "a@b.co",
+          "plan": "pro"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "a@b.co",
+          "plan": "pro"
+        },
+        "errors": {
+          "company": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "drops values of a hidden step",
+      "input": {
+        "values": {
+          "email": "a@b.co",
+          "plan": "free",
+          "company": "Acme",
+          "vatId": "X1",
+          "notes": "hi"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "a@b.co",
+          "plan": "free",
+          "notes": "hi"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "drops values of a hidden field",
+      "input": {
+        "values": {
+          "email": "a@b.co",
+          "plan": "pro",
+          "company": "",
+          "vatId": "X1"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "email": "a@b.co",
+          "plan": "pro",
+          "company": ""
+        },
+        "errors": {
+          "company": "This field is required"
+        }
+      }
+    }
+  ]
+}

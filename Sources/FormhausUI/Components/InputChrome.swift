@@ -2,6 +2,7 @@ import SwiftUI
 
 struct InputChrome: ViewModifier {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.formhausReadOnly) private var readOnly
     @State private var hovered = false
     let focused: Bool
     let invalid: Bool
@@ -24,7 +25,7 @@ struct InputChrome: ViewModifier {
             .padding(.vertical, padded ? tokens.spacing.s4 : 0)
             .frame(maxWidth: .infinity, minHeight: tokens.controls.height, alignment: .leading)
             .surface(
-                shape, fill: disabled ? tokens.colors.backgroundDisabled : tokens.colors.background, border: borderColor,
+                shape, fill: disabled || readOnly ? tokens.colors.backgroundDisabled : tokens.colors.background, border: borderColor,
                 motion: tokens.quick
             )
             .overlay {
@@ -37,7 +38,7 @@ struct InputChrome: ViewModifier {
     private var borderColor: Color {
         if focused { return tokens.colors.focus }
         if invalid { return tokens.colors.error }
-        return hovered && !disabled ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
+        return hovered && !disabled && !readOnly ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
     }
 }
 

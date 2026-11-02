@@ -1,0 +1,98 @@
+{
+  "name": "text",
+  "definition": {
+    "id": "custom",
+    "title": "Custom",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "username",
+        "type": "text",
+        "label": "Username",
+        "validation": {
+          "required": true,
+          "validator": "usernameAvailable"
+        }
+      },
+      {
+        "key": "website",
+        "type": "text",
+        "label": "Website"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "ignores custom validators",
+      "input": {
+        "values": {
+          "username": "taken"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "username": "taken"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects non-string text values",
+      "input": {
+        "values": {
+          "username": {
+            "$ne": null
+          },
+          "website": 42
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "username": "Must be text",
+          "website": "Must be text"
+        }
+      }
+    },
+    {
+      "name": "drops unknown keys",
+      "input": {
+        "values": {
+          "username": "ada",
+          "admin": true,
+          "constructor": "x",
+          "_fh_hp": ""
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "username": "ada"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "drops a __proto__ key",
+      "input": {
+        "values": {
+          "username": "ada",
+          "__proto__": {
+            "admin": true
+          }
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "username": "ada"
+        },
+        "errors": {}
+      }
+    }
+  ]
+}

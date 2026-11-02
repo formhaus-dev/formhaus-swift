@@ -1,0 +1,157 @@
+{
+  "name": "show-conditions",
+  "definition": {
+    "id": "show",
+    "title": "Show",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "country",
+        "type": "select",
+        "label": "Country",
+        "options": [
+          {
+            "value": "us",
+            "label": "Us"
+          },
+          {
+            "value": "de",
+            "label": "De"
+          },
+          {
+            "value": "jp",
+            "label": "Jp"
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "contact",
+        "type": "radio",
+        "label": "Contact",
+        "options": [
+          {
+            "value": "email",
+            "label": "Email"
+          },
+          {
+            "value": "phone",
+            "label": "Phone"
+          }
+        ]
+      },
+      {
+        "key": "state",
+        "type": "text",
+        "label": "State",
+        "show": [
+          {
+            "field": "country",
+            "in": ["us"]
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "vat",
+        "type": "text",
+        "label": "VAT",
+        "show": [
+          {
+            "field": "country",
+            "notIn": ["us", "jp"]
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "phone",
+        "type": "phone",
+        "label": "Phone",
+        "showAny": [
+          {
+            "field": "contact",
+            "eq": "phone"
+          },
+          {
+            "field": "country",
+            "eq": "jp"
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "in shows a field",
+      "input": {
+        "values": {
+          "country": "us",
+          "vat": "X1",
+          "phone": "+1"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "country": "us"
+        },
+        "errors": {
+          "state": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "notIn and showAny show fields",
+      "input": {
+        "values": {
+          "country": "de",
+          "contact": "phone",
+          "state": "CA"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "country": "de",
+          "contact": "phone"
+        },
+        "errors": {
+          "vat": "This field is required",
+          "phone": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "showAny matches any condition",
+      "input": {
+        "values": {
+          "country": "jp",
+          "contact": "email",
+          "phone": "+81",
+          "vat": "X1"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "country": "jp",
+          "contact": "email",
+          "phone": "+81"
+        },
+        "errors": {}
+      }
+    }
+  ]
+}

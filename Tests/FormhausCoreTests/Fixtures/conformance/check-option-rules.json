@@ -1,0 +1,52 @@
+{
+  "name": "check-option-rules",
+  "covers": ["warns about disabled on an option of a field that is not a choice field"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "disabled-not-applicable",
+      "path": "/fields/0/options/0/disabled"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.8",
+    "id": "rules",
+    "title": "Rules",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "score",
+        "type": "scale",
+        "label": "Score",
+        "options": [
+          {
+            "value": "1",
+            "label": "Low",
+            "description": "Not at all",
+            "disabled": true
+          }
+        ]
+      },
+      {
+        "key": "size",
+        "type": "select",
+        "label": "Size",
+        "options": [
+          {
+            "value": "s",
+            "label": "S",
+            "description": "Small",
+            "disabled": [
+              {
+                "field": "score",
+                "gt": 3
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

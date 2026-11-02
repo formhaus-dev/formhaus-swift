@@ -1,0 +1,81 @@
+{
+  "name": "option-rules-default",
+  "definition": {
+    "formatVersion": "1.8",
+    "id": "plans",
+    "title": "Plans",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "plan",
+        "type": "radio",
+        "label": "Plan",
+        "defaultValue": "legacy",
+        "options": [
+          {
+            "value": "pro",
+            "label": "Pro"
+          },
+          {
+            "value": "legacy",
+            "label": "Legacy",
+            "disabled": true
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "fields": [
+          {
+            "key": "role",
+            "type": "select",
+            "label": "Role",
+            "defaultValue": "owner",
+            "options": [
+              {
+                "value": "owner",
+                "label": "Owner",
+                "disabled": true
+              },
+              {
+                "value": "member",
+                "label": "Member"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "accepts a defaultValue that is a disabled option without previousValues",
+      "input": {
+        "values": {
+          "plan": "legacy",
+          "people": [
+            {
+              "role": "owner"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "plan": "legacy",
+          "people": [
+            {
+              "role": "owner"
+            }
+          ]
+        },
+        "errors": {}
+      }
+    }
+  ]
+}

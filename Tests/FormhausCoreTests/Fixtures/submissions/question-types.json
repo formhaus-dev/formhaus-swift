@@ -1,0 +1,205 @@
+{
+  "name": "question-types",
+  "definition": {
+    "formatVersion": "1.3",
+    "id": "question-types",
+    "title": "Question types",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "nps",
+        "type": "scale",
+        "label": "NPS",
+        "validation": {
+          "min": 0,
+          "max": 10,
+          "required": true
+        },
+        "options": [
+          {
+            "value": "0",
+            "label": "Not at all likely"
+          },
+          {
+            "value": "10",
+            "label": "Extremely likely"
+          }
+        ]
+      },
+      {
+        "key": "detractor",
+        "type": "text",
+        "label": "What went wrong?",
+        "show": [
+          {
+            "field": "nps",
+            "lte": 6
+          }
+        ]
+      },
+      {
+        "key": "stars",
+        "type": "rating",
+        "label": "Stars"
+      },
+      {
+        "key": "food",
+        "type": "rating",
+        "label": "Food",
+        "validation": {
+          "min": 3,
+          "max": 10
+        }
+      },
+      {
+        "key": "room",
+        "type": "radio",
+        "label": "Room",
+        "options": [
+          {
+            "value": "sea",
+            "label": "Sea",
+            "image": "https://example.com/sea.jpg"
+          }
+        ]
+      },
+      {
+        "key": "pulse",
+        "type": "section",
+        "layout": "matrix",
+        "title": "Pulse",
+        "fields": [
+          {
+            "key": "clear",
+            "type": "radio",
+            "label": "Clear",
+            "options": [
+              {
+                "value": "1",
+                "label": "Disagree"
+              },
+              {
+                "value": "2",
+                "label": "Agree"
+              }
+            ]
+          },
+          {
+            "key": "heard",
+            "type": "radio",
+            "label": "Heard",
+            "options": [
+              {
+                "value": "1",
+                "label": "Disagree"
+              },
+              {
+                "value": "2",
+                "label": "Agree"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "accepts 0 on a 0-based scale as an answer",
+      "input": {
+        "values": {
+          "nps": 0,
+          "detractor": "Slow",
+          "stars": 5,
+          "food": 10,
+          "room": "sea",
+          "clear": "2",
+          "heard": "1"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "nps": 0,
+          "detractor": "Slow",
+          "stars": 5,
+          "food": 10,
+          "room": "sea",
+          "clear": "2",
+          "heard": "1"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "normalizes numeric strings",
+      "input": {
+        "values": {
+          "nps": "9",
+          "stars": " 4 ",
+          "food": "3"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": { "nps": 9, "food": 3 },
+        "errors": {
+          "stars": "Select one of the available options"
+        }
+      }
+    },
+    {
+      "name": "drops a field hidden by a numeric condition",
+      "input": {
+        "values": {
+          "nps": 9,
+          "detractor": "Slow"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "nps": 9
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects values outside the range or not whole",
+      "input": {
+        "values": {
+          "nps": 7.5,
+          "stars": 6,
+          "food": 2
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": { "food": 2 },
+        "errors": {
+          "nps": "Select one of the available options",
+          "stars": "Select one of the available options",
+          "food": "Must be at least 3"
+        }
+      }
+    },
+    {
+      "name": "rejects an empty required scale",
+      "input": {
+        "values": {
+          "stars": 0
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "nps": "This field is required",
+          "stars": "Select one of the available options"
+        }
+      }
+    }
+  ]
+}

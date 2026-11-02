@@ -34,8 +34,9 @@ struct SystemScale: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(spoken(scale, current))
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
-            .accessibilityAdjustableAction { direction in step(scale, current, direction) }
+            .accessibilityHint(Text(verbatim: context.hintText))
+            .adjustable(unless: context.readOnly) { direction in step(scale, current, direction) }
+            .readOnlyControl(context.readOnly)
             .focusable()
             .formhausFocus(context, $focused)
             .sensoryFeedback(.selection, trigger: current)
@@ -102,9 +103,11 @@ struct SystemRating: View {
             .accessibilityValue(
                 current > 0 ? [String(current), scale.anchor(for: current)].compactMap(\.self).joined(separator: ", ") : ""
             )
-            .accessibilityAdjustableAction { direction in
+            .accessibilityHint(Text(verbatim: context.hintText))
+            .adjustable(unless: context.readOnly) { direction in
                 context.setValue(.number(Double(scale.clamped(direction == .increment ? current + 1 : current - 1))))
             }
+            .readOnlyControl(context.readOnly)
             .focusable()
             .formhausFocus(context, $focused)
             .sensoryFeedback(.selection, trigger: current)

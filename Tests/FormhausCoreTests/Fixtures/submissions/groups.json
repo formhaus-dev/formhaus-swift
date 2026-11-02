@@ -1,0 +1,649 @@
+{
+  "name": "groups",
+  "definition": {
+    "formatVersion": "1.1",
+    "id": "groups",
+    "title": "Groups",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "company",
+        "type": "checkbox",
+        "label": "Company"
+      },
+      {
+        "key": "billing",
+        "type": "section",
+        "title": "Billing",
+        "show": [
+          {
+            "field": "company",
+            "eq": true
+          }
+        ],
+        "fields": [
+          {
+            "key": "street",
+            "type": "text",
+            "label": "Street",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "validation": {
+          "required": true,
+          "maxLength": 2
+        },
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "age",
+            "type": "number",
+            "label": "Age",
+            "validation": {
+              "min": 18
+            }
+          },
+          {
+            "key": "diet",
+            "type": "select",
+            "label": "Diet",
+            "options": [
+              {
+                "value": "none",
+                "label": "None"
+              },
+              {
+                "value": "other",
+                "label": "Other"
+              }
+            ]
+          },
+          {
+            "key": "note",
+            "type": "text",
+            "label": "Note",
+            "show": [
+              {
+                "field": "diet",
+                "eq": "other"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "vat",
+            "type": "text",
+            "label": "VAT",
+            "show": [
+              {
+                "field": "company",
+                "eq": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "accepts items and drops unknown item keys",
+      "input": {
+        "values": {
+          "people": [
+            {
+              "name": " Ada ",
+              "age": "30",
+              "extra": 1
+            },
+            {
+              "name": "Bo",
+              "diet": "other",
+              "note": "Vegan"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "people": [
+            {
+              "name": "Ada",
+              "age": 30
+            },
+            {
+              "name": "Bo",
+              "diet": "other",
+              "note": "Vegan"
+            }
+          ]
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "drops item fields hidden by item and outer conditions",
+      "input": {
+        "values": {
+          "people": [
+            {
+              "name": "Ada",
+              "diet": "none",
+              "note": "x",
+              "vat": "NL1"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "people": [
+            {
+              "name": "Ada",
+              "diet": "none"
+            }
+          ]
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "keeps item fields shown by outer fields and section fields",
+      "input": {
+        "values": {
+          "company": true,
+          "street": "Main",
+          "people": [
+            {
+              "name": "Ada",
+              "vat": "NL1"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "company": true,
+          "street": "Main",
+          "people": [
+            {
+              "name": "Ada",
+              "vat": "NL1"
+            }
+          ]
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "reports item errors by path",
+      "input": {
+        "values": {
+          "people": [
+            {
+              "age": 12
+            },
+            {
+              "name": "Bo",
+              "diet": "other"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "people": [
+            {
+              "age": 12
+            },
+            {
+              "name": "Bo",
+              "diet": "other"
+            }
+          ]
+        },
+        "errors": {
+          "people.0.name": "This field is required",
+          "people.0.age": "Must be at least 18",
+          "people.1.note": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "reports type errors of item fields by path",
+      "input": {
+        "values": {
+          "people": [
+            {
+              "name": 5,
+              "age": "old",
+              "diet": "fish"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "people": [{}]
+        },
+        "errors": {
+          "people.0.name": "Must be text",
+          "people.0.age": "Enter a number",
+          "people.0.diet": "Select one of the available options"
+        }
+      }
+    },
+    {
+      "name": "reports a missing group as required",
+      "input": {
+        "values": {},
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "people": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "reports an empty list as required",
+      "input": {
+        "values": {
+          "people": []
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "people": []
+        },
+        "errors": {
+          "people": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "reports too many items",
+      "input": {
+        "values": {
+          "people": [
+            {
+              "name": "A"
+            },
+            {
+              "name": "B"
+            },
+            {
+              "name": "C"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "people": "At most 2 allowed"
+        }
+      }
+    },
+    {
+      "name": "rejects a value that is not a list of objects",
+      "input": {
+        "values": {
+          "people": ["Ada"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "people": "Invalid value"
+        }
+      }
+    },
+    {
+      "name": "rejects more items than maxLength without checking them",
+      "input": {
+        "values": {
+          "people": [
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            },
+            {
+              "name": "A"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "people": "At most 2 allowed"
+        }
+      }
+    }
+  ]
+}

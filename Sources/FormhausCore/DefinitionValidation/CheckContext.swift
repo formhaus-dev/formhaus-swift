@@ -88,6 +88,22 @@ private func nodeEntries(_ definition: FormDefinition) -> [NodeEntry] {
     return nodes
 }
 
+private func ruleEntries(_ field: FormField, _ entry: NodeEntry) -> [ConditionEntry] {
+    var lists: [(String, JSONValue?)] = [("\(entry.path)/readOnly", field.json["readOnly"])]
+    for (index, option) in (field.json["options"]?.arrayValue ?? []).enumerated() {
+        lists.append(("\(entry.path)/options/\(index)/disabled", option.objectValue?["disabled"]))
+    }
+    return lists.flatMap { path, rule in
+        (rule?.arrayValue ?? []).enumerated().compactMap { index, item in
+            item.objectValue.map {
+                ConditionEntry(
+                    condition: ShowCondition(json: $0), path: "\(path)/\(index)", owner: .field, step: entry.step, key: field.key,
+                    group: entry.group?.key)
+            }
+        }
+    }
+}
+
 private func conditionEntries(_ definition: FormDefinition, _ nodes: [NodeEntry]) -> [ConditionEntry] {
     var entries = nodes.flatMap { entry in
         ConditionSite(path: entry.path, owner: .field, step: entry.step, key: entry.node.key, group: entry.group?.key)
@@ -101,6 +117,12 @@ private func conditionEntries(_ definition: FormDefinition, _ nodes: [NodeEntry]
         for name in ["next", "back", "skip"] {
             let site = ConditionSite(path: "/steps/\(index)/\(name)", owner: .action, step: index)
             entries += site.entries(disabledLists(step.button(name).action))
+        }
+    }
+    if definition.optionRules {
+        for entry in nodes {
+            guard let field = entry.node.field else { continue }
+            entries += ruleEntries(field, entry)
         }
     }
     let submit = definition.json["submit"]?.objectValue.map(FormAction.init(json:))

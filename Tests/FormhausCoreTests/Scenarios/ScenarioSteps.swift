@@ -2,7 +2,11 @@
 
 extension ScenarioRun {
     private func index(_ step: JSONObject) -> Int {
-        step["index"]?.numberValue.flatMap { Int(exactly: $0) } ?? -1
+        position(step, "index")
+    }
+
+    private func position(_ step: JSONObject, _ name: String) -> Int {
+        step[name]?.numberValue.flatMap { Int(exactly: $0) } ?? -1
     }
 
     func act(_ step: JSONObject) async throws -> JSONValue? {
@@ -13,6 +17,7 @@ extension ScenarioRun {
         case "setItemValue": engine.setItemValue(key, index(step), step["field"]?.stringValue ?? "", step["value"])
         case "addItem": return .bool(engine.addItem(key))
         case "removeItem": return .bool(engine.removeItem(key, index(step)))
+        case "moveItem": return .bool(engine.moveItem(key, from: position(step, "from"), to: position(step, "to")))
         case "setErrors": engine.setErrors(fieldErrors(step["errors"]) ?? FieldErrors())
         case "setFieldLoading": engine.setFieldLoading(key, step["loading"]?.boolValue ?? false)
         case "cancelPendingActions": engine.cancelPendingActions()
@@ -28,7 +33,7 @@ extension ScenarioRun {
         case "markClean": tracker.markClean()
         case "replaceDefinition": try engine.replaceDefinition(file.localized(step["definition"] ?? .null))
         case "orderOptions":
-            let options = step["options"]?.arrayValue?.compactMap { $0.objectValue.map(FieldOption.init(json:)) }
+            let options = step["options"]?.arrayValue?.compactMap { $0.objectValue.map({ FieldOption(json: $0) }) }
             return optionValues(engine.orderOptions(key, options: options))
         case let name: throw ScriptError(message: "unknown action \(name ?? "nil")")
         }

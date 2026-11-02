@@ -195,6 +195,9 @@
           "$ref": "#/$defs/do-removeItem"
         },
         {
+          "$ref": "#/$defs/do-moveItem"
+        },
+        {
           "$ref": "#/$defs/do-setErrors"
         },
         {
@@ -551,6 +554,28 @@
           "type": "string"
         },
         "index": {
+          "type": "integer"
+        },
+        "returns": {
+          "type": "boolean"
+        }
+      }
+    },
+    "do-moveItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "from", "to"],
+      "properties": {
+        "do": {
+          "const": "moveItem"
+        },
+        "key": {
+          "type": "string"
+        },
+        "from": {
+          "type": "integer"
+        },
+        "to": {
           "type": "integer"
         },
         "returns": {

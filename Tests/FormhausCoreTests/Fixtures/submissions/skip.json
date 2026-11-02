@@ -1,0 +1,177 @@
+{
+  "name": "skip",
+  "definition": {
+    "id": "skippable",
+    "title": "Skippable",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "profile",
+        "title": "Profile",
+        "fields": [
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "extras",
+        "title": "Extras",
+        "skip": {
+          "label": "Skip"
+        },
+        "fields": [
+          {
+            "key": "phone",
+            "type": "phone",
+            "label": "Phone",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "tier",
+            "type": "select",
+            "label": "Tier",
+            "defaultValue": "basic",
+            "options": [
+              {
+                "value": "basic",
+                "label": "Basic"
+              },
+              {
+                "value": "gold",
+                "label": "Gold"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "perks",
+        "title": "Perks",
+        "show": [
+          {
+            "field": "tier",
+            "eq": "gold"
+          }
+        ],
+        "fields": [
+          {
+            "key": "perk",
+            "type": "text",
+            "label": "Perk",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "legal",
+        "title": "Legal",
+        "fields": [
+          {
+            "key": "terms",
+            "type": "switch",
+            "label": "Terms",
+            "validation": {
+              "required": "Accept the terms"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "drops values of a skipped step and the steps it hides",
+      "input": {
+        "values": {
+          "name": "Ada",
+          "phone": "",
+          "tier": "gold",
+          "perk": "Lounge",
+          "terms": true
+        },
+        "skippedSteps": ["extras"]
+      },
+      "expected": {
+        "values": {
+          "name": "Ada",
+          "terms": true
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "ignores a skip on a step without skip",
+      "input": {
+        "values": {
+          "tier": "basic",
+          "terms": true
+        },
+        "skippedSteps": ["profile"]
+      },
+      "expected": {
+        "values": {
+          "tier": "basic",
+          "terms": true
+        },
+        "errors": {
+          "name": "This field is required",
+          "phone": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "ignores an unknown step id",
+      "input": {
+        "values": {
+          "name": "Ada",
+          "phone": "+1",
+          "tier": "basic",
+          "terms": false
+        },
+        "skippedSteps": ["nope"]
+      },
+      "expected": {
+        "values": {
+          "name": "Ada",
+          "phone": "+1",
+          "tier": "basic",
+          "terms": false
+        },
+        "errors": {
+          "terms": "Accept the terms"
+        }
+      }
+    },
+    {
+      "name": "does not fill the default of a missing key",
+      "input": {
+        "values": {
+          "name": "Ada",
+          "phone": "+1",
+          "terms": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "name": "Ada",
+          "phone": "+1",
+          "terms": true
+        },
+        "errors": {}
+      }
+    }
+  ]
+}

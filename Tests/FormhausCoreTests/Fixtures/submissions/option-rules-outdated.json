@@ -1,0 +1,207 @@
+{
+  "name": "option-rules-outdated",
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "workspace",
+    "title": "Workspace",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "seats",
+        "type": "number",
+        "label": "Seats"
+      },
+      {
+        "key": "plan",
+        "type": "radio",
+        "label": "Plan",
+        "options": [
+          {
+            "value": "starter",
+            "label": "Starter",
+            "description": "Up to 5 seats",
+            "disabled": [
+              {
+                "field": "seats",
+                "gt": 5
+              }
+            ]
+          },
+          {
+            "value": "pro",
+            "label": "Pro",
+            "description": "Any number of seats"
+          },
+          {
+            "value": "legacy",
+            "label": "Legacy",
+            "disabled": true
+          }
+        ]
+      },
+      {
+        "key": "addons",
+        "type": "multiselect",
+        "label": "Add-ons",
+        "options": [
+          {
+            "value": "sso",
+            "label": "SSO",
+            "disabled": [
+              {
+                "field": "plan",
+                "neq": "pro"
+              }
+            ]
+          },
+          {
+            "value": "audit",
+            "label": "Audit log"
+          }
+        ]
+      },
+      {
+        "key": "account",
+        "type": "text",
+        "label": "Account ID",
+        "readOnly": true,
+        "validation": {
+          "required": true,
+          "minLength": 5,
+          "pattern": "^acct-\\d+$"
+        }
+      },
+      {
+        "key": "note",
+        "type": "text",
+        "label": "Note",
+        "readOnly": [
+          {
+            "field": "seats",
+            "gt": 100
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "reorderable": true,
+        "fields": [
+          {
+            "key": "role",
+            "type": "select",
+            "label": "Role",
+            "options": [
+              {
+                "value": "admin",
+                "label": "Admin",
+                "disabled": true
+              },
+              {
+                "value": "member",
+                "label": "Member"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "tier",
+        "type": "select",
+        "label": "Tier",
+        "show": [
+          {
+            "field": "seats",
+            "gt": 10
+          }
+        ],
+        "options": [
+          {
+            "value": "gold",
+            "label": "Gold",
+            "description": "Priority support",
+            "disabled": true
+          },
+          {
+            "value": "basic",
+            "label": "Basic"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "accepts a disabled option below 1.8",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "legacy",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "legacy",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "checks the rules of a read-only field below 1.8",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi"
+        },
+        "errors": {
+          "account": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "keeps a hidden value with a disabled option below 1.8",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-12",
+          "tier": "gold"
+        },
+        "skippedSteps": [],
+        "hiddenValues": "keep"
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-12",
+          "tier": "gold"
+        },
+        "errors": {}
+      }
+    }
+  ]
+}

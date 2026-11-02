@@ -20,7 +20,7 @@ public struct TextAreaField: View {
                 .textFieldStyle(.plain)
                 .lineLimit(rows...)
                 .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)
-                .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+                .accessibilityHint(Text(verbatim: context.hintText))
                 LoadingIndicator(visible: context.loading)
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)

@@ -1,0 +1,103 @@
+{
+  "name": "check-outdated-version-option-rules",
+  "covers": ["ignores the format 1.8 properties and asks for format 1.8 below it"],
+  "issues": [],
+  "warnings": [
+    {
+      "code": "outdated-format-version",
+      "path": "/formatVersion"
+    },
+    {
+      "code": "unknown-property",
+      "path": "/fields/0/readOnly"
+    },
+    {
+      "code": "unknown-property",
+      "path": "/fields/0/options/0/description"
+    },
+    {
+      "code": "unknown-property",
+      "path": "/fields/0/options/0/disabled"
+    },
+    {
+      "code": "unknown-property",
+      "path": "/fields/1/reorderable"
+    }
+  ],
+  "definition": {
+    "formatVersion": "1.7",
+    "id": "rules",
+    "title": "Rules",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "size",
+        "type": "select",
+        "label": "Size",
+        "readOnly": true,
+        "options": [
+          {
+            "value": "s",
+            "label": "S",
+            "description": "Small",
+            "disabled": true
+          },
+          {
+            "value": "m",
+            "label": "M"
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "items",
+        "type": "group",
+        "label": "Items",
+        "reorderable": true,
+        "fields": [
+          {
+            "key": "title",
+            "type": "text",
+            "label": "Title"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "below 1.8 a disabled option is an option",
+      "input": {
+        "values": {
+          "size": "s"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "size": "s"
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "below 1.8 readOnly does not skip the rules",
+      "input": {
+        "values": {},
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "size": "This field is required"
+        }
+      },
+      "canSubmit": false
+    }
+  ]
+}

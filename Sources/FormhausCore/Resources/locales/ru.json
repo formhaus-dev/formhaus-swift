@@ -59,6 +59,9 @@
     "stepTitle": "Шаг {index}",
     "stepErrors": "Ошибок: {count}",
     "fileCount": "Файлов: {count}",
+    "moveUp": "Вверх",
+    "moveDown": "Вниз",
+    "itemMoved": "{item}: перемещено на позицию {position}",
     "or": "или",
     "select": "Выберите"
   }

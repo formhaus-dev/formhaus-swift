@@ -48,6 +48,7 @@ public struct ChoiceSelection {
     }
 
     public func choose(_ value: String) {
+        if context.isDisabled(value: value) { return }
         guard multiple else {
             context.commit(.string(value))
             return
@@ -128,14 +129,15 @@ struct ChoiceList: View {
         return ChoiceCard(
             option: option, shape: shape, selected: selected.contains(value), invalid: context.isInvalid,
             picture: picture,
-            hint: context.helperText ?? "",
+            hint: context.hintText,
             zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
             testId: context.optionTestId(value),
             choose: { selection.choose(value) },
             zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: image) }
         )
         .equatable()
-        .disabled(context.isLocked)
+        .disabled(context.isLocked || context.isDisabled(index))
+        .readOnlyControl(context.readOnly)
         .focused($focused, equals: index)
         .accessibilityFocused($spoken, equals: index)
     }

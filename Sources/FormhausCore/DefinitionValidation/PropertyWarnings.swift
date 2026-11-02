@@ -6,15 +6,33 @@ enum Properties {
     static let step: [String] = ["id", "title", "description", "fields", "show", "showAny", "routes", "next", "back", "skip", "i18n"]
     static let field: [String] = [
         "key", "type", "label", "placeholder", "helperText", "autoAdvance", "defaultValue", "source", "show", "showAny", "validation",
-        "options", "randomize", "layout", "columns", "optionsFrom", "optionsDependsOn", "accept", "rows", "mask", "inputMode",
-        "autocomplete", "props", "i18n",
+        "options", "randomize", "layout", "columns", "optionsFrom", "optionsDependsOn", "accept", "multiple", "rows", "mask", "inputMode",
+        "autocomplete", "readOnly", "props", "i18n",
     ]
     static let section: [String] = ["key", "type", "title", "description", "layout", "show", "showAny", "fields", "i18n"]
     static let group: [String] = [
-        "key", "type", "label", "helperText", "itemLabel", "addLabel", "removeLabel", "defaultItems", "show", "showAny", "validation",
-        "fields", "i18n",
+        "key", "type", "label", "helperText", "itemLabel", "addLabel", "removeLabel", "defaultItems", "reorderable", "show", "showAny",
+        "validation", "fields", "i18n",
     ]
-    static let option: [String] = ["value", "label", "image", "exclusive", "pinned", "i18n"]
+    static let option: [String] = ["value", "label", "image", "exclusive", "pinned", "description", "disabled", "i18n"]
+    static let since: [(minor: Double, key: String)] = [
+        (7, "multiple"), (8, "readOnly"), (8, "reorderable"), (8, "description"), (8, "disabled"),
+    ]
+
+    static func known(_ list: [String], _ definition: FormDefinition) -> [String] {
+        let format = definition.json["formatVersion"]
+        let later = since.filter { !formatAtLeast(format, $0.minor) }.map(\.key)
+        return list.filter { !later.contains($0) }
+    }
+
+    static func newer(_ list: [String], _ definition: FormDefinition) -> (String) -> String? {
+        { key in
+            guard list.contains(key), let entry = since.first(where: { $0.key == key }),
+                !formatAtLeast(definition.json["formatVersion"], entry.minor)
+            else { return nil }
+            return "Set \"formatVersion\": \"1.\(Int(entry.minor))\" to use it"
+        }
+    }
     static let action: [String] = ["label", "variant", "disabled", "i18n"]
     static let route: [String] = ["to", "show", "showAny"]
     static let validation: [String] = [
@@ -60,8 +78,15 @@ private func misplaced(_ key: String) -> String? {
         ? "Move \"\(key)\" into \"validation\": { \"\(key)\": ... }" : nil
 }
 
-private func optionWarnings(_ field: FormField, _ option: FieldOption, _ at: String) -> [DefinitionIssue] {
-    var issues = labeled(option.json, at) + unknown(option.json, at, Properties.option)
+private func optionWarnings(_ field: FormField, _ option: FieldOption, _ at: String, _ definition: FormDefinition) -> [DefinitionIssue] {
+    let known = Properties.known(Properties.option, definition)
+    var issues = labeled(option.json, at) + unknown(option.json, at, known, hint: Properties.newer(Properties.option, definition))
+    if definition.optionRules, option.json.has("disabled"), !randomizedTypes.contains(field.type) {
+        issues.append(
+            warning(
+                "disabled-not-applicable", "\(at)/disabled",
+                "\"disabled\" on an option of \"\(field.key)\" applies to radio, multiselect and select fields", "Remove \"disabled\""))
+    }
     if let image = option.image, safeImage.test(image) != true {
         issues.append(
             warning(
@@ -116,19 +141,42 @@ private func multipleWarnings(_ entry: FieldEntry) -> [DefinitionIssue] {
     ]
 }
 
-private func fieldWarnings(_ entry: FieldEntry, listsFiles: Bool) -> [DefinitionIssue] {
+private func disabledDefault(_ entry: FieldEntry, _ definition: FormDefinition) -> [DefinitionIssue] {
+    let field = entry.field
+    guard definition.optionRules else { return [] }
+    let defaults: [JSONValue?] =
+        if case .array(let items)? = field.defaultValue { items } else { [field.defaultValue] }
+    let option = (field.options ?? []).first { option in
+        let rule = option.json["disabled"]
+        let disabled = rule == .bool(true) || rule?.arrayValue?.isEmpty == false
+        return disabled && defaults.contains { sameValueZero($0, option.json["value"]) }
+    }
+    guard let option else { return [] }
+    return [
+        warning(
+            "default-disabled-option", "\(entry.path)/defaultValue",
+            "the defaultValue of \"\(field.key)\" is the disabled option \"\(option.value ?? "")\"", "Pick an enabled option as the default"
+        )
+    ]
+}
+
+private func fieldWarnings(_ entry: FieldEntry, _ definition: FormDefinition) -> [DefinitionIssue] {
+    let listsFiles = definition.listsFiles
     let field = entry.field
     let path = entry.path
     let visible = field.type != "hidden"
     let empty = visible && field.label.map(\.isBlankText) == true
     var issues = visible ? labeled(field.json, path, labelHint) : []
     if empty { issues.append(warning("missing-label", "\(path)/label", "the label of \"\(field.key)\" is empty", labelHint)) }
-    let known = field.isGroup ? Properties.group : Properties.field + (listsFiles ? ["multiple"] : [])
-    issues += unknown(field.json, path, known, hint: misplaced)
+    let list = field.isGroup ? Properties.group : Properties.field
+    let newer = Properties.newer(list, definition)
+    issues += unknown(field.json, path, Properties.known(list, definition)) { misplaced($0) ?? newer($0) }
     for (index, option) in (field.options ?? []).enumerated() {
-        issues += optionWarnings(field, option, "\(path)/options/\(index)")
+        issues += optionWarnings(field, option, "\(path)/options/\(index)", definition)
     }
-    issues += randomizeWarnings(entry) + matrixWarnings(entry) + (listsFiles ? multipleWarnings(entry) : [])
+    issues +=
+        randomizeWarnings(entry) + matrixWarnings(entry) + disabledDefault(entry, definition)
+        + (listsFiles ? multipleWarnings(entry) : [])
     if let validation = field.validation { issues += unknown(validation.json, "\(path)/validation", Properties.validation) }
     if field.json["columns"] != nil, !field.hasPictures || entry.parent?.json["layout"]?.stringValue == "matrix" {
         issues.append(
@@ -161,5 +209,5 @@ func propertyWarnings(_ context: CheckContext) -> [DefinitionIssue] {
     for entry in context.nodes where entry.node.section != nil {
         issues += required(entry.node.json, entry.path, "title") + unknown(entry.node.json, entry.path, Properties.section)
     }
-    return issues + context.entries.flatMap { fieldWarnings($0, listsFiles: definition.listsFiles) }
+    return issues + context.entries.flatMap { fieldWarnings($0, definition) }
 }

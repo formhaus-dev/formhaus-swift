@@ -35,6 +35,7 @@ private struct OptionCardBody: View {
 struct SelectableSurface: ViewModifier {
     @Environment(\.formhausTokens) private var tokens
     @Environment(\.isEnabled) private var enabled
+    @Environment(\.formhausReadOnly) private var readOnly
     @State private var hovered = false
     let selected: Bool
     let invalid: Bool
@@ -51,13 +52,14 @@ struct SelectableSurface: ViewModifier {
 
     private var fill: Color {
         if selected { return solid ? tokens.colors.primary : tokens.colors.primarySoft }
+        if readOnly { return solid ? tokens.colors.backgroundDisabled : tokens.colors.background }
         return hovered && enabled ? tokens.colors.backgroundHover : tokens.colors.background
     }
 
     private var border: Color {
         if selected { return tokens.colors.primary }
         if invalid { return tokens.colors.error }
-        return hovered && enabled ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
+        return hovered && enabled && !readOnly ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
     }
 }
 
@@ -71,12 +73,14 @@ public struct OptionRow: View {
     @Environment(\.formhausTokens) private var tokens
     let shape: IndicatorShape
     let label: String
+    let description: String?
     let selected: Bool
     let invalid: Bool
 
-    public init(_ shape: IndicatorShape, label: String, selected: Bool, invalid: Bool = false) {
+    public init(_ shape: IndicatorShape, label: String, description: String? = nil, selected: Bool, invalid: Bool = false) {
         self.shape = shape
         self.label = label
+        self.description = description
         self.selected = selected
         self.invalid = invalid
     }
@@ -86,8 +90,13 @@ public struct OptionRow: View {
         HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s5) {
             ChoiceIndicator(shape, selected: selected, invalid: invalid)
                 .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
-            Text(verbatim: label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: tokens.spacing.s1) {
+                Text(verbatim: label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
+                if let description, !description.isEmpty {
+                    Text(verbatim: description).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

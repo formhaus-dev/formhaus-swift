@@ -23,22 +23,29 @@ extension EngineCore {
             unsettleOnWrite {
                 validateShown(
                     nodes, values, scope,
-                    ShownChecks(validators: validators, messages: .function(messages), limits: visibility.limits(self.values.json)))
+                    ShownChecks(
+                        validators: validators, messages: .function(messages), limits: visibility.limits(self.values.json),
+                        previousValues: visibility.starts.previousValues))
             }
         }
     }
 
-    func fieldError(_ field: FormField, _ value: JSONValue?, _ allValues: JSONObject? = nil) -> String? {
-        let all = allValues ?? getSubmitValues()
-        let options = ValidateOptions(validators: validators, messages: .function(messages))
-        return CallBudget.run { unsettleOnWrite { validateFieldValue(field, value, all, options: options) } }
+    private func checkValue(_ field: FormField, _ value: JSONValue?, _ all: JSONObject, _ previous: JSONValue?) -> String? {
+        let source = MessageSource.function(messages)
+        return CallBudget.run { unsettleOnWrite { fieldValueError(field, value, all, validators, source, previous: previous) } }
+    }
+
+    func fieldError(_ field: FormField, _ value: JSONValue?) -> String? {
+        checkValue(field, value, getSubmitValues(), visibility.starts.previousValues[field.key])
     }
 
     func itemError(_ item: ItemField) -> String? {
         let values = getSubmitValues()
         let items = itemsOf(values[item.group.key])
         let scope = itemScope(item.group, items.indices.contains(item.index) ? items[item.index] : .null, values)
-        return fieldError(item.field, scope[item.field.key], scope)
+        let previous = visibility.starts.previousValues
+        let held = heldValue(previous, itemHolds(previous, item.group, items), item.index, item.field.key)
+        return checkValue(item.field, scope[item.field.key], scope, held)
     }
 
     func applyValidationErrors(_ found: FieldErrors, server: Bool = false, formErrors: [String] = [], navigate: Bool = false) {

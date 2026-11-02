@@ -17,11 +17,13 @@ public struct FormRendererOptions {
     public var lang: String?
     public var formatRecall: RecallFormatFn?
     public var testIds: TestIds
+    public var readOnly: Bool
 
     public init(
         labels: LabelSource? = nil, optionsProviders: [String: OptionsProvider] = [:], onCancel: (@MainActor () -> Void)? = nil,
         onFieldChange: FieldChangeFn? = nil, onValuesChange: ValuesChangeFn? = nil, onSnapshotChange: SnapshotChangeFn? = nil,
-        onError: ActionErrorFn? = nil, lang: String? = nil, formatRecall: RecallFormatFn? = nil, testIds: TestIds = .off
+        onError: ActionErrorFn? = nil, lang: String? = nil, formatRecall: RecallFormatFn? = nil, testIds: TestIds = .off,
+        readOnly: Bool = false
     ) {
         self.labels = labels
         self.optionsProviders = optionsProviders
@@ -33,6 +35,7 @@ public struct FormRendererOptions {
         self.lang = lang
         self.formatRecall = formatRecall
         self.testIds = testIds
+        self.readOnly = readOnly
     }
 }
 

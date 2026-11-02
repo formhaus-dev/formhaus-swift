@@ -3,6 +3,7 @@
 private let upcomingLabels: [String: String] = [
     "next": "Next",
     "select": "Select",
+    "readOnly": "Read only",
 ]
 
 extension FormModel {

@@ -1,0 +1,93 @@
+{
+  "name": "check-option-rules-type",
+  "covers": ["rejects option descriptions, option rules, readOnly and reorderable of the wrong type from format 1.8"],
+  "issues": [
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/options/0/description"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/options/1/disabled"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/0/options/2/disabled/0"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/1/readOnly"
+    },
+    {
+      "code": "unknown-field",
+      "path": "/fields/2/readOnly/0/field"
+    },
+    {
+      "code": "invalid-type",
+      "path": "/fields/3/reorderable"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.8",
+    "id": "types",
+    "title": "Types",
+    "submit": {
+      "label": "Send"
+    },
+    "fields": [
+      {
+        "key": "plan",
+        "type": "radio",
+        "label": "Plan",
+        "options": [
+          {
+            "value": "a",
+            "label": "A",
+            "description": 5
+          },
+          {
+            "value": "b",
+            "label": "B",
+            "disabled": "yes"
+          },
+          {
+            "value": "c",
+            "label": "C",
+            "disabled": ["plan"]
+          }
+        ]
+      },
+      {
+        "key": "code",
+        "type": "text",
+        "label": "Code",
+        "readOnly": "yes"
+      },
+      {
+        "key": "name",
+        "type": "text",
+        "label": "Name",
+        "readOnly": [
+          {
+            "field": "nope",
+            "eq": "x"
+          }
+        ]
+      },
+      {
+        "key": "items",
+        "type": "group",
+        "label": "Items",
+        "reorderable": "yes",
+        "fields": [
+          {
+            "key": "title",
+            "type": "text",
+            "label": "Title"
+          }
+        ]
+      }
+    ]
+  }
+}
