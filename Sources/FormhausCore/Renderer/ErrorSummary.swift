@@ -36,60 +36,6 @@ public struct ErrorSummaryOptions: Sendable {
 
 private let closingPunctuation = Set("?!:.\u{3002}".unicodeScalars)
 
-private func cleanId(_ value: String) -> String {
-    String(decoding: value.utf16.map { isWordUnit($0) || $0 == 0x2D ? $0 : 0x2D }, as: UTF16.self)
-}
-
-private func assignIds(_ names: [String], _ groups: KeySet = KeySet()) -> StringMap<String> {
-    let keys = names.sorted { lhs, rhs in
-        let (leftGroup, rightGroup) = (groups.contains(lhs), groups.contains(rhs))
-        if leftGroup != rightGroup { return rightGroup }
-        if leftGroup { return codeUnitLess(rhs, lhs) }
-        let (leftClean, rightClean) = (sameText(cleanId(lhs), lhs), sameText(cleanId(rhs), rhs))
-        return leftClean != rightClean ? leftClean : codeUnitLess(lhs, rhs)
-    }
-    var ids = StringMap<String>()
-    var taken: [String] = []
-    for key in keys {
-        var id = cleanId(key)
-        var seed = key
-        while taken.containsText(id) || (groups.contains(key) && taken.contains { hasTextPrefix($0, "\(id)--") }) {
-            id = "\(cleanId(key))-\(String(fnv1a(seed), radix: 36))"
-            seed = id
-        }
-        taken.append(id)
-        ids[key] = id
-    }
-    return ids
-}
-
-struct DomIds {
-    let fields: StringMap<String>
-    let items: StringMap<StringMap<String>>
-
-    init(_ definition: FormDefinition) {
-        var names: [String] = []
-        var groups = KeySet()
-        var itemNames = StringMap<[String]>()
-        for node in definition.topNodes.flatMap({ node in [node] + (node.section?.fields ?? []) }) {
-            names.append(node.key)
-            guard let group = node.field, group.isGroup else { continue }
-            groups.insert(group.key)
-            itemNames[group.key] = (itemNames[group.key] ?? []) + group.items.map(\.key)
-        }
-        fields = assignIds(OrderedKeys(names).keys, groups)
-        items = itemNames.reduce(into: StringMap<StringMap<String>>()) { $0[$1.0] = assignIds(OrderedKeys($1.1).keys) }
-    }
-
-    func field(_ prefix: String, _ key: String) -> String {
-        "\(prefix)-\(fields[key] ?? cleanId(key))"
-    }
-
-    func item(_ prefix: String, _ group: String, _ index: Int, _ key: String) -> String {
-        "\(field(prefix, group))--\(index)--\(items[group]?[key] ?? cleanId(key))"
-    }
-}
-
 extension EngineCore {
     fileprivate var currentDomIds: DomIds {
         if let cached = domIds, cached.generation == definitionGeneration { return cached.ids }
