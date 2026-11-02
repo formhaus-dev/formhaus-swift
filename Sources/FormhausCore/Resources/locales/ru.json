@@ -62,6 +62,7 @@
     "moveUp": "Вверх",
     "moveDown": "Вниз",
     "itemMoved": "{item}: перемещено на позицию {position}",
+    "readOnly": "Только для чтения",
     "or": "или",
     "select": "Выберите"
   }

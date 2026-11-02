@@ -1,0 +1,230 @@
+{
+  "name": "hidden-group-fields",
+  "issues": [],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.9",
+    "id": "team",
+    "title": "Team",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "members",
+        "type": "group",
+        "label": "Members",
+        "fields": [
+          {
+            "key": "id",
+            "type": "hidden",
+            "label": "Member id",
+            "defaultValue": "new",
+            "validation": {
+              "pattern": "^[a-z0-9]+$",
+              "patternMessage": "Unknown member"
+            }
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "role",
+            "type": "radio",
+            "label": "Role",
+            "options": [
+              {
+                "value": "admin",
+                "label": "Admin"
+              },
+              {
+                "value": "viewer",
+                "label": "Viewer"
+              }
+            ]
+          },
+          {
+            "key": "grant",
+            "type": "hidden",
+            "label": "Grant",
+            "show": [
+              {
+                "field": "role",
+                "eq": "admin"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "submits the hidden values of each item",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "id": "a1",
+              "name": " Ann ",
+              "role": "admin",
+              "grant": "full"
+            },
+            {
+              "id": "b2",
+              "name": "Bob"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "id": "a1",
+              "name": "Ann",
+              "role": "admin",
+              "grant": "full"
+            },
+            {
+              "id": "b2",
+              "name": "Bob"
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "drops a hidden item value whose item conditions fail",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "id": "a1",
+              "name": "Ann",
+              "role": "viewer",
+              "grant": "full",
+              "extra": "x"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "id": "a1",
+              "name": "Ann",
+              "role": "viewer"
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "keeps a hidden item value whose item conditions fail with hiddenValues keep",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "id": "a1",
+              "name": "Ann",
+              "role": "viewer",
+              "grant": "full"
+            }
+          ]
+        },
+        "skippedSteps": [],
+        "hiddenValues": "keep"
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "id": "a1",
+              "name": "Ann",
+              "role": "viewer",
+              "grant": "full"
+            }
+          ]
+        },
+        "errors": {}
+      },
+      "canSubmit": true
+    },
+    {
+      "name": "checks a hidden item value against its rules",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "id": "Bad id",
+              "name": "Ann"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "id": "Bad id",
+              "name": "Ann"
+            }
+          ]
+        },
+        "errors": {
+          "members.0.id": "Unknown member"
+        }
+      },
+      "canSubmit": false
+    },
+    {
+      "name": "reports a hidden item value that is not text with the hidden message",
+      "input": {
+        "values": {
+          "members": [
+            {
+              "id": 5,
+              "name": "Ann"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "members": [
+            {
+              "id": 5,
+              "name": "Ann"
+            }
+          ]
+        },
+        "errors": {
+          "members.0.id": "Member id: Must be text"
+        }
+      },
+      "canSubmit": false,
+      "serverValues": {
+        "members": [
+          {
+            "name": "Ann"
+          }
+        ]
+      }
+    }
+  ]
+}

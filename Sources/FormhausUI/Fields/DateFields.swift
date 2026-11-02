@@ -75,13 +75,15 @@ public struct DateField: View {
     }
 
     public var body: some View {
-        PickerInput(context: context, active: picking, clearable: date != nil, cleared: .string(""), label: summary) { picking = true }
-            .datePickerPresentation(isPresented: $picking) {
-                DatePickerPanel(kind: kind, initial: date ?? Date(), label: context.label, done: context.text(forLabel: "done")) {
-                    context.setValue(.string(kind.text($0)))
-                    picking = false
-                }
+        PickerInput(context: context, active: picking, clearable: date != nil, cleared: .string(""), label: summary) {
+            picking = !context.readOnly
+        }
+        .datePickerPresentation(isPresented: $picking) {
+            DatePickerPanel(kind: kind, initial: date ?? Date(), label: context.label, done: context.text(forLabel: "done")) {
+                context.setValue(.string(kind.text($0)))
+                picking = false
             }
+        }
     }
 
     private var summary: some View {

@@ -60,6 +60,7 @@
     "moveUp": "Monter",
     "moveDown": "Descendre",
     "itemMoved": "{item} déplacé en position {position}",
+    "readOnly": "Lecture seule",
     "or": "ou",
     "select": "Sélectionner"
   }

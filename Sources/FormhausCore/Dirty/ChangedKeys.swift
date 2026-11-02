@@ -2,7 +2,7 @@ func sameValue(_ lhs: JSONValue?, _ rhs: JSONValue?) -> Bool {
     switch (lhs, rhs) {
     case (nil, nil), (.null?, .null?): true
     case (.bool(let a)?, .bool(let b)?): a == b
-    case (.number(let a)?, .number(let b)?): a == b
+    case (.number(let a)?, .number(let b)?): a == b || (a.isNaN && b.isNaN)
     case (.string(let a)?, .string(let b)?): sameText(a, b)
     case (.array(let a)?, .array(let b)?): a.count == b.count && zip(a, b).allSatisfy(sameValue)
     case (.object(let a)?, .object(let b)?): a.count == b.count && a.allSatisfy { sameValue($0.value, b[$0.key]) }

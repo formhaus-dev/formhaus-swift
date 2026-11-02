@@ -192,6 +192,10 @@ A read-only field stays focusable, its text can be copied, and VoiceOver reads i
 
 A group with `"reorderable": true` gets Move up and Move down buttons on each item. A move keeps the values, errors and loading state of the item, moves VoiceOver focus with it and is announced with the `itemMoved` label. In code, call `engine.moveItem(key, from:to:)`.
 
+## Hidden fields in groups
+
+From format 1.9, a group can hold `hidden` fields, such as a stored id per item. The value comes from the item in the initial values, or from `defaultValue`. It moves and is removed with its item and is submitted in it. Its errors are listed in `topLevelErrors`. A `source` on it is a `source-in-group` error.
+
 ## Validate on the server
 
 `validateSubmission` checks the values against the same definition, with the visibility, steps and routes of the client:

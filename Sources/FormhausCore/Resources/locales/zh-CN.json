@@ -52,6 +52,7 @@
     "moveUp": "上移",
     "moveDown": "下移",
     "itemMoved": "已将{item}移到第{position}位",
+    "readOnly": "只读",
     "or": "或",
     "select": "请选择"
   }

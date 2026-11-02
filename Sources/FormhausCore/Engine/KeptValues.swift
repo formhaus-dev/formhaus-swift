@@ -19,7 +19,7 @@ extension VisibilityState {
             guard var entry = item.objectValue else { return item }
             let id = ids.indices.contains(position) ? ids[position] : nil
             for field in group.items where entry[field.key] == nil {
-                if let value = starts.itemStartValue(id, field.key) { entry[field.key] = value }
+                if let value = starts.itemStartValue(id, field) { entry[field.key] = value }
             }
             return .object(entry)
         }

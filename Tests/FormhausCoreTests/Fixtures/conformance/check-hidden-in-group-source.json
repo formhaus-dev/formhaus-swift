@@ -1,0 +1,47 @@
+{
+  "name": "check-hidden-in-group-source",
+  "issues": [
+    {
+      "code": "source-in-group",
+      "path": "/fields/1/fields/0/source"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.9",
+    "id": "team",
+    "title": "Team",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "campaign",
+        "type": "hidden",
+        "label": "Campaign",
+        "source": {
+          "query": "campaign"
+        }
+      },
+      {
+        "key": "members",
+        "type": "group",
+        "label": "Members",
+        "fields": [
+          {
+            "key": "ref",
+            "type": "hidden",
+            "label": "Ref",
+            "source": "referrer"
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": []
+}

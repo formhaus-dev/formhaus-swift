@@ -495,7 +495,8 @@
     "do-setValue": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["key", "value"],
+      "required": ["key"],
+      "oneOf": [{ "required": ["value"] }, { "required": ["number"] }],
       "properties": {
         "do": {
           "const": "setValue"
@@ -503,7 +504,10 @@
         "key": {
           "type": "string"
         },
-        "value": {}
+        "value": {},
+        "number": {
+          "enum": ["NaN"]
+        }
       }
     },
     "do-setItemValue": {

@@ -40,7 +40,8 @@ struct KeySet: Sendable, Sequence {
     @discardableResult
     mutating func insert(_ text: String) -> Bool { storage.insert(JSKey(text)).inserted }
 
-    mutating func remove(_ text: String) { storage.remove(JSKey(text)) }
+    @discardableResult
+    mutating func remove(_ text: String) -> Bool { storage.remove(JSKey(text)) != nil }
 
     mutating func formUnion(_ items: some Sequence<String>) {
         for item in items { insert(item) }

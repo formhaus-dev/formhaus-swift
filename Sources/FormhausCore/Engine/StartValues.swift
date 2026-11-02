@@ -6,11 +6,13 @@ struct StartValues {
     private var memory = StringMap<ValueSlot>(insertionOrder: true)
     private var itemSeeds: [Int: JSONObject] = [:]
     private var itemMemory: [Int: JSONObject] = [:]
+    private var itemHidden: [Int: KeySet] = [:]
     private(set) var itemEpoch = 0
 
     private mutating func forgetItems() {
         itemSeeds = [:]
         itemMemory = [:]
+        itemHidden = [:]
         itemEpoch += 1
     }
 
@@ -18,7 +20,7 @@ struct StartValues {
         itemEpoch += 1
         let ids = slot.ref?.items ?? []
         for (index, item) in itemsOf(slot.value).enumerated() {
-            if let entry = item.objectValue, ids.indices.contains(index) { itemSeeds[ids[index]] = entry }
+            if let entry = item.objectValue, ids.indices.contains(index), itemSeeds[ids[index]] == nil { itemSeeds[ids[index]] = entry }
         }
     }
 
@@ -39,6 +41,19 @@ struct StartValues {
         guard remembering else { return }
         memory[key] = slot
         if written { writeWatch?.keys.insert(key) }
+    }
+
+    mutating func seedWritten(_ group: FormField, _ slot: ValueSlot) {
+        guard remembering, let ids = slot.ref?.items else { return }
+        var seeded = false
+        for (index, item) in itemsOf(slot.value).enumerated() where ids.indices.contains(index) && itemSeeds[ids[index]] == nil {
+            guard let entry = item.objectValue else { continue }
+            var seed = createItem(group.items)
+            seed.merge(entry)
+            itemSeeds[ids[index]] = seed
+            seeded = true
+        }
+        if seeded { itemEpoch += 1 }
     }
 
     mutating func watchWrites() -> Int {
@@ -62,6 +77,17 @@ struct StartValues {
         guard let id else { return }
         itemSeeds.removeValue(forKey: id)
         itemMemory.removeValue(forKey: id)
+        itemHidden.removeValue(forKey: id)
+    }
+
+    mutating func hideItem(_ id: Int?, _ key: String) {
+        guard let id else { return }
+        itemHidden[id, default: KeySet()].insert(key)
+    }
+
+    mutating func revealItem(_ id: Int?, _ key: String) -> Bool {
+        guard let id else { return false }
+        return itemHidden[id]?.remove(key) ?? false
     }
 
     typealias Restore = (keys: [String], seeds: [ValueSlot], memory: [ValueSlot?])
@@ -99,9 +125,9 @@ struct StartValues {
         return seeds.slot(field.key)
     }
 
-    func itemStartValue(_ id: Int?, _ key: String) -> JSONValue? {
+    func itemStartValue(_ id: Int?, _ field: FormField) -> JSONValue? {
         guard let id else { return nil }
-        if let remembered = itemMemory[id], remembered.has(key) { return remembered[key] }
-        return itemSeeds[id]?[key]
+        if field.type != "hidden", let remembered = itemMemory[id], remembered.has(field.key) { return remembered[field.key] }
+        return itemSeeds[id]?[field.key]
     }
 }

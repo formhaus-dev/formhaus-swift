@@ -9,6 +9,7 @@ extension EngineCore {
         let valueChanged = !values.slot(key).isSame(slot)
         values.set(key, slot)
         visibility.starts.remember(key, slot, written: true)
+        if let group = visibility.fieldOf(key, values.json), group.isGroup { visibility.starts.seedWritten(group, values.slot(key)) }
         if own { clearError(key, server: valueChanged) }
         if valueChanged { skipped.removeAll { $0.keys.containsText(key) } }
         let cleared = reconcileHidden(written: key)

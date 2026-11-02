@@ -1,0 +1,181 @@
+{
+  "name": "hidden-group-fields",
+  "definition": {
+    "formatVersion": "1.9",
+    "id": "team",
+    "title": "Team",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "plan",
+        "type": "select",
+        "label": "Plan",
+        "options": [
+          {
+            "value": "team",
+            "label": "Team"
+          },
+          {
+            "value": "solo",
+            "label": "Solo"
+          }
+        ]
+      },
+      {
+        "key": "members",
+        "type": "group",
+        "label": "Members",
+        "validation": {
+          "maxLength": 3
+        },
+        "fields": [
+          {
+            "key": "id",
+            "type": "hidden",
+            "label": "Member id",
+            "validation": {
+              "required": true,
+              "maxLength": 8
+            }
+          },
+          {
+            "key": "seat",
+            "type": "hidden",
+            "label": "Seat",
+            "show": [
+              {
+                "field": "plan",
+                "eq": "team"
+              }
+            ]
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "accepts hidden item values and drops unknown item keys",
+      "input": {
+        "values": {
+          "plan": "team",
+          "members": [
+            {
+              "id": " a1 ",
+              "seat": "s1",
+              "name": "Ann",
+              "admin": true
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "plan": "team",
+          "members": [
+            {
+              "id": "a1",
+              "seat": "s1",
+              "name": "Ann"
+            }
+          ]
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "drops a hidden item value hidden by an outer condition",
+      "input": {
+        "values": {
+          "plan": "solo",
+          "members": [
+            {
+              "id": "a1",
+              "seat": "s1"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "plan": "solo",
+          "members": [
+            {
+              "id": "a1"
+            }
+          ]
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "applies required and drops a hidden item value over maxLength",
+      "input": {
+        "values": {
+          "plan": "team",
+          "members": [
+            {
+              "name": "Ann"
+            },
+            {
+              "id": "123456789"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "plan": "team",
+          "members": [
+            {
+              "name": "Ann"
+            },
+            {}
+          ]
+        },
+        "errors": {
+          "members.0.id": "Member id: This field is required",
+          "members.1.id": "Member id: Maximum length is 8"
+        }
+      }
+    },
+    {
+      "name": "drops a hidden item value that is not text",
+      "input": {
+        "values": {
+          "plan": "team",
+          "members": [
+            {
+              "id": ["a1"],
+              "name": "Ann"
+            }
+          ]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "plan": "team",
+          "members": [
+            {
+              "name": "Ann"
+            }
+          ]
+        },
+        "errors": {
+          "members.0.id": "Member id: Must be text"
+        }
+      }
+    }
+  ]
+}

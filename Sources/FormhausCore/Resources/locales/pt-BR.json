@@ -60,6 +60,7 @@
     "moveUp": "Mover para cima",
     "moveDown": "Mover para baixo",
     "itemMoved": "{item} movido para a posição {position}",
+    "readOnly": "Somente leitura",
     "or": "ou",
     "select": "Selecione"
   }

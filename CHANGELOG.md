@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### FormhausCore
+
+- Format 1.9: a group can hold `hidden` fields. Below `"formatVersion": "1.9"` they stay an `invalid-nesting` error.
+- A hidden field in a group is submitted with its item, and moves and is removed with it.
+- Errors of hidden fields in a group are listed in `topLevelErrors`.
+- New `source-in-group` error for a `source` on a hidden field in a group.
+- A field in a group item written with `setValue` gets its `defaultValue` when it is shown again.
+- `DirtyTracker` counts `NaN` as equal to `NaN`.
+- `ErrorEntry.id` matches the field ids of the TypeScript core, which no longer collide with the helper, error, label, option or group button ids of another field.
+- New `readOnly` label in every bundled locale.
+- `FormDefinition.supportedFormatVersion` is `"1.9"`.
+
+### FormhausUI
+
+- VoiceOver reads the read-only state in the language of the form.
+
 ## 0.7.0
 
 ### FormhausCore

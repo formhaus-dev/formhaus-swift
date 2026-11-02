@@ -77,6 +77,7 @@ extension IssueCode {
     public static let unknownLabelKey = IssueCode(rawValue: "unknown-label-key")
     public static let i18nUnsafeIdentifier = IssueCode(rawValue: "i18n-unsafe-identifier")
     public static let unknownSource = IssueCode(rawValue: "unknown-source")
+    public static let sourceInGroup = IssueCode(rawValue: "source-in-group")
     public static let sourceNotApplicable = IssueCode(rawValue: "source-not-applicable")
     public static let columnsNotApplicable = IssueCode(rawValue: "columns-not-applicable")
     public static let unknownAutocompleteToken = IssueCode(rawValue: "unknown-autocomplete-token")

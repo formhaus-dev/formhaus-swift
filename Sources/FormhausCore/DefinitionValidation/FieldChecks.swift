@@ -109,6 +109,13 @@ func sourceIssues(_ context: CheckContext) -> [DefinitionIssue] {
     context.entries.flatMap { entry -> [DefinitionIssue] in
         guard let source = entry.field.source else { return [] }
         let at = "\(entry.path)/source"
+        if let group = entry.group, entry.field.type == "hidden" {
+            return [
+                error(
+                    "source-in-group", at, "a hidden field inside the group \"\(group.key)\" cannot read a source",
+                    "Remove \"source\" and pass the value in the initial values of each item, or move the field out of the group")
+            ]
+        }
         if let name = source.stringValue {
             if sourceNames.containsText(name) { return [] }
             let hint = name == "query" ? queryHint : suggest(name, sourceNames) ?? oneOf(sourceNames)

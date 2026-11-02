@@ -62,6 +62,7 @@
     "moveUp": "Вгору",
     "moveDown": "Униз",
     "itemMoved": "{item}: переміщено на позицію {position}",
+    "readOnly": "Лише для читання",
     "or": "або",
     "select": "Виберіть"
   }

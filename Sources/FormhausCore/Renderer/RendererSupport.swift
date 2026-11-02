@@ -140,6 +140,7 @@ public func clampedInt(_ value: Double?, _ range: ClosedRange<Int>) -> Int? {
 private func hasContent(_ fields: [FormField], _ item: JSONValue) -> Bool {
     guard let entry = item.objectValue else { return false }
     return fields.contains { field in
+        guard field.type != "hidden" else { return false }
         let raw = entry[field.key]
         let value = raw?.stringValue.map { JSONValue.string($0.jsTrimmed) } ?? raw
         return !isBlank(value) && value != .bool(false) && value != field.defaultValue
