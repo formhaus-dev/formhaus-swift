@@ -1,0 +1,197 @@
+{
+  "name": "choices",
+  "definition": {
+    "id": "choices",
+    "title": "Choices",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "color",
+        "type": "select",
+        "label": "Color",
+        "options": [
+          {
+            "value": "red",
+            "label": "Red"
+          },
+          {
+            "value": "blue",
+            "label": "Blue"
+          }
+        ]
+      },
+      {
+        "key": "size",
+        "type": "radio",
+        "layout": "inline",
+        "label": "Size",
+        "options": [
+          {
+            "value": "s",
+            "label": "S"
+          },
+          {
+            "value": "m",
+            "label": "M"
+          }
+        ]
+      },
+      {
+        "key": "tags",
+        "type": "multiselect",
+        "label": "Tags",
+        "options": [
+          {
+            "value": "a",
+            "label": "A"
+          },
+          {
+            "value": "b",
+            "label": "B"
+          }
+        ]
+      },
+      {
+        "key": "agree",
+        "type": "checkbox",
+        "label": "Agree"
+      },
+      {
+        "key": "alerts",
+        "type": "switch",
+        "label": "Alerts"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "accepts values from options",
+      "input": {
+        "values": {
+          "color": "red",
+          "size": "m",
+          "tags": ["a", "b"],
+          "agree": false,
+          "alerts": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "color": "red",
+          "size": "m",
+          "tags": ["a", "b"],
+          "agree": false,
+          "alerts": true
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects values outside options and non-boolean toggles",
+      "input": {
+        "values": {
+          "color": "green",
+          "size": "xl",
+          "tags": ["a", "z"],
+          "agree": "yes",
+          "alerts": 1
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "color": "Select one of the available options",
+          "size": "Select one of the available options",
+          "tags": "Select one of the available options",
+          "agree": "Must be true or false",
+          "alerts": "Must be true or false"
+        }
+      }
+    },
+    {
+      "name": "rejects a multiselect value that is not an array",
+      "input": {
+        "values": {
+          "tags": "a"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "tags": "Must be a list of available options"
+        }
+      }
+    },
+    {
+      "name": "an empty array is a missing answer except in multiselect",
+      "input": {
+        "values": {
+          "tags": [],
+          "color": [],
+          "agree": []
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "tags": []
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "null is blank",
+      "input": {
+        "values": {
+          "tags": null,
+          "color": null,
+          "agree": null
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "tags": null,
+          "color": null,
+          "agree": null
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects more multiselect items than options",
+      "input": {
+        "values": {
+          "tags": ["a", "a", "b"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "tags": "Select one of the available options"
+        }
+      }
+    },
+    {
+      "name": "rejects repeated multiselect items",
+      "input": {
+        "values": {
+          "tags": ["b", "b"]
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {},
+        "errors": {
+          "tags": "Must be a list of available options"
+        }
+      }
+    }
+  ]
+}

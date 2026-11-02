@@ -1,0 +1,198 @@
+{
+  "name": "comparisons",
+  "definition": {
+    "id": "nps",
+    "title": "NPS",
+    "submit": {
+      "label": "Submit"
+    },
+    "fields": [
+      {
+        "key": "score",
+        "type": "radio",
+        "label": "Score",
+        "options": [
+          {
+            "value": "0",
+            "label": "0"
+          },
+          {
+            "value": "1",
+            "label": "1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "7"
+          },
+          {
+            "value": "8",
+            "label": "8"
+          },
+          {
+            "value": "9",
+            "label": "9"
+          },
+          {
+            "value": "10",
+            "label": "10"
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "problem",
+        "type": "textarea",
+        "label": "What went wrong?",
+        "show": [
+          {
+            "field": "score",
+            "lte": 6
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "favorite",
+        "type": "textarea",
+        "label": "What did you like?",
+        "show": [
+          {
+            "field": "score",
+            "gte": 9
+          }
+        ]
+      },
+      {
+        "key": "seats",
+        "type": "number",
+        "label": "Seats"
+      },
+      {
+        "key": "discount",
+        "type": "text",
+        "label": "Discount code",
+        "show": [
+          {
+            "field": "seats",
+            "gt": 10
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "detractor must explain",
+      "input": {
+        "values": {
+          "score": "3"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "score": "3"
+        },
+        "errors": {
+          "problem": "This field is required"
+        }
+      }
+    },
+    {
+      "name": "promoter answer kept, detractor answer dropped",
+      "input": {
+        "values": {
+          "score": "10",
+          "problem": "slow",
+          "favorite": "speed"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "score": "10",
+          "favorite": "speed"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "passive sees neither",
+      "input": {
+        "values": {
+          "score": "7",
+          "problem": "x",
+          "favorite": "y"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "score": "7"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "numeric string seats compare as numbers",
+      "input": {
+        "values": {
+          "score": "8",
+          "seats": "12",
+          "discount": "BULK"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "score": "8",
+          "seats": 12,
+          "discount": "BULK"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "small team gets no discount field",
+      "input": {
+        "values": {
+          "score": "8",
+          "seats": 3,
+          "discount": "BULK"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "score": "8",
+          "seats": 3
+        },
+        "errors": {}
+      }
+    }
+  ]
+}

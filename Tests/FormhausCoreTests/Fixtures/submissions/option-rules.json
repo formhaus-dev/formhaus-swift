@@ -1,0 +1,493 @@
+{
+  "name": "option-rules",
+  "definition": {
+    "formatVersion": "1.8",
+    "id": "workspace",
+    "title": "Workspace",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "seats",
+        "type": "number",
+        "label": "Seats"
+      },
+      {
+        "key": "plan",
+        "type": "radio",
+        "label": "Plan",
+        "options": [
+          {
+            "value": "starter",
+            "label": "Starter",
+            "description": "Up to 5 seats",
+            "disabled": [
+              {
+                "field": "seats",
+                "gt": 5
+              }
+            ]
+          },
+          {
+            "value": "pro",
+            "label": "Pro",
+            "description": "Any number of seats"
+          },
+          {
+            "value": "legacy",
+            "label": "Legacy",
+            "disabled": true
+          }
+        ]
+      },
+      {
+        "key": "addons",
+        "type": "multiselect",
+        "label": "Add-ons",
+        "options": [
+          {
+            "value": "sso",
+            "label": "SSO",
+            "disabled": [
+              {
+                "field": "plan",
+                "neq": "pro"
+              }
+            ]
+          },
+          {
+            "value": "audit",
+            "label": "Audit log"
+          }
+        ]
+      },
+      {
+        "key": "account",
+        "type": "text",
+        "label": "Account ID",
+        "readOnly": true,
+        "validation": {
+          "required": true,
+          "minLength": 5,
+          "pattern": "^acct-\\d+$"
+        }
+      },
+      {
+        "key": "note",
+        "type": "text",
+        "label": "Note",
+        "readOnly": [
+          {
+            "field": "seats",
+            "gt": 100
+          }
+        ],
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "key": "people",
+        "type": "group",
+        "label": "People",
+        "reorderable": true,
+        "fields": [
+          {
+            "key": "role",
+            "type": "select",
+            "label": "Role",
+            "options": [
+              {
+                "value": "admin",
+                "label": "Admin",
+                "disabled": true
+              },
+              {
+                "value": "member",
+                "label": "Member"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "rejects a newly chosen disabled option",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "legacy",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "legacy",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "errors": {
+          "plan": "Select one of the available options"
+        }
+      }
+    },
+    {
+      "name": "keeps a stored answer that holds a disabled option",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "legacy",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "skippedSteps": [],
+        "previousValues": {
+          "plan": "legacy"
+        }
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "legacy",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects an option disabled by its conditions",
+      "input": {
+        "values": {
+          "seats": 8,
+          "plan": "starter",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 8,
+          "plan": "starter",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "errors": {
+          "plan": "Select one of the available options"
+        }
+      }
+    },
+    {
+      "name": "accepts the option when its conditions do not match",
+      "input": {
+        "values": {
+          "seats": 5,
+          "plan": "starter",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 5,
+          "plan": "starter",
+          "note": "Hi",
+          "account": "acct-12"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects a disabled option in a list",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "starter",
+          "note": "Hi",
+          "addons": ["sso", "audit"],
+          "account": "acct-12"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "starter",
+          "note": "Hi",
+          "addons": ["sso", "audit"],
+          "account": "acct-12"
+        },
+        "errors": {
+          "addons": "Select one of the available options"
+        }
+      }
+    },
+    {
+      "name": "keeps disabled options a stored list holds",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "starter",
+          "note": "Hi",
+          "addons": ["sso", "audit"],
+          "account": "acct-12"
+        },
+        "skippedSteps": [],
+        "previousValues": {
+          "addons": ["sso"]
+        }
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "starter",
+          "note": "Hi",
+          "addons": ["sso", "audit"],
+          "account": "acct-12"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects a disabled option in a group item",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "people": [
+            {
+              "role": "member"
+            },
+            {
+              "role": "admin"
+            }
+          ],
+          "account": "acct-12"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "people": [
+            {
+              "role": "member"
+            },
+            {
+              "role": "admin"
+            }
+          ],
+          "account": "acct-12"
+        },
+        "errors": {
+          "people.1.role": "Select one of the available options"
+        }
+      }
+    },
+    {
+      "name": "keeps a disabled option a stored item of the group holds",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "people": [
+            {
+              "role": "member"
+            },
+            {
+              "role": "admin"
+            }
+          ],
+          "account": "acct-12"
+        },
+        "skippedSteps": [],
+        "previousValues": {
+          "people": [
+            {
+              "role": "admin"
+            },
+            {
+              "role": "member"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "people": [
+            {
+              "role": "member"
+            },
+            {
+              "role": "admin"
+            }
+          ],
+          "account": "acct-12"
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "rejects a read-only value that breaks its pattern",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-x"
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-x"
+        },
+        "errors": {
+          "account": "Invalid format"
+        }
+      }
+    },
+    {
+      "name": "drops a read-only value of the wrong type",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": 5
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi"
+        },
+        "errors": {
+          "account": "Must be text"
+        }
+      }
+    },
+    {
+      "name": "keeps a disabled option of a moved item",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-12",
+          "people": [
+            {
+              "role": "admin"
+            },
+            {
+              "role": "member"
+            },
+            {
+              "role": "member"
+            }
+          ]
+        },
+        "skippedSteps": [],
+        "previousValues": {
+          "people": [
+            {
+              "role": "member"
+            },
+            {
+              "role": "member"
+            },
+            {
+              "role": "admin"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-12",
+          "people": [
+            {
+              "role": "admin"
+            },
+            {
+              "role": "member"
+            },
+            {
+              "role": "member"
+            }
+          ]
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "counts each stored disabled option once",
+      "input": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-12",
+          "people": [
+            {
+              "role": "admin"
+            },
+            {
+              "role": "admin"
+            }
+          ]
+        },
+        "skippedSteps": [],
+        "previousValues": {
+          "people": [
+            {
+              "role": "admin"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "values": {
+          "seats": 3,
+          "plan": "pro",
+          "note": "Hi",
+          "account": "acct-12",
+          "people": [
+            {
+              "role": "admin"
+            },
+            {
+              "role": "admin"
+            }
+          ]
+        },
+        "errors": {
+          "people.1.role": "Select one of the available options"
+        }
+      }
+    }
+  ]
+}

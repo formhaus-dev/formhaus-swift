@@ -57,6 +57,7 @@ sync_file() {
 }
 
 sync_dir packages/core/fixtures/conformance "$root/Tests/FormhausCoreTests/Fixtures" conformance
+sync_dir packages/core/fixtures/submissions "$root/Tests/FormhausCoreTests/Fixtures" submissions
 sync_dir packages/core/tokens "$root/Tests/FormhausUITests/Fixtures" tokens
 sync_dir packages/core/locales "$root/Sources/FormhausCore/Resources" locales
 sync_file packages/core/__tests__/server/real-world-patterns.json "$root/Tests/FormhausCoreTests/Fixtures/real-world-patterns.json"

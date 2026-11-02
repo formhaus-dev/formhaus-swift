@@ -1,0 +1,198 @@
+{
+  "name": "skip-routes",
+  "definition": {
+    "id": "skip-routes",
+    "title": "Skip with routes",
+    "submit": {
+      "label": "Submit"
+    },
+    "steps": [
+      {
+        "id": "kind",
+        "title": "Kind",
+        "routes": [
+          {
+            "to": "company",
+            "show": [
+              {
+                "field": "kind",
+                "eq": "business"
+              }
+            ]
+          },
+          {
+            "to": "extras"
+          }
+        ],
+        "fields": [
+          {
+            "key": "kind",
+            "type": "radio",
+            "label": "Kind",
+            "options": [
+              {
+                "value": "personal",
+                "label": "Personal"
+              },
+              {
+                "value": "business",
+                "label": "Business"
+              }
+            ],
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "company",
+        "title": "Company",
+        "routes": [
+          {
+            "to": "extras"
+          }
+        ],
+        "fields": [
+          {
+            "key": "companyName",
+            "type": "text",
+            "label": "Company",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "extras",
+        "title": "Extras",
+        "skip": {
+          "label": "Skip"
+        },
+        "routes": [
+          {
+            "to": "bonus",
+            "show": [
+              {
+                "field": "referral",
+                "notEmpty": true
+              }
+            ]
+          },
+          {
+            "to": "legal"
+          }
+        ],
+        "fields": [
+          {
+            "key": "referral",
+            "type": "text",
+            "label": "Referral",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "bonus",
+        "title": "Bonus",
+        "routes": [
+          {
+            "to": "legal"
+          }
+        ],
+        "fields": [
+          {
+            "key": "bonusCode",
+            "type": "text",
+            "label": "Bonus code",
+            "validation": {
+              "required": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "legal",
+        "title": "Legal",
+        "fields": [
+          {
+            "key": "terms",
+            "type": "switch",
+            "label": "Terms",
+            "validation": {
+              "required": "Accept the terms"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "follows the route of a filled step",
+      "input": {
+        "values": {
+          "kind": "personal",
+          "companyName": "Acme",
+          "referral": "friend",
+          "bonusCode": "B1",
+          "terms": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "kind": "personal",
+          "referral": "friend",
+          "bonusCode": "B1",
+          "terms": true
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "a skipped step resets the value that picks the route",
+      "input": {
+        "values": {
+          "kind": "personal",
+          "companyName": "Acme",
+          "referral": "friend",
+          "bonusCode": "B1",
+          "terms": true
+        },
+        "skippedSteps": ["extras"]
+      },
+      "expected": {
+        "values": {
+          "kind": "personal",
+          "terms": true
+        },
+        "errors": {}
+      }
+    },
+    {
+      "name": "validates a skippable step that was not skipped",
+      "input": {
+        "values": {
+          "kind": "business",
+          "companyName": "Acme",
+          "terms": true
+        },
+        "skippedSteps": []
+      },
+      "expected": {
+        "values": {
+          "kind": "business",
+          "companyName": "Acme",
+          "terms": true
+        },
+        "errors": {
+          "referral": "This field is required"
+        }
+      }
+    }
+  ]
+}

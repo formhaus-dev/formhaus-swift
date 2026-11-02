@@ -25,7 +25,7 @@ scripts/lint.sh
 
 Behaviour is defined by the conformance suite of the [TypeScript core](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance). A behaviour change starts as a fixture in the formhaus repository. When the Swift engine disagrees with a fixture, fix the engine.
 
-The copy in `Tests/FormhausCoreTests/Fixtures/conformance` is synced, never edited:
+The copies in `Tests/FormhausCoreTests/Fixtures/conformance` and `Tests/FormhausCoreTests/Fixtures/submissions` are synced, never edited:
 
 ```sh
 scripts/sync-fixtures.sh <git-ref> [path-to-formhaus-repo]
