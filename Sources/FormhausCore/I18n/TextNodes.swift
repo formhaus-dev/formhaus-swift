@@ -6,7 +6,8 @@ enum NodeKind {
         case .form, .step, .section: ["title", "description"]
         case .group: ["label", "helperText", "itemLabel", "addLabel", "removeLabel"]
         case .field: ["label", "placeholder", "helperText"]
-        case .option, .action: ["label"]
+        case .option: ["label", "description"]
+        case .action: ["label"]
         case .validation: ["required", "minLength", "maxLength", "min", "max", "pattern", "matchField"]
         }
     }
@@ -16,7 +17,7 @@ let defaultLabelKeys = [
     "continue", "back", "stepOf", "errorSummary", "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved",
     "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel",
     "enlargeImage", "close", "clear", "done", "chooseFile", "required", "skip", "submit", "stepTitle", "stepErrors",
-    "fileCount", "or", "select",
+    "fileCount", "moveUp", "moveDown", "itemMoved", "or", "select",
 ]
 
 let defaultLabels: [String: String] = [
@@ -44,6 +45,9 @@ let defaultLabels: [String: String] = [
     "stepTitle": "Step {index}",
     "stepErrors": "Errors: {count}",
     "fileCount": "Files: {count}",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "itemMoved": "{item} moved to position {position}",
     "or": "or",
     "select": "Select",
 ]
@@ -106,7 +110,8 @@ func textNodes(_ definition: FormDefinition) -> [TextNode] {
 }
 
 func slotAddress(_ kind: NodeKind, _ address: [String], _ slot: String) -> [String] {
-    kind == .option ? address : address + [slot]
+    guard kind == .option else { return address + [slot] }
+    return slot == "description" ? address.dropLast(2) + ["optionDescriptions"] + address.suffix(1) : address
 }
 
 extension JSONValue {
