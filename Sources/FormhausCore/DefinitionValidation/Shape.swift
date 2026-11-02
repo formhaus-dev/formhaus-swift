@@ -76,6 +76,10 @@ private func condition(_ value: JSONObject, _ path: String) -> [DefinitionIssue]
     )
 }
 
+func ruleShape(_ value: JSONValue?, _ path: String) -> [DefinitionIssue] {
+    value?.boolValue != nil ? [] : list(value, path, "a condition object", condition)
+}
+
 private func conditionLists(_ value: JSONObject, _ path: String) -> [DefinitionIssue] {
     list(value["show"], "\(path)/show", "a condition object", condition)
         + list(value["showAny"], "\(path)/showAny", "a condition object", condition)

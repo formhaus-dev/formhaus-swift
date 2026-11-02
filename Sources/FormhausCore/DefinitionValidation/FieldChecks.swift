@@ -81,8 +81,26 @@ private func optionIssues(_ entry: FieldEntry) -> [DefinitionIssue] {
     }
 }
 
+private func newerIssues(_ entry: FieldEntry) -> [DefinitionIssue] {
+    let json = entry.field.json
+    let path = entry.path
+    var issues = ruleShape(json["readOnly"], "\(path)/readOnly")
+    if let reorderable = json["reorderable"], reorderable.boolValue == nil {
+        issues.append(error("invalid-type", "\(path)/reorderable", "\"reorderable\" must be true or false"))
+    }
+    for (index, item) in (json["options"]?.arrayValue ?? []).enumerated() {
+        guard let option = item.objectValue else { continue }
+        issues += ruleShape(option["disabled"], "\(path)/options/\(index)/disabled")
+        if let description = option["description"], description.stringValue == nil {
+            issues.append(error("invalid-type", "\(path)/options/\(index)/description", "\"description\" must be a string"))
+        }
+    }
+    return issues
+}
+
 func fieldIssues(_ context: CheckContext) -> [DefinitionIssue] {
-    context.entries.flatMap { ruleIssues(context, $0) + optionIssues($0) }
+    let newer = context.definition.optionRules
+    return context.entries.flatMap { ruleIssues(context, $0) + optionIssues($0) + (newer ? newerIssues($0) : []) }
 }
 
 private let queryHint = "Use { \"query\": \"<parameter name>\" } for a URL parameter"

@@ -21,7 +21,20 @@ private func setsOrder(_ field: FormField) -> Bool {
     field.json.has("randomize") || (field.options ?? []).contains { $0.json.has("pinned") }
 }
 
+private func newerProperty(_ entry: NodeEntry) -> String? {
+    let json = entry.node.json
+    if let key = ["readOnly", "reorderable"].first(where: json.has) { return "\(entry.path)/\(key)" }
+    for (index, option) in (json["options"]?.arrayValue ?? []).enumerated() {
+        guard let object = option.objectValue, let key = ["description", "disabled"].first(where: object.has) else { continue }
+        return "\(entry.path)/options/\(index)/\(key)"
+    }
+    return nil
+}
+
 private func outdated(_ context: CheckContext, _ minor: Double) -> (problem: String, needed: Int, hint: String)? {
+    if minor < 8, let path = context.nodes.lazy.compactMap(newerProperty).first {
+        return ("\(path) is set", 8, "Below 1.8 renderers and validation ignore it")
+    }
     if minor < 7, let entry = context.entries.first(where: { $0.field.type == "file" && $0.field.json.has("multiple") }) {
         return ("\(entry.path) sets \"multiple\"", 7, "Below 1.7 the field keeps one file")
     }
