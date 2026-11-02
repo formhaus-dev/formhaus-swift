@@ -22,7 +22,14 @@ public struct GroupItemContext: Identifiable {
     public let content: AnyView
     public let requestRemove: @MainActor () -> Void
     public let remove: @MainActor () -> Void
+    public let count: Int
+    public let canMove: Bool
+    public let moveUpLabel: String
+    public let moveDownLabel: String
+    public let move: @MainActor (Int) -> Void
     let removeFocus: FieldState
+    let moveUpFocus: FieldState
+    let moveDownFocus: FieldState
     let model: FormModel
     let fields: [FormField]
 }

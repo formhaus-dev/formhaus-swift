@@ -29,12 +29,14 @@ private struct FileListRow: View {
                 .formhausText(.body)
                 .fileNameWrapping()
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Button(action: { context.removeFile(at: index) }, label: { Text(verbatim: context.removeFileLabel) })
-                .buttonStyle(FormButtonStyle(.danger, compact: true))
-                .fileRemoveSizing(inset: tokens.spacing.s4)
-                .disabled(context.isLocked)
-                .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
-                .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
+            if !context.readOnly {
+                Button(action: { context.removeFile(at: index) }, label: { Text(verbatim: context.removeFileLabel) })
+                    .buttonStyle(FormButtonStyle(.danger, compact: true))
+                    .fileRemoveSizing(inset: tokens.spacing.s4)
+                    .disabled(context.isLocked)
+                    .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
+                    .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
+            }
         }
         .padding(.leading, typeSize.isAccessibilitySize ? 0 : tokens.spacing.s4)
         .frame(minHeight: tokens.controls.hitTarget)

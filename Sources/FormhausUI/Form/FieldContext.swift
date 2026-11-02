@@ -13,6 +13,8 @@ public struct FieldContext {
     public let disabled: Bool
     let focused: Bool
     public let options: [FieldOption]
+    public let readOnly: Bool
+    let rules: FieldRules
     public let model: FormModel
     public let label: String
     public let placeholder: String?
@@ -41,10 +43,17 @@ public struct FieldContext {
         disabled = model.disabled
         focused = state.hasFocus
         let loaded = model.options(for: key)
-        options = field.randomize ? model.engine.orderOptions(key, options: loaded) : loaded ?? field.options ?? []
+        let options = field.randomize ? model.engine.orderOptions(key, options: loaded) : loaded ?? field.options ?? []
+        self.options = options
+        model.track(model.engine.ruleDependencies(field, options: options, at: key))
+        rules = model.engine.fieldRules(field, options: options, at: key)
+        readOnly = model.options.readOnly || rules.readOnly
     }
 
     public var isItem: Bool { key != field.key }
+    public func isDisabled(_ index: Int) -> Bool { rules.isDisabled(index) }
+    public func isDisabled(value: String) -> Bool { options.firstIndex { $0.value == value }.map(isDisabled) ?? false }
+    public func isLocked(_ index: Int, selected: Bool) -> Bool { isDisabled(index) || readOnly && !selected }
     public var isInvalid: Bool { error?.isEmpty == false }
     public var isLocked: Bool { loading || disabled && !focused }
     public var accessibilityName: String {
@@ -62,10 +71,12 @@ public struct FieldContext {
     var pendingText: String { displayText(model.pendingValue(forKey: key)) }
 
     public func setValue(_ value: JSONValue?) {
+        guard !readOnly else { return }
         model.setValue(value, forKey: key)
     }
 
     public func commit(_ value: JSONValue?) {
+        guard !readOnly else { return }
         if advancesOnCommit {
             model.commitValue(value, forKey: key)
         } else {

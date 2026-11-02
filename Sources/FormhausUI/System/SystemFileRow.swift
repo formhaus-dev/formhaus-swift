@@ -9,7 +9,7 @@ struct SystemFileRow: View {
     var body: some View {
         SystemRow(context: context) {
             Button {
-                picking = true
+                picking = !context.readOnly
             } label: {
                 FileRowStack(spacing: nil) {
                     SystemRowLabel(context: context)
@@ -28,7 +28,7 @@ struct SystemFileRow: View {
             .accessibilityHint(Text(verbatim: context.pickerHint ?? ""))
             .formhausFocus(context, $focused)
             .swipeActions {
-                if !context.text.isEmpty, !context.isRequired {
+                if !context.text.isEmpty, !context.isRequired, !context.readOnly {
                     Button(context.text(forLabel: "clear"), role: .destructive) { context.replaceFile(with: nil) }
                 }
             }
@@ -64,15 +64,17 @@ private struct SystemFileItem: View {
                 }
                 Spacer(minLength: 12)
             }
-            Button(role: .destructive) {
-                context.removeFile(at: index)
-            } label: {
-                Text(verbatim: context.removeFileLabel).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+            if !context.readOnly {
+                Button(role: .destructive) {
+                    context.removeFile(at: index)
+                } label: {
+                    Text(verbatim: context.removeFileLabel).frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .fileRemoveSizing()
+                .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
+                .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
             }
-            .buttonStyle(.borderless)
-            .fileRemoveSizing()
-            .accessibilityLabel(Text(verbatim: context.removeFileName(name)))
-            .spokenFocus(context.removeFocus(index), model: context.model, disabled: context.isLocked, $focused)
         }
         .frame(minHeight: 44)
         .accessibilityElement(children: .contain)

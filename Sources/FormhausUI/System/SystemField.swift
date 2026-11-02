@@ -7,6 +7,8 @@ struct SystemField: View {
 
     var body: some View {
         switch context.field.type {
+        case "textarea" where context.readOnly: SystemReadOnlyBlock(context: context)
+        case _ where showsReadOnlyValue(context): SystemReadOnlyRow(context: context)
         case "text", "email", "phone", "number", "password": SystemTextRow(context: context)
         case "autocomplete": SystemTextRow(context: context, suggests: true)
         case "textarea": SystemTextArea(context: context)

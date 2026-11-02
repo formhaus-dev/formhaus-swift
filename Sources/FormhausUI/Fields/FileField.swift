@@ -13,7 +13,9 @@ public struct FileField: View {
         if context.field.isFileList {
             FieldShell(context) {
                 VStack(alignment: .leading, spacing: tokens.spacing.s3) {
-                    PickerControl(context: context, active: picking, clearable: false, cleared: .null, label: summary) { picking = true }
+                    PickerControl(context: context, active: picking, clearable: false, cleared: .null, label: summary) {
+                        picking = !context.readOnly
+                    }
                     FileList(context: context)
                     if let notice = context.state.notice {
                         Text(verbatim: notice).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
@@ -22,8 +24,9 @@ public struct FileField: View {
             }
             .filePicker(context, isPresented: $picking)
         } else {
-            PickerInput(context: context, active: picking, clearable: context.hasFile, cleared: .null, label: summary) {
-                picking = true
+            PickerInput(context: context, active: picking, clearable: context.hasFile && !context.readOnly, cleared: .null, label: summary)
+            {
+                picking = !context.readOnly
             }
             .filePicker(context, isPresented: $picking)
         }

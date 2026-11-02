@@ -38,6 +38,7 @@ struct BuiltInField: View {
 
     var body: some View {
         switch context.field.type {
+        case _ where showsReadOnlyValue(context): ReadOnlyField(context: context)
         case "text", "email", "phone", "number", "password": TextInputField(context)
         case "textarea": TextAreaField(context)
         case "autocomplete": AutocompleteField(context)
