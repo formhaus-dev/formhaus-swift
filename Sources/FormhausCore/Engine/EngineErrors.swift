@@ -1,11 +1,21 @@
-func errorKeys(_ nodes: [FormNode], _ errors: FieldErrors, _ values: JSONObject) -> [String] {
+private func keysOf(_ fields: [FormField], _ errors: FieldErrors, _ values: JSONObject, hidden: Bool) -> [String] {
     if errors.isEmpty { return [] }
-    return valueFields(nodes).flatMap { field -> [String] in
-        let own = field.type != "hidden" && errors[field.key] != nil ? [field.key] : []
-        guard field.isGroup else { return own }
-        let paths = itemsOf(values[field.key]).indices.flatMap { index in field.items.map { itemPath(field.key, index, $0.key) } }
-        return own + paths.filter { errors[$0] != nil }
+    let own = { (field: FormField) in (field.type == "hidden") == hidden }
+    return fields.flatMap { field -> [String] in
+        let key = own(field) && errors[field.key] != nil ? [field.key] : []
+        guard field.isGroup else { return key }
+        let items = field.items.filter(own)
+        let paths = itemsOf(values[field.key]).indices.flatMap { index in items.map { itemPath(field.key, index, $0.key) } }
+        return key + paths.filter { errors[$0] != nil }
     }
+}
+
+func errorKeys(_ nodes: [FormNode], _ errors: FieldErrors, _ values: JSONObject) -> [String] {
+    keysOf(valueFields(nodes), errors, values, hidden: false)
+}
+
+func hiddenErrorKeys(_ fields: [FormField], _ errors: FieldErrors, _ values: JSONObject) -> [String] {
+    keysOf(fields, errors, values, hidden: true)
 }
 
 extension EngineCore {
@@ -86,7 +96,7 @@ extension EngineCore {
     }
 
     func clearPassedErrors(_ nodes: [FormNode]) {
-        let hidden = valueFields(nodes).filter { $0.type == "hidden" && errors[$0.key] != nil }.map(\.key)
+        let hidden = hiddenErrorKeys(valueFields(nodes), errors, values.json)
         for key in errorKeys(nodes, errors, values.json) + hidden { clearError(key) }
     }
 

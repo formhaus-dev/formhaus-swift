@@ -121,12 +121,12 @@ public final class FormEngine {
         let errors = core.errors
         guard !errors.isEmpty else { return core.topLevelErrors }
         let visibility = core.visibility
-        let hidden = visibility.allFields.compactMap { field -> String? in
-            guard field.type == "hidden", let message = errors[field.key], !message.isEmpty else { return nil }
-            let active = visibility.activeField(field.key, core.values.json) ?? field
-            return active.ordinal == field.ordinal ? message : nil
+        let values = core.values.json
+        let fields = visibility.allFields.filter { field in
+            (field.type == "hidden" || field.isGroup) && (visibility.activeField(field.key, values) ?? field).ordinal == field.ordinal
         }
-        return core.topLevelErrors + hidden
+        return core.topLevelErrors
+            + hiddenErrorKeys(fields, errors, values).compactMap { key in errors[key].flatMap { $0.isEmpty ? nil : $0 } }
     }
 
     public var stepErrors: StringMap<[String]> {

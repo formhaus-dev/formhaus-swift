@@ -14,10 +14,11 @@ extension VisibilityState {
             let inner = itemScope(fields, .object(entry), scope)
             let shown = fields.filter { isVisible($0, inner, limits: limits) }
             let visible = Set(shown.map(\.ordinal))
+            for field in fields where !visible.contains(field.ordinal) { starts.hideItem(id, field.key) }
             let hidden = fields.filter { field in !visible.contains(field.ordinal) && entry[field.key] != nil }
             var restored = JSONObject()
-            for field in shown where entry[field.key] == nil {
-                if let value = starts.itemStartValue(id, field.key) { restored[field.key] = value }
+            for field in shown where entry[field.key] == nil && starts.revealItem(id, field.key) {
+                if let value = starts.itemStartValue(id, field) { restored[field.key] = value }
             }
             if hidden.isEmpty && restored.isEmpty { return ReconciledItem(item: .object(entry), cleared: cleared, stable: true) }
             let previous = entry
