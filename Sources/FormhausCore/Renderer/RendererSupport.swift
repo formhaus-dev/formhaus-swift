@@ -1,7 +1,9 @@
 extension FieldOption {
-    public init(value: String, label: String, image: String? = nil) {
+    public init(value: String, label: String, image: String? = nil, description: String? = nil, disabled: Bool = false) {
         var json: JSONObject = ["value": .string(value), "label": .string(label)]
         if let image { json["image"] = .string(image) }
+        if let description { json["description"] = .string(description) }
+        if disabled { json["disabled"] = .bool(true) }
         self.init(json: json)
     }
 }
