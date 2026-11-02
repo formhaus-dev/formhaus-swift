@@ -37,7 +37,7 @@ public struct FormStep: Sendable, Conditional, NodeIdentity {
 }
 
 public struct FormDefinition: Sendable {
-    public static let supportedFormatVersion = "1.7"
+    public static let supportedFormatVersion = "1.8"
 
     let json: JSONObject
     public let id: String
@@ -47,12 +47,14 @@ public struct FormDefinition: Sendable {
     public let steps: [FormStep]?
     let recallsAnswers: Bool
     let listsFiles: Bool
+    let optionRules: Bool
 
     init(unchecked json: JSONObject) {
         self.json = json
         recallsAnswers = formatAtLeast(json["formatVersion"], 5)
         listsFiles = formatAtLeast(json["formatVersion"], 7)
-        var nodes = NodeBuilder(listsFiles: listsFiles)
+        optionRules = formatAtLeast(json["formatVersion"], 8)
+        var nodes = NodeBuilder(listsFiles: listsFiles, optionRules: optionRules)
         id = json["id"]?.stringValue ?? ""
         submit = FormAction(json: json["submit"]?.objectValue ?? JSONObject())
         cancel = json["cancel"]?.objectValue.map(FormAction.init(json:))

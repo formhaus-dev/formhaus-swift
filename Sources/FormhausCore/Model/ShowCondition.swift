@@ -77,3 +77,35 @@ public enum StepButton: Sendable, Hashable {
         return nil
     }
 }
+
+public enum ConditionRule: Sendable, Hashable {
+    case fixed(Bool)
+    case conditions([ShowCondition])
+
+    init?(_ value: JSONValue?) {
+        switch value {
+        case nil: return nil
+        case .bool(let flag)?: self = .fixed(flag)
+        case .array(let items)?:
+            let list = items.compactMap { $0.objectValue.map(ShowCondition.init(json:)) }
+            self = list.isEmpty || list.count != items.count ? .fixed(false) : .conditions(list)
+        default: self = .fixed(false)
+        }
+    }
+
+    public var isConditional: Bool {
+        if case .conditions = self { return true }
+        return false
+    }
+
+    public func isMet(_ values: JSONObject) -> Bool {
+        isMet(values, limits: .standard)
+    }
+
+    func isMet(_ values: JSONObject, limits: ListLimits) -> Bool {
+        switch self {
+        case .fixed(let flag): flag
+        case .conditions(let list): list.allSatisfy { evaluateCondition($0, values, limits: limits) }
+        }
+    }
+}
