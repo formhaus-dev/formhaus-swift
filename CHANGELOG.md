@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.0
 
 ### FormhausCore
 
@@ -10,7 +10,7 @@
 - New `source-in-group` error for a `source` on a hidden field in a group.
 - A field in a group item written with `setValue` gets its `defaultValue` when it is shown again.
 - `DirtyTracker` counts `NaN` as equal to `NaN`.
-- `ErrorEntry.id` matches the field ids of the TypeScript core, which no longer collide with the helper, error, label, option or group button ids of another field.
+- `ErrorEntry.id` no longer collides with the helper, error, label, option or group button ids of another field.
 - New `readOnly` label in every bundled locale.
 - `FormDefinition.supportedFormatVersion` is `"1.9"`.
 
