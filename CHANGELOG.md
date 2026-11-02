@@ -6,10 +6,23 @@
 
 - New `DirtyTracker` follows an engine and lists unsaved changes in `dirtyKeys` and `isDirty`. `markClean()` takes the current values as the baseline.
 - New `resetCount` on `FormEngine`.
+- Format 1.8: option `description` and `disabled`, field `readOnly` and group `reorderable`. Below 1.8 they are ignored and reported as `unknown-property`.
+- A disabled option fails validation with the `option` message unless the stored answer holds it.
+- New `previousValues` option on `ValidateOptions` and `SubmissionOptions` holds stored answers.
+- New `moveItem(_:from:to:)` on `FormEngine`.
+- New `default-disabled-option` warning.
+- `disabled-not-applicable` also covers `disabled` on an option of a field other than `radio`, `select` and `multiselect`.
+- New `moveUp`, `moveDown` and `itemMoved` labels.
+- `FormDefinition.supportedFormatVersion` is `"1.8"`.
 
 ### FormhausUI
 
 - New `isDirty`, `dirtyKeys` and `markClean()` on `FormModel`.
+- Option descriptions show under the option label and VoiceOver reads them as hints.
+- Disabled options cannot be picked.
+- Read-only fields stay focusable and ignore changes.
+- New `readOnly` option on `FormRendererOptions`.
+- Reorderable groups show Move up and Move down buttons on each item.
 
 ## 0.6.4
 

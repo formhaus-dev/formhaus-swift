@@ -175,6 +175,23 @@ A field goes under an option when its only condition is `eq` on the `radio` righ
 
 The `.system` set draws the block under inline choice lists. Fields of menu and pushed pickers, of choices with `layout: "inline"`, picture options or `optionsFrom`, of matrix sections and of group items stay in place, and so do fields of a type you replace with `.field(_:_:)`. See [Show a field under its option](https://formhaus.dev/guide/conditions#show-a-field-under-its-option).
 
+## Read-only fields and disabled options
+
+From format 1.8, `readOnly` shows a value the user cannot change, and an option can have a `description` and be `disabled`, always with `true` or while its conditions match:
+
+```json
+{ "key": "plan", "type": "radio", "label": "Plan", "options": [
+  { "value": "starter", "label": "Starter", "description": "Up to 5 seats", "disabled": [{ "field": "seats", "gt": 5 }] },
+  { "value": "pro", "label": "Pro" }
+] }
+```
+
+A read-only field stays focusable, its text can be copied, and VoiceOver reads it as static text. It is validated like any other field. A disabled option cannot be picked and fails validation with the `option` message, unless the stored answer already holds it. `FormRendererOptions(readOnly: true)` shows the whole form read-only and hides the Add, Remove and Move buttons of groups.
+
+## Reorder group items
+
+A group with `"reorderable": true` gets Move up and Move down buttons on each item. A move keeps the values, errors and loading state of the item, moves VoiceOver focus with it and is announced with the `itemMoved` label. In code, call `engine.moveItem(key, from:to:)`.
+
 ## Validate on the server
 
 `validateSubmission` checks the values against the same definition, with the visibility, steps and routes of the client:
@@ -192,7 +209,7 @@ if result.errors.isEmpty {
 }
 ```
 
-The body is the values object. `result.values` holds the values of the active path, and `result.errors` maps keys to messages. Pass skipped steps and custom validators in `SubmissionOptions`. `checkDefinition(json)` lists the issues of a definition before you use it.
+The body is the values object. `result.values` holds the values of the active path, and `result.errors` maps keys to messages. Pass skipped steps and custom validators in `SubmissionOptions`, and the stored record as `previousValues` so that a disabled option it holds stays valid. `checkDefinition(json)` lists the issues of a definition before you use it.
 
 `validateSubmission` runs every pattern on values of up to 10,000 characters, at most 10,000 pattern tests per call. `checkDefinition` reports patterns that can take very long on some values as `slow-pattern` warnings.
 
@@ -379,7 +396,7 @@ With ids on, the `.system` set wraps each field row in an accessibility containe
 | 0.1.3 | 1.0.0 | 1.5 |
 | 0.1.0 to 0.1.2 | 0.22.0 | 1.5 |
 
-Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 87 definition files with their issues, value cases, recall cases, option order vectors and revealed fields, and 477 engine scenarios. Every scenario runs through `FormEngine` as its own test.
+Each release pins a tag of [@formhaus/core](https://github.com/formhaus-dev/formhaus) and runs its [conformance suite](https://github.com/formhaus-dev/formhaus/tree/main/packages/core/fixtures/conformance): 93 definition files with their issues, value cases, recall cases, option order vectors and revealed fields, and 511 engine scenarios. Every scenario runs through `FormEngine` as its own test.
 
 ## Performance
 
