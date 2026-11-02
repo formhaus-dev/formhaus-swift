@@ -45,8 +45,9 @@ struct SystemPickerRow: View {
     private var menu: some View {
         Menu {
             Picker(selection: Binding(get: { context.text }, set: { choose($0) })) {
-                ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
+                ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                     Text(verbatim: option.label ?? option.value ?? "").tag(option.value ?? "")
+                        .disabled(context.isLocked(index, selected: option.value == context.text))
                 }
             } label: {
                 Text(verbatim: context.label)
@@ -63,10 +64,12 @@ struct SystemPickerRow: View {
             LabeledContent {
                 VStack(alignment: .leading, spacing: 6) {
                     let selected = Set(ChoiceSelection(context: context).values)
-                    ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
+                    ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                         let value = option.value ?? ""
                         Toggle(option.label ?? value, isOn: Binding(get: { selected.contains(value) }, set: { _ in choose(value) }))
                             .toggleStyle(.checkbox)
+                            .disabled(context.isLocked(index, selected: selected.contains(value)))
+                            .help(option.description ?? "")
                             .formhausTestId(context.optionTestId(value))
                     }
                 }
@@ -121,12 +124,13 @@ private struct SystemValueRow: View {
             let selected = Set(selection.values)
             Form {
                 Section {
-                    ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
+                    ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                         let value = option.value ?? ""
-                        SystemCheckRow(label: option.label ?? value, checked: selected.contains(value)) {
+                        SystemCheckRow(label: option.label ?? value, description: option.description, checked: selected.contains(value)) {
                             selection.choose(value)
                             if !selection.multiple { dismiss() }
                         }
+                        .disabled(context.isLocked(index, selected: selected.contains(value)))
                         .formhausTestId(context.optionTestId(value))
                     }
                 } footer: {

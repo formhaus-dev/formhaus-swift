@@ -28,18 +28,20 @@ struct ChoiceCard: View, Equatable {
 
     private var card: some View {
         let label = option.label ?? option.value ?? ""
+        let notes = [option.description, hint].compactMap { $0?.isEmpty == false ? $0 : nil }
         return Button(action: choose) {
             VStack(alignment: .leading, spacing: tokens.spacing.s3) {
                 if picture, let image = option.safeImage { OptionImage(key: ImageKey(image, digest: option.imageKey)) }
-                OptionRow(shape, label: label, selected: selected)
+                OptionRow(shape, label: label, description: option.description, selected: selected)
             }
             .padding(.top, picture ? tokens.spacing.s3 - tokens.spacing.s5 : 0)
             .frame(maxHeight: picture ? .infinity : nil, alignment: .topLeading)
         }
         .buttonStyle(OptionCardStyle(selected: selected, invalid: invalid))
         .focusEffectDisabled()
+        .accessibilityLabel(Text(verbatim: label))
         .accessibilityAddTraits(selected ? .isSelected : [])
-        .accessibilityHint(Text(verbatim: hint))
+        .accessibilityHint(Text(verbatim: notes.joined(separator: ", ")))
         .formhausTestId(testId)
         .overlay(alignment: .topTrailing) {
             if picture, option.safeImage != nil {

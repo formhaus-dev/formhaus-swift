@@ -71,12 +71,14 @@ public struct OptionRow: View {
     @Environment(\.formhausTokens) private var tokens
     let shape: IndicatorShape
     let label: String
+    let description: String?
     let selected: Bool
     let invalid: Bool
 
-    public init(_ shape: IndicatorShape, label: String, selected: Bool, invalid: Bool = false) {
+    public init(_ shape: IndicatorShape, label: String, description: String? = nil, selected: Bool, invalid: Bool = false) {
         self.shape = shape
         self.label = label
+        self.description = description
         self.selected = selected
         self.invalid = invalid
     }
@@ -86,8 +88,13 @@ public struct OptionRow: View {
         HStack(alignment: .firstTextBaseline, spacing: tokens.spacing.s5) {
             ChoiceIndicator(shape, selected: selected, invalid: invalid)
                 .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + offset }
-            Text(verbatim: label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: tokens.spacing.s1) {
+                Text(verbatim: label).formhausText(.option).fixedSize(horizontal: false, vertical: true)
+                if let description, !description.isEmpty {
+                    Text(verbatim: description).formhausText(.helper).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

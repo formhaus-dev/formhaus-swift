@@ -11,11 +11,12 @@ struct SystemPictures: View {
         let selected = Set(selection.values)
         SystemBlock(context: context) {
             LazyVGrid(columns: columns, alignment: .center, spacing: 16) {
-                ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
+                ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                     let value = option.value ?? ""
                     SystemPictureTile(option: option, selected: selected.contains(value)) {
                         selection.choose(value)
                     }
+                    .disabled(context.isLocked(index, selected: selected.contains(value)))
                     .formhausTestId(context.optionTestId(value))
                 }
             }

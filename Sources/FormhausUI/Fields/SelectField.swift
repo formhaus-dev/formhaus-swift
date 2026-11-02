@@ -32,8 +32,9 @@ public struct SelectField: View {
     private var menu: some View {
         Menu {
             Picker(selection: selection) {
-                ForEach(Array(context.options.enumerated()), id: \.offset) { _, option in
+                ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                     Text(verbatim: option.label ?? option.value ?? "").tag(option.value ?? "")
+                        .disabled(context.isLocked(index, selected: option.value == context.text))
                 }
             } label: {
                 Text(verbatim: context.accessibilityName)
@@ -63,7 +64,7 @@ public struct SelectField: View {
     }
 
     private var selection: Binding<String> {
-        Binding(get: { context.text }, set: { context.setValue(.string($0)) })
+        Binding(get: { context.text }, set: { if !context.isDisabled(value: $0) { context.setValue(.string($0)) } })
     }
 }
 

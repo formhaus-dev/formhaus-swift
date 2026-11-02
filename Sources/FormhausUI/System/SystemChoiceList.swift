@@ -17,10 +17,13 @@ struct SystemChoiceList: View {
         SystemBlock(context: context, anchored: false, rows: true) {
             ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                 let value = option.value ?? ""
-                let row = SystemCheckRow(label: option.label ?? value, checked: selected.contains(value)) { selection.choose(value) }
-                    .formhausTestId(context.optionTestId(value))
-                    .disabled(context.isLocked)
-                    .accessibilityFocused($spoken, equals: index)
+                let checked = selected.contains(value)
+                let row = SystemCheckRow(label: option.label ?? value, description: option.description, checked: checked) {
+                    selection.choose(value)
+                }
+                .formhausTestId(context.optionTestId(value))
+                .disabled(context.isLocked || context.isLocked(index, selected: checked))
+                .accessibilityFocused($spoken, equals: index)
                 if index == 0 {
                     let id = nested ? "\(context.key)/options" : context.key
                     row.scrollVisibility(id).id(id)
@@ -44,15 +47,23 @@ func focusedOption(_ context: FieldContext, _ selected: Set<String>) -> Int {
 }
 
 struct SystemCheckRow: View {
+    @Environment(\.isEnabled) private var enabled
     let label: String
+    var description: String?
     let checked: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Text(verbatim: label).foregroundStyle(Color.primary).multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: label).foregroundStyle(enabled ? Color.primary : systemSecondary).multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let description, !description.isEmpty {
+                        Text(verbatim: description).font(.footnote).systemSecondaryText().multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
                 Spacer(minLength: 12)
                 let mark = Image(systemName: "checkmark").fontWeight(.semibold)
                 mark.hidden().overlay { Rectangle().fill(.tint).mask { mark }.opacity(checked ? 1 : 0) }
@@ -61,6 +72,9 @@ struct SystemCheckRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(checked ? .isSelected : [])
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: label))
+        .accessibilityHint(Text(verbatim: description ?? ""))
+        .accessibilityAddTraits(checked ? [.isButton, .isSelected] : .isButton)
     }
 }

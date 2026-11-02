@@ -29,7 +29,7 @@ private struct MatrixRowBody: View {
             if wide {
                 MatrixLine(count: columns.count) {
                     heading.padding(.vertical, tokens.spacing.s5).padding(.trailing, tokens.spacing.s5)
-                    ForEach(Array(columns.enumerated()), id: \.offset) { _, option in cell(option, caption: false) }
+                    ForEach(Array(columns.enumerated()), id: \.offset) { index, option in cell(option, index, caption: false) }
                 }
             } else {
                 VStack(alignment: .leading, spacing: tokens.spacing.s3) {
@@ -39,7 +39,7 @@ private struct MatrixRowBody: View {
                         spacing: tokens.spacing.s1,
                         fraction: 1, balanced: true
                     ) {
-                        ForEach(Array(columns.enumerated()), id: \.offset) { _, option in cell(option, caption: true) }
+                        ForEach(Array(columns.enumerated()), id: \.offset) { index, option in cell(option, index, caption: true) }
                     }
                 }
                 .padding(.bottom, tokens.spacing.s5)
@@ -67,7 +67,7 @@ private struct MatrixRowBody: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func cell(_ option: FieldOption, caption: Bool) -> some View {
+    private func cell(_ option: FieldOption, _ index: Int, caption: Bool) -> some View {
         let value = option.value ?? ""
         let selected = isSelected(value)
         return Button {
@@ -85,6 +85,7 @@ private struct MatrixRowBody: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(context.isLocked(index, selected: selected))
         .accessibilityLabel(Text(verbatim: option.label ?? value))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .formhausTestId(context.optionTestId(value))

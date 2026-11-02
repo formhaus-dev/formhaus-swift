@@ -48,6 +48,7 @@ public struct ChoiceSelection {
     }
 
     public func choose(_ value: String) {
+        if context.isDisabled(value: value) { return }
         guard multiple else {
             context.commit(.string(value))
             return
@@ -135,7 +136,7 @@ struct ChoiceList: View {
             zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: image) }
         )
         .equatable()
-        .disabled(context.isLocked)
+        .disabled(context.isLocked || context.isLocked(index, selected: selected.contains(value)))
         .focused($focused, equals: index)
         .accessibilityFocused($spoken, equals: index)
     }
