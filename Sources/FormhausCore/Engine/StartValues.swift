@@ -1,5 +1,6 @@
 struct StartValues {
     private var seeds = Values()
+    private var stored: JSONObject?
     private var remembering = true
     private var writeWatch: (id: Int, keys: KeySet)?
     private var memory = StringMap<ValueSlot>(insertionOrder: true)
@@ -86,6 +87,12 @@ struct StartValues {
             }
         }
     }
+
+    mutating func storeValues(_ values: JSONObject) {
+        stored = values
+    }
+
+    var previousValues: JSONObject { stored ?? seeds.json }
 
     func startValue(_ field: FormField) -> ValueSlot {
         if field.type != "hidden", let remembered = memory[field.key] { return remembered }

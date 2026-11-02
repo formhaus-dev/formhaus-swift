@@ -3,22 +3,26 @@ public struct SubmissionOptions: Sendable {
     public var validators: Validators
     public var messages: MessageSource?
     public var hiddenValues: HiddenValues
+    public var previousValues: JSONValue?
 
     public init(
-        skippedSteps: [String]? = nil, validators: Validators = [:], messages: MessageSource? = nil, hiddenValues: HiddenValues = .clear
+        skippedSteps: [String]? = nil, validators: Validators = [:], messages: MessageSource? = nil, hiddenValues: HiddenValues = .clear,
+        previousValues: JSONValue? = nil
     ) {
         self.init(
             skippedSteps: skippedSteps.map { .array($0.map(JSONValue.string)) }, validators: validators, messages: messages,
-            hiddenValues: hiddenValues)
+            hiddenValues: hiddenValues, previousValues: previousValues)
     }
 
     public init(
-        skippedSteps: JSONValue?, validators: Validators = [:], messages: MessageSource? = nil, hiddenValues: HiddenValues = .clear
+        skippedSteps: JSONValue?, validators: Validators = [:], messages: MessageSource? = nil, hiddenValues: HiddenValues = .clear,
+        previousValues: JSONValue? = nil
     ) {
         self.skippedSteps = skippedSteps
         self.validators = validators
         self.messages = messages
         self.hiddenValues = hiddenValues
+        self.previousValues = previousValues
     }
 }
 
@@ -67,7 +71,8 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
     let items = blankItems(&resolved, fields, resolve)
     let validators = ignoredValidators(fields, options.validators)
     let engine = EngineCore(definition: definition, values: resolved.values, validators: validators, messages: .function(messages))
-    engine.loadSubmitted(resolved.values)
+    let previous = options.previousValues?.objectValue ?? JSONObject()
+    engine.loadSubmitted(resolved.values, previous: previous)
     applySkips(engine, options.skippedSteps)
     let skipped = engine.skipped.flatMap(\.keys)
     let invalid = resolved.invalid
@@ -83,7 +88,9 @@ private func prepare(_ definition: FormDefinition, _ fields: [FormField], _ valu
         for (key, error) in items where submitted.has(visibility.owner(key)) && visibility.activeItem(key, engine.values.json) != nil {
             errors[key] = error
         }
-        if options.hiddenValues == .keep { keepHidden(fields, resolved, &submitted, skipped, validators) }
+        if options.hiddenValues == .keep {
+            keepHidden(fields, resolved, &submitted, skipped, ValidateOptions(validators: validators, previousValues: previous))
+        }
         return SubmissionResult(values: submitted, errors: errors)
     }
     return Prepared(engine: engine, skipped: skipped, check: check)
