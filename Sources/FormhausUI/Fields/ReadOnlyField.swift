@@ -14,6 +14,10 @@ extension FieldContext {
         switch field.type {
         case "password": return String(repeating: "•", count: text.count)
         case "select", "autocomplete": return options.first { $0.value == text }?.label ?? text
+        case "radio", "multiselect":
+            let selected = Set(ChoiceSelection.values(value, multiple: field.type == "multiselect"))
+            let labels = options.filter { selected.contains($0.value ?? "") }.map { $0.label ?? $0.value ?? "" }
+            return labels.formatted(.list(type: .and).locale(locale))
         case "date", "time", "datetime": return DateKind(field.type).display(text, dateStyle: .long, locale: locale) ?? text
         default: return text
         }
@@ -37,6 +41,7 @@ struct ReadOnlyField: View {
                 LoadingIndicator(visible: context.loading)
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: false)
+            .environment(\.formhausReadOnly, true)
             .readOnlyValue(context, text, $focused)
         }
     }
@@ -87,7 +92,50 @@ extension View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(Text(verbatim: text))
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.hintText))
             .accessibilityAddTraits(.isStaticText)
+    }
+}
+
+extension EnvironmentValues {
+    @Entry var formhausReadOnly = false
+}
+
+private struct ReadOnlyControl: ViewModifier {
+    let active: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .environment(\.formhausReadOnly, active)
+            .allowsHitTesting(!active)
+            .accessibilityRemoveTraits(active ? [.isButton, .isToggle] : [])
+            .accessibilityAddTraits(active ? .isStaticText : [])
+    }
+}
+
+private struct Adjustable: ViewModifier {
+    let active: Bool
+    let adjust: (AccessibilityAdjustmentDirection) -> Void
+
+    func body(content: Content) -> some View {
+        if active { content.accessibilityAdjustableAction(adjust) } else { content }
+    }
+}
+
+extension View {
+    func readOnlyControl(_ active: Bool) -> some View {
+        modifier(ReadOnlyControl(active: active))
+    }
+
+    func adjustable(unless readOnly: Bool, _ adjust: @escaping (AccessibilityAdjustmentDirection) -> Void) -> some View {
+        modifier(Adjustable(active: !readOnly, adjust: adjust))
+    }
+}
+
+extension FieldContext {
+    var readOnlyNote: String? { readOnly ? text(forLabel: "readOnly") : nil }
+
+    func hint(_ parts: String?...) -> String {
+        (parts + [readOnlyNote]).compactMap { $0?.isEmpty == false ? $0 : nil }.joined(separator: ", ")
     }
 }

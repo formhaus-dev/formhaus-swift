@@ -18,11 +18,14 @@ struct SystemChoiceList: View {
             ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                 let value = option.value ?? ""
                 let checked = selected.contains(value)
-                let row = SystemCheckRow(label: option.label ?? value, description: option.description, checked: checked) {
+                let row = SystemCheckRow(
+                    label: option.label ?? value, description: option.description, hint: context.hint(option.description), checked: checked
+                ) {
                     selection.choose(value)
                 }
                 .formhausTestId(context.optionTestId(value))
-                .disabled(context.isLocked || context.isLocked(index, selected: checked))
+                .disabled(context.isLocked || context.isDisabled(index))
+                .readOnlyControl(context.readOnly)
                 .accessibilityFocused($spoken, equals: index)
                 if index == 0 {
                     let id = nested ? "\(context.key)/options" : context.key
@@ -50,6 +53,7 @@ struct SystemCheckRow: View {
     @Environment(\.isEnabled) private var enabled
     let label: String
     var description: String?
+    var hint: String?
     let checked: Bool
     let action: () -> Void
 
@@ -74,7 +78,7 @@ struct SystemCheckRow: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: label))
-        .accessibilityHint(Text(verbatim: description ?? ""))
+        .accessibilityHint(Text(verbatim: hint ?? description ?? ""))
         .accessibilityAddTraits(checked ? [.isButton, .isSelected] : .isButton)
     }
 }

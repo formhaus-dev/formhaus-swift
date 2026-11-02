@@ -21,7 +21,7 @@ struct SystemPickerRow: View {
             }
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(summary ?? "")
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.hintText))
             .formhausFocus(context, $focused)
             .sensoryFeedback(.selection, trigger: context.value)
         }
@@ -47,7 +47,7 @@ struct SystemPickerRow: View {
             Picker(selection: Binding(get: { context.text }, set: { choose($0) })) {
                 ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                     Text(verbatim: option.label ?? option.value ?? "").tag(option.value ?? "")
-                        .disabled(context.isLocked(index, selected: option.value == context.text))
+                        .disabled(context.isDisabled(index))
                 }
             } label: {
                 Text(verbatim: context.label)
@@ -68,7 +68,7 @@ struct SystemPickerRow: View {
                         let value = option.value ?? ""
                         Toggle(option.label ?? value, isOn: Binding(get: { selected.contains(value) }, set: { _ in choose(value) }))
                             .toggleStyle(.checkbox)
-                            .disabled(context.isLocked(index, selected: selected.contains(value)))
+                            .disabled(context.isDisabled(index))
                             .help(option.description ?? "")
                             .formhausTestId(context.optionTestId(value))
                     }
@@ -130,7 +130,7 @@ private struct SystemValueRow: View {
                             selection.choose(value)
                             if !selection.multiple { dismiss() }
                         }
-                        .disabled(context.isLocked(index, selected: selected.contains(value)))
+                        .disabled(context.isDisabled(index))
                         .formhausTestId(context.optionTestId(value))
                     }
                 } footer: {

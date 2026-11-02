@@ -21,7 +21,7 @@ struct SystemTextRow: View {
                             if let nextKey { context.model.focus(field: nextKey) } else { context.performPrimaryAction() }
                         }
                         .formhausFocus(context, $focused)
-                        .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+                        .accessibilityHint(Text(verbatim: context.hintText))
                     if context.loading { ProgressView().controlSize(.small) }
                 }
             } label: {
@@ -80,7 +80,7 @@ struct SystemTextArea: View {
             .lineLimit(rows...)
             .labelsHidden()
             .formhausFocus(context, $focused)
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.hintText))
         }
     }
 
@@ -100,7 +100,8 @@ struct SystemToggleRow: View {
             }
             .modifier(SystemToggleStyle(checkbox: context.field.type == "checkbox"))
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.hintText))
+            .readOnlyControl(context.readOnly)
             .formhausFocus(context, $focused)
         }
     }

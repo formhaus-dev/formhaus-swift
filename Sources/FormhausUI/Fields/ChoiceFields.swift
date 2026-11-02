@@ -129,14 +129,15 @@ struct ChoiceList: View {
         return ChoiceCard(
             option: option, shape: shape, selected: selected.contains(value), invalid: context.isInvalid,
             picture: picture,
-            hint: context.helperText ?? "",
+            hint: context.hintText,
             zoomLabel: context.text(forLabel: "enlargeImage", ["label": .string(option.label ?? "")]),
             testId: context.optionTestId(value),
             choose: { selection.choose(value) },
             zoom: { zoomed = Zoomed(id: value, label: option.label ?? value, image: image) }
         )
         .equatable()
-        .disabled(context.isLocked || context.isLocked(index, selected: selected.contains(value)))
+        .disabled(context.isLocked || context.isDisabled(index))
+        .readOnlyControl(context.readOnly)
         .focused($focused, equals: index)
         .accessibilityFocused($spoken, equals: index)
     }

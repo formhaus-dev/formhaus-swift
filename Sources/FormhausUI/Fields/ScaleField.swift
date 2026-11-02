@@ -23,7 +23,8 @@ public struct ScaleField: View {
                         }
                         .buttonStyle(ScaleBoxStyle(selected: current == point, invalid: context.isInvalid))
                         .accessibilityAddTraits(current == point ? .isSelected : [])
-                        .accessibilityHint(Text(verbatim: scale.anchor(for: point) ?? ""))
+                        .accessibilityHint(Text(verbatim: context.hint(scale.anchor(for: point))))
+                        .readOnlyControl(context.readOnly)
                         .formhausTestId(context.optionTestId(String(point)))
                     }
                 }

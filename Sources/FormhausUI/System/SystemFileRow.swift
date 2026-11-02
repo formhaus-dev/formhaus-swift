@@ -25,7 +25,8 @@ struct SystemFileRow: View {
             .disabled(context.isFileListFull)
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(context.fileValueText)
-            .accessibilityHint(Text(verbatim: context.pickerHint ?? ""))
+            .accessibilityHint(Text(verbatim: context.hint(context.pickerHint)))
+            .readOnlyControl(context.readOnly)
             .formhausFocus(context, $focused)
             .swipeActions {
                 if !context.text.isEmpty, !context.isRequired, !context.readOnly {

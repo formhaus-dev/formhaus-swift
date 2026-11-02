@@ -7,6 +7,7 @@ public enum IndicatorShape: Sendable {
 
 public struct ChoiceIndicator: View {
     @Environment(\.formhausTokens) private var tokens
+    @Environment(\.formhausReadOnly) private var readOnly
     let shape: IndicatorShape
     let selected: Bool
     let invalid: Bool
@@ -22,13 +23,13 @@ public struct ChoiceIndicator: View {
         ZStack {
             if shape == .radio {
                 Color.clear.surface(
-                    Circle(), fill: tokens.colors.background, border: stroke, lineWidth: 2, motion: tokens.quick)
+                    Circle(), fill: empty, border: stroke, lineWidth: 2, motion: tokens.quick)
                 Circle().fill(tokens.colors.primary).frame(width: size * 4 / 9, height: size * 4 / 9)
                     .animation(tokens.quick) { $0.opacity(selected ? 1 : 0) }
             } else {
                 Color.clear.surface(
                     RoundedRectangle(cornerRadius: tokens.radii.indicator, style: .continuous),
-                    fill: selected ? tokens.colors.primary : tokens.colors.background, border: stroke, lineWidth: 1.5,
+                    fill: selected ? tokens.colors.primary : empty, border: stroke, lineWidth: 1.5,
                     motion: tokens.quick)
                 tokens.colors.onPrimary
                     .mask { Image(systemName: "checkmark").font(.system(size: size * 0.62, weight: .bold)) }
@@ -39,8 +40,13 @@ public struct ChoiceIndicator: View {
         .accessibilityHidden(true)
     }
 
+    private var empty: Color {
+        readOnly && !selected ? tokens.colors.backgroundDisabled : tokens.colors.background
+    }
+
     private var stroke: Color {
         if selected { return tokens.colors.primary }
-        return invalid ? tokens.colors.error : tokens.colors.control
+        if invalid { return tokens.colors.error }
+        return readOnly ? tokens.colors.inputBorder : tokens.colors.control
     }
 }

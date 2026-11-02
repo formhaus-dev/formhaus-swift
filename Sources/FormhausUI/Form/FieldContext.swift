@@ -53,7 +53,6 @@ public struct FieldContext {
     public var isItem: Bool { key != field.key }
     public func isDisabled(_ index: Int) -> Bool { rules.isDisabled(index) }
     public func isDisabled(value: String) -> Bool { options.firstIndex { $0.value == value }.map(isDisabled) ?? false }
-    public func isLocked(_ index: Int, selected: Bool) -> Bool { isDisabled(index) || readOnly && !selected }
     public var isInvalid: Bool { error?.isEmpty == false }
     public var isLocked: Bool { loading || disabled && !focused }
     public var accessibilityName: String {
@@ -61,6 +60,7 @@ public struct FieldContext {
     }
 
     public var helperText: String? { helper.flatMap { $0.isEmpty ? nil : $0 } }
+    public var hintText: String { hint(helperText) }
     public var minLength: Double? { countedTypes.contains(field.type) ? field.validation?.minLength : nil }
     public var maxLength: Double? { countedTypes.contains(field.type) ? field.validation?.maxLength : nil }
     public var isRequired: Bool { field.isRequired }

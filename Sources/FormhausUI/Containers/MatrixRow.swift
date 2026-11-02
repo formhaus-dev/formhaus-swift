@@ -85,7 +85,9 @@ private struct MatrixRowBody: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(context.isLocked(index, selected: selected))
+        .disabled(context.isDisabled(index))
+        .readOnlyControl(context.readOnly)
+        .accessibilityHint(Text(verbatim: context.hint()))
         .accessibilityLabel(Text(verbatim: option.label ?? value))
         .accessibilityAddTraits(selected ? .isSelected : [])
         .formhausTestId(context.optionTestId(value))

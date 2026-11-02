@@ -19,7 +19,7 @@ public struct TextInputField: View {
                     .textInputTraits(kind)
                     .submitLabel(context.model.structure.isLastStep ? .done : .continue)
                     .onSubmit { context.performPrimaryAction() }
-                    .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+                    .accessibilityHint(Text(verbatim: context.hintText))
                 LoadingIndicator(visible: context.loading)
             }
             .inputChrome(focused: focused, invalid: context.isInvalid, disabled: context.isLocked)

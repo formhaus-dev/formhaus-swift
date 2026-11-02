@@ -35,6 +35,7 @@ private struct OptionCardBody: View {
 struct SelectableSurface: ViewModifier {
     @Environment(\.formhausTokens) private var tokens
     @Environment(\.isEnabled) private var enabled
+    @Environment(\.formhausReadOnly) private var readOnly
     @State private var hovered = false
     let selected: Bool
     let invalid: Bool
@@ -51,13 +52,14 @@ struct SelectableSurface: ViewModifier {
 
     private var fill: Color {
         if selected { return solid ? tokens.colors.primary : tokens.colors.primarySoft }
+        if readOnly { return solid ? tokens.colors.backgroundDisabled : tokens.colors.background }
         return hovered && enabled ? tokens.colors.backgroundHover : tokens.colors.background
     }
 
     private var border: Color {
         if selected { return tokens.colors.primary }
         if invalid { return tokens.colors.error }
-        return hovered && enabled ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
+        return hovered && enabled && !readOnly ? tokens.colors.inputBorderHover : tokens.colors.inputBorder
     }
 }
 

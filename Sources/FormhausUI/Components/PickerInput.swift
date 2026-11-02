@@ -30,11 +30,13 @@ struct PickerControl<Label: View>: View {
         HStack(spacing: tokens.spacing.s3) {
             Button(action: open) { label }
                 .buttonStyle(.plain)
+                .readOnlyControl(context.readOnly)
             FieldAccessories(context: context, clearable: clearable) { context.setValue(cleared) }
         }
         .inputChrome(focused: focused || active, invalid: context.isInvalid, disabled: context.isLocked || context.isFileListFull)
         .disabled(context.isLocked || context.isFileListFull)
         .formhausFocus(context, $focused)
-        .accessibilityHint(Text(verbatim: context.pickerHint ?? ""))
+        .accessibilityHint(Text(verbatim: context.hint(context.pickerHint)))
+        .environment(\.formhausReadOnly, context.readOnly)
     }
 }

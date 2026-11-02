@@ -16,7 +16,9 @@ struct SystemPictures: View {
                     SystemPictureTile(option: option, selected: selected.contains(value)) {
                         selection.choose(value)
                     }
-                    .disabled(context.isLocked(index, selected: selected.contains(value)))
+                    .disabled(context.isDisabled(index))
+                    .readOnlyControl(context.readOnly)
+                    .accessibilityHint(Text(verbatim: context.hint(option.description)))
                     .formhausTestId(context.optionTestId(value))
                 }
             }

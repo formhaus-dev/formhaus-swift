@@ -15,8 +15,9 @@ public struct CheckboxField: View {
             }
             .toggleStyle(CheckboxStyle(invalid: context.isInvalid))
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.hintText))
             .disabled(context.isLocked)
+            .readOnlyControl(context.readOnly)
             .formhausFocus(context, $focused)
         }
     }
@@ -85,8 +86,9 @@ public struct SwitchField: View {
             }
             .toggleStyle(SwitchRowStyle(loading: context.loading, invalid: context.isInvalid))
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.hintText))
             .disabled(context.isLocked)
+            .readOnlyControl(context.readOnly)
             .formhausFocus(context, $focused)
         }
     }

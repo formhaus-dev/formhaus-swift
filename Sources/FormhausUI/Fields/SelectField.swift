@@ -34,7 +34,7 @@ public struct SelectField: View {
             Picker(selection: selection) {
                 ForEach(Array(context.options.enumerated()), id: \.offset) { index, option in
                     Text(verbatim: option.label ?? option.value ?? "").tag(option.value ?? "")
-                        .disabled(context.isLocked(index, selected: option.value == context.text))
+                        .disabled(context.isDisabled(index))
                 }
             } label: {
                 Text(verbatim: context.accessibilityName)
@@ -50,7 +50,7 @@ public struct SelectField: View {
         .formhausFocus(context, $focused)
         .accessibilityLabel(Text(verbatim: context.accessibilityName))
         .accessibilityValue(selectedLabel ?? "")
-        .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+        .accessibilityHint(Text(verbatim: context.hintText))
     }
 
     private var textColor: Color {

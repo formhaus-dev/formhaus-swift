@@ -30,7 +30,7 @@ struct SystemDateRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel(Text(verbatim: context.accessibilityName))
             .accessibilityValue(display ?? "")
-            .accessibilityHint(Text(verbatim: context.helperText ?? ""))
+            .accessibilityHint(Text(verbatim: context.hintText))
             .formhausFocus(context, $focused)
             #if os(macOS)
                 .popover(isPresented: $expanded, arrowEdge: .bottom) { panel.padding(16).frame(minWidth: 280) }

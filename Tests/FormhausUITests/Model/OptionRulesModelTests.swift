@@ -33,6 +33,24 @@ struct OptionRulesModelTests {
         #expect(form.engine.values["account"] == "acct-1")
     }
 
+    @Test("read-only controls ignore changes and tell VoiceOver")
+    func readOnlyControls() throws {
+        let definition: JSONValue = [
+            "formatVersion": "1.8", "id": "p", "title": "P", "submit": ["label": "Save"],
+            "fields": [
+                ["key": "agree", "type": "checkbox", "label": "Agree", "helperText": "Signed in 2024"],
+                ["key": "stars", "type": "rating", "label": "Stars"],
+            ],
+        ]
+        let form = try model(definition, values: ["agree": true, "stars": 2], options: FormRendererOptions(readOnly: true))
+        let fields = form.definition.allFields
+        let agree = FieldContext(field: fields[0], model: form)
+        #expect(agree.hintText == "Signed in 2024, Read only")
+        agree.boolBinding.wrappedValue = false
+        FieldContext(field: fields[1], model: form).commit(5)
+        #expect(form.engine.values["agree"] == true && form.engine.values["stars"] == 2)
+    }
+
     @Test("a disabled option follows its conditions and cannot be chosen")
     func disabledOption() throws {
         let form = try model(rulesDefinition, values: ["seats": 8])
