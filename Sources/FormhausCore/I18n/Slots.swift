@@ -110,6 +110,7 @@ private func usedLabels(_ definition: FormDefinition) -> KeySet {
     add(fields.contains { $0.type == "file" }, ["chooseFile"])
     add(fields.contains(where: \.isFileList), ["removeItem", "removeItemNamed", "itemAdded", "itemRemoved", "fileCount"])
     add(nodes.contains(where: \.reorderable), ["moveUp", "moveDown", "itemMoved"])
+    add(fields.contains { $0.readOnly.map { $0 != .fixed(false) } ?? false }, ["readOnly"])
     return labels
 }
 

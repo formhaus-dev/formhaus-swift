@@ -17,7 +17,7 @@ let defaultLabelKeys = [
     "continue", "back", "stepOf", "errorSummary", "addItem", "removeItem", "itemLabel", "itemAdded", "itemRemoved",
     "removeItemNamed", "removeItemPrompt", "removeItemBody", "cancel",
     "enlargeImage", "close", "clear", "done", "chooseFile", "required", "skip", "submit", "stepTitle", "stepErrors",
-    "fileCount", "moveUp", "moveDown", "itemMoved", "or", "select",
+    "fileCount", "moveUp", "moveDown", "itemMoved", "readOnly", "or", "select",
 ]
 
 let defaultLabels: [String: String] = [
@@ -48,6 +48,7 @@ let defaultLabels: [String: String] = [
     "moveUp": "Move up",
     "moveDown": "Move down",
     "itemMoved": "{item} moved to position {position}",
+    "readOnly": "Read only",
     "or": "or",
     "select": "Select",
 ]

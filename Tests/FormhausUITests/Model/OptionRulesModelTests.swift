@@ -51,6 +51,14 @@ struct OptionRulesModelTests {
         #expect(form.engine.values["agree"] == true && form.engine.values["stars"] == 2)
     }
 
+    @Test("the read-only state comes from the locale catalog", arguments: [("de", "Schreibgeschützt"), ("ja", "読み取り専用")])
+    func readOnlyLocale(tag: String, text: String) throws {
+        let form = try model(rulesDefinition, values: ["account": "acct-1"])
+        form.engine.locale = [try #require(LocaleCatalog.bundled(tag))]
+        let context = FieldContext(field: try #require(form.definition.allFields.first { $0.key == "account" }), model: form)
+        #expect(context.hintText == text)
+    }
+
     @Test("a disabled option follows its conditions and cannot be chosen")
     func disabledOption() throws {
         let form = try model(rulesDefinition, values: ["seats": 8])
