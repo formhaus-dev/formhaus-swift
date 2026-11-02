@@ -54,6 +54,7 @@ struct DefaultGroupItem: View {
             HStack(alignment: .center, spacing: tokens.spacing.s3) {
                 Text(verbatim: context.title).formhausText(.itemTitle).accessibilityAddTraits(.isHeader)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                if context.canMove { MoveButtons(item: context) }
                 if context.canRemove {
                     Button(context.removeLabel, action: context.requestRemove)
                         .buttonStyle(FormButtonStyle(.danger, compact: true))

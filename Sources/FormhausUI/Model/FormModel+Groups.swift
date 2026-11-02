@@ -28,6 +28,23 @@ extension FormModel {
         return true
     }
 
+    @discardableResult
+    public func moveItem(_ index: Int, to target: Int, inGroup key: String) -> Bool {
+        let name = itemTitle(index, inGroup: key)
+        let count = group(key).items.count
+        guard !readOnly, changeItems(ofGroup: key, using: { engine.moveItem(key, from: index, to: target) }) else { return false }
+        let up = target < index
+        requestFocus(moveKey(key, target, up: up != (up ? target == 0 : target == count - 1)))
+        announce(text(forLabel: "itemMoved", ["item": .string(name), "position": .number(Double(target + 1))]))
+        return true
+    }
+
+    func moveKey(_ key: String, _ index: Int, up: Bool) -> String {
+        "\(key)#\(up ? "up" : "down")\(index)"
+    }
+
+    var readOnly: Bool { options.readOnly }
+
     func groupField(_ key: String) -> FormField? {
         structure.visibleFields.first { $0.key == key && $0.isGroup }
     }

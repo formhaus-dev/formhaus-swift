@@ -50,22 +50,28 @@ struct GroupNode: View {
 
     private func groupContext(_ items: [GroupItem]) -> GroupContext {
         let limits = model.engine.itemLimits(group)
-        let entries = items.enumerated().map { index, item in itemContext(item, index, canRemove: items.count > limits.min) }
+        let entries = items.enumerated().map { index, item in
+            itemContext(item, index, count: items.count, canRemove: !model.readOnly && items.count > limits.min)
+        }
         let texts = model.texts(for: group)
         return GroupContext(
             group: group, label: texts.label ?? "", helperText: texts.helperText, error: model.field(group.key).error, items: entries,
-            canAdd: items.count < limits.max, addLabel: group.addLabel ?? model.text(forLabel: "addItem"), disabled: model.disabled,
+            canAdd: !model.readOnly && items.count < limits.max, addLabel: group.addLabel ?? model.text(forLabel: "addItem"),
+            disabled: model.disabled,
             add: { model.addItem(toGroup: group.key) }, model: model)
     }
 
-    private func itemContext(_ item: GroupItem, _ index: Int, canRemove: Bool) -> GroupItemContext {
+    private func itemContext(_ item: GroupItem, _ index: Int, count: Int, canRemove: Bool) -> GroupItemContext {
         let content = AnyView(GroupItemFields(group: group, item: item, index: index, model: model))
         let wrapped = GroupItemContext(
             id: item.id, index: index, title: title(index), canRemove: canRemove,
             hasContent: model.group(group.key).hasContent.indices.contains(index) && model.group(group.key).hasContent[index],
             removeLabel: removeLabel, removeName: removeName(index), disabled: model.disabled, content: content,
-            requestRemove: { ask(index) }, remove: { drop(index) }, removeFocus: model.field(removeKey(index)), model: model,
-            fields: item.fields)
+            requestRemove: { ask(index) }, remove: { drop(index) }, count: count, canMove: group.reorderable && !model.readOnly,
+            moveUpLabel: model.text(forLabel: "moveUp"), moveDownLabel: model.text(forLabel: "moveDown"),
+            move: { model.moveItem(index, to: $0, inGroup: group.key) }, removeFocus: model.field(removeKey(index)),
+            moveUpFocus: model.field(model.moveKey(group.key, index, up: true)),
+            moveDownFocus: model.field(model.moveKey(group.key, index, up: false)), model: model, fields: item.fields)
         return wrapped
     }
 
