@@ -1,0 +1,38 @@
+{
+  "name": "check-hidden-in-group-version",
+  "issues": [
+    {
+      "code": "invalid-nesting",
+      "path": "/fields/0/fields/0/type"
+    }
+  ],
+  "warnings": [],
+  "definition": {
+    "formatVersion": "1.8",
+    "id": "team",
+    "title": "Team",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "members",
+        "type": "group",
+        "label": "Members",
+        "fields": [
+          {
+            "key": "id",
+            "type": "hidden",
+            "label": "Member id"
+          },
+          {
+            "key": "name",
+            "type": "text",
+            "label": "Name"
+          }
+        ]
+      }
+    ]
+  },
+  "cases": []
+}

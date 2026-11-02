@@ -52,6 +52,7 @@
     "moveUp": "Move up",
     "moveDown": "Move down",
     "itemMoved": "{item} moved to position {position}",
+    "readOnly": "Read only",
     "or": "or",
     "select": "Select"
   }

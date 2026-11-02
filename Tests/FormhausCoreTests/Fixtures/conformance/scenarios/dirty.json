@@ -596,6 +596,50 @@
       ]
     },
     {
+      "name": "NaN equals NaN",
+      "values": {
+        "name": 1
+      },
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "name",
+          "number": "NaN"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        },
+        {
+          "do": "markClean"
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "number": "NaN"
+        },
+        {
+          "expect": {
+            "dirty": false,
+            "dirtyKeys": []
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "name",
+          "value": 1
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["name"]
+          }
+        }
+      ]
+    },
+    {
       "name": "removing the first item and adding one lists item paths",
       "values": {
         "people": [

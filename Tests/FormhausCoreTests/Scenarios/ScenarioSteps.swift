@@ -13,7 +13,7 @@ extension ScenarioRun {
         let key = step["key"]?.stringValue ?? ""
         switch step["do"]?.stringValue {
         case "start": engine.start()
-        case "setValue": engine.setValue(key, step["value"])
+        case "setValue": engine.setValue(key, step["number"] == "NaN" ? .number(.nan) : step["value"])
         case "setItemValue": engine.setItemValue(key, index(step), step["field"]?.stringValue ?? "", step["value"])
         case "addItem": return .bool(engine.addItem(key))
         case "removeItem": return .bool(engine.removeItem(key, index(step)))

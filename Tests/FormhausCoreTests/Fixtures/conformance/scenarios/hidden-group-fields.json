@@ -1,0 +1,1217 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "hidden-group-fields",
+  "definition": {
+    "formatVersion": "1.9",
+    "id": "team",
+    "title": "Team",
+    "submit": {
+      "label": "Save"
+    },
+    "steps": [
+      {
+        "id": "members",
+        "title": "Members",
+        "fields": [
+          {
+            "key": "members",
+            "type": "group",
+            "label": "Members",
+            "reorderable": true,
+            "validation": {
+              "maxLength": 4
+            },
+            "fields": [
+              {
+                "key": "id",
+                "type": "hidden",
+                "label": "Member id",
+                "defaultValue": "new",
+                "validation": {
+                  "pattern": "^[a-z0-9]+$",
+                  "patternMessage": "Unknown member"
+                }
+              },
+              {
+                "key": "name",
+                "type": "text",
+                "label": "Name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "key": "role",
+                "type": "radio",
+                "label": "Role",
+                "options": [
+                  {
+                    "value": "admin",
+                    "label": "Admin"
+                  },
+                  {
+                    "value": "viewer",
+                    "label": "Viewer"
+                  }
+                ]
+              },
+              {
+                "key": "grant",
+                "type": "hidden",
+                "label": "Grant",
+                "defaultValue": "basic",
+                "show": [
+                  {
+                    "field": "role",
+                    "eq": "admin"
+                  }
+                ]
+              },
+              {
+                "key": "note",
+                "type": "text",
+                "label": "Note",
+                "defaultValue": "hi",
+                "show": [
+                  {
+                    "field": "role",
+                    "eq": "admin"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "fields": [
+          {
+            "key": "comment",
+            "type": "textarea",
+            "label": "Comment"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "keeps the hidden values of each item through add, move and remove",
+      "values": {
+        "members": [
+          {
+            "id": "a1",
+            "name": "Ann"
+          },
+          {
+            "id": "b2",
+            "name": "Bob"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "addItem",
+          "key": "members",
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann"
+                },
+                {
+                  "id": "b2",
+                  "name": "Bob"
+                },
+                {
+                  "id": "new"
+                }
+              ]
+            },
+            "items": {
+              "members": 3
+            }
+          }
+        },
+        {
+          "do": "moveItem",
+          "key": "members",
+          "from": 0,
+          "to": 2,
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "b2",
+                  "name": "Bob"
+                },
+                {
+                  "id": "new"
+                },
+                {
+                  "id": "a1",
+                  "name": "Ann"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "removeItem",
+          "key": "members",
+          "index": 1,
+          "returns": true
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 1,
+          "field": "name",
+          "value": "Anna"
+        },
+        {
+          "expect": {
+            "submitValues": {
+              "members": [
+                {
+                  "id": "b2",
+                  "name": "Bob"
+                },
+                {
+                  "id": "a1",
+                  "name": "Anna"
+                }
+              ]
+            },
+            "distinctItemIds": {
+              "members": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "stores items written with setValue as given and gives back their written values or defaults on reveal",
+      "steps": [
+        {
+          "do": "setValue",
+          "key": "members",
+          "value": [
+            {
+              "id": "a1",
+              "name": "Ann",
+              "role": "admin",
+              "grant": "g2"
+            },
+            {
+              "name": "Bob",
+              "role": "viewer"
+            }
+          ]
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "admin",
+                  "grant": "g2"
+                },
+                {
+                  "name": "Bob",
+                  "role": "viewer"
+                }
+              ]
+            },
+            "submitValues": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "admin",
+                  "grant": "g2"
+                },
+                {
+                  "name": "Bob",
+                  "role": "viewer"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "role",
+          "value": "viewer"
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 1,
+          "field": "role",
+          "value": "admin"
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "viewer"
+                },
+                {
+                  "name": "Bob",
+                  "role": "admin",
+                  "grant": "basic",
+                  "note": "hi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "role",
+          "value": "admin"
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "admin",
+                  "grant": "g2",
+                  "note": "hi"
+                },
+                {
+                  "name": "Bob",
+                  "role": "admin",
+                  "grant": "basic",
+                  "note": "hi"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives an initial item without the hidden key its defaultValue",
+      "values": {
+        "members": [
+          {
+            "name": "Ann"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "new",
+                  "name": "Ann"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives items reset by Skip the defaults of their hidden fields",
+      "definition": {
+        "formatVersion": "1.9",
+        "id": "team",
+        "title": "Team",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "members",
+            "title": "Members",
+            "fields": [
+              {
+                "key": "members",
+                "type": "group",
+                "label": "Members",
+                "reorderable": true,
+                "validation": {
+                  "maxLength": 4
+                },
+                "fields": [
+                  {
+                    "key": "id",
+                    "type": "hidden",
+                    "label": "Member id",
+                    "defaultValue": "new",
+                    "validation": {
+                      "pattern": "^[a-z0-9]+$",
+                      "patternMessage": "Unknown member"
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "role",
+                    "type": "radio",
+                    "label": "Role",
+                    "options": [
+                      {
+                        "value": "admin",
+                        "label": "Admin"
+                      },
+                      {
+                        "value": "viewer",
+                        "label": "Viewer"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "grant",
+                    "type": "hidden",
+                    "label": "Grant",
+                    "defaultValue": "basic",
+                    "show": [
+                      {
+                        "field": "role",
+                        "eq": "admin"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "note",
+                    "type": "text",
+                    "label": "Note",
+                    "defaultValue": "hi",
+                    "show": [
+                      {
+                        "field": "role",
+                        "eq": "admin"
+                      }
+                    ]
+                  }
+                ],
+                "defaultItems": 1
+              }
+            ],
+            "skip": {
+              "label": "Skip"
+            }
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": [
+              {
+                "key": "comment",
+                "type": "textarea",
+                "label": "Comment"
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "members": [
+          {
+            "id": "a1",
+            "name": "Ann",
+            "role": "admin",
+            "grant": "full"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "skip",
+          "returns": true
+        },
+        {
+          "do": "back",
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "new"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "role",
+          "value": "admin"
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "new",
+                  "role": "admin",
+                  "grant": "basic",
+                  "note": "hi"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the start values of items when their group is hidden and shown again",
+      "definition": {
+        "formatVersion": "1.9",
+        "id": "crew",
+        "title": "Crew",
+        "submit": {
+          "label": "Save"
+        },
+        "fields": [
+          {
+            "key": "on",
+            "type": "checkbox",
+            "label": "On"
+          },
+          {
+            "key": "crew",
+            "type": "group",
+            "label": "Crew",
+            "show": [
+              {
+                "field": "on",
+                "eq": true
+              }
+            ],
+            "fields": [
+              {
+                "key": "kind",
+                "type": "radio",
+                "label": "Kind",
+                "options": [
+                  {
+                    "value": "x",
+                    "label": "X"
+                  },
+                  {
+                    "value": "y",
+                    "label": "Y"
+                  }
+                ]
+              },
+              {
+                "key": "id",
+                "type": "hidden",
+                "label": "Id",
+                "defaultValue": "new",
+                "show": [
+                  {
+                    "field": "kind",
+                    "eq": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "values": {
+        "on": true,
+        "crew": [
+          {
+            "kind": "x",
+            "id": "m_1"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setItemValue",
+          "key": "crew",
+          "index": 0,
+          "field": "kind",
+          "value": "y"
+        },
+        {
+          "do": "setValue",
+          "key": "crew",
+          "value": [
+            {
+              "kind": "x",
+              "id": "m_1"
+            },
+            {
+              "kind": "y"
+            }
+          ]
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": false
+        },
+        {
+          "expect": {
+            "values": {
+              "on": false
+            }
+          }
+        },
+        {
+          "do": "setValue",
+          "key": "on",
+          "value": true
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "crew": [
+                {
+                  "kind": "x",
+                  "id": "m_1"
+                },
+                {
+                  "kind": "y"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "crew",
+          "index": 0,
+          "field": "kind",
+          "value": "y"
+        },
+        {
+          "do": "setItemValue",
+          "key": "crew",
+          "index": 1,
+          "field": "kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "crew": [
+                {
+                  "kind": "y"
+                },
+                {
+                  "kind": "x",
+                  "id": "new"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "crew",
+          "index": 0,
+          "field": "kind",
+          "value": "x"
+        },
+        {
+          "expect": {
+            "values": {
+              "on": true,
+              "crew": [
+                {
+                  "kind": "x",
+                  "id": "m_1"
+                },
+                {
+                  "kind": "x",
+                  "id": "new"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives items from defaultItems the default of their hidden fields",
+      "definition": {
+        "formatVersion": "1.9",
+        "id": "team",
+        "title": "Team",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "members",
+            "title": "Members",
+            "fields": [
+              {
+                "key": "members",
+                "type": "group",
+                "label": "Members",
+                "reorderable": true,
+                "validation": {
+                  "maxLength": 4
+                },
+                "fields": [
+                  {
+                    "key": "id",
+                    "type": "hidden",
+                    "label": "Member id",
+                    "defaultValue": "new",
+                    "validation": {
+                      "pattern": "^[a-z0-9]+$",
+                      "patternMessage": "Unknown member"
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "role",
+                    "type": "radio",
+                    "label": "Role",
+                    "options": [
+                      {
+                        "value": "admin",
+                        "label": "Admin"
+                      },
+                      {
+                        "value": "viewer",
+                        "label": "Viewer"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "grant",
+                    "type": "hidden",
+                    "label": "Grant",
+                    "defaultValue": "basic",
+                    "show": [
+                      {
+                        "field": "role",
+                        "eq": "admin"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "note",
+                    "type": "text",
+                    "label": "Note",
+                    "defaultValue": "hi",
+                    "show": [
+                      {
+                        "field": "role",
+                        "eq": "admin"
+                      }
+                    ]
+                  }
+                ],
+                "defaultItems": 2
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": [
+              {
+                "key": "comment",
+                "type": "textarea",
+                "label": "Comment"
+              }
+            ]
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "new"
+                },
+                {
+                  "id": "new"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "reports a client error on a hidden item field at form level",
+      "values": {
+        "members": [
+          {
+            "id": "a1",
+            "name": "Ann"
+          },
+          {
+            "id": "Bad id",
+            "name": "Bob"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": false
+        },
+        {
+          "expect": {
+            "errors": {
+              "members.1.id": "Unknown member"
+            },
+            "topLevelErrors": ["Unknown member"],
+            "stepErrors": {},
+            "step": "members"
+          }
+        },
+        {
+          "do": "moveItem",
+          "key": "members",
+          "from": 1,
+          "to": 0,
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {
+              "members.0.id": "Unknown member"
+            },
+            "topLevelErrors": ["Unknown member"]
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "id",
+          "value": "b2"
+        },
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {},
+            "topLevelErrors": [],
+            "step": "review"
+          }
+        }
+      ]
+    },
+    {
+      "name": "wraps the built-in message of a hidden item field with its label",
+      "values": {
+        "members": [
+          {
+            "id": 5,
+            "name": "Ann"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "members.0.id": "Member id: Must be text"
+          }
+        },
+        {
+          "expect": {
+            "topLevelErrors": ["Member id: Must be text"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "turns a server error on a hidden item field into a form-level error without moving steps",
+      "values": {
+        "members": [
+          {
+            "id": "a1",
+            "name": "Ann"
+          },
+          {
+            "id": "b2",
+            "name": "Bob"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "next",
+          "returns": true
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "members.1.id": "Member was removed"
+          }
+        },
+        {
+          "expect": {
+            "errors": {
+              "members.1.id": "Member was removed"
+            },
+            "topLevelErrors": ["Member was removed"],
+            "stepErrors": {},
+            "step": "review"
+          }
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "members.1.id": "Member was removed",
+            "members.0.name": "Taken"
+          }
+        },
+        {
+          "expect": {
+            "topLevelErrors": ["Member was removed"],
+            "stepErrors": {
+              "members": ["members.0.name"]
+            },
+            "step": "members"
+          }
+        }
+      ]
+    },
+    {
+      "name": "gives a hidden item field its start value when its item conditions match again",
+      "values": {
+        "members": [
+          {
+            "id": "a1",
+            "name": "Ann",
+            "role": "admin",
+            "grant": "full",
+            "note": "lead"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "note",
+          "value": "owner"
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "grant",
+          "value": "temp"
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "role",
+          "value": "viewer"
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "viewer"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "grant",
+          "value": "written"
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 0,
+          "field": "role",
+          "value": "admin"
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "admin",
+                  "grant": "full",
+                  "note": "owner"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "do": "addItem",
+          "key": "members",
+          "returns": true
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 1,
+          "field": "role",
+          "value": "admin"
+        },
+        {
+          "expect": {
+            "values": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "admin",
+                  "grant": "full",
+                  "note": "owner"
+                },
+                {
+                  "id": "new",
+                  "role": "admin",
+                  "grant": "basic",
+                  "note": "hi"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps a hidden item field hidden by its item conditions with hiddenValues keep",
+      "hiddenValues": "keep",
+      "values": {
+        "members": [
+          {
+            "id": "a1",
+            "name": "Ann",
+            "role": "viewer",
+            "grant": "full"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "submitValues": {
+              "members": [
+                {
+                  "id": "a1",
+                  "name": "Ann",
+                  "role": "viewer",
+                  "grant": "full",
+                  "note": "hi"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "tracks unsaved changes of a hidden item field by item path",
+      "values": {
+        "members": [
+          {
+            "id": "a1",
+            "name": "Ann"
+          },
+          {
+            "id": "b2",
+            "name": "Bob"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "expect": {
+            "dirty": false
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 1,
+          "field": "id",
+          "value": "c3"
+        },
+        {
+          "expect": {
+            "dirty": true,
+            "dirtyKeys": ["members.1.id"]
+          }
+        },
+        {
+          "do": "setItemValue",
+          "key": "members",
+          "index": 1,
+          "field": "id",
+          "value": "b2"
+        },
+        {
+          "expect": {
+            "dirty": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "rejects a hidden field in a group below format 1.9",
+      "definition": {
+        "formatVersion": "1.8",
+        "id": "team",
+        "title": "Team",
+        "submit": {
+          "label": "Save"
+        },
+        "steps": [
+          {
+            "id": "members",
+            "title": "Members",
+            "fields": [
+              {
+                "key": "members",
+                "type": "group",
+                "label": "Members",
+                "reorderable": true,
+                "validation": {
+                  "maxLength": 4
+                },
+                "fields": [
+                  {
+                    "key": "id",
+                    "type": "hidden",
+                    "label": "Member id",
+                    "defaultValue": "new",
+                    "validation": {
+                      "pattern": "^[a-z0-9]+$",
+                      "patternMessage": "Unknown member"
+                    }
+                  },
+                  {
+                    "key": "name",
+                    "type": "text",
+                    "label": "Name",
+                    "validation": {
+                      "required": true
+                    }
+                  },
+                  {
+                    "key": "role",
+                    "type": "radio",
+                    "label": "Role",
+                    "options": [
+                      {
+                        "value": "admin",
+                        "label": "Admin"
+                      },
+                      {
+                        "value": "viewer",
+                        "label": "Viewer"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "grant",
+                    "type": "hidden",
+                    "label": "Grant",
+                    "defaultValue": "basic",
+                    "show": [
+                      {
+                        "field": "role",
+                        "eq": "admin"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "note",
+                    "type": "text",
+                    "label": "Note",
+                    "defaultValue": "hi",
+                    "show": [
+                      {
+                        "field": "role",
+                        "eq": "admin"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review",
+            "fields": [
+              {
+                "key": "comment",
+                "type": "textarea",
+                "label": "Comment"
+              }
+            ]
+          }
+        ]
+      },
+      "throws": "FormDefinitionError",
+      "steps": []
+    }
+  ]
+}
