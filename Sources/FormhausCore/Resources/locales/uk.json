@@ -59,6 +59,9 @@
     "stepTitle": "Крок {index}",
     "stepErrors": "Помилок: {count}",
     "fileCount": "Файлів: {count}",
+    "moveUp": "Вгору",
+    "moveDown": "Униз",
+    "itemMoved": "{item}: переміщено на позицію {position}",
     "or": "або",
     "select": "Виберіть"
   }

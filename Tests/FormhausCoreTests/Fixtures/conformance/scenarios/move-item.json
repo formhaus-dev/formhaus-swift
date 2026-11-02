@@ -1,0 +1,328 @@
+{
+  "$schema": "./scenario.schema.json",
+  "name": "move-item",
+  "definition": {
+    "formatVersion": "1.8",
+    "id": "tasks",
+    "title": "Tasks",
+    "submit": {
+      "label": "Save"
+    },
+    "fields": [
+      {
+        "key": "tasks",
+        "type": "group",
+        "label": "Tasks",
+        "reorderable": true,
+        "validation": {
+          "maxLength": 4
+        },
+        "fields": [
+          {
+            "key": "title",
+            "type": "text",
+            "label": "Title",
+            "validation": {
+              "required": true
+            }
+          },
+          {
+            "key": "details",
+            "type": "textarea",
+            "label": "Details",
+            "show": [
+              {
+                "field": "title",
+                "notEmpty": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "moves the values and ids of an item",
+      "values": {
+        "tasks": [
+          {
+            "title": "A"
+          },
+          {
+            "title": "B"
+          },
+          {
+            "title": "C"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 0,
+          "to": 2,
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "tasks": [
+                {
+                  "title": "B"
+                },
+                {
+                  "title": "C"
+                },
+                {
+                  "title": "A"
+                }
+              ]
+            },
+            "items": {
+              "tasks": 3
+            },
+            "distinctItemIds": {
+              "tasks": 3
+            }
+          }
+        },
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 2,
+          "to": 1,
+          "returns": true
+        },
+        {
+          "expect": {
+            "values": {
+              "tasks": [
+                {
+                  "title": "B"
+                },
+                {
+                  "title": "A"
+                },
+                {
+                  "title": "C"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "rejects moves that change nothing or leave the list",
+      "values": {
+        "tasks": [
+          {
+            "title": "A"
+          },
+          {
+            "title": "B"
+          },
+          {
+            "title": "C"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 1,
+          "to": 1,
+          "returns": false
+        },
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 0,
+          "to": 3,
+          "returns": false
+        },
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": -1,
+          "to": 0,
+          "returns": false
+        },
+        {
+          "do": "moveItem",
+          "key": "missing",
+          "from": 0,
+          "to": 1,
+          "returns": false
+        },
+        {
+          "expect": {
+            "values": {
+              "tasks": [
+                {
+                  "title": "A"
+                },
+                {
+                  "title": "B"
+                },
+                {
+                  "title": "C"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "moves the errors of an item",
+      "values": {
+        "tasks": [
+          {
+            "title": "A"
+          },
+          {},
+          {
+            "title": "C"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "validate",
+          "returns": {
+            "tasks.1.title": "This field is required"
+          }
+        },
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 1,
+          "to": 0,
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {
+              "tasks.0.title": "This field is required"
+            }
+          }
+        },
+        {
+          "do": "setErrors",
+          "errors": {
+            "tasks.2.title": "Taken"
+          }
+        },
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 2,
+          "to": 1,
+          "returns": true
+        },
+        {
+          "expect": {
+            "errors": {
+              "tasks.1.title": "Taken"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "moves the loading state of an item",
+      "values": {
+        "tasks": [
+          {
+            "title": "A"
+          },
+          {
+            "title": "B"
+          },
+          {
+            "title": "C"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setFieldLoading",
+          "key": "tasks.0.title",
+          "loading": true
+        },
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 0,
+          "to": 1,
+          "returns": true
+        },
+        {
+          "expect": {
+            "fieldLoading": {
+              "tasks.1.title": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keeps the last values of hidden fields with the item",
+      "values": {
+        "tasks": [
+          {
+            "title": "A",
+            "details": "a"
+          },
+          {
+            "title": "B",
+            "details": "b"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "do": "setItemValue",
+          "key": "tasks",
+          "index": 0,
+          "field": "title",
+          "value": ""
+        },
+        {
+          "do": "moveItem",
+          "key": "tasks",
+          "from": 0,
+          "to": 1,
+          "returns": true
+        },
+        {
+          "do": "setItemValue",
+          "key": "tasks",
+          "index": 1,
+          "field": "title",
+          "value": "A"
+        },
+        {
+          "expect": {
+            "values": {
+              "tasks": [
+                {
+                  "title": "B",
+                  "details": "b"
+                },
+                {
+                  "title": "A",
+                  "details": "a"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

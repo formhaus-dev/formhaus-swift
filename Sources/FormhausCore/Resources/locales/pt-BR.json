@@ -57,6 +57,9 @@
     "stepTitle": "Etapa {index}",
     "stepErrors": "Erros: {count}",
     "fileCount": "Arquivos: {count}",
+    "moveUp": "Mover para cima",
+    "moveDown": "Mover para baixo",
+    "itemMoved": "{item} movido para a posição {position}",
     "or": "ou",
     "select": "Selecione"
   }

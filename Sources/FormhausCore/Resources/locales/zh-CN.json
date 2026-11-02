@@ -49,6 +49,9 @@
     "stepTitle": "第{index}步",
     "stepErrors": "{count}个错误",
     "fileCount": "{count}个文件",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "itemMoved": "已将{item}移到第{position}位",
     "or": "或",
     "select": "请选择"
   }

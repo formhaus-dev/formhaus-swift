@@ -57,6 +57,9 @@
     "stepTitle": "Passaggio {index}",
     "stepErrors": "Errori: {count}",
     "fileCount": "File: {count}",
+    "moveUp": "Sposta su",
+    "moveDown": "Sposta giù",
+    "itemMoved": "{item} spostato in posizione {position}",
     "or": "oppure",
     "select": "Seleziona"
   }

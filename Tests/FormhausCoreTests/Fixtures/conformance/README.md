@@ -93,6 +93,8 @@ The corpus and the scenarios change with `@formhaus/core`. An implementation pin
 
 Since 1.6.1, the server runs every pattern, including those reported as `slow-pattern`, and no case sets `serverErrors`. From 1.4.1 to 1.6.0, the server refuses most `slow-pattern` patterns, runs quadratic ones on values of at most 1000 characters and `serverErrors` holds the errors it returns in place of `expected.errors`. In 1.4.0 the server refuses every `slow-pattern` pattern.
 
+A case in `fixtures/submissions` may set `input.previousValues`. Pass it to the server validation as the option of the same name: a disabled option it holds stays valid. Corpus cases never choose a disabled option, because the browser engine counts its initial values as stored answers and the server counts only `previousValues`; the `option-rules` scenarios and submissions cover that rule.
+
 Since 0.21, `serverValues` and `fixtures/submissions` expect the server to drop every value that fails its type check, at top level and in group items. Earlier tags expect a top-level value with a type error to be returned with its error.
 
 ## Not covered

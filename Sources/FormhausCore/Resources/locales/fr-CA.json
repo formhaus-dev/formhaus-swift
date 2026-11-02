@@ -57,6 +57,9 @@
     "stepTitle": "Étape {index}",
     "stepErrors": "Erreurs : {count}",
     "fileCount": "Fichiers : {count}",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "itemMoved": "{item} déplacé en position {position}",
     "or": "ou",
     "select": "Sélectionner"
   }

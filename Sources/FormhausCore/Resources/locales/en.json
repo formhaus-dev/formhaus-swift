@@ -49,6 +49,9 @@
     "stepTitle": "Step {index}",
     "stepErrors": "Errors: {count}",
     "fileCount": "Files: {count}",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "itemMoved": "{item} moved to position {position}",
     "or": "or",
     "select": "Select"
   }
